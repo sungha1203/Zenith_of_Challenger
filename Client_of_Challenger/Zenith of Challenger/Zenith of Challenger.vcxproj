@@ -76,10 +76,13 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>C:\Users\hih20\Desktop\Repository\Zenith_of_Challenger\Client_of_Challenger\Zenith of Challenger\build\include;C:\Users\hih20\Desktop\Repository\Zenith_of_Challenger\Client_of_Challenger\Zenith of Challenger\assimp-master\assimp-master\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>C:\Users\hih20\Desktop\Repository\Zenith_of_Challenger\Client_of_Challenger\Zenith of Challenger\build\lib\Debug</AdditionalLibraryDirectories>
+      <AdditionalDependencies>assimp-vc143-mtd.lib;User32.lib;Gdi32.lib;Kernel32.lib;Advapi32.lib;Comdlg32.lib;Ole32.lib;OleAut32.lib;Shell32.lib</AdditionalDependencies>
     </Link>
     <FxCompile>
       <ShaderModel>5.1</ShaderModel>
@@ -93,12 +96,15 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>C:\Users\hih20\Desktop\Repository\Zenith_of_Challenger\Client_of_Challenger\Zenith of Challenger\build\include;C:\Users\hih20\Desktop\Repository\Zenith_of_Challenger\Client_of_Challenger\Zenith of Challenger\assimp-master\assimp-master\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>C:\Users\hih20\Desktop\Repository\Zenith_of_Challenger\Client_of_Challenger\Zenith of Challenger\build\lib\Debug</AdditionalLibraryDirectories>
+      <AdditionalDependencies>assimp-vc143-mtd.lib;User32.lib;Gdi32.lib;Kernel32.lib;Advapi32.lib;Comdlg32.lib;Ole32.lib;OleAut32.lib;Shell32.lib</AdditionalDependencies>
     </Link>
     <FxCompile>
       <ShaderModel>5.1</ShaderModel>
@@ -111,13 +117,13 @@
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
-      <AdditionalIncludeDirectories>C:\Users\User\vcpkg\installed\x64-windows\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\hih20\Desktop\Repository\Zenith_of_Challenger\Client_of_Challenger\Zenith of Challenger\build\include;C:\Users\hih20\Desktop\Repository\Zenith_of_Challenger\Client_of_Challenger\Zenith of Challenger\assimp-master\assimp-master\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>assimp-vc143-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\Users\User\vcpkg\installed\x64-windows\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>assimp-vc143-mtd.lib;User32.lib;Gdi32.lib;Kernel32.lib;Advapi32.lib;Comdlg32.lib;Ole32.lib;OleAut32.lib;Shell32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Users\hih20\Desktop\Repository\Zenith_of_Challenger\Client_of_Challenger\Zenith of Challenger\build\lib\Debug</AdditionalLibraryDirectories>
     </Link>
     <FxCompile>
       <ShaderModel>5.1</ShaderModel>
@@ -132,15 +138,15 @@
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
-      <AdditionalIncludeDirectories>C:\Users\User\vcpkg\installed\x64-windows\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\hih20\Desktop\Repository\Zenith_of_Challenger\Client_of_Challenger\Zenith of Challenger\build\include;C:\Users\hih20\Desktop\Repository\Zenith_of_Challenger\Client_of_Challenger\Zenith of Challenger\assimp-master\assimp-master\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Users\User\vcpkg\installed\x64-windows\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>assimp-vc143-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Users\hih20\Desktop\Repository\Zenith_of_Challenger\Client_of_Challenger\Zenith of Challenger\build\lib\Debug</AdditionalLibraryDirectories>
+      <AdditionalDependencies>assimp-vc143-mtd.lib;User32.lib;Gdi32.lib;Kernel32.lib;Advapi32.lib;Comdlg32.lib;Ole32.lib;OleAut32.lib;Shell32.lib</AdditionalDependencies>
     </Link>
     <FxCompile>
       <ShaderModel>5.1</ShaderModel>
