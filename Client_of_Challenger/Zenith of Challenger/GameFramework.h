@@ -6,12 +6,16 @@
 #include "SceneManager.h"
 #include "GameScene.h"
 #include "StartScene.h"
+#include "network.h"
 
 class CGameFramework
 {
 public:
     CGameFramework(UINT windowWidth, UINT windowHeight);
     ~CGameFramework();
+
+    std::unique_ptr<ClientNetwork> m_clientNetwork;         // 失馬
+    ClientState                    m_ClientState;           // 失馬
 
     void OnCreate(HINSTANCE hInstance, HWND hMainWnd);
     void OnDestroy();

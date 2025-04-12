@@ -28,6 +28,9 @@ void CGameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd)
 	// 기본 창 제목 저장
 	GetWindowText(m_hWnd, m_pszBaseTitle, sizeof(m_pszBaseTitle) / sizeof(TCHAR));
 
+	m_clientNetwork = std::make_unique<ClientNetwork>();
+	//m_clientNetwork->Connect();				// 성하
+
 	InitDirect3D();
 	BuildObjects();
 }
