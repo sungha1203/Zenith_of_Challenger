@@ -1,0 +1,60 @@
+#include "stdafx.h"
+#include "ClientManager.h"
+
+ClientInfo::ClientInfo()
+{
+}
+
+ClientInfo::ClientInfo(int client_id, int roomNum)
+{
+    m_ingameInfo.classtype = Classtype::CHALLENGER;     // 초기 직업 : 도전자
+    m_ingameInfo.weapon.type = 0;                       // 기본 무기 : 맨손
+    m_ingameInfo.weapon.level = 1;                      // 무기 레벨 : 1
+    m_ingameInfo.clothes[0] = 0;                        // 기본 머리 : X
+    m_ingameInfo.clothes[1] = 0;                        // 기본 하의 : X
+    m_ingameInfo.clothes[2] = 0;                        // 기본 하의 : X
+    m_ingameInfo.hp = 50;                               // 도전자 체력       : 50
+    m_ingameInfo.attack = 20;                           // 도전자 공격력     : 20
+    m_ingameInfo.speed = 1;                             // 도전자 이동 속도  : 1
+    m_ingameInfo.attackspeed = 1;                       // 도전자 공격 속도  : 1
+    m_ingameInfo.z = 0;                                 // 도전 스테이지 리스폰 x
+    m_ingameInfo.x = 0;                                 // 도전 스테이지 리스폰 y
+    m_ingameInfo.y = 0;                                 // 도전 스테이지 리스폰 z
+    m_id = client_id;                                   // 클라이언트 id
+    m_roomNum = roomNum;                                // 게임방 번호
+}
+
+ClientInfo::~ClientInfo()
+{
+}
+
+void ClientInfo::SetRoomNum(const int room_id)
+{
+    m_roomNum = room_id;
+}
+
+void ClientInfo::SetClothes(const int clothes[3])
+{
+    memcpy(m_ingameInfo.clothes, clothes, sizeof(int) * 3);
+}
+
+void ClientInfo::LeverUpPlayer(Player& player)
+{
+    switch (player.classtype) {
+    case Classtype::WARRIOR:
+        player.hp = 300;
+        player.attack = 50;
+        player.speed = 2;
+        break;
+    case Classtype::MAGE:
+        player.hp = 200;
+        player.attack = 100;
+        player.speed = 2;
+        break;
+    case Classtype::HEALTANKER:
+        player.hp = 1000;
+        player.attack = 0;
+        player.speed = 1;
+        break;
+    }
+}
