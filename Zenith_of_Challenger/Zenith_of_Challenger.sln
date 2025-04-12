@@ -5,8 +5,6 @@ VisualStudioVersion = 17.7.34031.279
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Server_Zenith_of_Challenger", "Zenith_of_Challenger.vcxproj", "{68B64DFB-562D-47A3-AA14-A752DB165B8B}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Client_Zenith_of_Challenger", "..\Client_Zenith_of_Challenger\Client_Zenith_of_Challenger.vcxproj", "{8B224083-7949-4A72-85B0-44BBFABC1A81}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -23,14 +21,6 @@ Global
 		{68B64DFB-562D-47A3-AA14-A752DB165B8B}.Release|x64.Build.0 = Release|x64
 		{68B64DFB-562D-47A3-AA14-A752DB165B8B}.Release|x86.ActiveCfg = Release|Win32
 		{68B64DFB-562D-47A3-AA14-A752DB165B8B}.Release|x86.Build.0 = Release|Win32
-		{8B224083-7949-4A72-85B0-44BBFABC1A81}.Debug|x64.ActiveCfg = Debug|x64
-		{8B224083-7949-4A72-85B0-44BBFABC1A81}.Debug|x64.Build.0 = Debug|x64
-		{8B224083-7949-4A72-85B0-44BBFABC1A81}.Debug|x86.ActiveCfg = Debug|Win32
-		{8B224083-7949-4A72-85B0-44BBFABC1A81}.Debug|x86.Build.0 = Debug|Win32
-		{8B224083-7949-4A72-85B0-44BBFABC1A81}.Release|x64.ActiveCfg = Release|x64
-		{8B224083-7949-4A72-85B0-44BBFABC1A81}.Release|x64.Build.0 = Release|x64
-		{8B224083-7949-4A72-85B0-44BBFABC1A81}.Release|x86.ActiveCfg = Release|Win32
-		{8B224083-7949-4A72-85B0-44BBFABC1A81}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
