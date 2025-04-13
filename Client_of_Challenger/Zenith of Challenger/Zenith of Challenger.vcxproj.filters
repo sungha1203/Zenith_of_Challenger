@@ -42,6 +42,9 @@
     <Filter Include="소스 파일\Font">
       <UniqueIdentifier>{c3049a3b-7351-44a1-bb98-6a605c7a30f7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\network">
+      <UniqueIdentifier>{6bbfa3a0-098a-4a20-9261-87b84ee9e254}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameFramework.h">
@@ -125,8 +128,12 @@
     <ClInclude Include="d3dUtil.h">
       <Filter>외부 파일</Filter>
     </ClInclude>
-    <ClInclude Include="network.h" />
-    <ClInclude Include="protocol.h" />
+    <ClInclude Include="network.h">
+      <Filter>소스 파일\network</Filter>
+    </ClInclude>
+    <ClInclude Include="protocol.h">
+      <Filter>소스 파일\network</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Zenith of Challenger.cpp">
@@ -196,7 +203,7 @@
       <Filter>외부 파일</Filter>
     </ClCompile>
     <ClCompile Include="network.cpp">
-      <Filter>소스 파일</Filter>
+      <Filter>소스 파일\network</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
