@@ -56,4 +56,7 @@ private:
 	std::vector<std::shared_ptr<MeshBase>> m_meshes;
 	unordered_map<string, XMMATRIX> m_boneOffsets;
 
+	//-------------------------인게임 정보-------------------------
+
+
 };

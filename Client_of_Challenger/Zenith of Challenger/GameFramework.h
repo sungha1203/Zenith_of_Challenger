@@ -7,6 +7,7 @@
 #include "GameScene.h"
 #include "StartScene.h"
 #include "network.h"
+#include "ClientState.h"
 
 class CGameFramework
 {
@@ -14,8 +15,8 @@ public:
     CGameFramework(UINT windowWidth, UINT windowHeight);
     ~CGameFramework();
 
-    std::unique_ptr<ClientNetwork> m_clientNetwork;         // 성하
-    ClientState                    m_ClientState;           // 성하
+    std::unique_ptr<ClientNetwork>  m_clientNetwork;        // 네트워크 연결
+    std::unique_ptr<ClientState>    m_clientstate;          // 인게임 외 정보
 
     void OnCreate(HINSTANCE hInstance, HWND hMainWnd);
     void OnDestroy();

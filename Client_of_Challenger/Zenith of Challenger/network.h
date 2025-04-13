@@ -11,12 +11,6 @@
 constexpr int PORT_NUM = 4000;
 constexpr const char* SERVER_IP = "127.0.0.1";
 
-struct ClientState
-{
-	int clientID = -1;
-	int RoomNum = -1;
-};
-
 class ClientNetwork
 {
 public:

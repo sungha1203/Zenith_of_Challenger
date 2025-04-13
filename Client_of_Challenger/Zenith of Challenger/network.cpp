@@ -27,7 +27,8 @@ void ClientNetwork::Connect()
 	if (connect(m_clientsocket, (sockaddr*)&serverAddr, sizeof(serverAddr)) == SOCKET_ERROR) {
 		closesocket(m_clientsocket);
 		WSACleanup();
-		return;
+		MessageBoxA(nullptr, "서버에 연결할 수 없습니다.", "연결 실패", MB_OK | MB_ICONERROR);
+		exit(1);
 	}
 
 	m_running = true;

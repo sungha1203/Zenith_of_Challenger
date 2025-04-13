@@ -134,6 +134,9 @@
     <ClInclude Include="protocol.h">
       <Filter>소스 파일\network</Filter>
     </ClInclude>
+    <ClInclude Include="ClientState.h">
+      <Filter>소스 파일\network</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Zenith of Challenger.cpp">
@@ -203,6 +206,9 @@
       <Filter>외부 파일</Filter>
     </ClCompile>
     <ClCompile Include="network.cpp">
+      <Filter>소스 파일\network</Filter>
+    </ClCompile>
+    <ClCompile Include="ClientState.cpp">
       <Filter>소스 파일\network</Filter>
     </ClCompile>
   </ItemGroup>
