@@ -1,6 +1,6 @@
 #include "ClientState.h"
 
-ClientState::ClientState() : client_id (-1), room_num(-1)
+ClientState::ClientState() : m_clientId (-1), m_roomNum(-1), m_IsLogin(false)
 {
 }
 

@@ -9,6 +9,9 @@
 #include "network.h"
 #include "ClientState.h"
 
+class ClientNetwork;
+class ClientState;
+
 class CGameFramework
 {
 public:
@@ -17,6 +20,8 @@ public:
 
     std::unique_ptr<ClientNetwork>  m_clientNetwork;        // 네트워크 연결
     std::unique_ptr<ClientState>    m_clientstate;          // 인게임 외 정보
+    ClientNetwork* GetClientNetwork() const { return m_clientNetwork.get(); }
+    ClientState* GetClientState() const { return m_clientstate.get(); }
 
     void OnCreate(HINSTANCE hInstance, HWND hMainWnd);
     void OnDestroy();

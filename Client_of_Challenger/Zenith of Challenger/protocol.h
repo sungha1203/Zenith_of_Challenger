@@ -86,7 +86,7 @@ struct SC_Packet_LoginResponse
 {
 	char	type;
 	UCHAR	size;
-	UCHAR	success;			// 로그인 성공 여부
+	bool	success;			// 로그인 성공 여부
 };
 
 struct SC_Packet_RoomResponse

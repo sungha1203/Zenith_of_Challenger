@@ -63,7 +63,7 @@ void ClientNetwork::Receive()
 		if (buffer > 0) {
 			switch (buffer[0]) {
 			case SC_PACKET_LOGIN_RESPONSE:
-
+				ProcessLogin(buffer);
 				break;
 			default:
 				break;
@@ -74,4 +74,12 @@ void ClientNetwork::Receive()
 		}
 	}
 	Disconnect();
+}
+
+void ClientNetwork::ProcessLogin(char* buffer)
+{
+	SC_Packet_LoginResponse* pkt = reinterpret_cast<SC_Packet_LoginResponse*>(buffer);
+	if (pkt->success == true) {
+		gGameFramework->GetClientState()->SetIsLogin(true);
+	}
 }

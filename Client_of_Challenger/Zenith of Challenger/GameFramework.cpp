@@ -31,7 +31,7 @@ void CGameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd)
 	//-----------[서버]-----------
 	m_clientNetwork = std::make_unique<ClientNetwork>();
 	m_clientstate = std::make_unique<ClientState>();
-	//m_clientNetwork->Connect();								// 서버 연결
+	m_clientNetwork->Connect();								// 서버 연결
 	//-----------[서버]-----------
 
 	InitDirect3D();

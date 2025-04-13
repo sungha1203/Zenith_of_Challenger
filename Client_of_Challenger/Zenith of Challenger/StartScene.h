@@ -42,7 +42,6 @@ private:
     string username;
     string password;
     bool isTypingUsername = true;
-    bool isLoginSuccess = false;
     bool m_isRoomSelectionActive = false; //방 선택 여부
     bool m_isMouseOnStartBtn = false;
     bool m_isStartButtonClicked = false;

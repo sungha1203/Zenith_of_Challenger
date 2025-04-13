@@ -21,7 +21,7 @@ const std::string correctUsername = "E";
 const std::string correctPassword = "1";
 
 StartScene::StartScene()
-    : isTypingUsername(true), isLoginSuccess(false)
+    : isTypingUsername(true)
 {
     username = "";
     password = "";
@@ -98,6 +98,10 @@ void StartScene::PreRender(const ComPtr<ID3D12GraphicsCommandList>& commandList)
 
 void StartScene::Update(FLOAT timeElapsed)
 {
+    if (!m_isRoomSelectionActive && gGameFramework->GetClientState()->GetIsLogin())
+    {
+        m_isRoomSelectionActive = true;
+    }
     m_skybox->SetPosition(m_camera->GetEye());
 
 }
@@ -188,20 +192,33 @@ void StartScene::KeyboardEvent(UINT message, WPARAM wParam)
         isTypingUsername = !isTypingUsername;
     }
     else if (wParam == VK_RETURN)
+        //{
+        //    if (username == "ADMIN" && password == "PASS")
+        //    {
+        //        isLoginSuccess = true;
+        //        m_isRoomSelectionActive = true; // ¾À ÀüÈ¯
+        //    }
+        //    else
+        //    {
+        //        username.clear();
+        //        password.clear();
+        //        isTypingUsername = true;
+        //    }
+        //}
     {
-        if (username == "ADMIN" && password == "PASS")
-        {
-            isLoginSuccess = true;
-            m_isRoomSelectionActive = true; // ¾À ÀüÈ¯
+        std::string idpw = username + " " + password;
+        char sendBuffer[256] = { 0 };
+        sendBuffer[0] = CS_PACKET_LOGIN;
+        memcpy(sendBuffer + 1, idpw.c_str(), idpw.length());
+        if (gGameFramework && gGameFramework->GetClientNetwork()) {
+            gGameFramework->GetClientNetwork()->SendPacket(sendBuffer, 1 + static_cast<int>(idpw.length()));
         }
-        else
-        {
-            username.clear();
-            password.clear();
-            isTypingUsername = true;
-        }
+        username.clear();
+        password.clear();
+        isTypingUsername = true;
+
     }
-    else if (wParam >= 'A' && wParam <= 'Z')
+    else if ((wParam >= 'a' && wParam <= 'z') || (wParam >= 'A' && wParam <= 'Z') || (wParam >= '0' && wParam <= '9'))
     {
         char ch = static_cast<char>(wParam);
         if (isTypingUsername) username += ch;

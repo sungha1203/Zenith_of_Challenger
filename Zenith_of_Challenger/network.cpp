@@ -92,7 +92,7 @@ void Network::ProcessLogin(int client_id, char* buffer, int length)
 }
 
 // 클라에 로그인 성공 여부 응답
-void Network::SendLoginResponse(int client_id, int success)
+void Network::SendLoginResponse(int client_id, bool success)
 {
 	SC_Packet_LoginResponse packet;
 	packet.type = SC_PACKET_LOGIN_RESPONSE;
