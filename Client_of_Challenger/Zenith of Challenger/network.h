@@ -4,11 +4,13 @@
 #include <ws2tcpip.h>
 #include <iostream>
 #include "protocol.h"
+#include <thread>
 
 #pragma comment (lib, "ws2_32.lib")
 
 constexpr int PORT_NUM = 4000;
-constexpr const char* SERVER_IP = "172.30.1.53";
+//constexpr const char* SERVER_IP = "172.30.1.53";
+constexpr const char* SERVER_IP = "172.30.1.100";
 
 struct ClientState
 {

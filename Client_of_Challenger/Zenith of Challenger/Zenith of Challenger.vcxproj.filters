@@ -125,6 +125,8 @@
     <ClInclude Include="d3dUtil.h">
       <Filter>외부 파일</Filter>
     </ClInclude>
+    <ClInclude Include="network.h" />
+    <ClInclude Include="protocol.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Zenith of Challenger.cpp">
@@ -192,6 +194,9 @@
     </ClCompile>
     <ClCompile Include="d3dUtil.cpp">
       <Filter>외부 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="network.cpp">
+      <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
