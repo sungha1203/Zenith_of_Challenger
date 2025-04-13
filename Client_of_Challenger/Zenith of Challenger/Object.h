@@ -64,7 +64,8 @@ struct ObjectData : public BufferBase
 	XMFLOAT4X4 worldMatrix;    // 64 bytes
 	XMFLOAT4 baseColor;        // 16 bytes
 	UINT useTexture;           // 4 bytes
-	UINT textureIndex;          // 4 bytes
+	UINT textureIndex;         // 4 bytes
+	UINT isHovered;			   // 4 bytes
 	XMFLOAT2 padding = {};     // 12 bytes → 총 32 bytes로 16바이트 정렬 유지
 };
 
@@ -93,6 +94,9 @@ public:
 	void SetWorldMatrix(const XMMATRIX& worldMatrix);
 
 	void SetSRV(D3D12_GPU_DESCRIPTOR_HANDLE srvHandle);
+
+	void SetHovered(bool hovered) { m_isHovered = hovered; }
+	bool IsHovered() const { return m_isHovered; }
 protected:
 	shared_ptr<MeshBase> m_mesh;
 	shared_ptr<Texture> m_texture;
@@ -106,6 +110,7 @@ protected:
 
 	D3D12_GPU_DESCRIPTOR_HANDLE m_srvHandle{};  // 텍스처 SRV 핸들
 	int m_textureIndex = 0;
+	bool m_isHovered = false; //버튼 이벤트 불빛
 };
 
 class RotatingObject : public InstanceObject

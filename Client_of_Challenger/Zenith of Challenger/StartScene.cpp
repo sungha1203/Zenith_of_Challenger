@@ -113,30 +113,65 @@ void StartScene::MouseEvent(UINT message, LPARAM lParam)
     int mouseX = LOWORD(lParam);
     int mouseY = HIWORD(lParam);
 
-    // 화면 정규 좌표 [-1, 1]로 변환
-    float ndcX = 2.0f * mouseX / gGameFramework->GetWindowWidth() - 1.0f;
-    float ndcY = 1.0f - 2.0f * mouseY / gGameFramework->GetWindowHeight();
+    //// 화면 정규 좌표 [-1, 1]로 변환
+    //float ndcX = 2.0f * mouseX / gGameFramework->GetWindowWidth() - 1.0f;
+    //float ndcY = 1.0f - 2.0f * mouseY / gGameFramework->GetWindowHeight();
 
-    // START 버튼의 위치 기준 계산
-    XMFLOAT3 btnPos = m_SelectSceneObjects[4]->GetPosition();
-    float btnW = 0.5f, btnH = 0.15f;
+    //// START 버튼의 위치 기준 계산
+    //XMFLOAT3 btnPos = m_SelectSceneObjects[4]->GetPosition();
+    //float btnW = 0.5f, btnH = 0.15f;
 
-    // 버튼 충돌 체크
-    if (ndcX >= 0.6f && ndcX <= 0.9 &&
-        ndcY >= -0.25 && ndcY <= -0.18)
+    //// 버튼 충돌 체크
+    //if (ndcX >= 0.6f && ndcX <= 0.9 &&
+    //    ndcY >= -0.25 && ndcY <= -0.18)
+    //{
+    //    m_isMouseOnStartBtn = true;
+
+    //    if (message == WM_LBUTTONDOWN) // 클릭 시 씬 전환
+    //    {
+    //        std::cout << "START 버튼 클릭됨 -> GameFramework에서 처리 예정\n";
+    //        m_isStartButtonClicked = true; // 씬 전환 요청 플래그만 설정
+    //    }
+    //}
+    //else
+    //{
+    //    m_isMouseOnStartBtn = false;
+    //}
+
+
+    //////////////////////////////////////////////참가 버튼 
+    // 클라이언트 크기 기준으로 정규화 좌표 변환
+    RECT clientRect;
+    GetClientRect(gGameFramework->GetHWND(), &clientRect); // 정확한 클라이언트 크기 가져옴
+    float width = static_cast<float>(clientRect.right - clientRect.left);
+    float height = static_cast<float>(clientRect.bottom - clientRect.top);
+
+    float ndcX = 2.0f * mouseX / width - 1.0f;
+    float ndcY = 1.0f - 2.0f * mouseY / height;
+
+    // JOIN 버튼 Hover 초기화
+    for (int i = 5; i <= 7; ++i)
+        m_SelectSceneObjects[i]->SetHovered(false);
+
+    // JOIN 버튼 Hover 감지
+    for (int i = 5; i <= 7; ++i)
     {
-        m_isMouseOnStartBtn = true;
+        auto joinBtn = m_SelectSceneObjects[i];
+        XMFLOAT3 pos = joinBtn->GetPosition();
 
-        if (message == WM_LBUTTONDOWN) // 클릭 시 씬 전환
+        float btnWidth = 0.3f, btnHeight = 0.15f;
+        float halfW = btnWidth * 0.5f;
+        float halfH = btnHeight * 0.5f;
+
+        if (ndcX >= pos.x - halfW && ndcX <= pos.x + halfW &&
+            ndcY >= pos.y - halfH && ndcY <= pos.y + halfH)
         {
-            std::cout << "START 버튼 클릭됨 -> GameFramework에서 처리 예정\n";
-            m_isStartButtonClicked = true; // 씬 전환 요청 플래그만 설정
+            joinBtn->SetHovered(true);
+            break;
         }
     }
-    else
-    {
-        m_isMouseOnStartBtn = false;
-    }
+
+
 }
 
 void StartScene::KeyboardEvent(UINT message, WPARAM wParam)
@@ -260,10 +295,10 @@ void StartScene::BuildTextures(const ComPtr<ID3D12Device>& device, const ComPtr<
     tex->CreateShaderVariable(device);
     m_textures.insert({ "STAR", tex });
 
-    //auto JoinTexture = make_shared<Texture>(device);
-    //JoinTexture->LoadTexture(device, commandList, TEXT("Image/StartScene/Join.dds"), RootParameter::Texture);
-    //JoinTexture->CreateShaderVariable(device);
-    //m_textures.insert({ "JOIN", JoinTexture });
+    auto JoinTexture = make_shared<Texture>(device);
+    JoinTexture->LoadTexture(device, commandList, TEXT("Image/Select_Server/Join_converted.dds"), RootParameter::Texture);
+    JoinTexture->CreateShaderVariable(device);
+    m_textures.insert({ "JOIN", JoinTexture });
 
 }
 
@@ -348,7 +383,7 @@ void StartScene::BuildObjects(const ComPtr<ID3D12Device>& device)
     idLabel->SetTexture(m_textures["ID_LABEL"]);
     idLabel->SetUseTexture(true);
     idLabel->SetScale(XMFLOAT3(1.1f, 1.2f, 1.1f));
-    idLabel->SetPosition(XMFLOAT3(-0.305f, -0.38f, 0.98f));
+    idLabel->SetPosition(XMFLOAT3(-0.205f, -0.38f, 0.98f));
     m_StartSceneObjects.push_back(idLabel);
 
     auto pwLabel = make_shared<GameObject>(device);
@@ -356,8 +391,23 @@ void StartScene::BuildObjects(const ComPtr<ID3D12Device>& device)
     pwLabel->SetTexture(m_textures["PW_LABEL"]);
     pwLabel->SetUseTexture(true);
     pwLabel->SetScale(XMFLOAT3(0.7f, 0.8f, 0.7f));
-    pwLabel->SetPosition(XMFLOAT3(-0.3f, -0.46f, 0.98f));
+    pwLabel->SetPosition(XMFLOAT3(-0.2f, -0.46f, 0.98f));
     m_StartSceneObjects.push_back(pwLabel);
+
+
+    for (int i = 0; i < 3; ++i)
+    {
+        // 참가 버튼
+        auto joinBtn = make_shared<GameObject>(device);
+        joinBtn->SetMesh(CreateScreenQuad(device, gGameFramework->GetCommandList(), 0.3f, 0.15f, 0.98f));
+        joinBtn->SetTexture(m_textures["JOIN"]);
+        //joinBtn->SetScale(XMFLOAT3(0.7f, 0.7f, 0.7f));
+        joinBtn->SetUseTexture(true);
+
+        // ROOM 우측 위에 위치 (ROOM보다 오른쪽 + 살짝 위)
+        joinBtn->SetPosition(XMFLOAT3(-0.07f, 0.5f - 0.5f * i, 0.98f));
+        m_SelectSceneObjects.push_back(joinBtn);
+    }
 
 }
 
@@ -366,8 +416,8 @@ void StartScene::UpdateLoginObjects()
     m_idObjects.clear();
     m_pwObjects.clear();
 
-    float IDStart = -0.13f;
-    float PAStart = -0.13f;
+    float IDStart = -0.03f;
+    float PAStart = -0.03f;
     float charWidth = 0.5f;
     float charHeight = 0.25f;
 

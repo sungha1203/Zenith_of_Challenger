@@ -33,5 +33,15 @@ float4 PSMain(PSInput input) : SV_TARGET
     // 알파가 0에 가까우면 버림 (로고 배경 제거용)
     clip(color.a - 0.1f);
 
+    // Hover 상태이면 밝기 강화
+    if (g_isHovered == 1)
+    {
+        color.rgb *= 1.3f; // 살짝 빛나는 느낌
+    }
+    else
+    {
+        color.rgb *= 0.8f;
+    }
+
     return color;
 }
