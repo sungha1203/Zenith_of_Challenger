@@ -295,6 +295,9 @@ void Network::HandlePacket(int client_id, char* buffer, int length)
 	case CS_PACKET_GAMESTART:
 		ProcessGameStartButton(client_id);
 		break;
+	case CS_PACKET_UPDATEPLAYER:
+		ProcessUpdatePlayer(client_id, buffer, length);
+		break;
 	case CS_PACKET_INGAMEREADY:
 		ProcessIngameReady(client_id, buffer, length);
 		break;
@@ -331,6 +334,33 @@ void Network::ProcessCustomize(int client_id, char* buffer, int length)
 {
 	CS_Packet_Customize* pkt = reinterpret_cast<CS_Packet_Customize*>(buffer);
 	g_client[client_id].SetClothes(pkt->clothes);
+}
+
+// 인게임 내 플레이어들한테 업데이트
+void Network::ProcessUpdatePlayer(int client_id, char* buffer, int length)
+{
+	CS_Packet_UpdatePlayer* pkt = reinterpret_cast<CS_Packet_UpdatePlayer*>(buffer);
+	g_client[client_id].SetCoord(pkt->x, pkt->y, pkt->z);
+
+	int room_id = g_room_manager.GetRoomID(client_id);
+	if (room_id == -1) return;
+
+	Room& room = g_room_manager.GetRoom(room_id);
+	const auto& client = room.GetClients();
+
+	// 다른 클라들에게 좌표 전파
+	SC_Packet_Update2Player pkt2;
+	pkt2.client_id = client_id;
+	pkt2.x = pkt->x;
+	pkt2.y = pkt->y;
+	pkt2.z = pkt->z;
+	pkt2.dir = pkt->dir;
+	pkt2.animation = pkt->animation;
+
+	for (int other_id : client) {
+		if (other_id == client_id) continue;
+		clients[other_id].do_send(pkt2);
+	}
 }
 
 // 게임 시작 버튼 누른 직후

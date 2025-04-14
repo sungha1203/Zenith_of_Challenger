@@ -38,6 +38,13 @@ void ClientInfo::SetClothes(const int clothes[3])
     memcpy(m_ingameInfo.clothes, clothes, sizeof(int) * 3);
 }
 
+void ClientInfo::SetCoord(float x, float y, float z)
+{
+    m_ingameInfo.x = x;
+    m_ingameInfo.y = y;
+    m_ingameInfo.z = z;
+}
+
 void ClientInfo::LeverUpPlayer(Player& player)
 {
     switch (player.classtype) {

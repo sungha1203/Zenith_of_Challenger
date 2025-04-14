@@ -18,9 +18,10 @@ public:
 	void		ProcessLogin(int client_id, char* buffer, int length);			// 로그인 성공 여부
 	void		ProcessRoomJoin(int client_id, char* buffer, int length);		// 방 입장 성공 여부
 	void		ProcessCustomize(int client_id, char* buffer, int length);		// 커스터마이징
-	void		ProcessGameStartButton(int client_id);								// 게임 시작 버튼 누른 직후
+	void		ProcessUpdatePlayer(int client_id, char* buffer, int length);	// 인게임 내 플레이어들한테 업데이트
+	void		ProcessGameStartButton(int client_id);							// 게임 시작 버튼 누른 직후
 	void		ProcessIngameReady(int client_id, char* buffer, int length);	// 도전 스테이지 입장 성공 여부
-	void		ProcessZenithStartButton(int client_id);
+	void		ProcessZenithStartButton(int client_id);						// 정점 스테이지 입장 준비 완료 버튼 누른 직후
 	void		ProcessZenithReady(int client_id, char* buffer, int length);	// 정점 스테이지 입장 성공 여부
 
 	// ---------패킷 뿌려주기---------

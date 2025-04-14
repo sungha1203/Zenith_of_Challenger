@@ -24,7 +24,8 @@ struct Player
 	int				attack;					// 공격력
 	int				speed;					// 이동 속도
 	int				attackspeed;			// 공격 속도
-	short			x, y, z;				// 인게임 캐릭터 좌표
+	float			x, y, z;				// 인게임 캐릭터 좌표
+	float			dir;					// 방향
 };
 
 class ClientInfo       
@@ -43,6 +44,7 @@ public:
 
 	void SetRoomNum(const int room_id);									// 방 선택
 	void SetClothes(const int clothes[3]);								// 옷 선택
+	void SetCoord(float x, float y, float z);													// 좌표
 
 	void LeverUpPlayer(Player& player);									// 직업 전직 후 캐릭터 설정
 	int GetHP()const { return m_ingameInfo.hp; }						// 캐릭터 HP 반환
