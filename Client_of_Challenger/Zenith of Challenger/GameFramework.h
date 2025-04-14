@@ -22,6 +22,7 @@ public:
     std::unique_ptr<ClientState>    m_clientstate;          // 인게임 외 정보
     ClientNetwork* GetClientNetwork() const { return m_clientNetwork.get(); }
     ClientState* GetClientState() const { return m_clientstate.get(); }
+    bool IsSuccess = false;                                 // 게임시작 성공했음?
 
     void OnCreate(HINSTANCE hInstance, HWND hMainWnd);
     void OnDestroy();

@@ -65,6 +65,12 @@ void ClientNetwork::Receive()
 			case SC_PACKET_LOGIN_RESPONSE:
 				ProcessLogin(buffer);
 				break;
+			case SC_PACKET_ROOM_RESPONSE:
+				ProcessRoomjoin(buffer);
+				break;
+			case SC_PACKET_GAMESTART:
+				ProcessGamestart(buffer);
+				break;
 			default:
 				break;
 			}
@@ -82,4 +88,18 @@ void ClientNetwork::ProcessLogin(char* buffer)
 	if (pkt->success == true) {
 		gGameFramework->GetClientState()->SetIsLogin(true);
 	}
+}
+
+void ClientNetwork::ProcessRoomjoin(char* buffer)
+{
+	SC_Packet_RoomResponse* pkt = reinterpret_cast<SC_Packet_RoomResponse*>(buffer);
+	if(pkt->success)
+		gGameFramework->GetClientState()->SetClientRoomNum(pkt->room_id);
+}
+
+void ClientNetwork::ProcessGamestart(char* buffer)
+{
+	SC_Packet_GameStart* pkt = reinterpret_cast<SC_Packet_GameStart*>(buffer);
+	if (pkt->startCS = true)
+		gGameFramework->IsSuccess = true;
 }

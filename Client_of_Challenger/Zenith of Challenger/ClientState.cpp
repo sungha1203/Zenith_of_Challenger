@@ -13,7 +13,7 @@ void ClientState::SetClientId()
 
 }
 
-void ClientState::SetClientRoomNum()
+void ClientState::SetClientRoomNum(int RoomNum)
 {
 
 }

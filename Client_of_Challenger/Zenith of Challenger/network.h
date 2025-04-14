@@ -23,6 +23,8 @@ public:
 	bool		SendPacket(const char* data, int length);
 
 	void		ProcessLogin(char* buffer);
+	void		ProcessRoomjoin(char* buffer);
+	void		ProcessGamestart(char* buffer);
 
 public:
 	SOCKET			m_clientsocket = INVALID_SOCKET;

@@ -8,7 +8,7 @@ public:
 	~ClientState();
 	
 	void SetClientId();
-	void SetClientRoomNum();
+	void SetClientRoomNum(int RoomNum);
 
 	void	SetIsLogin(bool)			{ m_IsLogin = true; }
 

@@ -418,7 +418,7 @@ void Network::ProcessZenithReady(int client_id, char* buffer, int length)
 //------------------------------------[Send Packet]------------------------------------
  
 // 방 입장 성공 여부 응답
-void Network::SendRoomJoinResponse(int client_id, int success, int room_id)
+void Network::SendRoomJoinResponse(int client_id, bool success, int room_id)
 {
 	SC_Packet_RoomResponse packet;
 	packet.type = SC_PACKET_ROOM_RESPONSE;

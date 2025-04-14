@@ -100,8 +100,8 @@ struct SC_Packet_RoomResponse
 {
 	char	type;
 	UCHAR	size;
-	UCHAR	success;			// 게임방 입장 성공 여부
-	UCHAR	room_id;			// 방번호
+	bool	success;			// 게임방 입장 성공 여부
+	int		room_id;			// 방번호
 };
 
 struct SC_Packet_Logout
