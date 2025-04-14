@@ -32,6 +32,9 @@ public:
 	XMFLOAT3 GetV() const;
 	XMFLOAT3 GetN() const;
 
+	const XMFLOAT4X4& GetViewMatrix() const { return m_viewMatrix; }
+	const XMFLOAT4X4& GetProjMatrix() const { return m_projectionMatrix; }
+
 	virtual void ZoomIn() = 0;
 	virtual void ZoomOut() = 0;
 

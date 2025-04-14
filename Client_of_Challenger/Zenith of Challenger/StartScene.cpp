@@ -77,6 +77,15 @@ void StartScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) co
             {
                 obj->Render(commandList);
             }
+
+            for (const auto& obj : m_joinButtons)
+            {
+                obj->Render(commandList);
+            }
+
+            if (m_startBtn->IsVisible()) {
+                m_startBtn->Render(commandList);
+            }
         }
     }
 
@@ -117,66 +126,60 @@ void StartScene::MouseEvent(UINT message, LPARAM lParam)
     int mouseX = LOWORD(lParam);
     int mouseY = HIWORD(lParam);
 
-    //// 화면 정규 좌표 [-1, 1]로 변환
-    //float ndcX = 2.0f * mouseX / gGameFramework->GetWindowWidth() - 1.0f;
-    //float ndcY = 1.0f - 2.0f * mouseY / gGameFramework->GetWindowHeight();
-
-    //// START 버튼의 위치 기준 계산
-    //XMFLOAT3 btnPos = m_SelectSceneObjects[4]->GetPosition();
-    //float btnW = 0.5f, btnH = 0.15f;
-
-    //// 버튼 충돌 체크
-    //if (ndcX >= 0.6f && ndcX <= 0.9 &&
-    //    ndcY >= -0.25 && ndcY <= -0.18)
-    //{
-    //    m_isMouseOnStartBtn = true;
-
-    //    if (message == WM_LBUTTONDOWN) // 클릭 시 씬 전환
-    //    {
-    //        std::cout << "START 버튼 클릭됨 -> GameFramework에서 처리 예정\n";
-    //        m_isStartButtonClicked = true; // 씬 전환 요청 플래그만 설정
-    //    }
-    //}
-    //else
-    //{
-    //    m_isMouseOnStartBtn = false;
-    //}
-
-
-    //////////////////////////////////////////////참가 버튼 
-    // 클라이언트 크기 기준으로 정규화 좌표 변환
-    RECT clientRect;
-    GetClientRect(gGameFramework->GetHWND(), &clientRect); // 정확한 클라이언트 크기 가져옴
-    float width = static_cast<float>(clientRect.right - clientRect.left);
-    float height = static_cast<float>(clientRect.bottom - clientRect.top);
-
-    float ndcX = 2.0f * mouseX / width - 1.0f;
-    float ndcY = 1.0f - 2.0f * mouseY / height;
-
-    // JOIN 버튼 Hover 초기화
-    for (int i = 5; i <= 7; ++i)
-        m_SelectSceneObjects[i]->SetHovered(false);
-
-    // JOIN 버튼 Hover 감지
-    for (int i = 5; i <= 7; ++i)
+    // ------------------------------------------------------------------
+    // START 버튼 클릭 감지 (정확한 World 기준)
+    if (m_startBtn && m_startBtn->IsVisible())
     {
-        auto joinBtn = m_SelectSceneObjects[i];
-        XMFLOAT3 pos = joinBtn->GetPosition();
-
-        float btnWidth = 0.3f, btnHeight = 0.15f;
-        float halfW = btnWidth * 0.5f;
-        float halfH = btnHeight * 0.5f;
-
-        if (ndcX >= pos.x - halfW && ndcX <= pos.x + halfW &&
-            ndcY >= pos.y - halfH && ndcY <= pos.y + halfH)
+        if (mouseX >= 1156 && mouseX <= 1385 &&
+            mouseY >= 641 && mouseY <= 675)
         {
-            joinBtn->SetHovered(true);
-            break;
+            m_isMouseOnStartBtn = true;
+
+            if (message == WM_LBUTTONDOWN)
+            {
+                std::cout << "START 버튼 클릭됨 → GameScene 전환 예정\n";
+                m_isStartButtonClicked = true;
+            }
+        }
+        else
+        {
+            m_isMouseOnStartBtn = false;
         }
     }
 
+    // ------------------------------------------------------------------
+    // JOIN 버튼 Hover 초기화
+    for (int i = 0; i < 3; ++i)
+        m_joinButtons[i]->SetHovered(false);
 
+    // JOIN 버튼 Hover 감지
+    if (mouseX >= 570 && mouseX <= 760)
+    {
+        for (int i = 0; i < 3; ++i)
+        {
+            int top = 0, bottom = 0;
+            if (i == 0) { top = 107; bottom = 167; }
+            if (i == 1) { top = 332; bottom = 393; }
+            if (i == 2) { top = 555; bottom = 618; }
+
+            if (mouseY >= top && mouseY <= bottom)
+            {
+                m_joinButtons[i]->SetHovered(true);
+
+                if (message == WM_LBUTTONDOWN)
+                {
+                    for (int j = 0; j < 3; ++j)
+                        m_joinButtons[j]->SetVisible(false);
+
+                    m_startBtn->SetVisible(true); // START 버튼 표시
+                }
+
+                break;
+            }
+        }
+    }
 }
+
 
 void StartScene::KeyboardEvent(UINT message, WPARAM wParam)
 {
@@ -206,7 +209,17 @@ void StartScene::KeyboardEvent(UINT message, WPARAM wParam)
         //    }
         //}
     {
-        std::string idpw = username + " " + password;
+            if (username == "ADMIN" && password == "PASS")
+    {
+        m_isRoomSelectionActive = true; // 씬 전환
+    }
+    else
+    {
+        username.clear();
+        password.clear();
+        isTypingUsername = true;
+    }
+        /*std::string idpw = username + " " + password;
         char sendBuffer[256] = { 0 };
         sendBuffer[0] = CS_PACKET_LOGIN;
         memcpy(sendBuffer + 1, idpw.c_str(), idpw.length());
@@ -215,7 +228,7 @@ void StartScene::KeyboardEvent(UINT message, WPARAM wParam)
         }
         username.clear();
         password.clear();
-        isTypingUsername = true;
+        isTypingUsername = true;*/
 
     }
     else if ((wParam >= 'a' && wParam <= 'z') || (wParam >= 'A' && wParam <= 'Z') || (wParam >= '0' && wParam <= '9'))
@@ -317,28 +330,39 @@ void StartScene::BuildTextures(const ComPtr<ID3D12Device>& device, const ComPtr<
     JoinTexture->CreateShaderVariable(device);
     m_textures.insert({ "JOIN", JoinTexture });
 
+    auto FirstRoomTexture = make_shared<Texture>(device);
+    FirstRoomTexture->LoadTexture(device, commandList, TEXT("Image/Select_Server/1번방.dds"), RootParameter::Texture);
+    FirstRoomTexture->CreateShaderVariable(device);
+    m_textures.insert({ "1번방", FirstRoomTexture });
+
+    auto SecondRoomTexture = make_shared<Texture>(device);
+    SecondRoomTexture->LoadTexture(device, commandList, TEXT("Image/Select_Server/2번방.dds"), RootParameter::Texture);
+    SecondRoomTexture->CreateShaderVariable(device);
+    m_textures.insert({ "2번방", SecondRoomTexture });
+
+    auto ThirdRoomTexture = make_shared<Texture>(device);
+    ThirdRoomTexture->LoadTexture(device, commandList, TEXT("Image/Select_Server/3번방.dds"), RootParameter::Texture);
+    ThirdRoomTexture->CreateShaderVariable(device);
+    m_textures.insert({ "3번방", ThirdRoomTexture });
+
 }
 
 void StartScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 {
+    float screenWidth = 2.0f;
+    float screenAspect = static_cast<float>(FRAME_BUFFER_WIDTH) / FRAME_BUFFER_HEIGHT;
+    float screenHeight = screenWidth / screenAspect; // 예: 2.0 / 1.8  1.11
+
     m_camera = make_shared<ThirdPersonCamera>(device);
-    m_camera->SetLens(0.25 * XM_PI, gGameFramework->GetAspectRatio(), 0.1f, 1000.f);
+    m_camera->SetLens(0.25f * XM_PI, screenWidth / screenHeight, 0.1f, 1000.0f);
 
     m_skybox = make_shared<GameObject>(device);
     m_skybox->SetMesh(m_meshes["SKYBOX"]);
     m_skybox->SetTexture(m_textures["SKYBOX"]);
 
-    // 화면 비율 계산
-    float screenWidth = 2.0f;
-    float screenAspect = static_cast<float>(FRAME_BUFFER_WIDTH) / FRAME_BUFFER_HEIGHT;
-    float screenHeight = screenWidth / screenAspect; // 예: 2.0 / 1.8  1.11
 
     // StartScreen: 화면 가득 채우기
     auto screen = make_shared<GameObject>(device);
-
-    // 화면에 약간 여유 있게 가득 채움
-    float fullScreenWidth = 1.47f;  // 기존보다 넓게 (기본 2.0  2.4)
-    float fullScreenHeight = fullScreenWidth / screenAspect;
 
     screen->SetMesh(CreateScreenQuad(device, gGameFramework->GetCommandList(), 1.1f, 0.9f, 0.99f));
     screen->SetTexture(m_textures["START"]);
@@ -378,14 +402,13 @@ void StartScene::BuildObjects(const ComPtr<ID3D12Device>& device)
         m_SelectSceneObjects.push_back(room);
     }
 
-    auto startBtn = make_shared<GameObject>(device);
-    startBtn->SetMesh(CreateScreenQuad(device, gGameFramework->GetCommandList(), 0.5f, 0.15f, 0.98f));
-    startBtn->SetTexture(m_textures["STARTBTN"]);
-    startBtn->SetScale(XMFLOAT3(0.8f, 1.4f, 1.0f));
-    startBtn->SetPosition(XMFLOAT3(0.85f, -0.65f, 0.98f));
-    startBtn->SetUseTexture(true);
-    m_SelectSceneObjects.push_back(startBtn);
-
+    m_startBtn = make_shared<GameObject>(device);
+    m_startBtn->SetMesh(CreateScreenQuad(device, gGameFramework->GetCommandList(), 0.5f, 0.15f, 0.98f));
+    m_startBtn->SetTexture(m_textures["STARTBTN"]);
+    m_startBtn->SetScale(XMFLOAT3(0.8f, 1.4f, 1.0f));
+    m_startBtn->SetPosition(XMFLOAT3(0.85f, -0.65f, 0.98f));
+    m_startBtn->SetUseTexture(true);
+    m_startBtn->SetVisible(false); // 처음엔 안 보이게
 
     auto StartBar = make_shared<GameObject>(device);
     StartBar->SetMesh(CreateScreenQuad(device, gGameFramework->GetCommandList(), 0.5f, 0.15f, 0.98f));
@@ -423,9 +446,32 @@ void StartScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 
         // ROOM 우측 위에 위치 (ROOM보다 오른쪽 + 살짝 위)
         joinBtn->SetPosition(XMFLOAT3(-0.07f, 0.5f - 0.5f * i, 0.98f));
-        m_SelectSceneObjects.push_back(joinBtn);
+        m_joinButtons.push_back(joinBtn);
     }
 
+    auto FirstRoom = make_shared<GameObject>(device);
+    FirstRoom->SetMesh(CreateScreenQuad(device, gGameFramework->GetCommandList(), 1.0f, 0.5f, 0.98f));
+    FirstRoom->SetTexture(m_textures["1번방"]);
+    FirstRoom->SetScale(XMFLOAT3(0.2f, 0.2f, 0.2f));
+    FirstRoom->SetPosition(XMFLOAT3(-0.47f, 0.25f, 0.98f));
+    FirstRoom->SetUseTexture(true);
+    m_SelectSceneObjects.push_back(FirstRoom);
+
+    auto SecondRoom = make_shared<GameObject>(device);
+    SecondRoom->SetMesh(CreateScreenQuad(device, gGameFramework->GetCommandList(), 1.0f, 0.5f, 0.98f));
+    SecondRoom->SetTexture(m_textures["2번방"]);
+    SecondRoom->SetScale(XMFLOAT3(0.2f, 0.2f, 0.2f));
+    SecondRoom->SetPosition(XMFLOAT3(-0.47f, -0.05f, 0.98f));
+    SecondRoom->SetUseTexture(true);
+    m_SelectSceneObjects.push_back(SecondRoom);
+
+    auto ThirdRoom = make_shared<GameObject>(device);
+    ThirdRoom->SetMesh(CreateScreenQuad(device, gGameFramework->GetCommandList(), 1.0f, 0.5f, 0.98f));
+    ThirdRoom->SetTexture(m_textures["3번방"]);
+    ThirdRoom->SetScale(XMFLOAT3(0.2f, 0.2f, 0.2f));
+    ThirdRoom->SetPosition(XMFLOAT3(-0.47f, -0.35f, 0.98f));
+    ThirdRoom->SetUseTexture(true);
+    m_SelectSceneObjects.push_back(ThirdRoom);
 }
 
 void StartScene::UpdateLoginObjects()

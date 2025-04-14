@@ -95,8 +95,12 @@ public:
 
 	void SetSRV(D3D12_GPU_DESCRIPTOR_HANDLE srvHandle);
 
+	// 방 선택시 필요한 맴버
 	void SetHovered(bool hovered) { m_isHovered = hovered; }
 	bool IsHovered() const { return m_isHovered; }
+
+	void SetVisible(bool visible) { m_isVisible = visible; }
+	bool IsVisible() const { return m_isVisible; }
 protected:
 	shared_ptr<MeshBase> m_mesh;
 	shared_ptr<Texture> m_texture;
@@ -111,6 +115,7 @@ protected:
 	D3D12_GPU_DESCRIPTOR_HANDLE m_srvHandle{};  // 텍스처 SRV 핸들
 	int m_textureIndex = 0;
 	bool m_isHovered = false; //버튼 이벤트 불빛
+	bool m_isVisible = true; //참가 버튼을 누른 후 나오는 스타트 버튼 용
 };
 
 class RotatingObject : public InstanceObject

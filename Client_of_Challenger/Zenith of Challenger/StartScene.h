@@ -48,6 +48,10 @@ private:
 
     vector<std::shared_ptr<GameObject>> m_idObjects;
     vector<std::shared_ptr<GameObject>> m_pwObjects;
+
+    shared_ptr<GameObject> m_startBtn; // START 버튼 단독 추적용
+    vector<shared_ptr<GameObject>> m_joinButtons; // 참가 버튼
+    vector<bool> m_hasJoinedRoom; // 각 방 참가 여부
 };
 
 shared_ptr<Mesh<TextureVertex>> CreateScreenQuad(

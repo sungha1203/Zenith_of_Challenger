@@ -31,7 +31,7 @@ void CGameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd)
 	//-----------[서버]-----------
 	m_clientNetwork = std::make_unique<ClientNetwork>();
 	m_clientstate = std::make_unique<ClientState>();
-	m_clientNetwork->Connect();								// 서버 연결
+	//m_clientNetwork->Connect();								// 서버 연결
 	//-----------[서버]-----------
 
 	InitDirect3D();
@@ -66,6 +66,11 @@ void CGameFramework::FrameAdvance()
 			<< fixed << setprecision(2)
 			<< playerPos.x << ", " << playerPos.y << ", " << playerPos.z << ")";
 	}
+
+	POINT mousePoint;
+	GetCursorPos(&mousePoint);
+	ScreenToClient(m_hWnd, &mousePoint);
+	titleStream << L" | Mouse: (" << mousePoint.x << ", " << mousePoint.y << ")";
 
 	SetWindowText(m_hWnd, titleStream.str().c_str());
 
