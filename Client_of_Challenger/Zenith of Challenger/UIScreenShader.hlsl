@@ -40,7 +40,7 @@ float4 PSMain(PSInput input) : SV_TARGET
     }
     else
     {
-        color.rgb *= 0.8f;
+        color.rgb *= 0.9f;
     }
 
     return color;

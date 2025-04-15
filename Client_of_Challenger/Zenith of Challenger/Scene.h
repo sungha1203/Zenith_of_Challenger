@@ -75,4 +75,7 @@ protected:
 	vector<shared_ptr<GameObject>> m_SelectSceneObjects; //StartScene Select전용 멤버변수
 	vector<shared_ptr<GameObject>> m_startBar;
 
+	vector<std::shared_ptr<GameObject>> m_idObjects;
+	vector<std::shared_ptr<GameObject>> m_pwObjects;
+	vector<shared_ptr<GameObject>> m_joinButtons; // 참가 버튼
 };

@@ -1,4 +1,6 @@
 #include "GameScene.h"
+#include "monster.h"
+#include "MonsterLoader.h"
 
 void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device,
 	const ComPtr<ID3D12GraphicsCommandList>& commandList,
@@ -62,6 +64,8 @@ void GameScene::Update(FLOAT timeElapsed)
 		const XMFLOAT3& playerPos = gGameFramework->GetPlayer()->GetPosition();
 	}
 
+	for (auto& monster : m_Monsters)
+		monster->Update(timeElapsed);
 }
 
 void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
@@ -88,6 +92,16 @@ void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) con
 	{
 		m_shaders.at("CHARACTER")->UpdateShaderVariable(commandList);
 		m_player->Render(commandList);
+	}
+
+	if (!m_Monsters.empty())
+	{
+		m_shaders.at("CHARACTER")->UpdateShaderVariable(commandList); // 캐릭터 쉐이더 재사용
+
+		for (const auto& monster : m_Monsters)
+		{
+			monster->Render(commandList);
+		}
 	}
 }
 
@@ -157,6 +171,11 @@ void GameScene::BuildTextures(const ComPtr<ID3D12Device>& device,
 	characterTexture->CreateShaderVariable(device, true);
 	m_textures.insert({ "CHARACTER", characterTexture });
 
+	//auto characterTexture = make_shared<Texture>(device, commandList,
+	//	TEXT("Image/Monsters/FrightFly_01.dds"), RootParameter::Texture);
+	//characterTexture->CreateShaderVariable(device, true);
+	//m_textures.insert({ "FrightFly", characterTexture });
+
 }
 
 void GameScene::BuildMaterials(const ComPtr<ID3D12Device>& device,
@@ -170,6 +189,9 @@ void GameScene::BuildMaterials(const ComPtr<ID3D12Device>& device,
 
 void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 {
+	m_camera = make_shared<QuarterViewCamera>(device);
+	m_camera->SetLens(0.25 * XM_PI, gGameFramework->GetAspectRatio(), 0.1f, 1000.f);
+
 	m_lightSystem = make_unique<LightSystem>(device);
 	auto sunLight = make_shared<DirectionalLight>();
 	m_lightSystem->SetLight(sunLight);
@@ -197,7 +219,6 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 
 		// [4] 위치 및 스케일 설정
 		player->SetPosition(XMFLOAT3{ -185.f, 53.f, 177.f });
-		//player->SetScale(XMFLOAT3{ 1.f, 1.f, 1.f }); // 필요시 조정 가능
 
 		// [5] FBX 메시 전부 등록
 		for (int i = 0; i < meshes.size(); ++i)
@@ -228,10 +249,9 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 		OutputDebugStringA("[ERROR] 플레이어 FBX 로드 실패!\n");
 	}
 
-	m_camera = make_shared<QuarterViewCamera>(device);
-	m_camera->SetLens(0.25 * XM_PI, gGameFramework->GetAspectRatio(), 0.1f, 1000.f);
-
 	m_player->SetCamera(m_camera);
+
+	LoadAllMonsters(device, m_textures, m_Monsters);
 
 	m_skybox = make_shared<GameObject>(device);
 	m_skybox->SetMesh(m_meshes["SKYBOX"]);

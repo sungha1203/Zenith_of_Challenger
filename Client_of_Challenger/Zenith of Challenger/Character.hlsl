@@ -78,7 +78,7 @@ float4 PSMain(PixelInput input) : SV_Target
     MaterialData matData;
     matData.fresnelR0 = float3(0.01f, 0.01f, 0.01f);
     matData.roughness = 0.5f;
-    matData.ambient = float3(0.4f, 0.4f, 0.4f);
+    matData.ambient = float3(0.8f, 0.8f, 0.8f);
 
     return Lighting(input.worldPos, normal, toEye, texColor, matData);
     

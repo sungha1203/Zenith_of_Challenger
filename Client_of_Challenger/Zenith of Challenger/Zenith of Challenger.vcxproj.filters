@@ -45,6 +45,9 @@
     <Filter Include="소스 파일\network">
       <UniqueIdentifier>{6bbfa3a0-098a-4a20-9261-87b84ee9e254}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\Object\Monsters">
+      <UniqueIdentifier>{33c899e7-2214-4edd-8f7a-abfe0e3c7129}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameFramework.h">
@@ -137,6 +140,15 @@
     <ClInclude Include="ClientState.h">
       <Filter>소스 파일\network</Filter>
     </ClInclude>
+    <ClInclude Include="Monsters.h">
+      <Filter>소스 파일\Object\Monsters</Filter>
+    </ClInclude>
+    <ClInclude Include="Monster.h">
+      <Filter>소스 파일\Object\Monsters</Filter>
+    </ClInclude>
+    <ClInclude Include="MonsterLoader.h">
+      <Filter>소스 파일\Model Load</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Zenith of Challenger.cpp">
@@ -210,6 +222,12 @@
     </ClCompile>
     <ClCompile Include="ClientState.cpp">
       <Filter>소스 파일\network</Filter>
+    </ClCompile>
+    <ClCompile Include="Monsters.cpp">
+      <Filter>소스 파일\Object\Monsters</Filter>
+    </ClCompile>
+    <ClCompile Include="MonsterLoader.cpp">
+      <Filter>소스 파일\Model Load</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

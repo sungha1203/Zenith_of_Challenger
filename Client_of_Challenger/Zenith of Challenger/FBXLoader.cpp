@@ -93,14 +93,14 @@ shared_ptr<GameObject> FBXLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene
 
         for (UINT i = 0; i < mesh->mNumVertices; ++i)
         {
-            XMFLOAT3 pos = { -mesh->mVertices[i].x * scaleFactor, mesh->mVertices[i].y * scaleFactor, mesh->mVertices[i].z * scaleFactor };
+            XMFLOAT3 pos = { -mesh->mVertices[i].x * 0.9f, mesh->mVertices[i].y * 0.9f, mesh->mVertices[i].z * 0.9f };
             XMStoreFloat3(&vertices[i].position, XMVector3Transform(XMLoadFloat3(&pos), globalTransform));
 
             XMFLOAT3 normal = { mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z };
             XMStoreFloat3(&vertices[i].normal, XMVector3Normalize(XMVector3TransformNormal(XMLoadFloat3(&normal), globalTransform)));
 
             vertices[i].uv = mesh->HasTextureCoords(0) ?
-                XMFLOAT2(mesh->mTextureCoords[0][i].x, 1.0f - mesh->mTextureCoords[0][i].y) :
+                XMFLOAT2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y) :
                 XMFLOAT2(0.0f, 0.0f);
 
             vertices[i].boneIndices = XMUINT4(0, 0, 0, 0);
@@ -165,7 +165,7 @@ shared_ptr<GameObject> FBXLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene
         for (UINT i = 0; i < mesh->mNumVertices; ++i)
         {
             TextureVertex vertex{};
-            XMFLOAT3 pos = { -mesh->mVertices[i].x * scaleFactor, mesh->mVertices[i].y * scaleFactor, mesh->mVertices[i].z * scaleFactor };
+            XMFLOAT3 pos = { mesh->mVertices[i].x * scaleFactor, mesh->mVertices[i].y * scaleFactor, mesh->mVertices[i].z * scaleFactor };
             XMStoreFloat3(&vertex.position, XMVector3Transform(XMLoadFloat3(&pos), globalTransform));
 
             XMFLOAT3 normal = { mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z };
