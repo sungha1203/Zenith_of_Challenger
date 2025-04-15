@@ -35,8 +35,10 @@ protected:
 	XMFLOAT3			m_up;
 	XMFLOAT3			m_front;
 
-	XMFLOAT3             m_scale;
+	XMFLOAT3            m_scale;
+	XMFLOAT3			m_rotation; // 여기에 회전 정보 추가 (pitch, yaw, roll)
 };
+
 
 struct InstanceData;
 class InstanceObject : public Object
@@ -101,6 +103,10 @@ public:
 
 	void SetVisible(bool visible) { m_isVisible = visible; }
 	bool IsVisible() const { return m_isVisible; }
+
+	//충돌체크 용
+	BoundingBox GetBoundingBox() const { return m_boundingBox; }
+	void SetBoundingBox(const BoundingBox& box) { m_boundingBox = box; }
 protected:
 	shared_ptr<MeshBase> m_mesh;
 	shared_ptr<Texture> m_texture;
@@ -116,6 +122,10 @@ protected:
 	int m_textureIndex = 0;
 	bool m_isHovered = false; //버튼 이벤트 불빛
 	bool m_isVisible = true; //참가 버튼을 누른 후 나오는 스타트 버튼 용
+
+
+	//충돌체크 용
+	BoundingBox m_boundingBox;
 };
 
 class RotatingObject : public InstanceObject

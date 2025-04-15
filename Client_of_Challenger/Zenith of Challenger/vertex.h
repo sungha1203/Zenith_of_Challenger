@@ -43,3 +43,10 @@ struct SkinnedVertex : public VertexBase
 	XMUINT4 boneIndices;
 	XMFLOAT4 boneWeights;
 };
+
+struct DebugVertex
+{
+	DirectX::XMFLOAT3 position;
+	DebugVertex() = default;
+	DebugVertex(const DirectX::XMFLOAT3& pos) : position(pos) {}
+};

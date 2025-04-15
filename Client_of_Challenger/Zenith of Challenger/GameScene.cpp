@@ -1,6 +1,8 @@
 #include "GameScene.h"
 #include "monster.h"
 #include "MonsterLoader.h"
+#include "BoundingBoxHelper.h"
+
 
 void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device,
 	const ComPtr<ID3D12GraphicsCommandList>& commandList,
@@ -33,6 +35,14 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device,
 		gameObject->SetMesh(fbxMesh);
 		gameObject->SetScale(XMFLOAT3{ 0.01f, 0.01f, 0.01f }); // 원래 크기로 유지
 		gameObject->SetPosition(XMFLOAT3{ 0.0f, 0.0f, 0.0f }); // Y축 위치 조정
+
+		// 여기서 AABB 생성 (정적 오브젝트는 1회만)
+		BoundingBox box;
+		box.Center = gameObject->GetPosition();
+		box.Extents = { 1.0f, 1.0f, 1.0f }; // 적절한 값으로 조절
+
+		gameObject->SetBoundingBox(box);
+
 		m_fbxObjects.push_back(gameObject);
 	}
 
@@ -46,6 +56,12 @@ void GameScene::MouseEvent(HWND hWnd, FLOAT timeElapsed)
 void GameScene::KeyboardEvent(FLOAT timeElapsed)
 {
 	m_player->KeyboardEvent(timeElapsed);
+
+	if (GetAsyncKeyState(VK_F1) & 0x0001) // 한 번만 눌렸을 때
+	{
+		m_debugDrawEnabled = !m_debugDrawEnabled;
+		OutputDebugStringA(m_debugDrawEnabled ? "[디버그] AABB 시각화 ON\n" : "[디버그] AABB 시각화 OFF\n");
+	}
 }
 
 void GameScene::Update(FLOAT timeElapsed)
@@ -66,6 +82,20 @@ void GameScene::Update(FLOAT timeElapsed)
 
 	for (auto& monster : m_Monsters)
 		monster->Update(timeElapsed);
+
+
+	// 충돌 테스트
+	auto playerBox = m_player->GetBoundingBox();
+
+	for (auto& obj : m_fbxObjects)
+	{
+		if (playerBox.Intersects(obj->GetBoundingBox()))
+		{
+			OutputDebugStringA("[충돌 감지] 플레이어가 맵 오브젝트와 충돌했습니다!\n");
+
+			// 여기서 위치 보정 or 반응 넣을 수 있음
+		}
+	}
 }
 
 void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
@@ -96,13 +126,30 @@ void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) con
 
 	if (!m_Monsters.empty())
 	{
-		m_shaders.at("CHARACTER")->UpdateShaderVariable(commandList); // 캐릭터 쉐이더 재사용
+		m_shaders.at("FrightFly")->UpdateShaderVariable(commandList); // 캐릭터 쉐이더 재사용
 
 		for (const auto& monster : m_Monsters)
 		{
 			monster->Render(commandList);
 		}
 	}
+
+	////////////////////////////////와이어 프레임 출력///////////////////////////////
+	//if (m_debugDrawEnabled)
+	//{
+	//	m_shaders.at("DebugLineShader")->UpdateShaderVariable(commandList); // PSO 설정
+	//	//for (auto& obj : m_fbxObjects)
+	//	//{
+	//	//	boxHelper.UpdateBox(obj->GetBoundingBox());
+	//	//	boxHelper.Render(commandList);
+	//	//}
+	//	m_boxHelper->UpdateBox(m_player->GetBoundingBox());
+	//	m_boxHelper->Render(commandList); // 여기까지 안전하게 GPU 사용 가능
+	//}
+
+
+
+
 }
 
 void GameScene::PreRender(const ComPtr<ID3D12GraphicsCommandList>& commandList)
@@ -129,6 +176,12 @@ void GameScene::BuildShaders(const ComPtr<ID3D12Device>& device,
 	// Character 애니메이션 전용 셰이더 추가
 	auto characterShader = make_shared<CharacterShader>(device, rootSignature);
 	m_shaders.insert({ "CHARACTER", characterShader });
+	// 몬스터 (날파리) 전용 셰이더 추가
+	auto frightFlyShader = make_shared<FrightFlyShader>(device, rootSignature);
+	m_shaders.insert({ "FrightFly", frightFlyShader });
+
+	auto debugLineShader = make_shared<DebugLineShader>(device, rootSignature);
+	m_shaders.insert({ "DebugLineShader", debugLineShader });
 }
 
 void GameScene::BuildMeshes(const ComPtr<ID3D12Device>& device,
@@ -171,10 +224,10 @@ void GameScene::BuildTextures(const ComPtr<ID3D12Device>& device,
 	characterTexture->CreateShaderVariable(device, true);
 	m_textures.insert({ "CHARACTER", characterTexture });
 
-	//auto characterTexture = make_shared<Texture>(device, commandList,
-	//	TEXT("Image/Monsters/FrightFly_01.dds"), RootParameter::Texture);
-	//characterTexture->CreateShaderVariable(device, true);
-	//m_textures.insert({ "FrightFly", characterTexture });
+	auto FrightFlyTexture = make_shared<Texture>(device, commandList,
+		TEXT("Image/Monsters/FrightFly_converted.dds"), RootParameter::Texture);
+	FrightFlyTexture->CreateShaderVariable(device, true);
+	m_textures.insert({ "FrightFly", FrightFlyTexture });
 
 }
 
@@ -272,5 +325,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 		obj->SetTextureIndex(m_textures["FBX"]->GetTextureIndex());
 		obj->SetUseTexture(true); // UV 기반 텍스처 적용
 	}
-	
+
+	//바운디박스 레이어
+	//m_boxHelper = std::make_unique<BoundingBoxHelper>(gGameFramework->GetDevice(), gGameFramework->GetCommandList());
 }

@@ -48,6 +48,9 @@
     <Filter Include="소스 파일\Object\Monsters">
       <UniqueIdentifier>{33c899e7-2214-4edd-8f7a-abfe0e3c7129}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\Debug">
+      <UniqueIdentifier>{ed71ddbf-a4dd-4029-9f13-21808b757bce}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameFramework.h">
@@ -149,6 +152,9 @@
     <ClInclude Include="MonsterLoader.h">
       <Filter>소스 파일\Model Load</Filter>
     </ClInclude>
+    <ClInclude Include="BoundingBoxHelper.h">
+      <Filter>소스 파일\Debug</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Zenith of Challenger.cpp">
@@ -229,6 +235,10 @@
     <ClCompile Include="MonsterLoader.cpp">
       <Filter>소스 파일\Model Load</Filter>
     </ClCompile>
+    <ClCompile Include="FrightFly.hlsl" />
+    <ClCompile Include="BoundingBoxHelper.cpp">
+      <Filter>소스 파일\Debug</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Zenith of Challenger.rc">
@@ -266,6 +276,9 @@
       <Filter>셰이더 파일</Filter>
     </FxCompile>
     <FxCompile Include="Character.hlsl">
+      <Filter>셰이더 파일</Filter>
+    </FxCompile>
+    <FxCompile Include="LineShader.hlsl">
       <Filter>셰이더 파일</Filter>
     </FxCompile>
   </ItemGroup>

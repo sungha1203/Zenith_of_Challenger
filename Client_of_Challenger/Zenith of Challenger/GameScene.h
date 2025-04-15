@@ -41,4 +41,8 @@ private:
     vector<shared_ptr<GameObject>> m_fbxObjects; // FBX 모델용 GameObject 리스트 추가
 
     vector<shared_ptr<Monsters>> m_Monsters; 
+
+    bool m_debugDrawEnabled = false;
+
+    //std::unique_ptr<BoundingBoxHelper> m_boxHelper;
 };

@@ -3,51 +3,81 @@
 bool FBXLoader::LoadFBXModel(const std::string& filename, const XMMATRIX& rootTransform)
 {
     Assimp::Importer importer;
+
     const aiScene* scene = importer.ReadFile(filename,
-        aiProcess_Triangulate | aiProcess_ConvertToLeftHanded |
-        aiProcess_GenNormals | aiProcess_FlipUVs);
+        aiProcess_Triangulate |
+        aiProcess_ConvertToLeftHanded |
+        aiProcess_GenNormals |
+        aiProcess_FlipUVs);
 
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
     {
-        std::cerr << "ERROR::ASSIMP:: " << importer.GetErrorString() << std::endl;
+        std::string errorMsg = "[Assimp] Load Failed: ";
+        errorMsg += importer.GetErrorString();
+        OutputDebugStringA(errorMsg.c_str());
         return false;
     }
 
-    if (scene->HasAnimations()) {
-        std::cout << "[FBXLoader] 애니메이션 있음! (" << scene->mNumAnimations << "개)" << std::endl;
-    }
-    else {
-        std::cout << "[FBXLoader] 애니메이션 없음!" << std::endl;
-    }
+    OutputDebugStringA("[FBXLoader] ===== LoadFBXModel 시작 =====\n");
 
-    // 1. 애니메이션 채널 확인 (한 번만 출력하면 되니까 한 곳에만 넣자)
-    for (UINT i = 0; i < scene->mNumAnimations; ++i)
+    // 노드 및 메시 파싱
+    ProcessNode(scene->mRootNode, scene, rootTransform);
+
+    // 메시 수 출력
     {
-        aiAnimation* anim = scene->mAnimations[i];
-        std::cout << "애니메이션 [" << i << "] 채널 수: " << anim->mNumChannels << std::endl;
+        char buffer[128];
+        sprintf_s(buffer, "[FBXLoader] 메시 개수: %llu\n", m_meshes.size());
+        OutputDebugStringA(buffer);
+    }
 
-        for (UINT j = 0; j < anim->mNumChannels; ++j)
+    // 본 인덱스 매핑 로그 출력
+    OutputDebugStringA("[FBXLoader] 본 인덱스 매핑 결과:\n");
+    for (const auto& [name, index] : m_boneNameToIndex)
+    {
+        std::string log = "  [Index " + std::to_string(index) + "] : " + name + "\n";
+        OutputDebugStringA(log.c_str());
+    }
+
+    // 애니메이션 정보 출력
+    if (scene->HasAnimations())
+    {
+        char buffer[256];
+        sprintf_s(buffer, "[FBXLoader] 애니메이션 개수: %d\n", (int)scene->mNumAnimations);
+        OutputDebugStringA(buffer);
+
+        for (UINT i = 0; i < scene->mNumAnimations; ++i)
         {
-            std::cout << "  Anim channel: " << anim->mChannels[j]->mNodeName.C_Str() << std::endl;
+            aiAnimation* anim = scene->mAnimations[i];
+
+            sprintf_s(buffer, "[FBXLoader]  - [%d] 이름: %s | Duration: %.2f | 채널 수: %d\n",
+                i, anim->mName.C_Str(), anim->mDuration, (int)anim->mNumChannels);
+            OutputDebugStringA(buffer);
+
+            for (UINT j = 0; j < anim->mNumChannels; ++j)
+            {
+                std::string rawName = anim->mChannels[j]->mNodeName.C_Str();
+
+                // 포맷 정제: 네임스페이스, 경로 제거
+                std::string cleanName = rawName.substr(rawName.find_last_of('|') + 1);
+                std::replace(cleanName.begin(), cleanName.end(), ':', '_');
+
+                std::string log = "    [채널 " + std::to_string(j) + "] " + cleanName + "\n";
+                OutputDebugStringA(log.c_str());
+            }
         }
     }
+    else
+    {
+        OutputDebugStringA("[FBXLoader] 애니메이션 없음\n");
+    }
 
-    // 2. 메시 본 이름 확인 (모든 메시의 본 이름 출력)
-    //for (UINT i = 0; i < scene->mNumMeshes; ++i)
-    //{
-    //    aiMesh* mesh = scene->mMeshes[i];
-
-    //    for (UINT j = 0; j < mesh->mNumBones; ++j)
-    //    {
-    //        std::cout << "  Bone name: " << mesh->mBones[j]->mName.C_Str() << std::endl;
-    //    }
-    //}
-
-    ProcessNode(scene->mRootNode, scene, rootTransform);
+    // 애니메이션 데이터 파싱
     ProcessAnimations(scene);
 
+    OutputDebugStringA("[FBXLoader] ===== LoadFBXModel 완료 =====\n");
     return true;
 }
+
 
 
 void FBXLoader::ProcessNode(aiNode* node, const aiScene* scene, const XMMATRIX& parentTransform)
@@ -107,45 +137,48 @@ shared_ptr<GameObject> FBXLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene
             vertices[i].boneWeights = XMFLOAT4(0.f, 0.f, 0.f, 0.f);
         }
 
-        // 본 정보 저장
+        // Bone 정보 저장
         for (UINT i = 0; i < mesh->mNumBones; ++i)
         {
             aiBone* bone = mesh->mBones[i];
-            int boneIndex = i;
-
-            // [1] 본 이름
             string boneName = bone->mName.C_Str();
 
-            // [2] 오프셋 행렬 (Inverse BindPose)
             aiMatrix4x4 offset = bone->mOffsetMatrix;
-            offset.Transpose(); // Assimp는 row-major, DirectX는 column-major
+            offset.Transpose();
             XMMATRIX offsetMatrix = XMLoadFloat4x4(reinterpret_cast<XMFLOAT4X4*>(&offset));
 
-            // 저장: 본 이름 -> 오프셋 행렬, 인덱스
-            m_boneOffsets[boneName] = offsetMatrix;
-            m_boneNameToIndex[boneName] = boneIndex;
+            // 잘못된 인덱스 → 전역 인덱스 부여 방식으로 수정
+            if (!m_boneNameToIndex.contains(boneName))
+            {
+                m_boneNameToIndex[boneName] = static_cast<int>(m_boneNameToIndex.size());
+                m_boneOffsets[boneName] = offsetMatrix;
+            }
 
-            // [3] 본이 영향을 주는 정점 정보
+            int boneIndex = m_boneNameToIndex[boneName];
+
+            // 본 영향 반영
             for (UINT j = 0; j < bone->mNumWeights; ++j)
             {
                 UINT vertexId = bone->mWeights[j].mVertexId;
                 float weight = bone->mWeights[j].mWeight;
 
-                if (vertices[vertexId].boneWeights.x == 0.0f) {
-                    vertices[vertexId].boneIndices.x = boneIndex;
-                    vertices[vertexId].boneWeights.x = weight;
+                auto& vertex = vertices[vertexId];
+
+                if (vertex.boneWeights.x == 0.0f) {
+                    vertex.boneIndices.x = boneIndex;
+                    vertex.boneWeights.x = weight;
                 }
-                else if (vertices[vertexId].boneWeights.y == 0.0f) {
-                    vertices[vertexId].boneIndices.y = boneIndex;
-                    vertices[vertexId].boneWeights.y = weight;
+                else if (vertex.boneWeights.y == 0.0f) {
+                    vertex.boneIndices.y = boneIndex;
+                    vertex.boneWeights.y = weight;
                 }
-                else if (vertices[vertexId].boneWeights.z == 0.0f) {
-                    vertices[vertexId].boneIndices.z = boneIndex;
-                    vertices[vertexId].boneWeights.z = weight;
+                else if (vertex.boneWeights.z == 0.0f) {
+                    vertex.boneIndices.z = boneIndex;
+                    vertex.boneWeights.z = weight;
                 }
-                else if (vertices[vertexId].boneWeights.w == 0.0f) {
-                    vertices[vertexId].boneIndices.w = boneIndex;
-                    vertices[vertexId].boneWeights.w = weight;
+                else if (vertex.boneWeights.w == 0.0f) {
+                    vertex.boneIndices.w = boneIndex;
+                    vertex.boneWeights.w = weight;
                 }
             }
         }

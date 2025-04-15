@@ -58,3 +58,17 @@ public:
 	CharacterShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSignature);
 	~CharacterShader() override = default;
 };
+
+class FrightFlyShader : public Shader
+{
+public:
+	FrightFlyShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSignature);
+	~FrightFlyShader() override = default;
+};
+
+class DebugLineShader : public Shader
+{
+public:
+	DebugLineShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSignature);
+	~DebugLineShader() override = default;
+};

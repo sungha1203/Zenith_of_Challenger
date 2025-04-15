@@ -50,7 +50,7 @@ void CGameFramework::FrameAdvance()
 {
 	m_GameTimer.Tick(60); // FPS 측정
 
-	m_srvHeapOffset = 0; // 매 프레임 디스크립터 오프셋 초기화
+	//m_srvHeapOffset = 0; // 매 프레임 디스크립터 오프셋 초기화
 
 	FLOAT deltaTime = m_GameTimer.GetElapsedTime();
 	deltaTime = max(min(deltaTime, 1.0f / 30.0f), 1.0f / 60.0f);

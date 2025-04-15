@@ -11,10 +11,10 @@ void LoadAllMonsters(const ComPtr<ID3D12Device>& device, const unordered_map<str
         if (!meshes.empty())
         {
             auto frightfly = make_shared<Frightfly>(device);
-            frightfly->SetPosition(XMFLOAT3{ -185.f, 53.f, 177.f });
+            frightfly->SetPosition(XMFLOAT3{ -185.f, 53.f, 107.f });
 
-            frightfly->SetTexture(textures.at("CHARACTER"));
-            frightfly->SetTextureIndex(textures.at("CHARACTER")->GetTextureIndex());
+            frightfly->SetTexture(textures.at("FrightFly"));
+            frightfly->SetTextureIndex(textures.at("FrightFly")->GetTextureIndex());
 
             for (auto& mesh : meshes)
                 frightfly->AddMesh(mesh);

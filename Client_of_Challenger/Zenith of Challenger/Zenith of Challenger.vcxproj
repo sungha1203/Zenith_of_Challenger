@@ -160,6 +160,7 @@
     <ClInclude Include="d3dUtil.h" />
     <ClInclude Include="d3dx12.h" />
     <ClInclude Include="DDSTextureLoader12.h" />
+    <ClInclude Include="BoundingBoxHelper.h" />
     <ClInclude Include="FBXLoader.h" />
     <ClInclude Include="GameFramework.h" />
     <ClInclude Include="GameScene.h" />
@@ -193,7 +194,14 @@
     <ClCompile Include="ClientState.cpp" />
     <ClCompile Include="d3dUtil.cpp" />
     <ClCompile Include="DDSTextureLoader12.cpp" />
+    <ClCompile Include="BoundingBoxHelper.cpp" />
     <ClCompile Include="FBXLoader.cpp" />
+    <ClCompile Include="FrightFly.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="GameFramework.cpp" />
     <ClCompile Include="GameScene.cpp" />
     <ClCompile Include="Instance.cpp" />
@@ -239,6 +247,12 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.1</ShaderModel>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.1</ShaderModel>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">5.1</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="LineShader.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="Object.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>

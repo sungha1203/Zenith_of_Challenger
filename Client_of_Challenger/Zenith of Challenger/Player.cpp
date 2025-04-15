@@ -112,6 +112,17 @@ void Player::Update(FLOAT timeElapsed)
             m_animTime = fmod(m_animTime, clip.duration);
     }
 
+    {
+        /////////////////////////여기다가 GetPosition()사용해서 float값 3개 가지고 오면 될거야
+
+    }
+
+    BoundingBox playerBox;
+    playerBox.Center = GetPosition();
+    playerBox.Extents = { 1.5f, 4.0f, 1.5f }; // 플레이어 크기 반영
+
+    SetBoundingBox(playerBox);
+
     GameObject::Update(timeElapsed);
 }
 
