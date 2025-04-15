@@ -1,5 +1,6 @@
 #pragma once
 #include "stdafx.h"
+extern std::unordered_map<int, ClientInfo> g_client;
 
 enum class JobWeapon
 {

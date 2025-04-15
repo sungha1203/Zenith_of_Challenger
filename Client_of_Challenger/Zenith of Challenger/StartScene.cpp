@@ -139,12 +139,12 @@ void StartScene::MouseEvent(UINT message, LPARAM lParam)
             {
                 std::cout << "START ¹öÆ° Å¬¸¯µÊ ¡æ GameScene ÀüÈ¯ ¿¹Á¤\n";
                 m_isStartButtonClicked = true;
-                //{
-                //    CS_Packet_GameStart pkt;
-                //    pkt.type = CS_PACKET_GAMESTART;
-                //    pkt.size = sizeof(pkt);
-                //    gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
-                //}
+                {
+                    CS_Packet_GameStart pkt;
+                    pkt.type = CS_PACKET_GAMESTART;
+                    pkt.size = sizeof(pkt);
+                    gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
+                }
             }
         }
         else
@@ -174,14 +174,13 @@ void StartScene::MouseEvent(UINT message, LPARAM lParam)
 
                 if (message == WM_LBUTTONDOWN)
                 {
-                    //{
-                    //    CS_Packet_Room pkt;
-                    //    pkt.room_id = i;
-                    //    pkt.type = CS_PACKET_ROOM;
-                    //    pkt.size = sizeof(pkt);
-
-                    //    gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
-                    //}
+                    {
+                        CS_Packet_Room pkt;
+                        pkt.room_id = i;
+                        pkt.type = CS_PACKET_ROOM;
+                        pkt.size = sizeof(pkt);
+                        gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
+                    }
                     for (int j = 0; j < 3; ++j)
                         m_joinButtons[j]->SetVisible(false);
 
@@ -210,29 +209,29 @@ void StartScene::KeyboardEvent(UINT message, WPARAM wParam)
     }
     else if (wParam == VK_RETURN)
     //------------------------------------------------------
-    {
-        if (username == "ADMIN" && password == "PASS"){
-            m_isRoomSelectionActive = true; // ¾À ÀüÈ¯
-        }
-        else {
-            username.clear();
-            password.clear();
-            isTypingUsername = true;
-        }
-    }
-    //------------------------------------------------------
     //{
-    //    std::string idpw = username + " " + password;
-    //    char sendBuffer[256] = { 0 };
-    //    sendBuffer[0] = CS_PACKET_LOGIN;
-    //    memcpy(sendBuffer + 1, idpw.c_str(), idpw.length());
-    //    if (gGameFramework && gGameFramework->GetClientNetwork()) {
-    //        gGameFramework->GetClientNetwork()->SendPacket(sendBuffer, 1 + static_cast<int>(idpw.length()));
+    //    if (username == "ADMIN" && password == "PASS"){
+    //        m_isRoomSelectionActive = true; // ¾À ÀüÈ¯
     //    }
-    //    username.clear();
-    //    password.clear();
-    //    isTypingUsername = true;
+    //    else {
+    //        username.clear();
+    //        password.clear();
+    //        isTypingUsername = true;
+    //    }
     //}
+    //------------------------------------------------------
+    {
+        std::string idpw = username + " " + password;
+        char sendBuffer[256] = { 0 };
+        sendBuffer[0] = CS_PACKET_LOGIN;
+        memcpy(sendBuffer + 1, idpw.c_str(), idpw.length());
+        if (gGameFramework && gGameFramework->GetClientNetwork()) {
+            gGameFramework->GetClientNetwork()->SendPacket(sendBuffer, 1 + static_cast<int>(idpw.length()));
+        }
+        username.clear();
+        password.clear();
+        isTypingUsername = true;
+    }
     //------------------------------------------------------
     else if ((wParam >= 'a' && wParam <= 'z') || (wParam >= 'A' && wParam <= 'Z') || (wParam >= '0' && wParam <= '9'))
     {

@@ -40,15 +40,19 @@ public:
 	ClientInfo(int client_id, int roomNum);		// 초기 캐릭터 설정
 	~ClientInfo();
 
-	int GetID() const { return m_id; }
+	int		GetID() const { return m_id; }
 
-	void SetRoomNum(const int room_id);									// 방 선택
-	void SetClothes(const int clothes[3]);								// 옷 선택
-	void SetCoord(float x, float y, float z);													// 좌표
+	void	SetRoomNum(const int room_id);									// 방 선택
+	void	SetClothes(const int clothes[3]);								// 옷 선택
+	void	SetSpawnCoord(int idx);											// 초기 스폰 좌표
+	void	SetCoord(float x, float y, float z);							// 좌표 갱신
 
-	void LeverUpPlayer(Player& player);									// 직업 전직 후 캐릭터 설정
-	int GetHP()const { return m_ingameInfo.hp; }						// 캐릭터 HP 반환
-	int GetAttack() const { return m_ingameInfo.attack; }				// 캐릭터 공격력 반환
-	int GetSpeed() const { return m_ingameInfo.speed; }					// 캐릭터 이동속도 반환
-	int GetAttackSpeed() const { return m_ingameInfo.attackspeed; }		// 캐릭터 공격속도 반환
+	void	LeverUpPlayer(Player& player);									// 직업 전직 후 캐릭터 설정
+	float	GetX() const { return m_ingameInfo.x; }							// 캐릭터 X좌표 반환
+	float	GetY() const { return m_ingameInfo.y; }							// 캐릭터 y좌표 반환
+	float	GetZ() const { return m_ingameInfo.z; }							// 캐릭터 z좌표 반환
+	int		GetHP() const { return m_ingameInfo.hp; }						// 캐릭터 HP 반환
+	int		GetAttack() const { return m_ingameInfo.attack; }				// 캐릭터 공격력 반환
+	int		GetSpeed() const { return m_ingameInfo.speed; }					// 캐릭터 이동속도 반환
+	int		GetAttackSpeed() const { return m_ingameInfo.attackspeed; }		// 캐릭터 공격속도 반환
 };

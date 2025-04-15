@@ -29,6 +29,7 @@ public:
 	void		SendRoomJoinResponse(int client_id, bool success, int room_id); // 클라한테 방 입장 성공여부 뿌려주기
 	void		SendRoomInfo(int room_id, int client_num);						// 방 명수 관리
 	void		SendGameStart(const std::vector<int>& client_id);				// 게임 시작 버튼 누른 직후
+	void		SendInitialState(const std::vector<int>& client_id);			// 다른 플레이어들한테 내 초기 상태
 	void		SendStartRepairTime(const std::vector<int>& client_id);			// 정비 시간(8분 지나고 시작의 땅으로 이동)
 	void		SendStartZenithStage(const std::vector<int>& client_id);		// 도전 -> 정점 스테이지
 	void		SendUpdateInventory(const std::vector<int>& client_id);			// 인벤토리 업데이트

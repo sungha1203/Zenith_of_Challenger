@@ -270,6 +270,9 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 		// [3] Player 객체 생성
 		auto player = make_shared<Player>(device);
 
+		// [서버 임시]@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 지환이한테 물어보자
+		//gGameFramework->SetPlayer(player);
+
 		// [4] 위치 및 스케일 설정
 		player->SetPosition(XMFLOAT3{ -185.f, 53.f, 177.f });
 

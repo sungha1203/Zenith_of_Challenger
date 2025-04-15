@@ -33,9 +33,26 @@ void ClientInfo::SetRoomNum(const int room_id)
     m_roomNum = room_id;
 }
 
-void ClientInfo::SetClothes(const int clothes[3])
+void ClientInfo::SetSpawnCoord(int idx)
 {
-    memcpy(m_ingameInfo.clothes, clothes, sizeof(int) * 3);
+    switch (idx) {
+    case 0:
+        m_ingameInfo.x = -185.f;
+        m_ingameInfo.y = 103.f;
+        m_ingameInfo.z = 177.f;
+        break;
+    case 1:
+        break;
+        m_ingameInfo.x = -185.f;
+        m_ingameInfo.y = 53.f;
+        m_ingameInfo.z = 177.f;
+    case 2:
+        m_ingameInfo.x = -185.f;
+        m_ingameInfo.y = 53.f;
+        m_ingameInfo.z = 177.f;
+    default:
+        break;
+    }
 }
 
 void ClientInfo::SetCoord(float x, float y, float z)
@@ -43,6 +60,11 @@ void ClientInfo::SetCoord(float x, float y, float z)
     m_ingameInfo.x = x;
     m_ingameInfo.y = y;
     m_ingameInfo.z = z;
+}
+
+void ClientInfo::SetClothes(const int clothes[3])
+{
+    memcpy(m_ingameInfo.clothes, clothes, sizeof(int) * 3);
 }
 
 void ClientInfo::LeverUpPlayer(Player& player)
