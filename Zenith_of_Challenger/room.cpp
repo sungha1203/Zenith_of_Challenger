@@ -9,6 +9,9 @@ void Room::Init(int room_id)
 void Room::AddClient(int client_id)
 {
 	m_clients.push_back(client_id);
+
+	int idx = m_clients.size() - 1;
+	g_client[client_id].SetSpawnCoord(idx);
 }
 
 void Room::RemoveClient(int client_id)
@@ -44,6 +47,7 @@ void Room::PushStartGameButton(int RoomMasterID)
 	}
 
 	g_network.SendGameStart(GetClients());			// 게임방 안에 본인 포함 모두한테 게임시작 패킷 보내기
+	g_network.SendInitialState(GetClients());		// 게임방 안에 본인 포함 모두한테 초기 좌표 패킷 보내기
 	AllPlayerNum(m_clients.size());					// 게임에 입장한 플레이어가 몇명이야?
 
 	m_IsGaming = true;

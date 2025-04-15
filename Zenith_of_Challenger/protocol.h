@@ -12,7 +12,7 @@ constexpr int NAME_SIZE = 20;				// 이름 글자 수
 #define CS_PACKET_LOGIN				 1			// 로그인 요청
 #define CS_PACKET_ROOM				 2			// 게임방 요청
 #define CS_PACKET_CUSTOMIZE			 3			// 커스터마이징
-#define CS_PACKET_UPDATEPLAYER		 4			// 플레이어 상태 업데이트
+#define CS_PACKET_UPDATECOORD		 4			// 좌표 상태 업데이트
 #define CS_PACKET_GAMESTART			 5			// 게임 시작 버튼
 #define CS_PACKET_INGAMEREADY		 6			// 게임 시작 후 입장 완료
 #define CS_PACKET_STARTZENITH		 7			// 정점 스테이지 입장 완료
@@ -22,10 +22,11 @@ constexpr int NAME_SIZE = 20;				// 이름 글자 수
 #define SC_PACKET_LOGIN_RESPONSE	 101		// 로그인 응답
 #define SC_PACKET_ROOM_RESPONSE		 102		// 게임방 응답
 #define SC_PACKET_ROOMLIST			 103		// 게임방 인원수 갱신
-#define SC_PACKET_UPDATE2PlAYER		 104		// 다른 플레이어들한테 내 상태 갱신
-#define SC_PACKET_GAMESTART			 105		// 게임 시작
-#define SC_PACKET_REPAIRTIME		 106		// 정비 시간
-#define SC_PACKET_ZENITHSTAGE		 107		// 도전 -> 정점
+#define SC_PACKET_INITIALSTATE		 104		// 다른 플레이어들한테 내 초기 상태
+#define SC_PACKET_UPDATE2PLAYER		 105		// 다른 플레이어들한테 바뀐 좌표 갱신
+#define SC_PACKET_GAMESTART			 106		// 게임 시작
+#define SC_PACKET_REPAIRTIME		 107		// 정비 시간
+#define SC_PACKET_ZENITHSTAGE		 108		// 도전 -> 정점
 #define SC_PACKET_LOGOUT			 110		// 로그아웃
 
 // [임시]
@@ -53,18 +54,17 @@ struct CS_Packet_Customize
 	int		clothes[3];
 };
 
-struct CS_Packet_UpdatePlayer
+struct CS_Packet_UPDATECOORD
 {
-	float x, y, z;  // 위치
-	float dir;      // 방향
-	int animation;  // 애니메이션 상태
+	char	type;
+	int		size;
+	float	x, y, z;  // 위치
 };
 
 struct CS_Packet_GameStart
 {
 	char	type;
 	int		size;
-
 };
 
 struct CS_Packet_GameReady
@@ -94,6 +94,7 @@ struct SC_Packet_LoginResponse
 	char	type;
 	UCHAR	size;
 	bool	success;			// 로그인 성공 여부
+	int		clientID;			// 고유 클라이언트 ID
 };
 
 struct SC_Packet_RoomResponse
@@ -118,12 +119,20 @@ struct SC_Packet_RoomList
 	int		current_players;	// 현재 플레이어 수
 };
 
+struct SC_Packet_initialstate
+{
+	char	type;
+	int		size;
+	int		client_id;
+	float	x, y, z;
+};
+
 struct SC_Packet_Update2Player
 {
-	int client_id;
-	float x, y, z;
-	float dir;
-	int animation;
+	char	type;
+	int		size;
+	int		client_id;
+	float	x, y, z;
 };
 
 struct SC_Packet_GameStart
@@ -142,7 +151,7 @@ struct SC_Packet_RepairTime
 
 struct SC_Packet_ZenithStage
 {
-	char type;
+	char	type;
 	UCHAR	size;
 	bool	startZS;			// 정점 스테이지
 };

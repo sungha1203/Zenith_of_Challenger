@@ -25,11 +25,15 @@ public:
 	void		ProcessLogin(char* buffer);
 	void		ProcessRoomjoin(char* buffer);
 	void		ProcessGamestart(char* buffer);
+	void		ProcessInitialstate(char* buffer);
 
 public:
 	SOCKET			m_clientsocket = INVALID_SOCKET;
 	std::thread		m_recvThread;
 	bool			m_running = false;
+
+	int				m_clientID = 0;
+
 
 private:
 	void		Receive();

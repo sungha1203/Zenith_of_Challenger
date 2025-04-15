@@ -97,6 +97,7 @@ void Network::SendLoginResponse(int client_id, bool success)
 	SC_Packet_LoginResponse packet;
 	packet.type = SC_PACKET_LOGIN_RESPONSE;
 	packet.size = sizeof(packet);
+	packet.clientID = client_id;
 	packet.success = success;
 	clients[client_id].do_send(packet);
 }
@@ -295,7 +296,7 @@ void Network::HandlePacket(int client_id, char* buffer, int length)
 	case CS_PACKET_GAMESTART:
 		ProcessGameStartButton(client_id);
 		break;
-	case CS_PACKET_UPDATEPLAYER:
+	case CS_PACKET_UPDATECOORD:
 		ProcessUpdatePlayer(client_id, buffer, length);
 		break;
 	case CS_PACKET_INGAMEREADY:
@@ -334,12 +335,13 @@ void Network::ProcessCustomize(int client_id, char* buffer, int length)
 {
 	CS_Packet_Customize* pkt = reinterpret_cast<CS_Packet_Customize*>(buffer);
 	g_client[client_id].SetClothes(pkt->clothes);
+	clients[client_id].do_recv();
 }
 
 // 인게임 내 플레이어들한테 업데이트
 void Network::ProcessUpdatePlayer(int client_id, char* buffer, int length)
 {
-	CS_Packet_UpdatePlayer* pkt = reinterpret_cast<CS_Packet_UpdatePlayer*>(buffer);
+	CS_Packet_UPDATECOORD* pkt = reinterpret_cast<CS_Packet_UPDATECOORD*>(buffer);
 	g_client[client_id].SetCoord(pkt->x, pkt->y, pkt->z);
 
 	int room_id = g_room_manager.GetRoomID(client_id);
@@ -350,17 +352,17 @@ void Network::ProcessUpdatePlayer(int client_id, char* buffer, int length)
 
 	// 다른 클라들에게 좌표 전파
 	SC_Packet_Update2Player pkt2;
+	pkt2.type = SC_PACKET_UPDATE2PLAYER;
 	pkt2.client_id = client_id;
 	pkt2.x = pkt->x;
 	pkt2.y = pkt->y;
 	pkt2.z = pkt->z;
-	pkt2.dir = pkt->dir;
-	pkt2.animation = pkt->animation;
 
 	for (int other_id : client) {
 		if (other_id == client_id) continue;
 		clients[other_id].do_send(pkt2);
 	}
+	clients[client_id].do_recv();
 }
 
 // 게임 시작 버튼 누른 직후
@@ -371,6 +373,7 @@ void Network::ProcessGameStartButton(int client_id)
 
 	Room& room = g_room_manager.GetRoom(room_id);
 	room.PushStartGameButton(client_id);
+	clients[client_id].do_recv();
 }
 
 // 도전 스테이지 입장 성공 여부
@@ -387,6 +390,7 @@ void Network::ProcessIngameReady(int client_id, char* buffer, int length)
 			room.StartGame();
 		}
 	}
+	clients[client_id].do_recv();
 }
 
 // 정점 스테이지 입장 준비 완료 버튼 누른 직후
@@ -397,6 +401,7 @@ void Network::ProcessZenithStartButton(int client_id)
 
 	Room& room = g_room_manager.GetRoom(room_id);
 	room.PushStartZenithButton(client_id);
+	clients[client_id].do_recv();
 }
 
 // 정점 스테이지 입장 성공 여부
@@ -413,6 +418,7 @@ void Network::ProcessZenithReady(int client_id, char* buffer, int length)
 			room.StartZenithStage();
 		}
 	}
+	clients[client_id].do_recv();
 }
 
 //------------------------------------[Send Packet]------------------------------------
@@ -456,6 +462,28 @@ void Network::SendGameStart(const std::vector<int>& client_id)
 	for (int id : client_id) {
 		if(clients[id].m_used)
 			clients[id].do_send(packet);
+	}
+}
+
+void Network::SendInitialState(const std::vector<int>& client_id)
+{
+	for (int target_id : client_id)
+	{
+		if (!clients[target_id].m_used) continue;
+
+		for (int other_id : client_id)
+		{
+			if (!clients[other_id].m_used) continue;
+			SC_Packet_initialstate packet;
+			packet.type = SC_PACKET_INITIALSTATE;
+			packet.client_id = target_id;
+			packet.x = g_client[target_id].GetX();
+			packet.y = g_client[target_id].GetY();
+			packet.z = g_client[target_id].GetZ();
+			packet.size = sizeof(packet);
+
+			clients[other_id].do_send(packet);
+		}
 	}
 }
 

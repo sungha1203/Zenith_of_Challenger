@@ -71,6 +71,8 @@ void ClientNetwork::Receive()
 			case SC_PACKET_GAMESTART:
 				ProcessGamestart(buffer);
 				break;
+			case SC_PACKET_INITIALSTATE:
+				ProcessInitialstate(buffer);
 			default:
 				break;
 			}
@@ -87,6 +89,7 @@ void ClientNetwork::ProcessLogin(char* buffer)
 	SC_Packet_LoginResponse* pkt = reinterpret_cast<SC_Packet_LoginResponse*>(buffer);
 	if (pkt->success == true) {
 		gGameFramework->GetClientState()->SetIsLogin(true);
+		m_clientID = pkt->clientID;
 	}
 }
 
@@ -102,4 +105,17 @@ void ClientNetwork::ProcessGamestart(char* buffer)
 	SC_Packet_GameStart* pkt = reinterpret_cast<SC_Packet_GameStart*>(buffer);
 	if (pkt->startCS = true)
 		gGameFramework->IsSuccess = true;
+}
+
+// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@지환이한테 물어보자
+void ClientNetwork::ProcessInitialstate(char* buffer)
+{
+	SC_Packet_initialstate* pkt = reinterpret_cast<SC_Packet_initialstate*>(buffer);
+	// 일단 자기 좌표만 받을거임.
+	if (pkt->client_id == m_clientID) {
+		XMFLOAT3 pos(pkt->x, pkt->y, pkt->z);
+		auto player = gGameFramework->GetPlayer();
+		if (player)
+			player->SetPosition(pos);
+	}
 }
