@@ -64,8 +64,9 @@ PixelInput VSMain(VertexInput input)
 
 float4 PSMain(PixelInput input) : SV_Target
 {
-    float4 texColor = g_texture[4].Sample(g_sampler, input.texcoord);
-
+    //float4 texColor = g_texture[g_textureIndex].Sample(g_sampler, input.texcoord);
+    float4 texColor = g_texture[0].Sample(g_sampler, input.texcoord);
+    
     // 너무 어두우면 fallback 색상
     if (texColor.r + texColor.g + texColor.b < 0.01f)
         texColor.rgb = float3(1, 0, 1); // 마젠타

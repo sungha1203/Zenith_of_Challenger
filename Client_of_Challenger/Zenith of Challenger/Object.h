@@ -110,6 +110,7 @@ public:
 	void SetDebugLineShader(const shared_ptr<Shader>& shader) { m_debugLineShader = shader; }
 	void SetDrawBoundingBox(bool draw) { m_drawBoundingBox = draw; }
 	bool IsDrawBoundingBox() const { return m_drawBoundingBox; }
+	int m_textureIndex = 0;
 protected:
 	shared_ptr<MeshBase> m_mesh;
 	shared_ptr<Texture> m_texture;
@@ -122,7 +123,6 @@ protected:
 	BOOL m_useTexture = FALSE;                           // 텍스처 사용 여부
 
 	D3D12_GPU_DESCRIPTOR_HANDLE m_srvHandle{};  // 텍스처 SRV 핸들
-	int m_textureIndex = 0;
 	bool m_isHovered = false; //버튼 이벤트 불빛
 	bool m_isVisible = true; //참가 버튼을 누른 후 나오는 스타트 버튼 용
 

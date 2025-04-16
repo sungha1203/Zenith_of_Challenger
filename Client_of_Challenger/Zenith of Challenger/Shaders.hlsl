@@ -13,7 +13,7 @@ cbuffer GameObject : register(b0)
     int g_useTexture : packoffset(c5.x); // c5.x (4 byte)
     int g_textureIndex : packoffset(c5.y); // c5.y (4 byte)
     int g_isHovered : packoffset(c5.z); // c5.z (4 byte)
-    float padding : packoffset(c5.w); // c5.w (4 byte) ¡æ ÃÑ 16 byte Á¤·Ä
+    float padding : packoffset(c5.w); // c5.w (4 byte) ¡æ ÃÑ 16 byte Á¤·Ä        b0: ÃÑ 96
 };
 
 // Camera: b1, space0

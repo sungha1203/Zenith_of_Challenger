@@ -232,6 +232,19 @@ void StartScene::KeyboardEvent(UINT message, WPARAM wParam)
     //    isTypingUsername = true;
     //}
     //------------------------------------------------------
+    //{
+    //    std::string idpw = username + " " + password;
+    //    char sendBuffer[256] = { 0 };
+    //    sendBuffer[0] = CS_PACKET_LOGIN;
+    //    memcpy(sendBuffer + 1, idpw.c_str(), idpw.length());
+    //    if (gGameFramework && gGameFramework->GetClientNetwork()) {
+    //        gGameFramework->GetClientNetwork()->SendPacket(sendBuffer, 1 + static_cast<int>(idpw.length()));
+    //    }
+    //    username.clear();
+    //    password.clear();
+    //    isTypingUsername = true;
+    //}
+    //------------------------------------------------------
     else if ((wParam >= 'a' && wParam <= 'z') || (wParam >= 'A' && wParam <= 'Z') || (wParam >= '0' && wParam <= '9'))
     {
         char ch = static_cast<char>(wParam);

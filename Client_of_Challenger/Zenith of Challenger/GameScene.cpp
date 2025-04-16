@@ -120,6 +120,7 @@ void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) con
 			obj->Render(commandList);
 	}
 
+
 	if (m_player)
 	{
 		m_player->Render(commandList);
@@ -134,7 +135,24 @@ void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) con
 		}
 	}
 
+	if (!m_uiObjects.empty())
+	{		
+		m_shaders.at("UI")->UpdateShaderVariable(commandList); 
+
+		float healthRatio = 1.0f/*m_player->GetCurrentHP() / m_player->GetMaxHP()*/;
+
+		for (const auto& ui : m_uiObjects)
+		{
+			// b1 슬롯에 체력비율 전달 (셰이더에서 g_fillAmount로 사용됨)
+			//commandList->SetGraphicsRoot32BitConstants(
+			//	/* RootParameterIndex::UIFillAmount */ 1, 1, &healthRatio, 0);
+
+			ui->Render(commandList);
+		}
+	}
 }
+
+
 
 void GameScene::PreRender(const ComPtr<ID3D12GraphicsCommandList>& commandList)
 {
@@ -155,7 +173,7 @@ void GameScene::BuildShaders(const ComPtr<ID3D12Device>& device,
 	//FBX 전용 쉐이더 추가
 	auto fbxShader = make_shared<FBXShader>(device, rootSignature);
 	m_shaders.insert({ "FBX", fbxShader });
-	auto uiShader = make_shared<UIScreenShader>(device, rootSignature);
+	auto uiShader = make_shared<GameSceneUIShader>(device, rootSignature);
 	m_shaders.insert({ "UI", uiShader });
 	// Character 애니메이션 전용 셰이더 추가
 	auto characterShader = make_shared<CharacterShader>(device, rootSignature);
@@ -213,6 +231,15 @@ void GameScene::BuildTextures(const ComPtr<ID3D12Device>& device,
 	FrightFlyTexture->CreateShaderVariable(device, true);
 	m_textures.insert({ "FrightFly", FrightFlyTexture });
 
+	auto healthBarTexture = make_shared<Texture>(device, commandList, 
+		TEXT("Image/HealthBar_BC3.dds"), RootParameter::Texture);
+	healthBarTexture->CreateShaderVariable(device, true);
+	m_textures.insert({ "HealthBar", healthBarTexture });
+	
+	auto inventoryTexture = make_shared<Texture>(device, commandList,  
+		TEXT("Image/Inventory.dds"), RootParameter::Texture); 
+	inventoryTexture->CreateShaderVariable(device, true);
+	m_textures.insert({ "Inventory", inventoryTexture });
 }
 
 void GameScene::BuildMaterials(const ComPtr<ID3D12Device>& device,
@@ -274,6 +301,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 
 		// [7] 텍스처, 머티리얼 설정
 		player->SetTexture(m_textures["CHARACTER"]);
+		player->SetTextureIndex(m_textures["CHARACTER"]->GetTextureIndex());
 		player->SetMaterial(m_materials["CHARACTER"]); // 없으면 생성 필요
 		player->SetShader(m_shaders["CHARACTER"]); // 없으면 생성 필요
 		player->SetDebugLineShader(m_shaders["DebugLineShader"]);
@@ -324,4 +352,28 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 		obj->SetShader(m_shaders["FBX"]);
 		obj->SetUseTexture(true); // UV 기반 텍스처 적용
 	}
+
+	auto healthBarUI = make_shared<GameObject>(device);
+
+	healthBarUI->SetTexture(m_textures["HealthBar"]);  // 우리가 방금 로드한 텍스처 사용
+	healthBarUI->SetTextureIndex(m_textures["HealthBar"]->GetTextureIndex());  // 
+	healthBarUI->SetMesh(CreateScreenQuad(device, gGameFramework->GetCommandList(), 1.4f, 0.15f, 0.98f));
+	//healthBarUI->SetPosition({0.f, -0.6f, -0.85f });        // NDC 좌표로 하단 왼쪽 고정 (롤 스타일)
+	//healthBarUI->SetPosition(XMFLOAT3(0.f, 0.2f, 0.98f));        // NDC 좌표로 하단 왼쪽 고정 (롤 스타일)
+	healthBarUI->SetPosition(XMFLOAT3(-0.2f, -0.6f, 0.98f));	
+	healthBarUI->SetUseTexture(true);
+	healthBarUI->SetBaseColor(XMFLOAT4(1, 1, 1, 1));
+
+	m_uiObjects.push_back(healthBarUI);
+
+	auto Inventory = make_shared<GameObject>(device);
+
+	Inventory->SetTexture(m_textures["Inventory"]);  // 우리가 방금 로드한 텍스처 사용
+	Inventory->SetTextureIndex(m_textures["Inventory"]->GetTextureIndex());  // 
+	Inventory->SetMesh(CreateScreenQuad(device, gGameFramework->GetCommandList(), 0.5f, 0.5f, 0.98f));
+	Inventory->SetPosition(XMFLOAT3(0.8f, -0.55f, 0.98f));
+	Inventory->SetUseTexture(true);
+	Inventory->SetBaseColor(XMFLOAT4(1, 1, 1, 1));
+
+	m_uiObjects.push_back(Inventory);
 }

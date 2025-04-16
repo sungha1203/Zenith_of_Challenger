@@ -32,6 +32,7 @@ PSInput VSMain(VSInput input)
 
 float4 PSMain(PSInput input) : SV_TARGET
 {
+    //float4 texColor = g_texture[g_textureIndex].Sample(g_sampler, input.TexCoord);
     float4 texColor = g_texture[0].Sample(g_sampler, input.TexCoord);
 
     // fallback color in case texture is black

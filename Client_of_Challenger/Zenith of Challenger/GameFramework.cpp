@@ -347,7 +347,7 @@ void CGameFramework::CreateRootSignature()
 {
 	CD3DX12_DESCRIPTOR_RANGE descriptorRange[DescriptorRange::Count];
 	descriptorRange[DescriptorRange::TextureCube].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);   // t0, space0
-	descriptorRange[DescriptorRange::Texture].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 10, 1, 0);       // t1~t2, space0
+	descriptorRange[DescriptorRange::Texture].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 10, 1, 0);       // t1~t10, space0
 	descriptorRange[DescriptorRange::BoneMatrix].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 11, 0); // t11
 
 	CD3DX12_ROOT_PARAMETER rootParameter[RootParameter::Count];
@@ -358,7 +358,7 @@ void CGameFramework::CreateRootSignature()
 	rootParameter[RootParameter::Instance].InitAsShaderResourceView(0, 1);   // t0, space1
 
 	rootParameter[RootParameter::TextureCube].InitAsDescriptorTable(1, &descriptorRange[DescriptorRange::TextureCube], D3D12_SHADER_VISIBILITY_PIXEL); // t0, space0
-	rootParameter[RootParameter::Texture].InitAsDescriptorTable(1, &descriptorRange[DescriptorRange::Texture], D3D12_SHADER_VISIBILITY_PIXEL);         // t1~t2, space0
+	rootParameter[RootParameter::Texture].InitAsDescriptorTable(1, &descriptorRange[DescriptorRange::Texture], D3D12_SHADER_VISIBILITY_PIXEL);         // t1~t10, space0
 	rootParameter[RootParameter::BoneMatrix].InitAsDescriptorTable(1, &descriptorRange[DescriptorRange::BoneMatrix], D3D12_SHADER_VISIBILITY_VERTEX);   
 
 	rootParameter[RootParameter::LightingMaterial].InitAsConstantBufferView(0, 1); // b0, space1

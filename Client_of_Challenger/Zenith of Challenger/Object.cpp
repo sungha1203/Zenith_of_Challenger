@@ -101,7 +101,10 @@ void GameObject::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) co
 {
 	if (!m_isVisible) return; //visibleÀÌ false¸é ·»´õ¸µ skip
 
-	if (m_shader) m_shader->UpdateShaderVariable(commandList); // ¼ÎÀÌ´õ ¼³Á¤
+	if (m_shader) 
+	{
+		m_shader->UpdateShaderVariable(commandList); // ¼ÎÀÌ´õ ¼³Á¤
+	}
 	UpdateShaderVariable(commandList);
 
 	if (m_texture) m_texture->UpdateShaderVariable(commandList, m_textureIndex);
@@ -126,7 +129,14 @@ void GameObject::UpdateShaderVariable(const ComPtr<ID3D12GraphicsCommandList>& c
 		XMMatrixTranspose(XMLoadFloat4x4(&m_worldMatrix)));
 	buffer.baseColor = m_baseColor;
 	buffer.useTexture = m_useTexture;
-	buffer.textureIndex = m_textureIndex;
+	if(!m_textureIndex)
+	{
+		buffer.textureIndex = m_textureIndex;
+	}
+	else
+	{
+		buffer.textureIndex = m_textureIndex-1;
+	}
 	buffer.isHovered = m_isHovered ? 1 : 0;
 	buffer.padding = FLOAT(0.f);
 

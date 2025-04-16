@@ -51,7 +51,12 @@ public:
 	UIScreenShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSignature);
 	~UIScreenShader() override = default;
 };
-
+class GameSceneUIShader : public Shader
+{
+public:
+	GameSceneUIShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSignature);
+	~GameSceneUIShader() override = default;
+};
 class CharacterShader : public Shader
 {
 public:

@@ -19,9 +19,16 @@ PSInput VSMain(VSInput input)
     PSInput output;
 
     float4 worldPos = mul(float4(input.Position, 1.0f), g_worldMatrix);
-    float4 viewPos = mul(worldPos, g_viewMatrix);
-    output.Position = mul(viewPos, g_projectionMatrix);
+    float4x4 transformLikeStartScene = 
+        {1.8, 0.0, 0.0, 0.0,
+         0.0, 2.4, 0.0, 0.0,
+         0.0, 0.0, 1.0, 1.0,
+         0.0, 0.0, -0.1, 0};
+    //float4 viewPos = mul(worldPos, g_viewMatrix);
+    //output.Position = mul(viewPos, g_projectionMatrix);
     //output.Position = float4(input.Position, 1.0f);
+    output.Position = mul(input.Position, worldPos);
+    output.Position = mul(worldPos, transformLikeStartScene);
     output.TexCoord = input.TexCoord;
     return output;
 }
@@ -29,10 +36,9 @@ PSInput VSMain(VSInput input)
 float4 PSMain(PSInput input) : SV_TARGET
 {
     float4 color = g_useTexture ? g_texture[0].Sample(g_sampler, input.TexCoord) : g_baseColor;
-
-    // 알파가 0에 가까우면 버림 (로고 배경 제거용)
-    clip(color.a - 0.1f);
-
+    
+    clip(color.a - 0.1f); // or clip(color.a - 0.01f) 로 조절 가능
+    
     // Hover 상태이면 밝기 강화
     if (g_isHovered == 1)
     {
@@ -40,8 +46,10 @@ float4 PSMain(PSInput input) : SV_TARGET
     }
     else
     {
-        color.rgb *= 0.9f;
+        color.rgb *= 0.8f;
     }
-
+    
     return color;
+    //return float4(1, 0, 0, 1); // 강제 빨간색
+    
 }

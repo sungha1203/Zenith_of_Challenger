@@ -78,4 +78,6 @@ protected:
 	vector<std::shared_ptr<GameObject>> m_idObjects;
 	vector<std::shared_ptr<GameObject>> m_pwObjects;
 	vector<shared_ptr<GameObject>> m_joinButtons; // 참가 버튼
+	vector<shared_ptr<GameObject>> m_uiObjects; //GameScene UI 변수
+
 };
