@@ -57,10 +57,10 @@ bool ClientNetwork::SendPacket(const char* data, int length)
 
 void ClientNetwork::Receive()
 {
-	char buffer[1024];
+	char buffer[1024] = {0};
 	while (m_running) {
 		int received = recv(m_clientsocket, buffer, sizeof(buffer), 0);
-		if (buffer > 0) {
+		if (received > 0) {
 			switch (buffer[0]) {
 			case SC_PACKET_LOGIN_RESPONSE:
 				ProcessLogin(buffer);
@@ -73,11 +73,12 @@ void ClientNetwork::Receive()
 				break;
 			case SC_PACKET_INITIALSTATE:
 				ProcessInitialstate(buffer);
+				break;
 			default:
 				break;
 			}
 		}
-		else if (buffer == 0) {
+		else if (received == 0) {
 
 		}
 	}
@@ -107,15 +108,16 @@ void ClientNetwork::ProcessGamestart(char* buffer)
 		gGameFramework->IsSuccess = true;
 }
 
-// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@지환이한테 물어보자
 void ClientNetwork::ProcessInitialstate(char* buffer)
 {
 	SC_Packet_initialstate* pkt = reinterpret_cast<SC_Packet_initialstate*>(buffer);
 	// 일단 자기 좌표만 받을거임.
 	if (pkt->client_id == m_clientID) {
 		XMFLOAT3 pos(pkt->x, pkt->y, pkt->z);
-		auto player = gGameFramework->GetPlayer();
-		if (player)
-			player->SetPosition(pos);
+		gGameFramework->g_pos = pos;
+		//auto player = gGameFramework->GetPlayer();
+		//if (player)
+		//	player->SetPosition(pos);
 	}
+
 }

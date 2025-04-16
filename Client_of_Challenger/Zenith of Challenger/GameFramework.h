@@ -23,6 +23,7 @@ public:
     ClientNetwork* GetClientNetwork() const { return m_clientNetwork.get(); }
     ClientState* GetClientState() const { return m_clientstate.get(); }
     bool IsSuccess = false;                                 // 게임시작 성공했음?
+    XMFLOAT3 g_pos;
 
     void OnCreate(HINSTANCE hInstance, HWND hMainWnd);
     void OnDestroy();
