@@ -101,7 +101,7 @@ void GameObject::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) co
 {
 	if (!m_isVisible) return; //visible¿Ã false∏È ∑ª¥ı∏µ skip
 
-	if (m_shader) 
+	if (m_shader)
 	{
 		m_shader->UpdateShaderVariable(commandList); // ºŒ¿Ã¥ı º≥¡§
 	}
@@ -121,21 +121,21 @@ void GameObject::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) co
 	}
 }
 
-void GameObject::UpdateShaderVariable(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
+void GameObject::UpdateShaderVariable(const ComPtr<ID3D12GraphicsCommandList>& commandList, const XMFLOAT4X4* overrideMatrix) const
 {
 	ObjectData buffer;
 
-	XMStoreFloat4x4(&buffer.worldMatrix,
-		XMMatrixTranspose(XMLoadFloat4x4(&m_worldMatrix)));
+	XMMATRIX matrix = overrideMatrix ? XMLoadFloat4x4(overrideMatrix) : XMLoadFloat4x4(&m_worldMatrix);
+	XMStoreFloat4x4(&buffer.worldMatrix, XMMatrixTranspose(matrix));
 	buffer.baseColor = m_baseColor;
 	buffer.useTexture = m_useTexture;
-	if(!m_textureIndex)
+	if (!m_textureIndex)
 	{
 		buffer.textureIndex = m_textureIndex;
 	}
 	else
 	{
-		buffer.textureIndex = m_textureIndex-1;
+		buffer.textureIndex = m_textureIndex - 1;
 	}
 	buffer.isHovered = m_isHovered ? 1 : 0;
 	buffer.padding = FLOAT(0.f);
@@ -195,14 +195,14 @@ void GameObject::SetBoundingBox(const BoundingBox& box)
 	XMFLOAT3 e = box.Extents;
 
 	XMFLOAT3 corners[8] = {
-		{- e.x, - e.y, - e.z},
-		{- e.x, + e.y, - e.z},
-		{+ e.x, + e.y, - e.z},
-		{+ e.x, - e.y, - e.z},
-		{- e.x, - e.y, + e.z},
-		{- e.x, + e.y, + e.z},
-		{+ e.x, + e.y, + e.z},
-		{+ e.x, - e.y, + e.z}
+		{-e.x, -e.y, -e.z},
+		{-e.x, +e.y, -e.z},
+		{+e.x, +e.y, -e.z},
+		{+e.x, -e.y, -e.z},
+		{-e.x, -e.y, +e.z},
+		{-e.x, +e.y, +e.z},
+		{+e.x, +e.y, +e.z},
+		{+e.x, -e.y, +e.z}
 	};
 
 	std::vector<UINT> indices = {

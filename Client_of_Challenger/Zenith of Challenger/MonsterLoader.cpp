@@ -1,7 +1,10 @@
 #include "MonsterLoader.h"
 #include "Monster.h"
 
-void LoadAllMonsters(const ComPtr<ID3D12Device>& device, const unordered_map<string, shared_ptr<Texture>>& textures, vector<shared_ptr<Monsters>>& outMonsters)
+void LoadAllMonsters(const ComPtr<ID3D12Device>& device,
+    const unordered_map<string, shared_ptr<Texture>>& textures,
+    const unordered_map<string, shared_ptr<Shader>> shaders,
+    vector<shared_ptr<Monsters>>& outMonsters)
 {
     // 1. Frightfly 몬스터 로드
     auto frightflyLoader = make_shared<FBXLoader>();
@@ -15,6 +18,8 @@ void LoadAllMonsters(const ComPtr<ID3D12Device>& device, const unordered_map<str
 
             frightfly->SetTexture(textures.at("FrightFly"));
             frightfly->SetTextureIndex(textures.at("FrightFly")->GetTextureIndex());
+            frightfly->SetShader(shaders.at("FrightFly")); // 없으면 생성 필요
+            frightfly->SetDebugLineShader(shaders.at("DebugLineShader"));
 
             for (auto& mesh : meshes)
                 frightfly->AddMesh(mesh);

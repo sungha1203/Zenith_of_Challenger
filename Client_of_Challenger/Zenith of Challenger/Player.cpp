@@ -120,7 +120,7 @@ void Player::Update(FLOAT timeElapsed)
     XMFLOAT3 pos = GetPosition();
     m_boundingBox.Center = XMFLOAT3{
         pos.x,
-        pos.y + 0.5f,  // 중심이 피봇(발)보다 위로 가도록 보정
+        pos.y + 2.25f,  // 중심이 피봇(발)보다 위로 가도록 보정
         pos.z
     };
 
@@ -168,15 +168,6 @@ void Player::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
     if (m_drawBoundingBox && m_debugBoxMesh && m_debugLineShader)
     {
         m_debugLineShader->UpdateShaderVariable(commandList);
-
-        // 디버깅 로그 추가 - 현재 worldMatrix를 콘솔에 출력
-        const XMFLOAT4X4& mat = m_worldMatrix;
-        char debugStr[256];
-        sprintf_s(debugStr, "[AABB] worldMatrix pos: (%.2f, %.2f, %.2f)\n",
-            mat._41, mat._42, mat._43);
-        //OutputDebugStringA(debugStr);
-
-        UpdateShaderVariable(commandList);
 
         m_debugBoxMesh->Render(commandList);
     }
@@ -245,18 +236,18 @@ void Player::Move(XMFLOAT3 direction, FLOAT speed)
 
 void Player::SetCamera(const shared_ptr<Camera>& camera)
 {
-	m_camera = camera;
+    m_camera = camera;
 }
 
 void Player::SetScale(XMFLOAT3 scale)
 {
-	m_scale = scale;
-	UpdateWorldMatrix(); 
+    m_scale = scale;
+    UpdateWorldMatrix();
 }
 
 XMFLOAT3 Player::GetScale() const
 {
-	return m_scale;
+    return m_scale;
 }
 
 void Player::SetAnimationClips(const std::vector<AnimationClip>& clips)

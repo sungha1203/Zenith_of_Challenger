@@ -232,12 +232,12 @@ void GameScene::BuildTextures(const ComPtr<ID3D12Device>& device,
 	m_textures.insert({ "FrightFly", FrightFlyTexture });
 
 	auto healthBarTexture = make_shared<Texture>(device, commandList, 
-		TEXT("Image/HealthBar_BC3.dds"), RootParameter::Texture);
+		TEXT("Image/InGameUI/HealthBar_BC3.dds"), RootParameter::Texture);
 	healthBarTexture->CreateShaderVariable(device, true);
 	m_textures.insert({ "HealthBar", healthBarTexture });
 	
 	auto inventoryTexture = make_shared<Texture>(device, commandList,  
-		TEXT("Image/Inventory.dds"), RootParameter::Texture); 
+		TEXT("Image/InGameUI/Inventory.dds"), RootParameter::Texture); 
 	inventoryTexture->CreateShaderVariable(device, true);
 	m_textures.insert({ "Inventory", inventoryTexture });
 }
@@ -282,8 +282,8 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 		auto player = make_shared<Player>(device);
 
 		// [4] 위치 및 스케일 설정
-		//player->SetPosition(XMFLOAT3{ -185.f, 53.f, 177.f });
-		player->SetPosition(gGameFramework->g_pos);
+		player->SetPosition(XMFLOAT3{ -185.f, 53.f, 177.f });
+		//player->SetPosition(gGameFramework->g_pos);
 
 		// [5] FBX 메시 전부 등록
 		for (int i = 0; i < meshes.size(); ++i)
@@ -325,7 +325,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 
 	m_player->SetCamera(m_camera);
 
-	LoadAllMonsters(device, m_textures, m_Monsters);
+	LoadAllMonsters(device, m_textures, m_shaders, m_Monsters);
 
 	m_skybox = make_shared<GameObject>(device);
 	m_skybox->SetMesh(m_meshes["SKYBOX"]);
@@ -358,7 +358,8 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 	healthBarUI->SetMesh(CreateScreenQuad(device, gGameFramework->GetCommandList(), 1.4f, 0.15f, 0.98f));
 	//healthBarUI->SetPosition({0.f, -0.6f, -0.85f });        // NDC 좌표로 하단 왼쪽 고정 (롤 스타일)
 	//healthBarUI->SetPosition(XMFLOAT3(0.f, 0.2f, 0.98f));        // NDC 좌표로 하단 왼쪽 고정 (롤 스타일)
-	healthBarUI->SetPosition(XMFLOAT3(-0.2f, -0.6f, 0.98f));	
+	healthBarUI->SetPosition(XMFLOAT3(-0.3f, -0.7f, 0.98f));
+	healthBarUI->SetScale(XMFLOAT3(1.2f, 1.2f, 1.2f));
 	healthBarUI->SetUseTexture(true);
 	healthBarUI->SetBaseColor(XMFLOAT4(1, 1, 1, 1));
 
