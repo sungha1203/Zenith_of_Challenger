@@ -46,8 +46,9 @@ void Room::PushStartGameButton(int RoomMasterID)
 		return;
 	}
 
-	g_network.SendGameStart(GetClients());			// 게임방 안에 본인 포함 모두한테 게임시작 패킷 보내기
 	g_network.SendInitialState(GetClients());		// 게임방 안에 본인 포함 모두한테 초기 좌표 패킷 보내기
+	Sleep(500);
+	g_network.SendGameStart(GetClients());			// 게임방 안에 본인 포함 모두한테 게임시작 패킷 보내기
 	AllPlayerNum(m_clients.size());					// 게임에 입장한 플레이어가 몇명이야?
 
 	m_IsGaming = true;

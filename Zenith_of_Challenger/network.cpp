@@ -465,6 +465,7 @@ void Network::SendGameStart(const std::vector<int>& client_id)
 	}
 }
 
+// 스폰 시 위치 설정
 void Network::SendInitialState(const std::vector<int>& client_id)
 {
 	for (int target_id : client_id)
