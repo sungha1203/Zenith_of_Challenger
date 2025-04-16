@@ -1,7 +1,6 @@
 #include "GameScene.h"
 #include "monster.h"
 #include "MonsterLoader.h"
-#include "BoundingBoxHelper.h"
 
 
 void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device,
@@ -57,10 +56,16 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
 {
 	m_player->KeyboardEvent(timeElapsed);
 
-	if (GetAsyncKeyState(VK_F1) & 0x0001) // 한 번만 눌렸을 때
+	if (GetAsyncKeyState(VK_F1) & 0x0001)
 	{
 		m_debugDrawEnabled = !m_debugDrawEnabled;
-		OutputDebugStringA(m_debugDrawEnabled ? "[디버그] AABB 시각화 ON\n" : "[디버그] AABB 시각화 OFF\n");
+
+		if (m_player) m_player->SetDrawBoundingBox(m_debugDrawEnabled);
+
+		//for (auto& obj : m_fbxObjects)
+		//	obj->SetDrawBoundingBox(m_debugDrawEnabled);
+
+		OutputDebugStringA(m_debugDrawEnabled ? "[디버그] AABB ON\n" : "[디버그] AABB OFF\n");
 	}
 }
 
@@ -105,50 +110,29 @@ void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) con
 	m_camera->UpdateShaderVariable(commandList);
 	m_lightSystem->UpdateShaderVariable(commandList);
 
-	m_shaders.at("DETAIL")->UpdateShaderVariable(commandList);
 	m_terrain->Render(commandList);
 
-	m_shaders.at("SKYBOX")->UpdateShaderVariable(commandList);
 	m_skybox->Render(commandList);
 
 	if (!m_fbxObjects.empty())
 	{
-		m_shaders.at("FBX")->UpdateShaderVariable(commandList);
 		for (const auto& obj : m_fbxObjects)
 			obj->Render(commandList);
 	}
 
 	if (m_player)
 	{
-		m_shaders.at("CHARACTER")->UpdateShaderVariable(commandList);
 		m_player->Render(commandList);
 	}
 
 	if (!m_Monsters.empty())
 	{
 		m_shaders.at("FrightFly")->UpdateShaderVariable(commandList); // 캐릭터 쉐이더 재사용
-
 		for (const auto& monster : m_Monsters)
 		{
 			monster->Render(commandList);
 		}
 	}
-
-	////////////////////////////////와이어 프레임 출력///////////////////////////////
-	//if (m_debugDrawEnabled)
-	//{
-	//	m_shaders.at("DebugLineShader")->UpdateShaderVariable(commandList); // PSO 설정
-	//	//for (auto& obj : m_fbxObjects)
-	//	//{
-	//	//	boxHelper.UpdateBox(obj->GetBoundingBox());
-	//	//	boxHelper.Render(commandList);
-	//	//}
-	//	m_boxHelper->UpdateBox(m_player->GetBoundingBox());
-	//	m_boxHelper->Render(commandList); // 여기까지 안전하게 GPU 사용 가능
-	//}
-
-
-
 
 }
 
@@ -291,6 +275,14 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 		// [7] 텍스처, 머티리얼 설정
 		player->SetTexture(m_textures["CHARACTER"]);
 		player->SetMaterial(m_materials["CHARACTER"]); // 없으면 생성 필요
+		player->SetShader(m_shaders["CHARACTER"]); // 없으면 생성 필요
+		player->SetDebugLineShader(m_shaders["DebugLineShader"]);
+
+		// m_player 생성 이후 위치
+		BoundingBox playerBox;
+		playerBox.Center = player->GetPosition();
+		playerBox.Extents = { 1.0f, 4.5f, 1.0f }; // 스케일링된 값
+		player->SetBoundingBox(playerBox);
 
 		// [8] 본 행렬 StructuredBuffer용 SRV 생성
 		auto [cpuHandle, gpuHandle] = gGameFramework->AllocateDescriptorHeapSlot();
@@ -313,11 +305,14 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 	m_skybox->SetMesh(m_meshes["SKYBOX"]);
 	m_skybox->SetTextureIndex(m_textures["SKYBOX"]->GetTextureIndex());
 	m_skybox->SetTexture(m_textures["SKYBOX"]);
+	m_skybox->SetShader(m_shaders["SKYBOX"]);
+
 
 	m_terrain = make_shared<Terrain>(device);
 	m_terrain->SetMesh(m_meshes["TERRAIN"]);
 	m_terrain->SetTextureIndex(m_textures["TERRAIN"]->GetTextureIndex());
 	m_terrain->SetTexture(m_textures["TERRAIN"]);
+	m_terrain->SetShader(m_shaders["DETAIL"]);
 	m_terrain->SetScale(XMFLOAT3{ 5.f, 0.25f, 5.f });
 	m_terrain->SetPosition(XMFLOAT3{ 0.f, -100.f, 0.f });
 
@@ -326,9 +321,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 	{
 		obj->SetTexture(m_textures["FBX"]);
 		obj->SetTextureIndex(m_textures["FBX"]->GetTextureIndex());
+		obj->SetShader(m_shaders["FBX"]);
 		obj->SetUseTexture(true); // UV 기반 텍스처 적용
 	}
-
-	//바운디박스 레이어
-	//m_boxHelper = std::make_unique<BoundingBoxHelper>(gGameFramework->GetDevice(), gGameFramework->GetCommandList());
 }

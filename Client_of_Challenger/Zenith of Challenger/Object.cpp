@@ -3,6 +3,7 @@
 //-----------------------------------------------------------------------------
 #include "object.h"
 #include "Instance.h"
+#include "GameFramework.h"
 
 Object::Object() :
 	m_right{ 1.f, 0.f, 0.f }, m_up{ 0.f, 1.f, 0.f }, m_front{ 0.f, 0.f, 1.f }
@@ -107,18 +108,27 @@ void GameObject::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) co
 	if (m_material) m_material->UpdateShaderVariable(commandList);
 
 	m_mesh->Render(commandList);
+
+	if (m_drawBoundingBox && m_debugBoxMesh && m_debugLineShader)
+	{
+		m_debugLineShader->UpdateShaderVariable(commandList); // View/Proj
+		UpdateShaderVariable(commandList); // World matrix µî
+
+		m_debugBoxMesh->Render(commandList);
+	}
 }
 
 void GameObject::UpdateShaderVariable(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
 {
 	ObjectData buffer;
+
 	XMStoreFloat4x4(&buffer.worldMatrix,
 		XMMatrixTranspose(XMLoadFloat4x4(&m_worldMatrix)));
 	buffer.baseColor = m_baseColor;
 	buffer.useTexture = m_useTexture;
 	buffer.textureIndex = m_textureIndex;
 	buffer.isHovered = m_isHovered ? 1 : 0;
-	buffer.padding = XMFLOAT2(0.f, 0.f);
+	buffer.padding = FLOAT(0.f);
 
 	m_constantBuffer->Copy(buffer);
 	m_constantBuffer->UpdateRootConstantBuffer(commandList);
@@ -166,6 +176,58 @@ void GameObject::SetWorldMatrix(const XMMATRIX& worldMatrix)
 void GameObject::SetSRV(D3D12_GPU_DESCRIPTOR_HANDLE srvHandle)
 {
 	m_srvHandle = srvHandle;
+}
+
+void GameObject::SetBoundingBox(const BoundingBox& box)
+{
+	m_boundingBox = box;
+
+	XMFLOAT3 e = box.Extents;
+
+	XMFLOAT3 corners[8] = {
+		{- e.x, - e.y, - e.z},
+		{- e.x, + e.y, - e.z},
+		{+ e.x, + e.y, - e.z},
+		{+ e.x, - e.y, - e.z},
+		{- e.x, - e.y, + e.z},
+		{- e.x, + e.y, + e.z},
+		{+ e.x, + e.y, + e.z},
+		{+ e.x, - e.y, + e.z}
+	};
+
+	std::vector<UINT> indices = {
+		// ¾Õ¸é (-z)
+		0, 1, 2,
+		0, 2, 3,
+
+		// µÞ¸é (+z)
+		4, 6, 5,
+		4, 7, 6,
+
+		// ¿ÞÂÊ¸é (-x)
+		0, 4, 5,
+		0, 5, 1,
+
+		// ¿À¸¥ÂÊ¸é (+x)
+		3, 2, 6,
+		3, 6, 7,
+
+		// À­¸é (+y)
+		1, 5, 6,
+		1, 6, 2,
+
+		// ¾Æ·§¸é (-y)
+		0, 3, 7,
+		0, 7, 4
+	};
+
+	vector<DebugVertex> lines;
+	for (int i = 0; i < indices.size(); ++i)
+		lines.emplace_back(corners[indices[i]]);
+
+	m_debugBoxMesh = make_shared<Mesh<DebugVertex>>(
+		gGameFramework->GetDevice(), gGameFramework->GetCommandList(),
+		lines, D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 }
 
 

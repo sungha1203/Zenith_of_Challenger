@@ -68,7 +68,7 @@ struct ObjectData : public BufferBase
 	UINT useTexture;           // 4 bytes
 	UINT textureIndex;         // 4 bytes
 	UINT isHovered;			   // 4 bytes
-	XMFLOAT2 padding = {};     // 12 bytes → 총 32 bytes로 16바이트 정렬 유지
+	FLOAT padding = {};     // 12 bytes → 총 32 bytes로 16바이트 정렬 유지
 };
 
 class GameObject : public Object
@@ -106,7 +106,10 @@ public:
 
 	//충돌체크 용
 	BoundingBox GetBoundingBox() const { return m_boundingBox; }
-	void SetBoundingBox(const BoundingBox& box) { m_boundingBox = box; }
+	void SetBoundingBox(const BoundingBox& box);
+	void SetDebugLineShader(const shared_ptr<Shader>& shader) { m_debugLineShader = shader; }
+	void SetDrawBoundingBox(bool draw) { m_drawBoundingBox = draw; }
+	bool IsDrawBoundingBox() const { return m_drawBoundingBox; }
 protected:
 	shared_ptr<MeshBase> m_mesh;
 	shared_ptr<Texture> m_texture;
@@ -126,6 +129,10 @@ protected:
 
 	//충돌체크 용
 	BoundingBox m_boundingBox;
+	shared_ptr<Mesh<DebugVertex>> m_debugBoxMesh;
+	bool m_drawBoundingBox = false;
+	shared_ptr<Shader> m_debugLineShader; // ← 와이어프레임 전용 셰이더
+
 };
 
 class RotatingObject : public InstanceObject

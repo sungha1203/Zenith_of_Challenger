@@ -1,6 +1,5 @@
 #pragma once
 // LineShader.hlsl
-
 #include"Shaders.hlsl"
 
 struct VSInput

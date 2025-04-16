@@ -31,7 +31,7 @@ void CGameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd)
 	//-----------[서버]-----------
 	m_clientNetwork = std::make_unique<ClientNetwork>();
 	m_clientstate = std::make_unique<ClientState>();
-	m_clientNetwork->Connect();								// 서버 연결
+	//m_clientNetwork->Connect();								// 서버 연결
 	//-----------[서버]-----------
 
 	InitDirect3D();
@@ -411,8 +411,8 @@ void CGameFramework::CreateDescriptorHeaps()
 void CGameFramework::HandleSceneTransition()
 {
 	auto startScene = dynamic_pointer_cast<StartScene>(m_sceneManager->GetCurrentScene());
-	//if (startScene && startScene->IsStartButtonClicked())		// 클라 개발
-	if (startScene && IsSuccess == true)						// 서버 개발
+	if (startScene && startScene->IsStartButtonClicked())		// 클라 개발
+	//if (startScene && IsSuccess == true)						// 서버 개발
 	{
 		m_shouldTransition = true;
 		startScene->ResetStartButtonClicked();

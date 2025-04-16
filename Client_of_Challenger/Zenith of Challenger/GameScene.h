@@ -43,6 +43,4 @@ private:
     vector<shared_ptr<Monsters>> m_Monsters; 
 
     bool m_debugDrawEnabled = false;
-
-    //std::unique_ptr<BoundingBoxHelper> m_boxHelper;
 };

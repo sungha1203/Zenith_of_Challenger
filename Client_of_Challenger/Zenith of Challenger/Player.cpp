@@ -117,11 +117,12 @@ void Player::Update(FLOAT timeElapsed)
 
     }
 
-    BoundingBox playerBox;
-    playerBox.Center = GetPosition();
-    playerBox.Extents = { 1.5f, 4.0f, 1.5f }; // 플레이어 크기 반영
-
-    SetBoundingBox(playerBox);
+    XMFLOAT3 pos = GetPosition();
+    m_boundingBox.Center = XMFLOAT3{
+        pos.x,
+        pos.y + 0.5f,  // 중심이 피봇(발)보다 위로 가도록 보정
+        pos.z
+    };
 
     GameObject::Update(timeElapsed);
 }
@@ -147,6 +148,8 @@ void Player::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
     // 각 메시 렌더링
     for (const auto& mesh : m_meshes)
     {
+        if (m_shader) m_shader->UpdateShaderVariable(commandList); // 셰이더 설정
+
         // 텍스처 바인딩
         if (m_texture) {
             m_texture->UpdateShaderVariable(commandList, m_textureIndex); // 보통 0번
@@ -160,6 +163,24 @@ void Player::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
         // 메시 렌더링
         mesh->Render(commandList);
     }
+
+    //와이어 프레임 렌더링
+    if (m_drawBoundingBox && m_debugBoxMesh && m_debugLineShader)
+    {
+        m_debugLineShader->UpdateShaderVariable(commandList);
+
+        // 디버깅 로그 추가 - 현재 worldMatrix를 콘솔에 출력
+        const XMFLOAT4X4& mat = m_worldMatrix;
+        char debugStr[256];
+        sprintf_s(debugStr, "[AABB] worldMatrix pos: (%.2f, %.2f, %.2f)\n",
+            mat._41, mat._42, mat._43);
+        //OutputDebugStringA(debugStr);
+
+        UpdateShaderVariable(commandList);
+
+        m_debugBoxMesh->Render(commandList);
+    }
+
 }
 
 
