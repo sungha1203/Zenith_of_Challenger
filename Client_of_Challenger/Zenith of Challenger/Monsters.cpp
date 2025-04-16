@@ -67,8 +67,6 @@ void Monsters::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) cons
 
     for (const auto& mesh : m_meshes)
     {
-
-
         if (m_texture)
             m_texture->UpdateShaderVariable(commandList, m_textureIndex);
 
@@ -77,6 +75,14 @@ void Monsters::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) cons
 
         UpdateShaderVariable(commandList);
         mesh->Render(commandList);
+    }
+
+    //와이어 프레임 렌더링
+    if (m_drawBoundingBox && m_debugBoxMesh && m_debugLineShader)
+    {
+        m_debugLineShader->UpdateShaderVariable(commandList);
+
+        m_debugBoxMesh->Render(commandList);
     }
 }
 

@@ -62,6 +62,12 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
 
 		if (m_player) m_player->SetDrawBoundingBox(m_debugDrawEnabled);
 
+
+		for (auto& monster : m_Monsters)
+		{
+			if (monster) monster->SetDrawBoundingBox(m_debugDrawEnabled);
+		}
+
 		//for (auto& obj : m_fbxObjects)
 		//	obj->SetDrawBoundingBox(m_debugDrawEnabled);
 
@@ -237,12 +243,12 @@ void GameScene::BuildTextures(const ComPtr<ID3D12Device>& device,
 	m_textures.insert({ "FrightFly", FrightFlyTexture });
 
 	auto healthBarZeroTexture = make_shared<Texture>(device, commandList,
-		TEXT("Image/HealthBarZero_BC3.dds"), RootParameter::Texture);
+		TEXT("Image/InGameUI/HealthBarZero_BC3.dds"), RootParameter::Texture);
 	healthBarZeroTexture->CreateShaderVariable(device, true);
 	m_textures.insert({ "HealthBarZero", healthBarZeroTexture });
 
 	auto healthBarTexture = make_shared<Texture>(device, commandList,
-		TEXT("Image/HealthBar_BC3.dds"), RootParameter::Texture);
+		TEXT("Image/InGameUI/HealthBar_BC3.dds"), RootParameter::Texture);
 	healthBarTexture->CreateShaderVariable(device, true);
 	m_textures.insert({ "HealthBar", healthBarTexture });
 	

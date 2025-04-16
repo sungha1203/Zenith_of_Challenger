@@ -29,6 +29,12 @@ void LoadAllMonsters(const ComPtr<ID3D12Device>& device,
             frightfly->SetBoneOffsets(frightflyLoader->GetBoneOffsets());
             frightfly->SetBoneNameToIndex(frightflyLoader->GetBoneNameToIndex());
 
+            // frightfly 생성 이후 위치
+            BoundingBox frightflyBox;
+            frightflyBox.Center = frightfly->GetPosition();
+            frightflyBox.Extents = { 1.0f, 7.5f, 1.0f }; // 스케일링된 값
+            frightfly->SetBoundingBox(frightflyBox);
+
             auto [cpuHandle, gpuHandle] = gGameFramework->AllocateDescriptorHeapSlot();
             frightfly->CreateBoneMatrixSRV(device, cpuHandle, gpuHandle);
 
@@ -44,5 +50,4 @@ void LoadAllMonsters(const ComPtr<ID3D12Device>& device,
     {
         OutputDebugStringA("[MonsterLoader] Frightfly FBX 로드 실패!\n");
     }
-
 }
