@@ -120,7 +120,7 @@ void Player::Update(FLOAT timeElapsed)
     XMFLOAT3 pos = GetPosition();
     m_boundingBox.Center = XMFLOAT3{
         pos.x,
-        pos.y + 2.25f,  // 중심이 피봇(발)보다 위로 가도록 보정
+        pos.y,  // 중심이 피봇(발)보다 위로 가도록 보정
         pos.z
     };
 

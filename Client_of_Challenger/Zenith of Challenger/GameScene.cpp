@@ -103,13 +103,51 @@ void GameScene::Update(FLOAT timeElapsed)
 	// 충돌 테스트
 	auto playerBox = m_player->GetBoundingBox();
 
-	for (auto& obj : m_fbxObjects)
+	for (auto& monster : m_Monsters)
 	{
-		if (playerBox.Intersects(obj->GetBoundingBox()))
-		{
-			OutputDebugStringA("[충돌 감지] 플레이어가 맵 오브젝트와 충돌했습니다!\n");
+		auto monsterBox = monster->GetBoundingBox();
+		auto monsterCenter = monsterBox.Center;
 
-			// 여기서 위치 보정 or 반응 넣을 수 있음
+		// 월드 위치 적용
+		XMFLOAT3 playerWorldPos = m_player->GetPosition();
+		XMFLOAT3 monsterWorldPos = monster->GetPosition();
+
+		// 센터 기준 실제 위치 계산 (로컬 center 기준일 경우 반영)
+		XMFLOAT3 playerCenterWorld = {
+			playerWorldPos.x,
+			playerWorldPos.y + 5.0f,
+			playerWorldPos.z
+		};
+
+		XMFLOAT3 monsterCenterWorld = {
+			monsterWorldPos.x + monsterCenter.x,
+			monsterWorldPos.y + monsterCenter.y,
+			monsterWorldPos.z + monsterCenter.z
+		};
+
+		// 거리 기반 충돌 체크 (AABB Extents 포함)
+		float dx = abs(playerCenterWorld.x - monsterCenterWorld.x);
+		float dy = abs(playerCenterWorld.y - monsterCenterWorld.y);
+		float dz = abs(playerCenterWorld.z - monsterCenterWorld.z);
+
+		const XMFLOAT3& playerExtent = playerBox.Extents;
+		const XMFLOAT3& monsterExtent = monsterBox.Extents;
+
+		bool intersectX = dx <= (playerExtent.x + monsterExtent.x);
+		bool intersectY = dy <= (playerExtent.y + monsterExtent.y);
+		bool intersectZ = dz <= (playerExtent.z + monsterExtent.z);
+
+		if (intersectX && intersectY && intersectZ)
+		{
+			OutputDebugStringA("[충돌 감지] 플레이어와 몬스터 충돌!\n");
+
+			// 예: 충돌 시 몬스터를 붉은색으로 표시
+			monster->SetBaseColor(XMFLOAT4(1.f, 0.f, 0.f, 1.f));
+		}
+		else
+		{
+			// 충돌 안 한 경우 원래 색
+			monster->SetBaseColor(XMFLOAT4(1.f, 1.f, 1.f, 1.f));
 		}
 	}
 }
@@ -139,7 +177,6 @@ void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) con
 
 	if (!m_Monsters.empty())
 	{
-		m_shaders.at("FrightFly")->UpdateShaderVariable(commandList); // 캐릭터 쉐이더 재사용
 		for (const auto& monster : m_Monsters)
 		{
 			monster->Render(commandList);
@@ -322,7 +359,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 
 		// m_player 생성 이후 위치
 		BoundingBox playerBox;
-		playerBox.Center = player->GetPosition();
+		playerBox.Center = XMFLOAT3{ 0.f, 5.0f, 0.f };
 		playerBox.Extents = { 1.0f, 4.5f, 1.0f }; // 스케일링된 값
 		player->SetBoundingBox(playerBox);
 
@@ -341,7 +378,22 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 
 	m_player->SetCamera(m_camera);
 
+	//몬스터 로드
 	LoadAllMonsters(device, m_textures, m_shaders, m_Monsters);
+
+	// 배치
+	for (int i = 0; i < m_Monsters.size(); ++i)
+	{
+		// 위치 분산 (타원형 형태로 배치)
+		float angle = XM_2PI * i / m_Monsters.size();
+		float radius = 15.0f;
+		float x = -135.f + radius * cos(angle);
+		float z = 130.f + radius * sin(angle);
+		float y = 48.f;
+
+		m_Monsters[i]->SetPosition(XMFLOAT3{ x, y, z });
+	}
+
 
 	m_skybox = make_shared<GameObject>(device);
 	m_skybox->SetMesh(m_meshes["SKYBOX"]);

@@ -67,6 +67,8 @@ void Monsters::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) cons
 
     for (const auto& mesh : m_meshes)
     {
+        m_shader->UpdateShaderVariable(commandList);
+
         if (m_texture)
             m_texture->UpdateShaderVariable(commandList, m_textureIndex);
 

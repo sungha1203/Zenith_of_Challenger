@@ -192,17 +192,18 @@ void GameObject::SetBoundingBox(const BoundingBox& box)
 {
 	m_boundingBox = box;
 
+	XMFLOAT3 c = box.Center;
 	XMFLOAT3 e = box.Extents;
 
 	XMFLOAT3 corners[8] = {
-		{-e.x, -e.y, -e.z},
-		{-e.x, +e.y, -e.z},
-		{+e.x, +e.y, -e.z},
-		{+e.x, -e.y, -e.z},
-		{-e.x, -e.y, +e.z},
-		{-e.x, +e.y, +e.z},
-		{+e.x, +e.y, +e.z},
-		{+e.x, -e.y, +e.z}
+	{c.x - e.x, c.y - e.y, c.z - e.z},
+	{c.x - e.x, c.y + e.y, c.z - e.z},
+	{c.x + e.x, c.y + e.y, c.z - e.z},
+	{c.x + e.x, c.y - e.y, c.z - e.z},
+	{c.x - e.x, c.y - e.y, c.z + e.z},
+	{c.x - e.x, c.y + e.y, c.z + e.z},
+	{c.x + e.x, c.y + e.y, c.z + e.z},
+	{c.x + e.x, c.y - e.y, c.z + e.z}
 	};
 
 	std::vector<UINT> indices = {
