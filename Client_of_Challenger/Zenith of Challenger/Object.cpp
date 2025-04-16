@@ -138,7 +138,7 @@ void GameObject::UpdateShaderVariable(const ComPtr<ID3D12GraphicsCommandList>& c
 		buffer.textureIndex = m_textureIndex - 1;
 	}
 	buffer.isHovered = m_isHovered ? 1 : 0;
-	buffer.padding = FLOAT(0.f);
+	buffer.fillAmount = m_fillAmount;
 
 	m_constantBuffer->Copy(buffer);
 	m_constantBuffer->UpdateRootConstantBuffer(commandList);

@@ -68,7 +68,7 @@ struct ObjectData : public BufferBase
 	UINT useTexture;           // 4 bytes
 	UINT textureIndex;         // 4 bytes
 	UINT isHovered;			   // 4 bytes
-	FLOAT padding = {};     // 12 bytes → 총 32 bytes로 16바이트 정렬 유지
+	FLOAT fillAmount = {};     // 12 bytes → 총 32 bytes로 16바이트 정렬 유지
 };
 
 class GameObject : public Object
@@ -111,6 +111,7 @@ public:
 	void SetDrawBoundingBox(bool draw) { m_drawBoundingBox = draw; }
 	bool IsDrawBoundingBox() const { return m_drawBoundingBox; }
 	int m_textureIndex = 0;
+	float m_fillAmount = 2.0f;
 protected:
 	shared_ptr<MeshBase> m_mesh;
 	shared_ptr<Texture> m_texture;

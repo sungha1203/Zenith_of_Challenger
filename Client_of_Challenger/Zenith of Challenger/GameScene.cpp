@@ -67,6 +67,11 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
 
 		OutputDebugStringA(m_debugDrawEnabled ? "[디버그] AABB ON\n" : "[디버그] AABB OFF\n");
 	}
+	if (GetAsyncKeyState(VK_LEFT) & 0x8000)
+		m_uiObjects[1]->m_fillAmount -= 0.1;
+
+	if (GetAsyncKeyState(VK_RIGHT) & 0x8000)
+		m_uiObjects[1]->m_fillAmount += 0.1;
 }
 
 void GameScene::Update(FLOAT timeElapsed)
@@ -231,8 +236,13 @@ void GameScene::BuildTextures(const ComPtr<ID3D12Device>& device,
 	FrightFlyTexture->CreateShaderVariable(device, true);
 	m_textures.insert({ "FrightFly", FrightFlyTexture });
 
-	auto healthBarTexture = make_shared<Texture>(device, commandList, 
-		TEXT("Image/InGameUI/HealthBar_BC3.dds"), RootParameter::Texture);
+	auto healthBarZeroTexture = make_shared<Texture>(device, commandList,
+		TEXT("Image/HealthBarZero_BC3.dds"), RootParameter::Texture);
+	healthBarZeroTexture->CreateShaderVariable(device, true);
+	m_textures.insert({ "HealthBarZero", healthBarZeroTexture });
+
+	auto healthBarTexture = make_shared<Texture>(device, commandList,
+		TEXT("Image/HealthBar_BC3.dds"), RootParameter::Texture);
 	healthBarTexture->CreateShaderVariable(device, true);
 	m_textures.insert({ "HealthBar", healthBarTexture });
 	
@@ -350,6 +360,19 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 		obj->SetShader(m_shaders["FBX"]);
 		obj->SetUseTexture(true); // UV 기반 텍스처 적용
 	}
+	auto healthBarZeroUI = make_shared<GameObject>(device);
+
+	healthBarZeroUI->SetTexture(m_textures["HealthBarZero"]);  // 우리가 방금 로드한 텍스처 사용  
+	healthBarZeroUI->SetTextureIndex(m_textures["HealthBarZero"]->GetTextureIndex());  //   
+	healthBarZeroUI->SetMesh(CreateScreenQuad(device, gGameFramework->GetCommandList(), 1.4f, 0.15f, 0.98f));
+	//healthBarUI->SetPosition({0.f, -0.6f, -0.85f });        // NDC 좌표로 하단 왼쪽 고정 (롤 스타일)
+	//healthBarUI->SetPosition(XMFLOAT3(0.f, 0.2f, 0.98f));        // NDC 좌표로 하단 왼쪽 고정 (롤 스타일)
+	healthBarZeroUI->SetPosition(XMFLOAT3(-0.3f, -0.7f, 0.98f));
+	healthBarZeroUI->SetScale(XMFLOAT3(1.2f, 1.2f, 1.2f));
+	healthBarZeroUI->SetUseTexture(true);
+	healthBarZeroUI->SetBaseColor(XMFLOAT4(1, 1, 1, 1));
+
+	m_uiObjects.push_back(healthBarZeroUI);
 
 	auto healthBarUI = make_shared<GameObject>(device);
 

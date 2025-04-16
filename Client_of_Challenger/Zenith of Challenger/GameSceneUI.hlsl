@@ -48,6 +48,9 @@ float4 PSMain(PSInput input) : SV_TARGET
     {
         color.rgb *= 0.8f;
     }
+    if (g_fillAmount <= 1.0 && input.TexCoord.x > g_fillAmount)
+        discard;
+
     
     return color;
     //return float4(1, 0, 0, 1); // °­Á¦ »¡°£»ö
