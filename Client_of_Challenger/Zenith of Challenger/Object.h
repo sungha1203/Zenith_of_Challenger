@@ -25,6 +25,7 @@ public:
 	XMFLOAT3 GetPosition() const;
 
 	void UpdateWorldMatrix();
+	void SetRotationY(float yaw);
 
 	virtual void SetScale(XMFLOAT3 scale);
 	virtual XMFLOAT3 GetScale() const;
@@ -36,7 +37,8 @@ protected:
 	XMFLOAT3			m_front;
 
 	XMFLOAT3            m_scale;
-	XMFLOAT3			m_rotation; // 여기에 회전 정보 추가 (pitch, yaw, roll)
+	XMFLOAT3			m_position; // 위치값 따로 보관
+	XMFLOAT3			m_rotation{ 0.0f,0.0f, 0.0f }; // 여기에 회전 정보 추가 (pitch, yaw, roll)
 };
 
 

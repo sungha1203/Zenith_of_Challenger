@@ -334,8 +334,12 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 		// [3] Player 객체 생성
 		auto player = make_shared<Player>(device);
 
+
+		player->SetScale(XMFLOAT3{ 1.f, 1.f, 1.f }); // 기본값 확정
+		player->SetRotationY(0.f);                  // 정면을 보게 초기화
+
 		// [4] 위치 및 스케일 설정
-		player->SetPosition(XMFLOAT3{ -185.f, 53.f, 177.f });
+		player->SetPosition(XMFLOAT3{ -185.f, 1.7f, 177.f });
 		//player->SetPosition(gGameFramework->g_pos);
 
 		// [5] FBX 메시 전부 등록
@@ -359,8 +363,8 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 
 		// m_player 생성 이후 위치
 		BoundingBox playerBox;
-		playerBox.Center = XMFLOAT3{ 0.f, 5.0f, 0.f };
-		playerBox.Extents = { 1.0f, 4.5f, 1.0f }; // 스케일링된 값
+		playerBox.Center = XMFLOAT3{ 0.f, 4.0f, 0.f };
+		playerBox.Extents = { 1.0f, 3.5f, 1.0f }; // 스케일링된 값
 		player->SetBoundingBox(playerBox);
 
 		// [8] 본 행렬 StructuredBuffer용 SRV 생성
@@ -387,9 +391,9 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 		// 위치 분산 (타원형 형태로 배치)
 		float angle = XM_2PI * i / m_Monsters.size();
 		float radius = 15.0f;
-		float x = -135.f + radius * cos(angle);
-		float z = 130.f + radius * sin(angle);
-		float y = 48.f;
+		float x = -170.f + radius * cos(angle);
+		float z = 15.f + radius * sin(angle);
+		float y = 0.f;
 
 		m_Monsters[i]->SetPosition(XMFLOAT3{ x, y, z });
 	}

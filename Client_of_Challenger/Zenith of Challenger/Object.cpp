@@ -6,14 +6,17 @@
 #include "GameFramework.h"
 
 Object::Object() :
-	m_right{ 1.f, 0.f, 0.f }, m_up{ 0.f, 1.f, 0.f }, m_front{ 0.f, 0.f, 1.f }
+	m_right{ 1.f, 0.f, 0.f }, m_up{ 0.f, 1.f, 0.f }, m_front{ 0.f, 0.f, 1.f },
+	m_scale{ 1.f, 1.f, 1.f }, m_rotation{ 0.f, 0.f, 0.f }, m_position{ 0.f, 0.f, 0.f }
 {
 	XMStoreFloat4x4(&m_worldMatrix, XMMatrixIdentity());
 }
 
 void Object::Transform(XMFLOAT3 shift)
 {
-	SetPosition(Vector3::Add(GetPosition(), shift));
+	//SetPosition(Vector3::Add(GetPosition(), shift));
+	m_position = Vector3::Add(m_position, shift);
+	UpdateWorldMatrix();
 }
 
 void Object::Rotate(FLOAT pitch, FLOAT yaw, FLOAT roll)
@@ -28,24 +31,35 @@ void Object::Rotate(FLOAT pitch, FLOAT yaw, FLOAT roll)
 
 void Object::SetPosition(XMFLOAT3 position)
 {
-	m_worldMatrix._41 = position.x;
-	m_worldMatrix._42 = position.y;
-	m_worldMatrix._43 = position.z;
+	//m_worldMatrix._41 = position.x;
+	//m_worldMatrix._42 = position.y;
+	//m_worldMatrix._43 = position.z;
+	m_position = position;
+	UpdateWorldMatrix();
 }
 
 XMFLOAT3 Object::GetPosition() const
 {
-	return XMFLOAT3{ m_worldMatrix._41, m_worldMatrix._42, m_worldMatrix._43 };
+	//return XMFLOAT3{ m_worldMatrix._41, m_worldMatrix._42, m_worldMatrix._43 };
+	return m_position;
 }
 
 void Object::UpdateWorldMatrix()
 {
-	XMMATRIX scaleMatrix = XMMatrixScaling(m_scale.x, m_scale.y, m_scale.z);
-	XMMATRIX rotationMatrix = XMMatrixRotationRollPitchYaw(0.0f, 0.0f, 0.0f);
-	XMMATRIX translationMatrix = XMMatrixTranslation(m_worldMatrix._41, m_worldMatrix._42, m_worldMatrix._43);
-	XMMATRIX worldMatrix = scaleMatrix * rotationMatrix * translationMatrix;
+	XMMATRIX scale = XMMatrixScaling(m_scale.x, m_scale.y, m_scale.z);
+	XMMATRIX rot = XMMatrixRotationRollPitchYaw(
+		XMConvertToRadians(m_rotation.x),
+		XMConvertToRadians(m_rotation.y),
+		XMConvertToRadians(m_rotation.z));
+	XMMATRIX trans = XMMatrixTranslation(m_position.x, m_position.y, m_position.z);
 
-	XMStoreFloat4x4(&m_worldMatrix, worldMatrix);
+	XMStoreFloat4x4(&m_worldMatrix, scale * rot * trans);
+}
+
+void Object::SetRotationY(float yaw)
+{
+	m_rotation.y = yaw;
+	UpdateWorldMatrix(); // 회전 반영해서 월드행렬 다시 계산
 }
 
 void Object::SetScale(XMFLOAT3 scale)

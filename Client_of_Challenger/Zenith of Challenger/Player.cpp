@@ -82,7 +82,17 @@ void Player::KeyboardEvent(FLOAT timeElapsed)
     }
 
     // 최종 이동
-    Transform(Vector3::Mul(velocity, timeElapsed));
+    //Transform(Vector3::Mul(velocity, timeElapsed));
+    XMFLOAT3 movement = Vector3::Mul(velocity, timeElapsed);
+    Transform(movement);
+
+    // 쿼터뷰 방향 회전 적용 (Y축만)
+    if (!Vector3::IsZero(velocity))
+    {
+        float angle = atan2f(velocity.x, velocity.z);      // Z 기준 회전 (x/z)
+        float degrees = XMConvertToDegrees(angle);         // 라디안 → 도
+        SetRotationY(degrees + 180.f);                             // 회전 적용
+    }
 }
 
 void Player::Update(FLOAT timeElapsed)
