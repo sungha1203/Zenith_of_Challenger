@@ -10,7 +10,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device,
    m_meshes.clear();
    m_textures.clear();
    m_objects.clear();
-   m_fbxMeshes.clear(); // FBX 메쉬 초기화
+   m_fbxMeshes.clear(); // FBX �޽� �ʱ�ȭ
 
 
    BuildShaders(device, commandList, rootSignature);
@@ -18,8 +18,8 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device,
    BuildTextures(device, commandList);
    BuildMaterials(device, commandList);
 
-   // FBX 파일 로드
-   cout << "도전 맵 로드 중!!!!" << endl;
+   // FBX ���� �ε�
+   cout << "���� �� �ε� ��!!!!" << endl;
    m_fbxLoader = make_shared<FBXLoader>();
    if (m_fbxLoader->LoadFBXModel("Model/Challenge.fbx",
       XMMatrixScaling(5.0f, 5.0f, 5.0f) * XMMatrixRotationY(XMConvertToRadians(180.0f))))
@@ -27,18 +27,18 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device,
       m_fbxMeshes = m_fbxLoader->GetMeshes();
    }
 
-   // FBX 모델을 GameObject로 변환 후 m_fbxObjects에 추가
+   // FBX ���� GameObject�� ��ȯ �� m_fbxObjects�� �߰�
    for (const auto& fbxMesh : m_fbxMeshes)
    {
       auto gameObject = make_shared<GameObject>(device);
       gameObject->SetMesh(fbxMesh);
-      gameObject->SetScale(XMFLOAT3{ 0.01f, 0.01f, 0.01f }); // 원래 크기로 유지
-      gameObject->SetPosition(XMFLOAT3{ 0.0f, 0.0f, 0.0f }); // Y축 위치 조정
+      gameObject->SetScale(XMFLOAT3{ 0.01f, 0.01f, 0.01f }); // ���� ũ��� ����
+      gameObject->SetPosition(XMFLOAT3{ 0.0f, 0.0f, 0.0f }); // Y�� ��ġ ����
 
-      // 여기서 AABB 생성 (정적 오브젝트는 1회만)
+      // ���⼭ AABB ���� (���� ������Ʈ�� 1ȸ��)
       BoundingBox box;
       box.Center = gameObject->GetPosition();
-      box.Extents = { 1.0f, 1.0f, 1.0f }; // 적절한 값으로 조절
+      box.Extents = { 1.0f, 1.0f, 1.0f }; // ������ ������ ����
 
       gameObject->SetBoundingBox(box);
 
@@ -63,18 +63,18 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
       if (m_player) m_player->SetDrawBoundingBox(m_debugDrawEnabled);
 
 
-      for (auto& monster : m_Monsters)
-      {
-         if (monster) monster->SetDrawBoundingBox(m_debugDrawEnabled);
-      }
+		for (auto& [type, group] : m_monsterGroups)
+		{
+			for (auto& monster : group)
+			{
+				if (monster) monster->SetDrawBoundingBox(m_debugDrawEnabled);
+			}
+		}
 
-      //for (auto& obj : m_fbxObjects)
-      //   obj->SetDrawBoundingBox(m_debugDrawEnabled);
-
-      OutputDebugStringA(m_debugDrawEnabled ? "[디버그] AABB ON\n" : "[디버그] AABB OFF\n");
-   }
-   if (GetAsyncKeyState(VK_LEFT) & 0x8000)
-      m_uiObjects[1]->m_fillAmount -= 0.1;
+		OutputDebugStringA(m_debugDrawEnabled ? "[디버그] AABB ON\n" : "[디버그] AABB OFF\n");
+	}
+	if (GetAsyncKeyState(VK_LEFT) & 0x8000)
+		m_uiObjects[1]->m_fillAmount -= 0.1;
 
    if (GetAsyncKeyState(VK_RIGHT) & 0x8000)
       m_uiObjects[1]->m_fillAmount += 0.1;
@@ -85,71 +85,75 @@ void GameScene::Update(FLOAT timeElapsed)
    m_player->Update(timeElapsed);
    m_sun->Update(timeElapsed);
 
-   for (auto& object : m_objects) {
-      object->Update(timeElapsed);
-   }
-   m_skybox->SetPosition(m_camera->GetEye());
+	for (auto& object : m_objects)
+		object->Update(timeElapsed);
 
-   // 플레이어 위치 가져오기
+	m_skybox->SetPosition(m_camera->GetEye());
+
+   // �÷��̾� ��ġ ��������
    if (gGameFramework->GetPlayer())
    {
       const XMFLOAT3& playerPos = gGameFramework->GetPlayer()->GetPosition();
    }
 
-   for (auto& monster : m_Monsters)
-      monster->Update(timeElapsed);
+	// [1] 몬스터 업데이트 (map 기반)
+	for (auto& [type, group] : m_monsterGroups)
+	{
+		for (auto& monster : group)
+			monster->Update(timeElapsed);
+	}
 
+	// [2] 충돌 테스트
+	auto playerBox = m_player->GetBoundingBox();
 
-   // 충돌 테스트
-   auto playerBox = m_player->GetBoundingBox();
+	if (playerBox.Extents.x == 0.f && playerBox.Extents.y == 0.f && playerBox.Extents.z == 0.f)
+		return;
 
-   for (auto& monster : m_Monsters)
-   {
-      auto monsterBox = monster->GetBoundingBox();
-      auto monsterCenter = monsterBox.Center;
+	for (auto& [type, group] : m_monsterGroups)
+	{
+		for (auto& monster : group)
+		{
+			auto monsterBox = monster->GetBoundingBox();
+			auto monsterCenter = monsterBox.Center;
 
-      // 월드 위치 적용
-      XMFLOAT3 playerWorldPos = m_player->GetPosition();
-      XMFLOAT3 monsterWorldPos = monster->GetPosition();
+			XMFLOAT3 playerWorldPos = m_player->GetPosition();
+			XMFLOAT3 monsterWorldPos = monster->GetPosition();
 
-      // 센터 기준 실제 위치 계산 (로컬 center 기준일 경우 반영)
-      XMFLOAT3 playerCenterWorld = {
-         playerWorldPos.x,
-         playerWorldPos.y + 5.0f,
-         playerWorldPos.z
-      };
+			XMFLOAT3 playerCenterWorld = {
+				playerWorldPos.x,
+				playerWorldPos.y + 5.0f,
+				playerWorldPos.z
+			};
 
-      XMFLOAT3 monsterCenterWorld = {
-         monsterWorldPos.x + monsterCenter.x,
-         monsterWorldPos.y + monsterCenter.y,
-         monsterWorldPos.z + monsterCenter.z
-      };
+			XMFLOAT3 monsterCenterWorld = {
+				monsterWorldPos.x + monsterCenter.x,
+				monsterWorldPos.y + monsterCenter.y,
+				monsterWorldPos.z + monsterCenter.z
+			};
 
-      // 거리 기반 충돌 체크 (AABB Extents 포함)
-      float dx = abs(playerCenterWorld.x - monsterCenterWorld.x);
-      float dy = abs(playerCenterWorld.y - monsterCenterWorld.y);
-      float dz = abs(playerCenterWorld.z - monsterCenterWorld.z);
+			float dx = abs(playerCenterWorld.x - monsterCenterWorld.x);
+			float dy = abs(playerCenterWorld.y - monsterCenterWorld.y);
+			float dz = abs(playerCenterWorld.z - monsterCenterWorld.z);
 
-      const XMFLOAT3& playerExtent = playerBox.Extents;
-      const XMFLOAT3& monsterExtent = monsterBox.Extents;
+			const XMFLOAT3& playerExtent = playerBox.Extents;
+			const XMFLOAT3& monsterExtent = monsterBox.Extents;
 
-      bool intersectX = dx <= (playerExtent.x + monsterExtent.x);
-      bool intersectY = dy <= (playerExtent.y + monsterExtent.y);
-      bool intersectZ = dz <= (playerExtent.z + monsterExtent.z);
+			bool intersectX = dx <= (playerExtent.x + monsterExtent.x);
+			bool intersectY = dy <= (playerExtent.y + monsterExtent.y);
+			bool intersectZ = dz <= (playerExtent.z + monsterExtent.z);
 
-      if (intersectX && intersectY && intersectZ)
-      {
-         OutputDebugStringA("[충돌 감지] 플레이어와 몬스터 충돌!\n");
-
-         // 예: 충돌 시 몬스터를 붉은색으로 표시
-         monster->SetBaseColor(XMFLOAT4(1.f, 0.f, 0.f, 1.f));
-      }
-      else
-      {
-         // 충돌 안 한 경우 원래 색
-         monster->SetBaseColor(XMFLOAT4(1.f, 1.f, 1.f, 1.f));
-      }
-   }
+			if (intersectX && intersectY && intersectZ)
+			{
+				OutputDebugStringA("[충돌 감지] 플레이어와 몬스터 충돌!\n");
+				m_player->SetPosition(m_player->m_prevPosition); // 이동 되돌리기
+				monster->SetBaseColor(XMFLOAT4(1.f, 0.f, 0.f, 1.f)); // 충돌 시 빨강
+			}
+			else
+			{
+				monster->SetBaseColor(XMFLOAT4(1.f, 1.f, 1.f, 1.f)); // 기본 흰색
+			}
+		}
+	}
 }
 
 void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
@@ -175,13 +179,14 @@ void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) con
       m_player->Render(commandList);
    }
 
-   if (!m_Monsters.empty())
-   {
-      for (const auto& monster : m_Monsters)
-      {
-         monster->Render(commandList);
-      }
-   }
+	// 몬스터 렌더링 (map 기반으로 수정)
+	for (const auto& [type, group] : m_monsterGroups)
+	{
+		for (const auto& monster : group)
+		{
+			monster->Render(commandList);
+		}
+	}
 
    if (!m_uiObjects.empty())
    {      
@@ -191,7 +196,7 @@ void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) con
 
       for (const auto& ui : m_uiObjects)
       {
-         // b1 슬롯에 체력비율 전달 (셰이더에서 g_fillAmount로 사용됨)
+         // b1 ���Կ� ü�º��� ���� (���̴����� g_fillAmount�� ����)
          //commandList->SetGraphicsRoot32BitConstants(
          //   /* RootParameterIndex::UIFillAmount */ 1, 1, &healthRatio, 0);
 
@@ -218,15 +223,15 @@ void GameScene::BuildShaders(const ComPtr<ID3D12Device>& device,
    m_shaders.insert({ "SKYBOX", skyboxShader });
    auto detailShader = make_shared<DetailShader>(device, rootSignature);
    m_shaders.insert({ "DETAIL", detailShader });
-   //FBX 전용 쉐이더 추가
+   //FBX ���� ���̴� �߰�
    auto fbxShader = make_shared<FBXShader>(device, rootSignature);
    m_shaders.insert({ "FBX", fbxShader });
    auto uiShader = make_shared<GameSceneUIShader>(device, rootSignature);
    m_shaders.insert({ "UI", uiShader });
-   // Character 애니메이션 전용 셰이더 추가
+   // Character �ִϸ��̼� ���� ���̴� �߰�
    auto characterShader = make_shared<CharacterShader>(device, rootSignature);
    m_shaders.insert({ "CHARACTER", characterShader });
-   // 몬스터 (날파리) 전용 셰이더 추가
+   // ���� (���ĸ�) ���� ���̴� �߰�
    auto frightFlyShader = make_shared<FrightFlyShader>(device, rootSignature);
    m_shaders.insert({ "FrightFly", frightFlyShader });
 
@@ -284,15 +289,21 @@ void GameScene::BuildTextures(const ComPtr<ID3D12Device>& device,
    healthBarZeroTexture->CreateShaderVariable(device, true);
    m_textures.insert({ "HealthBarZero", healthBarZeroTexture });
 
-   auto healthBarTexture = make_shared<Texture>(device, commandList,
-      TEXT("Image/InGameUI/HealthBar_BC3.dds"), RootParameter::Texture);
-   healthBarTexture->CreateShaderVariable(device, true);
-   m_textures.insert({ "HealthBar", healthBarTexture });
-   
-   auto inventoryTexture = make_shared<Texture>(device, commandList,  
-      TEXT("Image/InGameUI/Inventory.dds"), RootParameter::Texture); 
-   inventoryTexture->CreateShaderVariable(device, true);
-   m_textures.insert({ "Inventory", inventoryTexture });
+	auto healthBarTexture = make_shared<Texture>(device, commandList,
+		TEXT("Image/InGameUI/HealthBar_BC3.dds"), RootParameter::Texture);
+	healthBarTexture->CreateShaderVariable(device, true);
+	m_textures.insert({ "HealthBar", healthBarTexture });
+	
+	auto inventoryTexture = make_shared<Texture>(device, commandList,  
+		TEXT("Image/InGameUI/Inventory.dds"), RootParameter::Texture); 
+	inventoryTexture->CreateShaderVariable(device, true);
+	m_textures.insert({ "Inventory", inventoryTexture });
+
+	auto FlowerFairyTexture = make_shared<Texture>(device, commandList,
+		TEXT("Image/Monsters/Flower Fairy Yellow.dds"), RootParameter::Texture);
+	FlowerFairyTexture->CreateShaderVariable(device, true);
+	m_textures.insert({ "Flower_Fairy", FlowerFairyTexture });
+
 }
 
 void GameScene::BuildMaterials(const ComPtr<ID3D12Device>& device,
@@ -314,96 +325,113 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
    m_lightSystem->SetLight(sunLight);
 
    m_sun = make_unique<Sun>(sunLight);
-   m_sun->SetStrength(XMFLOAT3{ 1.3f, 1.3f, 1.3f }); //디렉셔널 라이트 세기 줄이기
+   m_sun->SetStrength(XMFLOAT3{ 1.3f, 1.3f, 1.3f }); //�𷺼ų� ����Ʈ ���� ���̱�
 
-   // [1] 플레이어 모델용 스케일 행렬 설정 (크기 조절)
+   // [1] �÷��̾� �𵨿� ������ ��� ���� (ũ�� ����)
    XMMATRIX playerTransform = XMMatrixScaling(0.05f, 0.05f, 0.05);
 
-   // [2] FBX 로더 생성 및 모델 로드
+   // [2] FBX �δ� ���� �� �� �ε�
    m_playerLoader = make_shared<FBXLoader>();
-   cout << "캐릭터 로드 중!!!!" << endl;
+   cout << "ĳ���� �ε� ��!!!!" << endl;
 
    if (m_playerLoader->LoadFBXModel("Model/Player/Player2.fbx", playerTransform))
    {
       auto& meshes = m_playerLoader->GetMeshes();
       if (meshes.empty()) {
-         OutputDebugStringA("[ERROR] FBX에서 메시를 찾을 수 없습니다.\n");
+         OutputDebugStringA("[ERROR] FBX���� �޽ø� ã�� �� �����ϴ�.\n");
          return;
       }
 
-      // [3] Player 객체 생성
+      // [3] Player ��ü ����
       auto player = make_shared<Player>(device);
 
 
-      player->SetScale(XMFLOAT3{ 1.f, 1.f, 1.f }); // 기본값 확정
-      player->SetRotationY(0.f);                  // 정면을 보게 초기화
+      player->SetScale(XMFLOAT3{ 1.f, 1.f, 1.f }); // �⺻�� Ȯ��
+      player->SetRotationY(0.f);                  // ������ ���� �ʱ�ȭ
 
-      // [4] 위치 및 스케일 설정
-      player->SetPosition(XMFLOAT3{ -185.f, 1.7f, 177.f });
-      //player->SetPosition(gGameFramework->g_pos);
+		// [4] 위치 및 스케일 설정
+		player->SetPosition(XMFLOAT3{ 190.f, 1.7f, -190.f });
+		//player->SetPosition(gGameFramework->g_pos);
 
-      // [5] FBX 메시 전부 등록
+      // [5] FBX �޽� ���� ���
       for (int i = 0; i < meshes.size(); ++i)
       {
          player->AddMesh(meshes[i]);
       }
 
-      // [6] 애니메이션 클립 및 본 정보 설정
+      // [6] �ִϸ��̼� Ŭ�� �� �� ���� ����
       player->SetAnimationClips(m_playerLoader->GetAnimationClips());
       player->SetCurrentAnimation("Idle");
       player->SetBoneOffsets(m_playerLoader->GetBoneOffsets());
       player->SetBoneNameToIndex(m_playerLoader->GetBoneNameToIndex());
 
-      // [7] 텍스처, 머티리얼 설정
+      // [7] �ؽ�ó, ��Ƽ���� ����
       player->SetTexture(m_textures["CHARACTER"]);
       player->SetTextureIndex(m_textures["CHARACTER"]->GetTextureIndex());
-      player->SetMaterial(m_materials["CHARACTER"]); // 없으면 생성 필요
-      player->SetShader(m_shaders["CHARACTER"]); // 없으면 생성 필요
+      player->SetMaterial(m_materials["CHARACTER"]); // ������ ���� �ʿ�
+      player->SetShader(m_shaders["CHARACTER"]); // ������ ���� �ʿ�
       player->SetDebugLineShader(m_shaders["DebugLineShader"]);
 
-      // m_player 생성 이후 위치
+      // m_player ���� ���� ��ġ
       BoundingBox playerBox;
       playerBox.Center = XMFLOAT3{ 0.f, 4.0f, 0.f };
-      playerBox.Extents = { 1.0f, 3.5f, 1.0f }; // 스케일링된 값
+      playerBox.Extents = { 1.0f, 3.5f, 1.0f }; // �����ϸ��� ��
       player->SetBoundingBox(playerBox);
 
-      // [8] 본 행렬 StructuredBuffer용 SRV 생성
+      // [8] �� ��� StructuredBuffer�� SRV ����
       auto [cpuHandle, gpuHandle] = gGameFramework->AllocateDescriptorHeapSlot();
       player->CreateBoneMatrixSRV(device, cpuHandle, gpuHandle);
 
-      // [9] Player 등록 및 GameScene 내부에 저장
+      // [9] Player ��� �� GameScene ���ο� ����
       gGameFramework->SetPlayer(player);
       m_player = gGameFramework->GetPlayer();
    }
    else
    {
-      OutputDebugStringA("[ERROR] 플레이어 FBX 로드 실패!\n");
+      OutputDebugStringA("[ERROR] �÷��̾� FBX �ε� ����!\n");
    }
 
    m_player->SetCamera(m_camera);
 
-   //몬스터 로드
-   LoadAllMonsters(device, m_textures, m_shaders, m_Monsters);
-
-   // 배치
-   for (int i = 0; i < m_Monsters.size(); ++i)
-   {
-      // 위치 분산 (타원형 형태로 배치)
-      float angle = XM_2PI * i / m_Monsters.size();
-      float radius = 15.0f;
-      float x = -170.f + radius * cos(angle);
-      float z = 15.f + radius * sin(angle);
-      float y = 0.f;
-
-      m_Monsters[i]->SetPosition(XMFLOAT3{ x, y, z });
-   }
+	//몬스터 로드
+	LoadAllMonsters(device, m_textures, m_shaders, m_monsterGroups);
 
 
-   m_skybox = make_shared<GameObject>(device);
-   m_skybox->SetMesh(m_meshes["SKYBOX"]);
-   m_skybox->SetTextureIndex(m_textures["SKYBOX"]->GetTextureIndex());
-   m_skybox->SetTexture(m_textures["SKYBOX"]);
-   m_skybox->SetShader(m_shaders["SKYBOX"]);
+	// "Frightfly" 타입 몬스터 배치
+	auto& frightflies = m_monsterGroups["Frightfly"];
+
+	for (int i = 0; i < frightflies.size(); ++i)
+	{
+		float angle = XM_2PI * i / frightflies.size();
+		float radius = 15.0f;
+		float x = -170.f + radius * cos(angle);
+		float z = 15.f + radius * sin(angle);
+		float y = 0.f;
+
+		frightflies[i]->SetPosition(XMFLOAT3{ x, y, z });
+	}
+
+	// "Flower_Fairy" 타입 몬스터 배치
+	auto& fairies = m_monsterGroups["Flower_Fairy"];
+
+	for (int i = 0; i < fairies.size(); ++i)
+	{
+		float angle = XM_2PI * i / fairies.size();
+		float radius = 20.0f;
+		float x = 190.f + radius * cos(angle);
+		float z = -190.f + radius * sin(angle);
+		float y = -5.f;
+
+		fairies[i]->SetPosition(XMFLOAT3{ x, y, z });
+	}
+
+
+
+	m_skybox = make_shared<GameObject>(device);
+	m_skybox->SetMesh(m_meshes["SKYBOX"]);
+	m_skybox->SetTextureIndex(m_textures["SKYBOX"]->GetTextureIndex());
+	m_skybox->SetTexture(m_textures["SKYBOX"]);
+	m_skybox->SetShader(m_shaders["SKYBOX"]);
 
 
    m_terrain = make_shared<Terrain>(device);
@@ -420,15 +448,15 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
       obj->SetTexture(m_textures["FBX"]);
       obj->SetTextureIndex(m_textures["FBX"]->GetTextureIndex());
       obj->SetShader(m_shaders["FBX"]);
-      obj->SetUseTexture(true); // UV 기반 텍스처 적용
+      obj->SetUseTexture(true); // UV ��� �ؽ�ó ����
    }
    auto healthBarZeroUI = make_shared<GameObject>(device);
 
-   healthBarZeroUI->SetTexture(m_textures["HealthBarZero"]);  // 우리가 방금 로드한 텍스처 사용  
+   healthBarZeroUI->SetTexture(m_textures["HealthBarZero"]);  // �츮�� ��� �ε��� �ؽ�ó ���  
    healthBarZeroUI->SetTextureIndex(m_textures["HealthBarZero"]->GetTextureIndex());  //   
    healthBarZeroUI->SetMesh(CreateScreenQuad(device, gGameFramework->GetCommandList(), 1.4f, 0.15f, 0.98f));
-   //healthBarUI->SetPosition({0.f, -0.6f, -0.85f });        // NDC 좌표로 하단 왼쪽 고정 (롤 스타일)
-   //healthBarUI->SetPosition(XMFLOAT3(0.f, 0.2f, 0.98f));        // NDC 좌표로 하단 왼쪽 고정 (롤 스타일)
+   //healthBarUI->SetPosition({0.f, -0.6f, -0.85f });        // NDC ��ǥ�� �ϴ� ���� ���� (�� ��Ÿ��)
+   //healthBarUI->SetPosition(XMFLOAT3(0.f, 0.2f, 0.98f));        // NDC ��ǥ�� �ϴ� ���� ���� (�� ��Ÿ��)
    healthBarZeroUI->SetPosition(XMFLOAT3(-0.3f, -0.7f, 0.98f));
    healthBarZeroUI->SetScale(XMFLOAT3(1.2f, 1.2f, 1.2f));
    healthBarZeroUI->SetUseTexture(true);
@@ -438,11 +466,11 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 
    auto healthBarUI = make_shared<GameObject>(device);
 
-   healthBarUI->SetTexture(m_textures["HealthBar"]);  // 우리가 방금 로드한 텍스처 사용
+   healthBarUI->SetTexture(m_textures["HealthBar"]);  // �츮�� ��� �ε��� �ؽ�ó ���
    healthBarUI->SetTextureIndex(m_textures["HealthBar"]->GetTextureIndex());  // 
    healthBarUI->SetMesh(CreateScreenQuad(device, gGameFramework->GetCommandList(), 1.4f, 0.15f, 0.98f));
-   //healthBarUI->SetPosition({0.f, -0.6f, -0.85f });        // NDC 좌표로 하단 왼쪽 고정 (롤 스타일)
-   //healthBarUI->SetPosition(XMFLOAT3(0.f, 0.2f, 0.98f));        // NDC 좌표로 하단 왼쪽 고정 (롤 스타일)
+   //healthBarUI->SetPosition({0.f, -0.6f, -0.85f });        // NDC ��ǥ�� �ϴ� ���� ���� (�� ��Ÿ��)
+   //healthBarUI->SetPosition(XMFLOAT3(0.f, 0.2f, 0.98f));        // NDC ��ǥ�� �ϴ� ���� ���� (�� ��Ÿ��)
    healthBarUI->SetPosition(XMFLOAT3(-0.3f, -0.7f, 0.98f));
    healthBarUI->SetScale(XMFLOAT3(1.2f, 1.2f, 1.2f));
    healthBarUI->SetUseTexture(true);
@@ -452,7 +480,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 
    auto Inventory = make_shared<GameObject>(device);
 
-   Inventory->SetTexture(m_textures["Inventory"]);  // 우리가 방금 로드한 텍스처 사용
+   Inventory->SetTexture(m_textures["Inventory"]);  // �츮�� ��� �ε��� �ؽ�ó ���
    Inventory->SetTextureIndex(m_textures["Inventory"]->GetTextureIndex());  // 
    Inventory->SetMesh(CreateScreenQuad(device, gGameFramework->GetCommandList(), 0.5f, 0.5f, 0.98f));
    Inventory->SetPosition(XMFLOAT3(0.8f, -0.55f, 0.98f));

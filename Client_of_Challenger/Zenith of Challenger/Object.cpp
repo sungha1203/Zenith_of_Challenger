@@ -14,7 +14,7 @@ Object::Object() :
 
 void Object::Transform(XMFLOAT3 shift)
 {
-	//SetPosition(Vector3::Add(GetPosition(), shift));
+	m_prevPosition = m_position; // 이동 전 위치 저장
 	m_position = Vector3::Add(m_position, shift);
 	UpdateWorldMatrix();
 }
