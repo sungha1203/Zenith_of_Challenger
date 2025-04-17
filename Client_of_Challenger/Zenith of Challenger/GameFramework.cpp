@@ -436,8 +436,8 @@ void CGameFramework::BuildObjects()
 	m_sceneManager->AddScene("GameScene", gameScene);
 
 	// 기본 씬으로 StartScene 설정
-	//m_sceneManager->ChangeScene("StartScene", m_device, m_commandList, m_rootSignature);
-	m_sceneManager->ChangeScene("GameScene", m_device, m_commandList, m_rootSignature); //클라 개발용 바로 게임씬 들어가도록
+	m_sceneManager->ChangeScene("StartScene", m_device, m_commandList, m_rootSignature);
+	//m_sceneManager->ChangeScene("GameScene", m_device, m_commandList, m_rootSignature); //클라 개발용 바로 게임씬 들어가도록
 
 	m_commandList->Close();
 	ID3D12CommandList* ppCommandList[] = { m_commandList.Get() };
