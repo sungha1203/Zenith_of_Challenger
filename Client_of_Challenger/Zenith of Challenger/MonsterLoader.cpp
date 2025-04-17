@@ -98,6 +98,49 @@ void LoadAllMonsters(
         }
     }
 
+    // 3. Mushroom_Dark 몬스터 로드
+    auto mushroomDarkLoader = make_shared<FBXLoader>();
+    if (mushroomDarkLoader->LoadFBXModel("Model/Monsters/Mushroom_Dark/Mushroom_Dark.fbx", XMMatrixScaling(0.1f, 0.1f, 0.1f)))
+    {
+        for (int i = 0; i < 10; ++i)
+        {
+            auto meshes = mushroomDarkLoader->GetMeshes();
+            if (!meshes.empty())
+            {
+                // 몬스터 객체 생성
+                auto mushroomDark = make_shared<MushroomDark>(device); // 추후 MushroomDark 클래스로 대체 가능
+
+                mushroomDark->SetTexture(textures.at("Mushroom_Dark"));
+                mushroomDark->SetTextureIndex(textures.at("Mushroom_Dark")->GetTextureIndex());
+                mushroomDark->SetShader(shaders.at("FrightFly")); // 캐릭터 셰이더 재사용
+                mushroomDark->SetDebugLineShader(shaders.at("DebugLineShader"));
+
+                for (auto& mesh : meshes)
+                    mushroomDark->AddMesh(mesh);
+
+                mushroomDark->SetAnimationClips(mushroomDarkLoader->GetAnimationClips());
+                mushroomDark->SetCurrentAnimation("Idle");
+                mushroomDark->SetBoneOffsets(mushroomDarkLoader->GetBoneOffsets());
+                mushroomDark->SetBoneNameToIndex(mushroomDarkLoader->GetBoneNameToIndex());
+
+                BoundingBox box;
+                box.Center = XMFLOAT3{ 0.f, 5.0f, 0.f };
+                box.Extents = XMFLOAT3{ 3.5f, 6.0f, 3.5f };
+                mushroomDark->SetBoundingBox(box);
+
+                auto [cpuHandle, gpuHandle] = gGameFramework->AllocateDescriptorHeapSlot();
+                mushroomDark->CreateBoneMatrixSRV(device, cpuHandle, gpuHandle);
+
+                outMonsterGroups["Mushroom_Dark"].push_back(mushroomDark);
+
+                OutputDebugStringA("[MonsterLoader] Mushroom_Dark 로드 완료\n");
+            }
+            else
+            {
+                OutputDebugStringA("[MonsterLoader] Mushroom_Dark 메시 없음!\n");
+            }
+        }
+    }
 
 
 

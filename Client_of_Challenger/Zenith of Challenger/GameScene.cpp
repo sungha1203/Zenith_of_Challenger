@@ -71,7 +71,7 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
             }
         }
 
-        OutputDebugStringA(m_debugDrawEnabled ? "[디버그] AABB ON\n" : "[디버그] AABB OFF\n");
+        OutputDebugStringA(m_debugDrawEnabled ? "[Debug] AABB ON\n" : "[Debug] AABB OFF\n");
     }
     if (GetAsyncKeyState(VK_LEFT) & 0x8000)
         m_uiObjects[1]->m_fillAmount -= 0.1;
@@ -144,7 +144,7 @@ void GameScene::Update(FLOAT timeElapsed)
 
             if (intersectX && intersectY && intersectZ)
             {
-                OutputDebugStringA("[충돌 감지] 플레이어와 몬스터 충돌!\n");
+                OutputDebugStringA("[Collision Detection]Players and monsters collide!\n");
                 m_player->SetPosition(m_player->m_prevPosition); // 이동 되돌리기
                 monster->SetBaseColor(XMFLOAT4(1.f, 0.f, 0.f, 1.f)); // 충돌 시 빨강
             }
@@ -304,6 +304,11 @@ void GameScene::BuildTextures(const ComPtr<ID3D12Device>& device,
     FlowerFairyTexture->CreateShaderVariable(device, true);
     m_textures.insert({ "Flower_Fairy", FlowerFairyTexture });
 
+    auto Mushroom_DarkTexture = make_shared<Texture>(device, commandList,
+        TEXT("Image/Monsters/Polygonal Mushroom Dark.dds"), RootParameter::Texture);
+    Mushroom_DarkTexture->CreateShaderVariable(device, true);
+    m_textures.insert({ "Mushroom_Dark", Mushroom_DarkTexture });
+
 }
 
 void GameScene::BuildMaterials(const ComPtr<ID3D12Device>& device,
@@ -350,8 +355,8 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
         player->SetRotationY(0.f);                  // 정면을 보게 초기화
 
         // [4] 위치 및 스케일 설정
-        //player->SetPosition(XMFLOAT3{ 190.f, 1.7f, -190.f });
-        player->SetPosition(gGameFramework->g_pos);
+        player->SetPosition(XMFLOAT3{ 190.f, 1.7f, -190.f });
+        //player->SetPosition(gGameFramework->g_pos);
 
         // [5] FBX 메시 전부 등록
         for (int i = 0; i < meshes.size(); ++i)
@@ -375,7 +380,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
         // m_player 생성 이후 위치
         BoundingBox playerBox;
         playerBox.Center = XMFLOAT3{ 0.f, 4.0f, 0.f };
-        playerBox.Extents = { 1.0f, 3.5f, 1.0f }; // 스케일링된 값
+        playerBox.Extents = { 1.0f, 4.0f, 1.0f }; // 스케일링된 값
         player->SetBoundingBox(playerBox);
 
         // [8] 본 행렬 StructuredBuffer용 SRV 생성
@@ -395,7 +400,6 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 
     //몬스터 로드
     LoadAllMonsters(device, m_textures, m_shaders, m_monsterGroups);
-
 
     // "Frightfly" 타입 몬스터 배치
     auto& frightflies = m_monsterGroups["Frightfly"];
@@ -425,6 +429,19 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
         fairies[i]->SetPosition(XMFLOAT3{ x, y, z });
     }
 
+    // "Mushroom_Dark" 타입 몬스터 배치
+    auto& mushrooms = m_monsterGroups["Mushroom_Dark"];
+
+    for (int i = 0; i < mushrooms.size(); ++i)
+    {
+        float angle = XM_2PI * i / mushrooms.size();
+        float radius = 25.0f; // 조금 더 넓게 배치
+        float x = -100.f + radius * cos(angle);
+        float z = -165.f + radius * sin(angle);
+        float y = 0.f; // 지면 높이에 맞게 조절
+
+        mushrooms[i]->SetPosition(XMFLOAT3{ x, y, z });
+    }
 
 
     m_skybox = make_shared<GameObject>(device);

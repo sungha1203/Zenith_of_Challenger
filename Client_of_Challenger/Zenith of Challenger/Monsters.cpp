@@ -47,6 +47,33 @@ void Monsters::Update(FLOAT timeElapsed)
             m_animTime = fmod(m_animTime, clip.duration);
     }
 
+
+    // [1] 플레이어 위치 받아오기
+    if (!gGameFramework->GetPlayer()) return;
+
+    XMFLOAT3 targetPos = gGameFramework->GetPlayer()->GetPosition();
+    XMFLOAT3 myPos = GetPosition();
+
+    // [2] 방향 벡터 계산
+    XMFLOAT3 toPlayer = {
+        targetPos.x - myPos.x,
+        0.f, // Y축 회전이므로 높이 무시
+        targetPos.z - myPos.z
+    };
+
+    if (!Vector3::IsZero(toPlayer))
+    {
+        toPlayer = Vector3::Normalize(toPlayer);
+
+        // [3] 회전 각도 계산 (Z 기준)
+        float angle = atan2f(toPlayer.x, toPlayer.z); // x/z
+        float degrees = XMConvertToDegrees(angle);
+
+        // [4] 몬스터가 플레이어를 향하도록 Y축 회전
+        SetRotationY(degrees + 180.f);
+    }
+
+
     GameObject::Update(timeElapsed);
 }
 

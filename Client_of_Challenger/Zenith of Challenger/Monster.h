@@ -16,12 +16,12 @@ public:
     }
 };
 
-class PlantDionae : public Monsters
+class MushroomDark : public Monsters
 {
 public:
-    PlantDionae(const ComPtr<ID3D12Device>& device) : Monsters(device)
+    MushroomDark(const ComPtr<ID3D12Device>& device) : Monsters(device)
     {
-        SetScale(XMFLOAT3(0.9f, 0.9f, 0.9f));
+        SetScale(XMFLOAT3(1.0f, 1.0f, 1.0f));
     }
 };
 
