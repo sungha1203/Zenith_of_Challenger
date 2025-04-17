@@ -10,7 +10,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device,
 	m_meshes.clear();
 	m_textures.clear();
 	m_objects.clear();
-	m_fbxMeshes.clear(); // FBX ¸Þ½¬ ÃÊ±âÈ­
+	m_fbxMeshes.clear(); // FBX ï¿½Þ½ï¿½ ï¿½Ê±ï¿½È­
 
 
 	BuildShaders(device, commandList, rootSignature);
@@ -18,8 +18,8 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device,
 	BuildTextures(device, commandList);
 	BuildMaterials(device, commandList);
 
-	// FBX ÆÄÀÏ ·Îµå
-	cout << "µµÀü ¸Ê ·Îµå Áß!!!!" << endl;
+	// FBX ï¿½ï¿½ï¿½ï¿½ ï¿½Îµï¿½
+	cout << "ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Îµï¿½ ï¿½ï¿½!!!!" << endl;
 	m_fbxLoader = make_shared<FBXLoader>();
 	if (m_fbxLoader->LoadFBXModel("Model/Challenge.fbx",
 		XMMatrixScaling(5.0f, 5.0f, 5.0f) * XMMatrixRotationY(XMConvertToRadians(180.0f))))
@@ -27,18 +27,18 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device,
 		m_fbxMeshes = m_fbxLoader->GetMeshes();
 	}
 
-	// FBX ¸ðµ¨À» GameObject·Î º¯È¯ ÈÄ m_fbxObjects¿¡ Ãß°¡
+	// FBX ï¿½ï¿½ï¿½ï¿½ GameObjectï¿½ï¿½ ï¿½ï¿½È¯ ï¿½ï¿½ m_fbxObjectsï¿½ï¿½ ï¿½ß°ï¿½
 	for (const auto& fbxMesh : m_fbxMeshes)
 	{
 		auto gameObject = make_shared<GameObject>(device);
 		gameObject->SetMesh(fbxMesh);
-		gameObject->SetScale(XMFLOAT3{ 0.01f, 0.01f, 0.01f }); // ¿ø·¡ Å©±â·Î À¯Áö
-		gameObject->SetPosition(XMFLOAT3{ 0.0f, 0.0f, 0.0f }); // YÃà À§Ä¡ Á¶Á¤
+		gameObject->SetScale(XMFLOAT3{ 0.01f, 0.01f, 0.01f }); // ï¿½ï¿½ï¿½ï¿½ Å©ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+		gameObject->SetPosition(XMFLOAT3{ 0.0f, 0.0f, 0.0f }); // Yï¿½ï¿½ ï¿½ï¿½Ä¡ ï¿½ï¿½ï¿½ï¿½
 
-		// ¿©±â¼­ AABB »ý¼º (Á¤Àû ¿ÀºêÁ§Æ®´Â 1È¸¸¸)
+		// ï¿½ï¿½ï¿½â¼­ AABB ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ 1È¸ï¿½ï¿½)
 		BoundingBox box;
 		box.Center = gameObject->GetPosition();
-		box.Extents = { 1.0f, 1.0f, 1.0f }; // ÀûÀýÇÑ °ªÀ¸·Î Á¶Àý
+		box.Extents = { 1.0f, 1.0f, 1.0f }; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 
 		gameObject->SetBoundingBox(box);
 
@@ -71,7 +71,7 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
 		//for (auto& obj : m_fbxObjects)
 		//	obj->SetDrawBoundingBox(m_debugDrawEnabled);
 
-		OutputDebugStringA(m_debugDrawEnabled ? "[µð¹ö±×] AABB ON\n" : "[µð¹ö±×] AABB OFF\n");
+		OutputDebugStringA(m_debugDrawEnabled ? "[ï¿½ï¿½ï¿½ï¿½ï¿½] AABB ON\n" : "[ï¿½ï¿½ï¿½ï¿½ï¿½] AABB OFF\n");
 	}
 	if (GetAsyncKeyState(VK_LEFT) & 0x8000)
 		m_uiObjects[1]->m_fillAmount -= 0.1;
@@ -90,7 +90,7 @@ void GameScene::Update(FLOAT timeElapsed)
 	}
 	m_skybox->SetPosition(m_camera->GetEye());
 
-	// ÇÃ·¹ÀÌ¾î À§Ä¡ °¡Á®¿À±â
+	// ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½ï¿½Ä¡ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	if (gGameFramework->GetPlayer())
 	{
 		const XMFLOAT3& playerPos = gGameFramework->GetPlayer()->GetPosition();
@@ -100,7 +100,7 @@ void GameScene::Update(FLOAT timeElapsed)
 		monster->Update(timeElapsed);
 
 
-	// Ãæµ¹ Å×½ºÆ®
+	// ï¿½æµ¹ ï¿½×½ï¿½Æ®
 	auto playerBox = m_player->GetBoundingBox();
 
 	for (auto& monster : m_Monsters)
@@ -108,11 +108,11 @@ void GameScene::Update(FLOAT timeElapsed)
 		auto monsterBox = monster->GetBoundingBox();
 		auto monsterCenter = monsterBox.Center;
 
-		// ¿ùµå À§Ä¡ Àû¿ë
+		// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡ ï¿½ï¿½ï¿½ï¿½
 		XMFLOAT3 playerWorldPos = m_player->GetPosition();
 		XMFLOAT3 monsterWorldPos = monster->GetPosition();
 
-		// ¼¾ÅÍ ±âÁØ ½ÇÁ¦ À§Ä¡ °è»ê (·ÎÄÃ center ±âÁØÀÏ °æ¿ì ¹Ý¿µ)
+		// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡ ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½ center ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½Ý¿ï¿½)
 		XMFLOAT3 playerCenterWorld = {
 			playerWorldPos.x,
 			playerWorldPos.y + 5.0f,
@@ -125,7 +125,7 @@ void GameScene::Update(FLOAT timeElapsed)
 			monsterWorldPos.z + monsterCenter.z
 		};
 
-		// °Å¸® ±â¹Ý Ãæµ¹ Ã¼Å© (AABB Extents Æ÷ÇÔ)
+		// ï¿½Å¸ï¿½ ï¿½ï¿½ï¿½ ï¿½æµ¹ Ã¼Å© (AABB Extents ï¿½ï¿½ï¿½ï¿½)
 		float dx = abs(playerCenterWorld.x - monsterCenterWorld.x);
 		float dy = abs(playerCenterWorld.y - monsterCenterWorld.y);
 		float dz = abs(playerCenterWorld.z - monsterCenterWorld.z);
@@ -139,14 +139,14 @@ void GameScene::Update(FLOAT timeElapsed)
 
 		if (intersectX && intersectY && intersectZ)
 		{
-			OutputDebugStringA("[Ãæµ¹ °¨Áö] ÇÃ·¹ÀÌ¾î¿Í ¸ó½ºÅÍ Ãæµ¹!\n");
+			OutputDebugStringA("[ï¿½æµ¹ ï¿½ï¿½ï¿½ï¿½] ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½æµ¹!\n");
 
-			// ¿¹: Ãæµ¹ ½Ã ¸ó½ºÅÍ¸¦ ºÓÀº»öÀ¸·Î Ç¥½Ã
+			// ï¿½ï¿½: ï¿½æµ¹ ï¿½ï¿½ ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Ç¥ï¿½ï¿½
 			monster->SetBaseColor(XMFLOAT4(1.f, 0.f, 0.f, 1.f));
 		}
 		else
 		{
-			// Ãæµ¹ ¾È ÇÑ °æ¿ì ¿ø·¡ »ö
+			// ï¿½æµ¹ ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½
 			monster->SetBaseColor(XMFLOAT4(1.f, 1.f, 1.f, 1.f));
 		}
 	}
@@ -191,7 +191,7 @@ void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) con
 
 		for (const auto& ui : m_uiObjects)
 		{
-			// b1 ½½·Ô¿¡ Ã¼·ÂºñÀ² Àü´Þ (¼ÎÀÌ´õ¿¡¼­ g_fillAmount·Î »ç¿ëµÊ)
+			// b1 ï¿½ï¿½ï¿½Ô¿ï¿½ Ã¼ï¿½Âºï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½Ì´ï¿½ï¿½ï¿½ï¿½ï¿½ g_fillAmountï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
 			//commandList->SetGraphicsRoot32BitConstants(
 			//	/* RootParameterIndex::UIFillAmount */ 1, 1, &healthRatio, 0);
 
@@ -218,15 +218,15 @@ void GameScene::BuildShaders(const ComPtr<ID3D12Device>& device,
 	m_shaders.insert({ "SKYBOX", skyboxShader });
 	auto detailShader = make_shared<DetailShader>(device, rootSignature);
 	m_shaders.insert({ "DETAIL", detailShader });
-	//FBX Àü¿ë ½¦ÀÌ´õ Ãß°¡
+	//FBX ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ì´ï¿½ ï¿½ß°ï¿½
 	auto fbxShader = make_shared<FBXShader>(device, rootSignature);
 	m_shaders.insert({ "FBX", fbxShader });
 	auto uiShader = make_shared<GameSceneUIShader>(device, rootSignature);
 	m_shaders.insert({ "UI", uiShader });
-	// Character ¾Ö´Ï¸ÞÀÌ¼Ç Àü¿ë ¼ÎÀÌ´õ Ãß°¡
+	// Character ï¿½Ö´Ï¸ï¿½ï¿½Ì¼ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ì´ï¿½ ï¿½ß°ï¿½
 	auto characterShader = make_shared<CharacterShader>(device, rootSignature);
 	m_shaders.insert({ "CHARACTER", characterShader });
-	// ¸ó½ºÅÍ (³¯ÆÄ¸®) Àü¿ë ¼ÎÀÌ´õ Ãß°¡
+	// ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½Ä¸ï¿½) ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ì´ï¿½ ï¿½ß°ï¿½
 	auto frightFlyShader = make_shared<FrightFlyShader>(device, rootSignature);
 	m_shaders.insert({ "FrightFly", frightFlyShader });
 
@@ -314,81 +314,81 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 	m_lightSystem->SetLight(sunLight);
 
 	m_sun = make_unique<Sun>(sunLight);
-	m_sun->SetStrength(XMFLOAT3{ 1.3f, 1.3f, 1.3f }); //µð·º¼Å³Î ¶óÀÌÆ® ¼¼±â ÁÙÀÌ±â
+	m_sun->SetStrength(XMFLOAT3{ 1.3f, 1.3f, 1.3f }); //ï¿½ð·º¼Å³ï¿½ ï¿½ï¿½ï¿½ï¿½Æ® ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ì±ï¿½
 
-	// [1] ÇÃ·¹ÀÌ¾î ¸ðµ¨¿ë ½ºÄÉÀÏ Çà·Ä ¼³Á¤ (Å©±â Á¶Àý)
+	// [1] ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½ðµ¨¿ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (Å©ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
 	XMMATRIX playerTransform = XMMatrixScaling(0.05f, 0.05f, 0.05);
 
-	// [2] FBX ·Î´õ »ý¼º ¹× ¸ðµ¨ ·Îµå
+	// [2] FBX ï¿½Î´ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ ï¿½Îµï¿½
 	m_playerLoader = make_shared<FBXLoader>();
-	cout << "Ä³¸¯ÅÍ ·Îµå Áß!!!!" << endl;
+	cout << "Ä³ï¿½ï¿½ï¿½ï¿½ ï¿½Îµï¿½ ï¿½ï¿½!!!!" << endl;
 
 	if (m_playerLoader->LoadFBXModel("Model/Player/Player2.fbx", playerTransform))
 	{
 		auto& meshes = m_playerLoader->GetMeshes();
 		if (meshes.empty()) {
-			OutputDebugStringA("[ERROR] FBX¿¡¼­ ¸Þ½Ã¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù.\n");
+			OutputDebugStringA("[ERROR] FBXï¿½ï¿½ï¿½ï¿½ ï¿½Þ½Ã¸ï¿½ Ã£ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½.\n");
 			return;
 		}
 
-		// [3] Player °´Ã¼ »ý¼º
+		// [3] Player ï¿½ï¿½Ã¼ ï¿½ï¿½ï¿½ï¿½
 		auto player = make_shared<Player>(device);
 
 
-		player->SetScale(XMFLOAT3{ 1.f, 1.f, 1.f }); // ±âº»°ª È®Á¤
-		player->SetRotationY(0.f);                  // Á¤¸éÀ» º¸°Ô ÃÊ±âÈ­
+		player->SetScale(XMFLOAT3{ 1.f, 1.f, 1.f }); // ï¿½âº»ï¿½ï¿½ È®ï¿½ï¿½
+		player->SetRotationY(0.f);                  // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­
 
-		// [4] À§Ä¡ ¹× ½ºÄÉÀÏ ¼³Á¤
+		// [4] ï¿½ï¿½Ä¡ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		player->SetPosition(XMFLOAT3{ -185.f, 1.7f, 177.f });
 		//player->SetPosition(gGameFramework->g_pos);
 
-		// [5] FBX ¸Þ½Ã ÀüºÎ µî·Ï
+		// [5] FBX ï¿½Þ½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
 		for (int i = 0; i < meshes.size(); ++i)
 		{
 			player->AddMesh(meshes[i]);
 		}
 
-		// [6] ¾Ö´Ï¸ÞÀÌ¼Ç Å¬¸³ ¹× º» Á¤º¸ ¼³Á¤
+		// [6] ï¿½Ö´Ï¸ï¿½ï¿½Ì¼ï¿½ Å¬ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		player->SetAnimationClips(m_playerLoader->GetAnimationClips());
 		player->SetCurrentAnimation("Idle");
 		player->SetBoneOffsets(m_playerLoader->GetBoneOffsets());
 		player->SetBoneNameToIndex(m_playerLoader->GetBoneNameToIndex());
 
-		// [7] ÅØ½ºÃ³, ¸ÓÆ¼¸®¾ó ¼³Á¤
+		// [7] ï¿½Ø½ï¿½Ã³, ï¿½ï¿½Æ¼ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		player->SetTexture(m_textures["CHARACTER"]);
 		player->SetTextureIndex(m_textures["CHARACTER"]->GetTextureIndex());
-		player->SetMaterial(m_materials["CHARACTER"]); // ¾øÀ¸¸é »ý¼º ÇÊ¿ä
-		player->SetShader(m_shaders["CHARACTER"]); // ¾øÀ¸¸é »ý¼º ÇÊ¿ä
+		player->SetMaterial(m_materials["CHARACTER"]); // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ê¿ï¿½
+		player->SetShader(m_shaders["CHARACTER"]); // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ê¿ï¿½
 		player->SetDebugLineShader(m_shaders["DebugLineShader"]);
 
-		// m_player »ý¼º ÀÌÈÄ À§Ä¡
+		// m_player ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡
 		BoundingBox playerBox;
 		playerBox.Center = XMFLOAT3{ 0.f, 4.0f, 0.f };
-		playerBox.Extents = { 1.0f, 3.5f, 1.0f }; // ½ºÄÉÀÏ¸µµÈ °ª
+		playerBox.Extents = { 1.0f, 3.5f, 1.0f }; // ï¿½ï¿½ï¿½ï¿½ï¿½Ï¸ï¿½ï¿½ï¿½ ï¿½ï¿½
 		player->SetBoundingBox(playerBox);
 
-		// [8] º» Çà·Ä StructuredBuffer¿ë SRV »ý¼º
+		// [8] ï¿½ï¿½ ï¿½ï¿½ï¿½ StructuredBufferï¿½ï¿½ SRV ï¿½ï¿½ï¿½ï¿½
 		auto [cpuHandle, gpuHandle] = gGameFramework->AllocateDescriptorHeapSlot();
 		player->CreateBoneMatrixSRV(device, cpuHandle, gpuHandle);
 
-		// [9] Player µî·Ï ¹× GameScene ³»ºÎ¿¡ ÀúÀå
+		// [9] Player ï¿½ï¿½ï¿½ ï¿½ï¿½ GameScene ï¿½ï¿½ï¿½Î¿ï¿½ ï¿½ï¿½ï¿½ï¿½
 		gGameFramework->SetPlayer(player);
 		m_player = gGameFramework->GetPlayer();
 	}
 	else
 	{
-		OutputDebugStringA("[ERROR] ÇÃ·¹ÀÌ¾î FBX ·Îµå ½ÇÆÐ!\n");
+		OutputDebugStringA("[ERROR] ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ FBX ï¿½Îµï¿½ ï¿½ï¿½ï¿½ï¿½!\n");
 	}
 
 	m_player->SetCamera(m_camera);
 
-	//¸ó½ºÅÍ ·Îµå
+	//ï¿½ï¿½ï¿½ï¿½ ï¿½Îµï¿½
 	LoadAllMonsters(device, m_textures, m_shaders, m_Monsters);
 
-	// ¹èÄ¡
+	// ï¿½ï¿½Ä¡
 	for (int i = 0; i < m_Monsters.size(); ++i)
 	{
-		// À§Ä¡ ºÐ»ê (Å¸¿øÇü ÇüÅÂ·Î ¹èÄ¡)
+		// ï¿½ï¿½Ä¡ ï¿½Ð»ï¿½ (Å¸ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Â·ï¿½ ï¿½ï¿½Ä¡)
 		float angle = XM_2PI * i / m_Monsters.size();
 		float radius = 15.0f;
 		float x = -170.f + radius * cos(angle);
@@ -420,15 +420,15 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 		obj->SetTexture(m_textures["FBX"]);
 		obj->SetTextureIndex(m_textures["FBX"]->GetTextureIndex());
 		obj->SetShader(m_shaders["FBX"]);
-		obj->SetUseTexture(true); // UV ±â¹Ý ÅØ½ºÃ³ Àû¿ë
+		obj->SetUseTexture(true); // UV ï¿½ï¿½ï¿½ ï¿½Ø½ï¿½Ã³ ï¿½ï¿½ï¿½ï¿½
 	}
 	auto healthBarZeroUI = make_shared<GameObject>(device);
 
-	healthBarZeroUI->SetTexture(m_textures["HealthBarZero"]);  // ¿ì¸®°¡ ¹æ±Ý ·ÎµåÇÑ ÅØ½ºÃ³ »ç¿ë  
+	healthBarZeroUI->SetTexture(m_textures["HealthBarZero"]);  // ï¿½ì¸®ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½Îµï¿½ï¿½ï¿½ ï¿½Ø½ï¿½Ã³ ï¿½ï¿½ï¿½  
 	healthBarZeroUI->SetTextureIndex(m_textures["HealthBarZero"]->GetTextureIndex());  //   
 	healthBarZeroUI->SetMesh(CreateScreenQuad(device, gGameFramework->GetCommandList(), 1.4f, 0.15f, 0.98f));
-	//healthBarUI->SetPosition({0.f, -0.6f, -0.85f });        // NDC ÁÂÇ¥·Î ÇÏ´Ü ¿ÞÂÊ °íÁ¤ (·Ñ ½ºÅ¸ÀÏ)
-	//healthBarUI->SetPosition(XMFLOAT3(0.f, 0.2f, 0.98f));        // NDC ÁÂÇ¥·Î ÇÏ´Ü ¿ÞÂÊ °íÁ¤ (·Ñ ½ºÅ¸ÀÏ)
+	//healthBarUI->SetPosition({0.f, -0.6f, -0.85f });        // NDC ï¿½ï¿½Ç¥ï¿½ï¿½ ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ ï¿½ï¿½Å¸ï¿½ï¿½)
+	//healthBarUI->SetPosition(XMFLOAT3(0.f, 0.2f, 0.98f));        // NDC ï¿½ï¿½Ç¥ï¿½ï¿½ ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ ï¿½ï¿½Å¸ï¿½ï¿½)
 	healthBarZeroUI->SetPosition(XMFLOAT3(-0.3f, -0.7f, 0.98f));
 	healthBarZeroUI->SetScale(XMFLOAT3(1.2f, 1.2f, 1.2f));
 	healthBarZeroUI->SetUseTexture(true);
@@ -438,11 +438,11 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 
 	auto healthBarUI = make_shared<GameObject>(device);
 
-	healthBarUI->SetTexture(m_textures["HealthBar"]);  // ¿ì¸®°¡ ¹æ±Ý ·ÎµåÇÑ ÅØ½ºÃ³ »ç¿ë
+	healthBarUI->SetTexture(m_textures["HealthBar"]);  // ï¿½ì¸®ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½Îµï¿½ï¿½ï¿½ ï¿½Ø½ï¿½Ã³ ï¿½ï¿½ï¿½
 	healthBarUI->SetTextureIndex(m_textures["HealthBar"]->GetTextureIndex());  // 
 	healthBarUI->SetMesh(CreateScreenQuad(device, gGameFramework->GetCommandList(), 1.4f, 0.15f, 0.98f));
-	//healthBarUI->SetPosition({0.f, -0.6f, -0.85f });        // NDC ÁÂÇ¥·Î ÇÏ´Ü ¿ÞÂÊ °íÁ¤ (·Ñ ½ºÅ¸ÀÏ)
-	//healthBarUI->SetPosition(XMFLOAT3(0.f, 0.2f, 0.98f));        // NDC ÁÂÇ¥·Î ÇÏ´Ü ¿ÞÂÊ °íÁ¤ (·Ñ ½ºÅ¸ÀÏ)
+	//healthBarUI->SetPosition({0.f, -0.6f, -0.85f });        // NDC ï¿½ï¿½Ç¥ï¿½ï¿½ ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ ï¿½ï¿½Å¸ï¿½ï¿½)
+	//healthBarUI->SetPosition(XMFLOAT3(0.f, 0.2f, 0.98f));        // NDC ï¿½ï¿½Ç¥ï¿½ï¿½ ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ ï¿½ï¿½Å¸ï¿½ï¿½)
 	healthBarUI->SetPosition(XMFLOAT3(-0.3f, -0.7f, 0.98f));
 	healthBarUI->SetScale(XMFLOAT3(1.2f, 1.2f, 1.2f));
 	healthBarUI->SetUseTexture(true);
@@ -452,7 +452,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 
 	auto Inventory = make_shared<GameObject>(device);
 
-	Inventory->SetTexture(m_textures["Inventory"]);  // ¿ì¸®°¡ ¹æ±Ý ·ÎµåÇÑ ÅØ½ºÃ³ »ç¿ë
+	Inventory->SetTexture(m_textures["Inventory"]);  // ï¿½ì¸®ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½Îµï¿½ï¿½ï¿½ ï¿½Ø½ï¿½Ã³ ï¿½ï¿½ï¿½
 	Inventory->SetTextureIndex(m_textures["Inventory"]->GetTextureIndex());  // 
 	Inventory->SetMesh(CreateScreenQuad(device, gGameFramework->GetCommandList(), 0.5f, 0.5f, 0.98f));
 	Inventory->SetPosition(XMFLOAT3(0.8f, -0.55f, 0.98f));

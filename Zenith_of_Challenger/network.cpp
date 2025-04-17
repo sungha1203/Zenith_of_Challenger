@@ -156,7 +156,9 @@ void Network::init()
 	g_a_over._comp_type = OP_ACCEPT;
 	AcceptEx(g_ListenSocket, m_client, g_a_over._send_buf, 0, addr_size + 16, addr_size + 16, 0, &g_a_over._over);
 
-	for (int i = 0; i < WORKER_THREAD_COUNT; ++i) {
+	auto num_core = std::thread::hardware_concurrency();
+
+	for (int i = 0; i < num_core; ++i) {
 		workers.emplace_back(&Network::WorkerThread, this);
 	}
 
