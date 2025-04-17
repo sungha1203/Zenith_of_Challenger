@@ -40,7 +40,7 @@ private:
     vector<shared_ptr<MeshBase>> m_fbxMeshes; // FBX에서 로드한 메쉬 저장
     vector<shared_ptr<GameObject>> m_fbxObjects; // FBX 모델용 GameObject 리스트 추가
 
-    vector<shared_ptr<Monsters>> m_Monsters; 
+    unordered_map<string, vector<shared_ptr<Monsters>>> m_monsterGroups;
 
     bool m_debugDrawEnabled = false;
 };

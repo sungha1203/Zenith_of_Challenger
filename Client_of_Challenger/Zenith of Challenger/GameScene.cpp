@@ -63,13 +63,13 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
 		if (m_player) m_player->SetDrawBoundingBox(m_debugDrawEnabled);
 
 
-		for (auto& monster : m_Monsters)
+		for (auto& [type, group] : m_monsterGroups)
 		{
-			if (monster) monster->SetDrawBoundingBox(m_debugDrawEnabled);
+			for (auto& monster : group)
+			{
+				if (monster) monster->SetDrawBoundingBox(m_debugDrawEnabled);
+			}
 		}
-
-		//for (auto& obj : m_fbxObjects)
-		//	obj->SetDrawBoundingBox(m_debugDrawEnabled);
 
 		OutputDebugStringA(m_debugDrawEnabled ? "[디버그] AABB ON\n" : "[디버그] AABB OFF\n");
 	}
@@ -85,9 +85,9 @@ void GameScene::Update(FLOAT timeElapsed)
 	m_player->Update(timeElapsed);
 	m_sun->Update(timeElapsed);
 
-	for (auto& object : m_objects) {
+	for (auto& object : m_objects)
 		object->Update(timeElapsed);
-	}
+
 	m_skybox->SetPosition(m_camera->GetEye());
 
 	// 플레이어 위치 가져오기
@@ -96,58 +96,62 @@ void GameScene::Update(FLOAT timeElapsed)
 		const XMFLOAT3& playerPos = gGameFramework->GetPlayer()->GetPosition();
 	}
 
-	for (auto& monster : m_Monsters)
-		monster->Update(timeElapsed);
+	// [1] 몬스터 업데이트 (map 기반)
+	for (auto& [type, group] : m_monsterGroups)
+	{
+		for (auto& monster : group)
+			monster->Update(timeElapsed);
+	}
 
-
-	// 충돌 테스트
+	// [2] 충돌 테스트
 	auto playerBox = m_player->GetBoundingBox();
 
-	for (auto& monster : m_Monsters)
+	if (playerBox.Extents.x == 0.f && playerBox.Extents.y == 0.f && playerBox.Extents.z == 0.f)
+		return;
+
+	for (auto& [type, group] : m_monsterGroups)
 	{
-		auto monsterBox = monster->GetBoundingBox();
-		auto monsterCenter = monsterBox.Center;
-
-		// 월드 위치 적용
-		XMFLOAT3 playerWorldPos = m_player->GetPosition();
-		XMFLOAT3 monsterWorldPos = monster->GetPosition();
-
-		// 센터 기준 실제 위치 계산 (로컬 center 기준일 경우 반영)
-		XMFLOAT3 playerCenterWorld = {
-			playerWorldPos.x,
-			playerWorldPos.y + 5.0f,
-			playerWorldPos.z
-		};
-
-		XMFLOAT3 monsterCenterWorld = {
-			monsterWorldPos.x + monsterCenter.x,
-			monsterWorldPos.y + monsterCenter.y,
-			monsterWorldPos.z + monsterCenter.z
-		};
-
-		// 거리 기반 충돌 체크 (AABB Extents 포함)
-		float dx = abs(playerCenterWorld.x - monsterCenterWorld.x);
-		float dy = abs(playerCenterWorld.y - monsterCenterWorld.y);
-		float dz = abs(playerCenterWorld.z - monsterCenterWorld.z);
-
-		const XMFLOAT3& playerExtent = playerBox.Extents;
-		const XMFLOAT3& monsterExtent = monsterBox.Extents;
-
-		bool intersectX = dx <= (playerExtent.x + monsterExtent.x);
-		bool intersectY = dy <= (playerExtent.y + monsterExtent.y);
-		bool intersectZ = dz <= (playerExtent.z + monsterExtent.z);
-
-		if (intersectX && intersectY && intersectZ)
+		for (auto& monster : group)
 		{
-			OutputDebugStringA("[충돌 감지] 플레이어와 몬스터 충돌!\n");
+			auto monsterBox = monster->GetBoundingBox();
+			auto monsterCenter = monsterBox.Center;
 
-			// 예: 충돌 시 몬스터를 붉은색으로 표시
-			monster->SetBaseColor(XMFLOAT4(1.f, 0.f, 0.f, 1.f));
-		}
-		else
-		{
-			// 충돌 안 한 경우 원래 색
-			monster->SetBaseColor(XMFLOAT4(1.f, 1.f, 1.f, 1.f));
+			XMFLOAT3 playerWorldPos = m_player->GetPosition();
+			XMFLOAT3 monsterWorldPos = monster->GetPosition();
+
+			XMFLOAT3 playerCenterWorld = {
+				playerWorldPos.x,
+				playerWorldPos.y + 5.0f,
+				playerWorldPos.z
+			};
+
+			XMFLOAT3 monsterCenterWorld = {
+				monsterWorldPos.x + monsterCenter.x,
+				monsterWorldPos.y + monsterCenter.y,
+				monsterWorldPos.z + monsterCenter.z
+			};
+
+			float dx = abs(playerCenterWorld.x - monsterCenterWorld.x);
+			float dy = abs(playerCenterWorld.y - monsterCenterWorld.y);
+			float dz = abs(playerCenterWorld.z - monsterCenterWorld.z);
+
+			const XMFLOAT3& playerExtent = playerBox.Extents;
+			const XMFLOAT3& monsterExtent = monsterBox.Extents;
+
+			bool intersectX = dx <= (playerExtent.x + monsterExtent.x);
+			bool intersectY = dy <= (playerExtent.y + monsterExtent.y);
+			bool intersectZ = dz <= (playerExtent.z + monsterExtent.z);
+
+			if (intersectX && intersectY && intersectZ)
+			{
+				OutputDebugStringA("[충돌 감지] 플레이어와 몬스터 충돌!\n");
+				m_player->SetPosition(m_player->m_prevPosition); // 이동 되돌리기
+				monster->SetBaseColor(XMFLOAT4(1.f, 0.f, 0.f, 1.f)); // 충돌 시 빨강
+			}
+			else
+			{
+				monster->SetBaseColor(XMFLOAT4(1.f, 1.f, 1.f, 1.f)); // 기본 흰색
+			}
 		}
 	}
 }
@@ -175,9 +179,10 @@ void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) con
 		m_player->Render(commandList);
 	}
 
-	if (!m_Monsters.empty())
+	// 몬스터 렌더링 (map 기반으로 수정)
+	for (const auto& [type, group] : m_monsterGroups)
 	{
-		for (const auto& monster : m_Monsters)
+		for (const auto& monster : group)
 		{
 			monster->Render(commandList);
 		}
@@ -293,6 +298,12 @@ void GameScene::BuildTextures(const ComPtr<ID3D12Device>& device,
 		TEXT("Image/InGameUI/Inventory.dds"), RootParameter::Texture); 
 	inventoryTexture->CreateShaderVariable(device, true);
 	m_textures.insert({ "Inventory", inventoryTexture });
+
+	auto FlowerFairyTexture = make_shared<Texture>(device, commandList,
+		TEXT("Image/Monsters/Flower Fairy Yellow.dds"), RootParameter::Texture);
+	FlowerFairyTexture->CreateShaderVariable(device, true);
+	m_textures.insert({ "Flower_Fairy", FlowerFairyTexture });
+
 }
 
 void GameScene::BuildMaterials(const ComPtr<ID3D12Device>& device,
@@ -339,7 +350,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 		player->SetRotationY(0.f);                  // 정면을 보게 초기화
 
 		// [4] 위치 및 스케일 설정
-		player->SetPosition(XMFLOAT3{ -185.f, 1.7f, 177.f });
+		player->SetPosition(XMFLOAT3{ 190.f, 1.7f, -190.f });
 		//player->SetPosition(gGameFramework->g_pos);
 
 		// [5] FBX 메시 전부 등록
@@ -383,20 +394,37 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 	m_player->SetCamera(m_camera);
 
 	//몬스터 로드
-	LoadAllMonsters(device, m_textures, m_shaders, m_Monsters);
+	LoadAllMonsters(device, m_textures, m_shaders, m_monsterGroups);
 
-	// 배치
-	for (int i = 0; i < m_Monsters.size(); ++i)
+
+	// "Frightfly" 타입 몬스터 배치
+	auto& frightflies = m_monsterGroups["Frightfly"];
+
+	for (int i = 0; i < frightflies.size(); ++i)
 	{
-		// 위치 분산 (타원형 형태로 배치)
-		float angle = XM_2PI * i / m_Monsters.size();
+		float angle = XM_2PI * i / frightflies.size();
 		float radius = 15.0f;
 		float x = -170.f + radius * cos(angle);
 		float z = 15.f + radius * sin(angle);
 		float y = 0.f;
 
-		m_Monsters[i]->SetPosition(XMFLOAT3{ x, y, z });
+		frightflies[i]->SetPosition(XMFLOAT3{ x, y, z });
 	}
+
+	// "Flower_Fairy" 타입 몬스터 배치
+	auto& fairies = m_monsterGroups["Flower_Fairy"];
+
+	for (int i = 0; i < fairies.size(); ++i)
+	{
+		float angle = XM_2PI * i / fairies.size();
+		float radius = 20.0f;
+		float x = 190.f + radius * cos(angle);
+		float z = -190.f + radius * sin(angle);
+		float y = -5.f;
+
+		fairies[i]->SetPosition(XMFLOAT3{ x, y, z });
+	}
+
 
 
 	m_skybox = make_shared<GameObject>(device);

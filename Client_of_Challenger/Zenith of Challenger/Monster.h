@@ -7,12 +7,12 @@ public:
     Frightfly(const ComPtr<ID3D12Device>& device) : Monsters(device){}
 };
 
-class PeaShooter : public Monsters
+class FlowerFairy : public Monsters
 {
 public:
-    PeaShooter(const ComPtr<ID3D12Device>& device) : Monsters(device)
+    FlowerFairy(const ComPtr<ID3D12Device>& device) : Monsters(device)
     {
-        SetScale(XMFLOAT3(1.2f, 1.2f, 1.2f));
+        SetScale(XMFLOAT3(1.0f, 1.0f, 1.0f));
     }
 };
 

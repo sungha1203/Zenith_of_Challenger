@@ -29,6 +29,7 @@ public:
 
 	virtual void SetScale(XMFLOAT3 scale);
 	virtual XMFLOAT3 GetScale() const;
+	XMFLOAT3			m_prevPosition;
 protected:
 	XMFLOAT4X4			m_worldMatrix;
 

@@ -1,27 +1,26 @@
 #include "MonsterLoader.h"
 #include "Monster.h"
 
-void LoadAllMonsters(const ComPtr<ID3D12Device>& device,
+void LoadAllMonsters(
+    const ComPtr<ID3D12Device>& device,
     const unordered_map<string, shared_ptr<Texture>>& textures,
     const unordered_map<string, shared_ptr<Shader>> shaders,
-    vector<shared_ptr<Monsters>>& outMonsters)
+    unordered_map<string, vector<shared_ptr<Monsters>>>& outMonsterGroups) //변경
 {
     // 1. Frightfly 몬스터 로드
     auto frightflyLoader = make_shared<FBXLoader>();
     if (frightflyLoader->LoadFBXModel("Model/Monsters/Frightfly/Frightfly_01.fbx", XMMatrixScaling(0.05f, 0.05f, 0.05f)))
     {
-        for (int i = 0; i < 10; ++i) // 몬스터 여러 개 준비
+        for (int i = 0; i < 10; ++i)
         {
-
             auto meshes = frightflyLoader->GetMeshes();
             if (!meshes.empty())
             {
                 auto frightfly = make_shared<Frightfly>(device);
-                //frightfly->SetPosition(XMFLOAT3{ -185.f, 48.f, 107.f });
 
                 frightfly->SetTexture(textures.at("FrightFly"));
                 frightfly->SetTextureIndex(textures.at("FrightFly")->GetTextureIndex());
-                frightfly->SetShader(shaders.at("FrightFly")); // 없으면 생성 필요
+                frightfly->SetShader(shaders.at("FrightFly"));
                 frightfly->SetDebugLineShader(shaders.at("DebugLineShader"));
 
                 for (auto& mesh : meshes)
@@ -32,16 +31,17 @@ void LoadAllMonsters(const ComPtr<ID3D12Device>& device,
                 frightfly->SetBoneOffsets(frightflyLoader->GetBoneOffsets());
                 frightfly->SetBoneNameToIndex(frightflyLoader->GetBoneNameToIndex());
 
-                // frightfly 생성 이후 위치
                 BoundingBox frightflyBox;
                 frightflyBox.Center = XMFLOAT3{ 0.f, 5.5f, 0.f };
-                frightflyBox.Extents = XMFLOAT3{ 1.5f, 1.5f, 1.5f }; // 스케일링된 값
+                frightflyBox.Extents = XMFLOAT3{ 1.5f, 1.5f, 1.5f };
                 frightfly->SetBoundingBox(frightflyBox);
 
                 auto [cpuHandle, gpuHandle] = gGameFramework->AllocateDescriptorHeapSlot();
                 frightfly->CreateBoneMatrixSRV(device, cpuHandle, gpuHandle);
 
-                outMonsters.push_back(frightfly);
+                // 변경된 부분 
+                outMonsterGroups["Frightfly"].push_back(frightfly);
+
                 OutputDebugStringA("[MonsterLoader] Frightfly 로드 완료\n");
             }
             else
@@ -50,4 +50,57 @@ void LoadAllMonsters(const ComPtr<ID3D12Device>& device,
             }
         }
     }
+
+
+
+
+    // 2. Flower_Fairy 몬스터 로드
+    auto flowerFairyLoader = make_shared<FBXLoader>();
+    if (flowerFairyLoader->LoadFBXModel("Model/Monsters/Flower_Fairy/Flower_Fairy.fbx", XMMatrixScaling(0.1f, 0.1f, 0.1f)))
+    {
+        for (int i = 0; i < 10; ++i)
+        {
+            auto meshes = flowerFairyLoader->GetMeshes();
+            if (!meshes.empty())
+            {
+                // 몬스터 객체 생성
+                auto flowerFairy = make_shared<FlowerFairy>(device); // 추후 FlowerFairy 클래스로 대체 가능
+
+                flowerFairy->SetTexture(textures.at("Flower_Fairy"));
+                flowerFairy->SetTextureIndex(textures.at("Flower_Fairy")->GetTextureIndex());
+                flowerFairy->SetShader(shaders.at("FrightFly"));
+                flowerFairy->SetDebugLineShader(shaders.at("DebugLineShader"));
+
+                for (auto& mesh : meshes)
+                    flowerFairy->AddMesh(mesh);
+
+                flowerFairy->SetAnimationClips(flowerFairyLoader->GetAnimationClips());
+                flowerFairy->SetCurrentAnimation("Idle");
+                flowerFairy->SetBoneOffsets(flowerFairyLoader->GetBoneOffsets());
+                flowerFairy->SetBoneNameToIndex(flowerFairyLoader->GetBoneNameToIndex());
+
+                BoundingBox box;
+                box.Center = XMFLOAT3{ 0.f, 10.0f, 0.f };
+                box.Extents = XMFLOAT3{ 1.5f, 3.5f, 1.5f };
+                flowerFairy->SetBoundingBox(box);
+
+                auto [cpuHandle, gpuHandle] = gGameFramework->AllocateDescriptorHeapSlot();
+                flowerFairy->CreateBoneMatrixSRV(device, cpuHandle, gpuHandle);
+
+                outMonsterGroups["Flower_Fairy"].push_back(flowerFairy);
+
+                OutputDebugStringA("[MonsterLoader] Flower Fairy 로드 완료\n");
+            }
+            else
+            {
+                OutputDebugStringA("[MonsterLoader] Flower Fairy 메시 없음!\n");
+            }
+        }
+    }
+
+
+
+
+
 }
+
