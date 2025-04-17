@@ -335,8 +335,8 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 		auto player = make_shared<Player>(device);
 
 		// [4] 위치 및 스케일 설정
-		player->SetPosition(XMFLOAT3{ -185.f, 53.f, 177.f });
-		//player->SetPosition(gGameFramework->g_pos);
+		//player->SetPosition(XMFLOAT3{ -185.f, 53.f, 177.f });
+		player->SetPosition(gGameFramework->g_pos);
 
 		// [5] FBX 메시 전부 등록
 		for (int i = 0; i < meshes.size(); ++i)
