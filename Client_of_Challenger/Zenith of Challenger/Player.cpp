@@ -43,47 +43,62 @@ void Player::KeyboardEvent(FLOAT timeElapsed)
 {
     if (!m_camera) return;
 
-    XMFLOAT3 front{ m_camera->GetN() };
-    front.y = 0.f;
+    XMFLOAT3 front = m_camera->GetN(); front.y = 0.f;
     front = Vector3::Normalize(front);
 
-    XMFLOAT3 right{ m_camera->GetU() };
-    right.y = 0.f;
+    XMFLOAT3 right = m_camera->GetU(); right.y = 0.f;
     right = Vector3::Normalize(right);
 
-    XMFLOAT3 targetDirection{ 0.f, 0.f, 0.f };
+    XMFLOAT3 moveDirection{ 0.f, 0.f, 0.f };
+    XMFLOAT3 faceDirection{ 0.f, 0.f, 0.f };
 
     // 키 입력 상태 업데이트
     keyStates['W'] = (GetAsyncKeyState('W') & 0x8000);
     keyStates['S'] = (GetAsyncKeyState('S') & 0x8000);
     keyStates['A'] = (GetAsyncKeyState('A') & 0x8000);
     keyStates['D'] = (GetAsyncKeyState('D') & 0x8000);
-    keyStates[VK_PRIOR] = (GetAsyncKeyState(VK_PRIOR) & 0x8000); // Page Up
-    keyStates[VK_NEXT] = (GetAsyncKeyState(VK_NEXT) & 0x8000); // Page Down
+    keyStates[VK_PRIOR] = (GetAsyncKeyState(VK_PRIOR) & 0x8000); // 위
+    keyStates[VK_NEXT] = (GetAsyncKeyState(VK_NEXT) & 0x8000);   // 아래
 
     // 이동 방향 계산
-    if (keyStates['W']) { targetDirection = Vector3::Add(targetDirection, front); }
-    if (keyStates['S']) { targetDirection = Vector3::Add(targetDirection, Vector3::Negate(front)); }
-    if (keyStates['A']) { targetDirection = Vector3::Add(targetDirection, Vector3::Negate(right)); }
-    if (keyStates['D']) { targetDirection = Vector3::Add(targetDirection, right); }
-    if (keyStates[VK_PRIOR]) { targetDirection = Vector3::Add(targetDirection, XMFLOAT3{ 0.f, 1.f, 0.f }); } // 위로 이동
-    if (keyStates[VK_NEXT]) { targetDirection = Vector3::Add(targetDirection, XMFLOAT3{ 0.f, -1.f, 0.f }); } // 아래로 이동
+    if (keyStates['W']) moveDirection = Vector3::Add(moveDirection, front);
+    if (keyStates['S']) moveDirection = Vector3::Add(moveDirection, Vector3::Negate(front));
+    if (keyStates['A']) moveDirection = Vector3::Add(moveDirection, Vector3::Negate(right));
+    if (keyStates['D']) moveDirection = Vector3::Add(moveDirection, right);
+    if (keyStates[VK_PRIOR]) moveDirection = Vector3::Add(moveDirection, { 0.f, 1.f, 0.f });
+    if (keyStates[VK_NEXT]) moveDirection = Vector3::Add(moveDirection, { 0.f, -1.f, 0.f });
 
-    // 즉각적인 이동 (가속X, 바로 반응)
-    if (!Vector3::IsZero(targetDirection))
+    // 바라보는 방향도 똑같이 구성 (8방향 고정 회전용)
+    if (keyStates['W']) faceDirection = Vector3::Add(faceDirection, front);
+    if (keyStates['S']) faceDirection = Vector3::Add(faceDirection, Vector3::Negate(front));
+    if (keyStates['A']) faceDirection = Vector3::Add(faceDirection, Vector3::Negate(right));
+    if (keyStates['D']) faceDirection = Vector3::Add(faceDirection, right);
+
+    // 속도 적용
+    if (!Vector3::IsZero(moveDirection))
     {
-        targetDirection = Vector3::Normalize(targetDirection);
-        velocity = Vector3::Mul(targetDirection, maxSpeed); // 최대 속도로 즉시 이동
+        XMFLOAT3 normalized = Vector3::Normalize(moveDirection);
+        velocity = Vector3::Mul(normalized, maxSpeed);
     }
     else
     {
-        // 즉시 멈추도록 설정
         velocity = { 0.f, 0.f, 0.f };
     }
 
     // 최종 이동
-    Transform(Vector3::Mul(velocity, timeElapsed));
+    XMFLOAT3 movement = Vector3::Mul(velocity, timeElapsed);
+    Transform(movement);
+
+    // 회전 적용: 8방향 고정 회전
+    if (!Vector3::IsZero(faceDirection))
+    {
+        faceDirection = Vector3::Normalize(faceDirection);
+        float angle = atan2f(faceDirection.x, faceDirection.z);
+        float degrees = XMConvertToDegrees(angle);
+        SetRotationY(degrees + 180.f); // 모델 Z-가 정면이면 +180도 필요
+    }
 }
+
 
 void Player::Update(FLOAT timeElapsed)
 {
@@ -120,7 +135,7 @@ void Player::Update(FLOAT timeElapsed)
     XMFLOAT3 pos = GetPosition();
     m_boundingBox.Center = XMFLOAT3{
         pos.x,
-        pos.y + 2.25f,  // 중심이 피봇(발)보다 위로 가도록 보정
+        pos.y,  // 중심이 피봇(발)보다 위로 가도록 보정
         pos.z
     };
 

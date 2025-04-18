@@ -4,48 +4,48 @@
 
 
 void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device,
-	const ComPtr<ID3D12GraphicsCommandList>& commandList,
-	const ComPtr<ID3D12RootSignature>& rootSignature)
+    const ComPtr<ID3D12GraphicsCommandList>& commandList,
+    const ComPtr<ID3D12RootSignature>& rootSignature)
 {
-	m_meshes.clear();
-	m_textures.clear();
-	m_objects.clear();
-	m_fbxMeshes.clear(); // FBX ¸Ş½¬ ÃÊ±âÈ­
+    m_meshes.clear();
+    m_textures.clear();
+    m_objects.clear();
+    m_fbxMeshes.clear(); // FBX ë©”ì‰¬ ì´ˆê¸°í™”
 
 
-	BuildShaders(device, commandList, rootSignature);
-	BuildMeshes(device, commandList);
-	BuildTextures(device, commandList);
-	BuildMaterials(device, commandList);
+    BuildShaders(device, commandList, rootSignature);
+    BuildMeshes(device, commandList);
+    BuildTextures(device, commandList);
+    BuildMaterials(device, commandList);
 
-	// FBX ÆÄÀÏ ·Îµå
-	cout << "µµÀü ¸Ê ·Îµå Áß!!!!" << endl;
-	m_fbxLoader = make_shared<FBXLoader>();
-	if (m_fbxLoader->LoadFBXModel("Model/Challenge.fbx",
-		XMMatrixScaling(5.0f, 5.0f, 5.0f) * XMMatrixRotationY(XMConvertToRadians(180.0f))))
-	{
-		m_fbxMeshes = m_fbxLoader->GetMeshes();
-	}
+    // FBX íŒŒì¼ ë¡œë“œ
+    cout << "ë„ì „ ë§µ ë¡œë“œ ì¤‘!!!!" << endl;
+    m_fbxLoader = make_shared<FBXLoader>();
+    if (m_fbxLoader->LoadFBXModel("Model/Challenge.fbx",
+        XMMatrixScaling(5.0f, 5.0f, 5.0f) * XMMatrixRotationY(XMConvertToRadians(180.0f))))
+    {
+        m_fbxMeshes = m_fbxLoader->GetMeshes();
+    }
 
-	// FBX ¸ğµ¨À» GameObject·Î º¯È¯ ÈÄ m_fbxObjects¿¡ Ãß°¡
-	for (const auto& fbxMesh : m_fbxMeshes)
-	{
-		auto gameObject = make_shared<GameObject>(device);
-		gameObject->SetMesh(fbxMesh);
-		gameObject->SetScale(XMFLOAT3{ 0.01f, 0.01f, 0.01f }); // ¿ø·¡ Å©±â·Î À¯Áö
-		gameObject->SetPosition(XMFLOAT3{ 0.0f, 0.0f, 0.0f }); // YÃà À§Ä¡ Á¶Á¤
+    // FBX ëª¨ë¸ì„ GameObjectë¡œ ë³€í™˜ í›„ m_fbxObjectsì— ì¶”ê°€
+    for (const auto& fbxMesh : m_fbxMeshes)
+    {
+        auto gameObject = make_shared<GameObject>(device);
+        gameObject->SetMesh(fbxMesh);
+        gameObject->SetScale(XMFLOAT3{ 0.01f, 0.01f, 0.01f }); // ì›ë˜ í¬ê¸°ë¡œ ìœ ì§€
+        gameObject->SetPosition(XMFLOAT3{ 0.0f, 0.0f, 0.0f }); // Yì¶• ìœ„ì¹˜ ì¡°ì •
 
-		// ¿©±â¼­ AABB »ı¼º (Á¤Àû ¿ÀºêÁ§Æ®´Â 1È¸¸¸)
-		BoundingBox box;
-		box.Center = gameObject->GetPosition();
-		box.Extents = { 1.0f, 1.0f, 1.0f }; // ÀûÀıÇÑ °ªÀ¸·Î Á¶Àı
+        // ì—¬ê¸°ì„œ AABB ìƒì„± (ì •ì  ì˜¤ë¸Œì íŠ¸ëŠ” 1íšŒë§Œ)
+        BoundingBox box;
+        box.Center = gameObject->GetPosition();
+        box.Extents = { 1.0f, 1.0f, 1.0f }; // ì ì ˆí•œ ê°’ìœ¼ë¡œ ì¡°ì ˆ
 
-		gameObject->SetBoundingBox(box);
+        gameObject->SetBoundingBox(box);
 
-		m_fbxObjects.push_back(gameObject);
-	}
+        m_fbxObjects.push_back(gameObject);
+    }
 
-	BuildObjects(device);
+    BuildObjects(device);
 }
 
 void GameScene::MouseEvent(HWND hWnd, FLOAT timeElapsed)
@@ -54,203 +54,380 @@ void GameScene::MouseEvent(HWND hWnd, FLOAT timeElapsed)
 
 void GameScene::KeyboardEvent(FLOAT timeElapsed)
 {
-	m_player->KeyboardEvent(timeElapsed);
+    m_player->KeyboardEvent(timeElapsed);
 
-	if (GetAsyncKeyState(VK_F1) & 0x0001)
-	{
-		m_debugDrawEnabled = !m_debugDrawEnabled;
+    if (GetAsyncKeyState(VK_F1) & 0x0001)
+    {
+        m_debugDrawEnabled = !m_debugDrawEnabled;
 
-		if (m_player) m_player->SetDrawBoundingBox(m_debugDrawEnabled);
+        if (m_player) m_player->SetDrawBoundingBox(m_debugDrawEnabled);
 
-		//for (auto& obj : m_fbxObjects)
-		//	obj->SetDrawBoundingBox(m_debugDrawEnabled);
 
-		OutputDebugStringA(m_debugDrawEnabled ? "[µğ¹ö±×] AABB ON\n" : "[µğ¹ö±×] AABB OFF\n");
-	}
-	if (GetAsyncKeyState(VK_LEFT) & 0x8000)
-		m_uiObjects[1]->m_fillAmount -= 0.1;
+        for (auto& [type, group] : m_monsterGroups)
+        {
+            for (auto& monster : group)
+            {
+                if (monster) monster->SetDrawBoundingBox(m_debugDrawEnabled);
+            }
+        }
 
-	if (GetAsyncKeyState(VK_RIGHT) & 0x8000)
-		m_uiObjects[1]->m_fillAmount += 0.1;
+        OutputDebugStringA(m_debugDrawEnabled ? "[Debug] AABB ON\n" : "[Debug] AABB OFF\n");
+    }
+    if (GetAsyncKeyState(VK_LEFT) & 0x8000)
+        m_uiObjects[1]->m_fillAmount -= 0.1;
+
+    if (GetAsyncKeyState(VK_RIGHT) & 0x8000)
+        m_uiObjects[1]->m_fillAmount += 0.1;
 }
 
 void GameScene::Update(FLOAT timeElapsed)
 {
-	m_player->Update(timeElapsed);
-	m_sun->Update(timeElapsed);
+    m_player->Update(timeElapsed);
+    m_sun->Update(timeElapsed);
 
-	for (auto& object : m_objects) {
-		object->Update(timeElapsed);
-	}
-	m_skybox->SetPosition(m_camera->GetEye());
+    for (auto& object : m_objects)
+        object->Update(timeElapsed);
 
-	// ÇÃ·¹ÀÌ¾î À§Ä¡ °¡Á®¿À±â
-	if (gGameFramework->GetPlayer())
-	{
-		const XMFLOAT3& playerPos = gGameFramework->GetPlayer()->GetPosition();
-	}
+    m_skybox->SetPosition(m_camera->GetEye());
 
-	for (auto& monster : m_Monsters)
-		monster->Update(timeElapsed);
+    // í”Œë ˆì´ì–´ ìœ„ì¹˜ ê°€ì ¸ì˜¤ê¸°
+    if (gGameFramework->GetPlayer())
+    {
+        const XMFLOAT3& playerPos = gGameFramework->GetPlayer()->GetPosition();
+    }
 
+    // [1] ëª¬ìŠ¤í„° ì—…ë°ì´íŠ¸ (map ê¸°ë°˜)
+    for (auto& [type, group] : m_monsterGroups)
+    {
+        for (auto& monster : group)
+            monster->Update(timeElapsed);
+    }
 
-	// Ãæµ¹ Å×½ºÆ®
-	auto playerBox = m_player->GetBoundingBox();
+    // [2] ì¶©ëŒ í…ŒìŠ¤íŠ¸
+    auto playerBox = m_player->GetBoundingBox();
 
-	for (auto& obj : m_fbxObjects)
-	{
-		if (playerBox.Intersects(obj->GetBoundingBox()))
-		{
-			OutputDebugStringA("[Ãæµ¹ °¨Áö] ÇÃ·¹ÀÌ¾î°¡ ¸Ê ¿ÀºêÁ§Æ®¿Í Ãæµ¹Çß½À´Ï´Ù!\n");
+    if (playerBox.Extents.x == 0.f && playerBox.Extents.y == 0.f && playerBox.Extents.z == 0.f)
+        return;
 
-			// ¿©±â¼­ À§Ä¡ º¸Á¤ or ¹İÀÀ ³ÖÀ» ¼ö ÀÖÀ½
-		}
-	}
+    for (auto& [type, group] : m_monsterGroups)
+    {
+        for (auto& monster : group)
+        {
+            auto monsterBox = monster->GetBoundingBox();
+            auto monsterCenter = monsterBox.Center;
+
+            XMFLOAT3 playerWorldPos = m_player->GetPosition();
+            XMFLOAT3 monsterWorldPos = monster->GetPosition();
+
+            XMFLOAT3 playerCenterWorld = {
+               playerWorldPos.x,
+               playerWorldPos.y + 5.0f,
+               playerWorldPos.z
+            };
+
+            XMFLOAT3 monsterCenterWorld = {
+               monsterWorldPos.x + monsterCenter.x,
+               monsterWorldPos.y + monsterCenter.y,
+               monsterWorldPos.z + monsterCenter.z
+            };
+
+            float dx = abs(playerCenterWorld.x - monsterCenterWorld.x);
+            float dy = abs(playerCenterWorld.y - monsterCenterWorld.y);
+            float dz = abs(playerCenterWorld.z - monsterCenterWorld.z);
+
+            const XMFLOAT3& playerExtent = playerBox.Extents;
+            const XMFLOAT3& monsterExtent = monsterBox.Extents;
+
+            bool intersectX = dx <= (playerExtent.x + monsterExtent.x);
+            bool intersectY = dy <= (playerExtent.y + monsterExtent.y);
+            bool intersectZ = dz <= (playerExtent.z + monsterExtent.z);
+
+            if (intersectX && intersectY && intersectZ)
+            {
+                OutputDebugStringA("[Collision Detection]Players and monsters collide!\n");
+                m_player->SetPosition(m_player->m_prevPosition); // ì´ë™ ë˜ëŒë¦¬ê¸°
+                monster->SetBaseColor(XMFLOAT4(1.f, 0.f, 0.f, 1.f)); // ì¶©ëŒ ì‹œ ë¹¨ê°•
+            }
+            else
+            {
+                monster->SetBaseColor(XMFLOAT4(1.f, 1.f, 1.f, 1.f)); // ê¸°ë³¸ í°ìƒ‰
+            }
+        }
+    }
 }
 
 void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
 {
-	commandList->SetGraphicsRootSignature(gGameFramework->GetRootSignature().Get());
+    commandList->SetGraphicsRootSignature(gGameFramework->GetRootSignature().Get());
 
-	m_camera->UpdateShaderVariable(commandList);
-	m_lightSystem->UpdateShaderVariable(commandList);
+    m_camera->UpdateShaderVariable(commandList);
+    m_lightSystem->UpdateShaderVariable(commandList);
 
-	m_terrain->Render(commandList);
+    m_terrain->Render(commandList);
 
-	m_skybox->Render(commandList);
+    m_skybox->Render(commandList);
 
-	if (!m_fbxObjects.empty())
-	{
-		for (const auto& obj : m_fbxObjects)
-			obj->Render(commandList);
-	}
+    if (!m_fbxObjects.empty())
+    {
+        for (const auto& obj : m_fbxObjects)
+            obj->Render(commandList);
+    }
 
 
-	if (m_player)
-	{
-		m_player->Render(commandList);
-	}
+    if (m_player)
+    {
+        m_player->Render(commandList);
+    }
 
-	if (!m_Monsters.empty())
-	{
-		m_shaders.at("FrightFly")->UpdateShaderVariable(commandList); // Ä³¸¯ÅÍ ½¦ÀÌ´õ Àç»ç¿ë
-		for (const auto& monster : m_Monsters)
-		{
-			monster->Render(commandList);
-		}
-	}
+    // ëª¬ìŠ¤í„° ë Œë”ë§ (map ê¸°ë°˜ìœ¼ë¡œ ìˆ˜ì •)
+    for (const auto& [type, group] : m_monsterGroups)
+    {
+        for (const auto& monster : group)
+        {
+            monster->Render(commandList);
+        }
+    }
 
-	if (!m_uiObjects.empty())
-	{		
-		m_shaders.at("UI")->UpdateShaderVariable(commandList); 
+    if (!m_uiObjects.empty())
+    {
+        m_shaders.at("UI")->UpdateShaderVariable(commandList);
 
-		float healthRatio = 1.0f/*m_player->GetCurrentHP() / m_player->GetMaxHP()*/;
+        float healthRatio = 1.0f/*m_player->GetCurrentHP() / m_player->GetMaxHP()*/;
 
-		for (const auto& ui : m_uiObjects)
-		{
-			// b1 ½½·Ô¿¡ Ã¼·ÂºñÀ² Àü´Ş (¼ÎÀÌ´õ¿¡¼­ g_fillAmount·Î »ç¿ëµÊ)
-			//commandList->SetGraphicsRoot32BitConstants(
-			//	/* RootParameterIndex::UIFillAmount */ 1, 1, &healthRatio, 0);
+        for (const auto& ui : m_uiObjects)
+        {
+            // b1 ìŠ¬ë¡¯ì— ì²´ë ¥ë¹„ìœ¨ ì „ë‹¬ (ì…°ì´ë”ì—ì„œ g_fillAmountë¡œ ì‚¬ìš©ë¨)
+            //commandList->SetGraphicsRoot32BitConstants(
+            //   /* RootParameterIndex::UIFillAmount */ 1, 1, &healthRatio, 0);
 
-			ui->Render(commandList);
-		}
-	}
+            ui->Render(commandList);
+        }
+    }
 }
 
 
 
 void GameScene::PreRender(const ComPtr<ID3D12GraphicsCommandList>& commandList)
 {
-	ID3D12DescriptorHeap* heaps[] = { gGameFramework->GetDescriptorHeap().Get() };
-	commandList->SetDescriptorHeaps(_countof(heaps), heaps);
+    ID3D12DescriptorHeap* heaps[] = { gGameFramework->GetDescriptorHeap().Get() };
+    commandList->SetDescriptorHeaps(_countof(heaps), heaps);
 }
 
 void GameScene::BuildShaders(const ComPtr<ID3D12Device>& device,
-	const ComPtr<ID3D12GraphicsCommandList>& commandList,
-	const ComPtr<ID3D12RootSignature>& rootSignature)
+    const ComPtr<ID3D12GraphicsCommandList>& commandList,
+    const ComPtr<ID3D12RootSignature>& rootSignature)
 {
-	auto objectShader = make_shared<ObjectShader>(device, rootSignature);
-	m_shaders.insert({ "OBJECT", objectShader });
-	auto skyboxShader = make_shared<SkyboxShader>(device, rootSignature);
-	m_shaders.insert({ "SKYBOX", skyboxShader });
-	auto detailShader = make_shared<DetailShader>(device, rootSignature);
-	m_shaders.insert({ "DETAIL", detailShader });
-	//FBX Àü¿ë ½¦ÀÌ´õ Ãß°¡
-	auto fbxShader = make_shared<FBXShader>(device, rootSignature);
-	m_shaders.insert({ "FBX", fbxShader });
-	auto uiShader = make_shared<GameSceneUIShader>(device, rootSignature);
-	m_shaders.insert({ "UI", uiShader });
-	// Character ¾Ö´Ï¸ŞÀÌ¼Ç Àü¿ë ¼ÎÀÌ´õ Ãß°¡
-	auto characterShader = make_shared<CharacterShader>(device, rootSignature);
-	m_shaders.insert({ "CHARACTER", characterShader });
-	// ¸ó½ºÅÍ (³¯ÆÄ¸®) Àü¿ë ¼ÎÀÌ´õ Ãß°¡
-	auto frightFlyShader = make_shared<FrightFlyShader>(device, rootSignature);
-	m_shaders.insert({ "FrightFly", frightFlyShader });
+    auto objectShader = make_shared<ObjectShader>(device, rootSignature);
+    m_shaders.insert({ "OBJECT", objectShader });
+    auto skyboxShader = make_shared<SkyboxShader>(device, rootSignature);
+    m_shaders.insert({ "SKYBOX", skyboxShader });
+    auto detailShader = make_shared<DetailShader>(device, rootSignature);
+    m_shaders.insert({ "DETAIL", detailShader });
+    //FBX ì „ìš© ì‰ì´ë” ì¶”ê°€
+    auto fbxShader = make_shared<FBXShader>(device, rootSignature);
+    m_shaders.insert({ "FBX", fbxShader });
+    auto uiShader = make_shared<GameSceneUIShader>(device, rootSignature);
+    m_shaders.insert({ "UI", uiShader });
+    // Character ì• ë‹ˆë©”ì´ì…˜ ì „ìš© ì…°ì´ë” ì¶”ê°€
+    auto characterShader = make_shared<CharacterShader>(device, rootSignature);
+    m_shaders.insert({ "CHARACTER", characterShader });
+    // ëª¬ìŠ¤í„° (ë‚ íŒŒë¦¬) ì „ìš© ì…°ì´ë” ì¶”ê°€
+    auto frightFlyShader = make_shared<FrightFlyShader>(device, rootSignature);
+    m_shaders.insert({ "FrightFly", frightFlyShader });
 
-	auto debugLineShader = make_shared<DebugLineShader>(device, rootSignature);
-	m_shaders.insert({ "DebugLineShader", debugLineShader });
+    auto debugLineShader = make_shared<DebugLineShader>(device, rootSignature);
+    m_shaders.insert({ "DebugLineShader", debugLineShader });
 }
 
 void GameScene::BuildMeshes(const ComPtr<ID3D12Device>& device,
-	const ComPtr<ID3D12GraphicsCommandList>& commandList)
+    const ComPtr<ID3D12GraphicsCommandList>& commandList)
 {
-	auto cubeMesh = make_shared<Mesh<TextureVertex>>(device, commandList,
-		TEXT("Model/CubeNormalMesh.binary"));
-	m_meshes.insert({ "CUBE", cubeMesh });
-	auto skyboxMesh = make_shared<Mesh<Vertex>>(device, commandList,
-		TEXT("Model/SkyboxMesh.binary"));
-	m_meshes.insert({ "SKYBOX", skyboxMesh });
-	auto terrainMesh = make_shared<TerrainMesh>(device, commandList,
-		TEXT("Model/HeightMap.raw"));
-	m_meshes.insert({ "TERRAIN", terrainMesh });
+    auto cubeMesh = make_shared<Mesh<TextureVertex>>(device, commandList,
+        TEXT("Model/CubeNormalMesh.binary"));
+    m_meshes.insert({ "CUBE", cubeMesh });
+    auto skyboxMesh = make_shared<Mesh<Vertex>>(device, commandList,
+        TEXT("Model/SkyboxMesh.binary"));
+    m_meshes.insert({ "SKYBOX", skyboxMesh });
+    auto terrainMesh = make_shared<TerrainMesh>(device, commandList,
+        TEXT("Model/HeightMap.raw"));
+    m_meshes.insert({ "TERRAIN", terrainMesh });
+    // Frightfly FBX ë©”ì‰¬ ì €ì¥
+    auto frightflyLoader = make_shared<FBXLoader>();
+    if (frightflyLoader->LoadFBXModel("Model/Monsters/Frightfly/Frightfly_01.fbx", XMMatrixScaling(0.05f, 0.05f, 0.05f)))
+    {
+        auto meshes = frightflyLoader->GetMeshes();
+        if (!meshes.empty())
+        {
+            m_meshLibrary["Frightfly"] = meshes[0]; // ì—¬ëŸ¬ ê°œë©´ ì²˜ë¦¬ í•„ìš”
+
+            // ì• ë‹ˆë©”ì´ì…˜ ì •ë³´ë„ ìºì‹±
+            const auto& clips = frightflyLoader->GetAnimationClips();
+            for (auto& clip : clips)
+                m_animClipLibrary[clip.name] = clip;
+
+            m_boneOffsetLibrary = frightflyLoader->GetBoneOffsets();
+            m_boneNameMap = frightflyLoader->GetBoneNameToIndex();
+        }
+    }
+    // Flower_Fairy FBX ë©”ì‰¬ ì €ì¥
+    auto flowerFairyLoader = make_shared<FBXLoader>();
+    if (flowerFairyLoader->LoadFBXModel("Model/Monsters/Flower_Fairy/Flower_Fairy.fbx", XMMatrixScaling(0.1f, 0.1f, 0.1f)))
+    {
+        auto meshes = flowerFairyLoader->GetMeshes();
+        if (!meshes.empty())
+        {
+            m_meshLibrary["Flower_Fairy"] = meshes[0];
+
+            const auto& clips = flowerFairyLoader->GetAnimationClips();
+            for (auto& clip : clips)
+                m_animClipLibrary[clip.name] = clip;
+
+            m_boneOffsetLibrary = flowerFairyLoader->GetBoneOffsets();
+            m_boneNameMap = flowerFairyLoader->GetBoneNameToIndex();
+        }
+        else
+        {
+            OutputDebugStringA("[FBXLoader] Flower_Fairy ë©”ì‰¬ ì—†ìŒ\n");
+        }
+    }
+    // Mushroom_Dark FBX ë©”ì‰¬ ì €ì¥
+    auto mushroomDarkLoader = make_shared<FBXLoader>();
+    if (mushroomDarkLoader->LoadFBXModel("Model/Monsters/Mushroom_Dark/Mushroom_Dark.fbx", XMMatrixScaling(0.1f, 0.1f, 0.1f)))
+    {
+        auto meshes = mushroomDarkLoader->GetMeshes();
+        if (!meshes.empty())
+        {
+            m_meshLibrary["Mushroom_Dark"] = meshes[0];
+
+            const auto& clips = mushroomDarkLoader->GetAnimationClips();
+            for (auto& clip : clips)
+                m_animClipLibrary[clip.name] = clip;
+
+            m_boneOffsetLibrary = mushroomDarkLoader->GetBoneOffsets();
+            m_boneNameMap = mushroomDarkLoader->GetBoneNameToIndex();
+        }
+        else
+        {
+            OutputDebugStringA("[FBXLoader] Mushroom_Dark ë©”ì‰¬ ì—†ìŒ\n");
+        }
+    }
+    // Venus_Blue FBX ë©”ì‰¬ ì €ì¥
+    auto venusBlueLoader = make_shared<FBXLoader>();
+    if (venusBlueLoader->LoadFBXModel("Model/Monsters/Venus_Blue/Venus_Blue.fbx", XMMatrixScaling(0.1f, 0.1f, 0.1f)))
+    {
+        auto meshes = venusBlueLoader->GetMeshes();
+        if (!meshes.empty())
+        {
+            m_meshLibrary["Venus_Blue"] = meshes[0];
+
+            const auto& clips = venusBlueLoader->GetAnimationClips();
+            for (auto& clip : clips)
+                m_animClipLibrary[clip.name] = clip;
+
+            m_boneOffsetLibrary = venusBlueLoader->GetBoneOffsets();
+            m_boneNameMap = venusBlueLoader->GetBoneNameToIndex();
+        }
+        else
+        {
+            OutputDebugStringA("[FBXLoader] Venus_Blue ë©”ì‰¬ ì—†ìŒ\n");
+        }
+    }
+
+    // Plant_Dionaea FBX ë©”ì‰¬ ì €ì¥
+    auto Plant_DionaeaLoader = make_shared<FBXLoader>();
+    if (Plant_DionaeaLoader->LoadFBXModel("Model/Monsters/Plant_Dionaea/Plant_Dionaea.fbx", XMMatrixScaling(0.1f, 0.1f, 0.1f)))
+    {
+        auto meshes = Plant_DionaeaLoader->GetMeshes();
+        if (!meshes.empty())
+        {
+            m_meshLibrary["Plant_Dionaea"] = meshes[0];
+
+            const auto& clips = Plant_DionaeaLoader->GetAnimationClips();
+            for (auto& clip : clips)
+                m_animClipLibrary[clip.name] = clip;
+
+            m_boneOffsetLibrary = Plant_DionaeaLoader->GetBoneOffsets();
+            m_boneNameMap = Plant_DionaeaLoader->GetBoneNameToIndex();
+        }
+        else
+        {
+            OutputDebugStringA("[FBXLoader] Venus_Blue ë©”ì‰¬ ì—†ìŒ\n");
+        }
+    }
+
 }
 
 void GameScene::BuildTextures(const ComPtr<ID3D12Device>& device,
-	const ComPtr<ID3D12GraphicsCommandList>& commandList)
+    const ComPtr<ID3D12GraphicsCommandList>& commandList)
 {
-	auto skyboxTexture = make_shared<Texture>(device, commandList,
-		TEXT("Skybox/SkyBox_0.dds"), RootParameter::TextureCube);
-	skyboxTexture->CreateShaderVariable(device, true);
-	m_textures.insert({ "SKYBOX", skyboxTexture });
+    auto skyboxTexture = make_shared<Texture>(device, commandList,
+        TEXT("Skybox/SkyBox_0.dds"), RootParameter::TextureCube);
+    skyboxTexture->CreateShaderVariable(device, true);
+    m_textures.insert({ "SKYBOX", skyboxTexture });
 
-	auto terrainTexture = make_shared<Texture>(device);
-	terrainTexture->LoadTexture(device, commandList,
-		TEXT("Image/Base_Texture.dds"), RootParameter::Texture);
-	terrainTexture->LoadTexture(device, commandList,
-		TEXT("Image/Detail_Texture_7.dds"), RootParameter::Texture);
-	terrainTexture->CreateShaderVariable(device, true);
-	m_textures.insert({ "TERRAIN", terrainTexture });
+    auto terrainTexture = make_shared<Texture>(device);
+    terrainTexture->LoadTexture(device, commandList,
+        TEXT("Image/Base_Texture.dds"), RootParameter::Texture);
+    terrainTexture->LoadTexture(device, commandList,
+        TEXT("Image/Detail_Texture_7.dds"), RootParameter::Texture);
+    terrainTexture->CreateShaderVariable(device, true);
+    m_textures.insert({ "TERRAIN", terrainTexture });
 
-	auto fbxTexture = make_shared<Texture>(device, commandList,
-		TEXT("Image/Base Map.dds"), RootParameter::Texture);
-	fbxTexture->CreateShaderVariable(device, true);
-	m_textures.insert({ "FBX", fbxTexture });
+    auto fbxTexture = make_shared<Texture>(device, commandList,
+        TEXT("Image/Base Map.dds"), RootParameter::Texture);
+    fbxTexture->CreateShaderVariable(device, true);
+    m_textures.insert({ "FBX", fbxTexture });
 
-	auto characterTexture = make_shared<Texture>(device, commandList,
-		TEXT("Image/Texture_Modular_Characters.dds"), RootParameter::Texture);
-	characterTexture->CreateShaderVariable(device, true);
-	m_textures.insert({ "CHARACTER", characterTexture });
+    auto characterTexture = make_shared<Texture>(device, commandList,
+        TEXT("Image/Texture_Modular_Characters.dds"), RootParameter::Texture);
+    characterTexture->CreateShaderVariable(device, true);
+    m_textures.insert({ "CHARACTER", characterTexture });
 
-	auto FrightFlyTexture = make_shared<Texture>(device, commandList,
-		TEXT("Image/Monsters/FrightFly_converted.dds"), RootParameter::Texture);
-	FrightFlyTexture->CreateShaderVariable(device, true);
-	m_textures.insert({ "FrightFly", FrightFlyTexture });
+    auto FrightFlyTexture = make_shared<Texture>(device, commandList,
+        TEXT("Image/Monsters/FrightFly_converted.dds"), RootParameter::Texture);
+    FrightFlyTexture->CreateShaderVariable(device, true);
+    m_textures.insert({ "FrightFly", FrightFlyTexture });
 
-	auto healthBarZeroTexture = make_shared<Texture>(device, commandList,
-		TEXT("Image/HealthBarZero_BC3.dds"), RootParameter::Texture);
-	healthBarZeroTexture->CreateShaderVariable(device, true);
-	m_textures.insert({ "HealthBarZero", healthBarZeroTexture });
+    auto healthBarZeroTexture = make_shared<Texture>(device, commandList,
+        TEXT("Image/InGameUI/HealthBarZero_BC3.dds"), RootParameter::Texture);
+    healthBarZeroTexture->CreateShaderVariable(device, true);
+    m_textures.insert({ "HealthBarZero", healthBarZeroTexture });
+
+    auto healthBarTexture = make_shared<Texture>(device, commandList,
+        TEXT("Image/InGameUI/HealthBar_BC3.dds"), RootParameter::Texture);
+    healthBarTexture->CreateShaderVariable(device, true);
+    m_textures.insert({ "HealthBar", healthBarTexture });
+
+    auto inventoryTexture = make_shared<Texture>(device, commandList,
+        TEXT("Image/InGameUI/Inventory.dds"), RootParameter::Texture);
+    inventoryTexture->CreateShaderVariable(device, true);
+    m_textures.insert({ "Inventory", inventoryTexture });
+
+    auto FlowerFairyTexture = make_shared<Texture>(device, commandList,
+        TEXT("Image/Monsters/Flower Fairy Yellow.dds"), RootParameter::Texture);
+    FlowerFairyTexture->CreateShaderVariable(device, true);
+    m_textures.insert({ "Flower_Fairy", FlowerFairyTexture });
+
+    auto Mushroom_DarkTexture = make_shared<Texture>(device, commandList,
+        TEXT("Image/Monsters/Polygonal Mushroom Dark.dds"), RootParameter::Texture);
+    Mushroom_DarkTexture->CreateShaderVariable(device, true);
+    m_textures.insert({ "Mushroom_Dark", Mushroom_DarkTexture });
+
+    auto Venus_BlueTexture = make_shared<Texture>(device, commandList,
+        TEXT("Image/Monsters/Venus_Blue.dds"), RootParameter::Texture);
+    Venus_BlueTexture->CreateShaderVariable(device, true);
+    m_textures.insert({ "Venus_Blue", Venus_BlueTexture });
+
+    auto Plant_DionaeaTexture = make_shared<Texture>(device, commandList,
+        TEXT("Image/Monsters/Plant_Dionaea.dds"), RootParameter::Texture);
+    Plant_DionaeaTexture->CreateShaderVariable(device, true);
+    m_textures.insert({ "Plant_Dionaea", Plant_DionaeaTexture });
 
 	auto healthBarTexture = make_shared<Texture>(device, commandList,
 		TEXT("Image/HealthBar_BC3.dds"), RootParameter::Texture);
 	healthBarTexture->CreateShaderVariable(device, true);
 	m_textures.insert({ "HealthBar", healthBarTexture });
 	
-	auto inventoryTexture = make_shared<Texture>(device, commandList,  
-		TEXT("Image/InGameUI/Inventory.dds"), RootParameter::Texture); 
-	inventoryTexture->CreateShaderVariable(device, true);
-	m_textures.insert({ "Inventory", inventoryTexture });
-
 	auto PortraitTexture = make_shared<Texture>(device, commandList,
 		TEXT("Image/InGameUI/Portrait.dds"), RootParameter::Texture);
 	PortraitTexture->CreateShaderVariable(device, true);
@@ -259,156 +436,235 @@ void GameScene::BuildTextures(const ComPtr<ID3D12Device>& device,
 }
 
 void GameScene::BuildMaterials(const ComPtr<ID3D12Device>& device,
-	const ComPtr<ID3D12GraphicsCommandList>& commandList)
+    const ComPtr<ID3D12GraphicsCommandList>& commandList)
 {
-	auto cubeMaterial = make_shared<Material>();
-	cubeMaterial->SetMaterial(XMFLOAT3{ 0.95f, 0.93f, 0.88f }, 0.125f, XMFLOAT3{ 0.1f, 0.1f, 0.1f });
-	cubeMaterial->CreateShaderVariable(device);
-	m_materials.insert({ "CUBE", cubeMaterial });
+    auto cubeMaterial = make_shared<Material>();
+    cubeMaterial->SetMaterial(XMFLOAT3{ 0.95f, 0.93f, 0.88f }, 0.125f, XMFLOAT3{ 0.1f, 0.1f, 0.1f });
+    cubeMaterial->CreateShaderVariable(device);
+    m_materials.insert({ "CUBE", cubeMaterial });
 }
 
 void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 {
-	m_camera = make_shared<QuarterViewCamera>(device);
-	m_camera->SetLens(0.25 * XM_PI, gGameFramework->GetAspectRatio(), 0.1f, 1000.f);
+    m_camera = make_shared<QuarterViewCamera>(device);
+    m_camera->SetLens(0.25 * XM_PI, gGameFramework->GetAspectRatio(), 0.1f, 1000.f);
 
-	m_lightSystem = make_unique<LightSystem>(device);
-	auto sunLight = make_shared<DirectionalLight>();
-	m_lightSystem->SetLight(sunLight);
+    m_lightSystem = make_unique<LightSystem>(device);
+    auto sunLight = make_shared<DirectionalLight>();
+    m_lightSystem->SetLight(sunLight);
 
-	m_sun = make_unique<Sun>(sunLight);
-	m_sun->SetStrength(XMFLOAT3{ 1.3f, 1.3f, 1.3f }); //µğ·º¼Å³Î ¶óÀÌÆ® ¼¼±â ÁÙÀÌ±â
+    m_sun = make_unique<Sun>(sunLight);
+    m_sun->SetStrength(XMFLOAT3{ 1.3f, 1.3f, 1.3f }); //ë””ë ‰ì…”ë„ ë¼ì´íŠ¸ ì„¸ê¸° ì¤„ì´ê¸°
 
-	// [1] ÇÃ·¹ÀÌ¾î ¸ğµ¨¿ë ½ºÄÉÀÏ Çà·Ä ¼³Á¤ (Å©±â Á¶Àı)
-	XMMATRIX playerTransform = XMMatrixScaling(0.05f, 0.05f, 0.05);
+    // [1] í”Œë ˆì´ì–´ ëª¨ë¸ìš© ìŠ¤ì¼€ì¼ í–‰ë ¬ ì„¤ì • (í¬ê¸° ì¡°ì ˆ)
+    XMMATRIX playerTransform = XMMatrixScaling(0.05f, 0.05f, 0.05);
 
-	// [2] FBX ·Î´õ »ı¼º ¹× ¸ğµ¨ ·Îµå
-	m_playerLoader = make_shared<FBXLoader>();
-	cout << "Ä³¸¯ÅÍ ·Îµå Áß!!!!" << endl;
+    // [2] FBX ë¡œë” ìƒì„± ë° ëª¨ë¸ ë¡œë“œ
+    m_playerLoader = make_shared<FBXLoader>();
+    cout << "ìºë¦­í„° ë¡œë“œ ì¤‘!!!!" << endl;
 
-	if (m_playerLoader->LoadFBXModel("Model/Player/Challenger.fbx", playerTransform))
-	{
-		auto& meshes = m_playerLoader->GetMeshes();
-		if (meshes.empty()) {
-			OutputDebugStringA("[ERROR] FBX¿¡¼­ ¸Ş½Ã¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù.\n");
-			return;
-		}
+    if (m_playerLoader->LoadFBXModel("Model/Player/Player2.fbx", playerTransform))
+    {
+        auto& meshes = m_playerLoader->GetMeshes();
+        if (meshes.empty()) {
+            OutputDebugStringA("[ERROR] FBXì—ì„œ ë©”ì‹œë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤.\n");
+            return;
+        }
 
-		// [3] Player °´Ã¼ »ı¼º
-		auto player = make_shared<Player>(device);
-
-		// [4] À§Ä¡ ¹× ½ºÄÉÀÏ ¼³Á¤
-		player->SetPosition(XMFLOAT3{ -185.f, 53.f, 177.f });
-		//player->SetPosition(gGameFramework->g_pos);
-
-		// [5] FBX ¸Ş½Ã ÀüºÎ µî·Ï
-		for (int i = 0; i < meshes.size(); ++i)
-		{
-			player->AddMesh(meshes[i]);
-		}
-
-		// [6] ¾Ö´Ï¸ŞÀÌ¼Ç Å¬¸³ ¹× º» Á¤º¸ ¼³Á¤
-		player->SetAnimationClips(m_playerLoader->GetAnimationClips());
-		player->SetCurrentAnimation("Idle");
-		player->SetBoneOffsets(m_playerLoader->GetBoneOffsets());
-		player->SetBoneNameToIndex(m_playerLoader->GetBoneNameToIndex());
-
-		// [7] ÅØ½ºÃ³, ¸ÓÆ¼¸®¾ó ¼³Á¤
-		player->SetTexture(m_textures["CHARACTER"]);
-		player->SetTextureIndex(m_textures["CHARACTER"]->GetTextureIndex());
-		player->SetMaterial(m_materials["CHARACTER"]); // ¾øÀ¸¸é »ı¼º ÇÊ¿ä
-		player->SetShader(m_shaders["CHARACTER"]); // ¾øÀ¸¸é »ı¼º ÇÊ¿ä
-		player->SetDebugLineShader(m_shaders["DebugLineShader"]);
-
-		// m_player »ı¼º ÀÌÈÄ À§Ä¡
-		BoundingBox playerBox;
-		playerBox.Center = player->GetPosition();
-		playerBox.Extents = { 1.0f, 4.5f, 1.0f }; // ½ºÄÉÀÏ¸µµÈ °ª
-		player->SetBoundingBox(playerBox);
-
-		// [8] º» Çà·Ä StructuredBuffer¿ë SRV »ı¼º
-		auto [cpuHandle, gpuHandle] = gGameFramework->AllocateDescriptorHeapSlot();
-		player->CreateBoneMatrixSRV(device, cpuHandle, gpuHandle);
-
-		// [9] Player µî·Ï ¹× GameScene ³»ºÎ¿¡ ÀúÀå
-		gGameFramework->SetPlayer(player);
-		m_player = gGameFramework->GetPlayer();
-	}
-	else
-	{
-		OutputDebugStringA("[ERROR] ÇÃ·¹ÀÌ¾î FBX ·Îµå ½ÇÆĞ!\n");
-	}
-
-	m_player->SetCamera(m_camera);
-
-	LoadAllMonsters(device, m_textures, m_shaders, m_Monsters);
-
-	m_skybox = make_shared<GameObject>(device);
-	m_skybox->SetMesh(m_meshes["SKYBOX"]);
-	m_skybox->SetTextureIndex(m_textures["SKYBOX"]->GetTextureIndex());
-	m_skybox->SetTexture(m_textures["SKYBOX"]);
-	m_skybox->SetShader(m_shaders["SKYBOX"]);
+        // [3] Player ê°ì²´ ìƒì„±
+        auto player = make_shared<Player>(device);
 
 
-	m_terrain = make_shared<Terrain>(device);
-	m_terrain->SetMesh(m_meshes["TERRAIN"]);
-	m_terrain->SetTextureIndex(m_textures["TERRAIN"]->GetTextureIndex());
-	m_terrain->SetTexture(m_textures["TERRAIN"]);
-	m_terrain->SetShader(m_shaders["DETAIL"]);
-	m_terrain->SetScale(XMFLOAT3{ 5.f, 0.25f, 5.f });
-	m_terrain->SetPosition(XMFLOAT3{ 0.f, -100.f, 0.f });
+        player->SetScale(XMFLOAT3{ 1.f, 1.f, 1.f }); // ê¸°ë³¸ê°’ í™•ì •
+        player->SetRotationY(0.f);                  // ì •ë©´ì„ ë³´ê²Œ ì´ˆê¸°í™”
+
+        // [4] ìœ„ì¹˜ ë° ìŠ¤ì¼€ì¼ ì„¤ì •
+        player->SetPosition(XMFLOAT3{ 40.f, 1.7f, -50.f });
+        //player->SetPosition(gGameFramework->g_pos);
+
+        // [5] FBX ë©”ì‹œ ì „ë¶€ ë“±ë¡
+        for (int i = 0; i < meshes.size(); ++i)
+        {
+            player->AddMesh(meshes[i]);
+        }
+
+        // [6] ì• ë‹ˆë©”ì´ì…˜ í´ë¦½ ë° ë³¸ ì •ë³´ ì„¤ì •
+        player->SetAnimationClips(m_playerLoader->GetAnimationClips());
+        player->SetCurrentAnimation("Idle");
+        player->SetBoneOffsets(m_playerLoader->GetBoneOffsets());
+        player->SetBoneNameToIndex(m_playerLoader->GetBoneNameToIndex());
+
+        // [7] í…ìŠ¤ì²˜, ë¨¸í‹°ë¦¬ì–¼ ì„¤ì •
+        player->SetTexture(m_textures["CHARACTER"]);
+        player->SetTextureIndex(m_textures["CHARACTER"]->GetTextureIndex());
+        player->SetMaterial(m_materials["CHARACTER"]); // ì—†ìœ¼ë©´ ìƒì„± í•„ìš”
+        player->SetShader(m_shaders["CHARACTER"]); // ì—†ìœ¼ë©´ ìƒì„± í•„ìš”
+        player->SetDebugLineShader(m_shaders["DebugLineShader"]);
+
+        // m_player ìƒì„± ì´í›„ ìœ„ì¹˜
+        BoundingBox playerBox;
+        playerBox.Center = XMFLOAT3{ 0.f, 4.0f, 0.f };
+        playerBox.Extents = { 1.0f, 4.0f, 1.0f }; // ìŠ¤ì¼€ì¼ë§ëœ ê°’
+        player->SetBoundingBox(playerBox);
+
+        // [8] ë³¸ í–‰ë ¬ StructuredBufferìš© SRV ìƒì„±
+        auto [cpuHandle, gpuHandle] = gGameFramework->AllocateDescriptorHeapSlot();
+        player->CreateBoneMatrixSRV(device, cpuHandle, gpuHandle);
+
+        // [9] Player ë“±ë¡ ë° GameScene ë‚´ë¶€ì— ì €ì¥
+        gGameFramework->SetPlayer(player);
+        m_player = gGameFramework->GetPlayer();
+    }
+    else
+    {
+        OutputDebugStringA("[ERROR] í”Œë ˆì´ì–´ FBX ë¡œë“œ ì‹¤íŒ¨!\n");
+    }
+
+    m_player->SetCamera(m_camera);
+
+    //ëª¬ìŠ¤í„° ë¡œë“œ
+    LoadAllMonsters(
+        device,
+        m_textures,
+        m_shaders,
+        m_meshLibrary,
+        m_animClipLibrary,
+        m_boneOffsetLibrary,
+        m_boneNameMap,
+        m_monsterGroups);
+
+    // "Frightfly" íƒ€ì… ëª¬ìŠ¤í„° ë°°ì¹˜
+    auto& frightflies = m_monsterGroups["Frightfly"];
+    for (int i = 0; i < frightflies.size(); ++i)
+    {
+        float angle = XM_2PI * i / frightflies.size();
+        float radius = 15.0f;
+        float x = -170.f + radius * cos(angle);
+        float z = 15.f + radius * sin(angle);
+        float y = 0.f;
+
+        frightflies[i]->SetPosition(XMFLOAT3{ x, y, z });
+    }
+
+    // "Flower_Fairy" íƒ€ì… ëª¬ìŠ¤í„° ë°°ì¹˜
+    auto& fairies = m_monsterGroups["Flower_Fairy"];
+    for (int i = 0; i < fairies.size(); ++i)
+    {
+        float angle = XM_2PI * i / fairies.size();
+        float radius = 20.0f;
+        float x = 190.f + radius * cos(angle);
+        float z = -190.f + radius * sin(angle);
+        float y = -5.f;
+
+        fairies[i]->SetPosition(XMFLOAT3{ x, y, z });
+    }
+
+    // "Mushroom_Dark" íƒ€ì… ëª¬ìŠ¤í„° ë°°ì¹˜
+    auto& mushrooms = m_monsterGroups["Mushroom_Dark"];
+    for (int i = 0; i < mushrooms.size(); ++i)
+    {
+        float angle = XM_2PI * i / mushrooms.size();
+        float radius = 25.0f; // ì¡°ê¸ˆ ë” ë„“ê²Œ ë°°ì¹˜
+        float x = -100.f + radius * cos(angle);
+        float z = -165.f + radius * sin(angle);
+        float y = 0.f; // ì§€ë©´ ë†’ì´ì— ë§ê²Œ ì¡°ì ˆ
+
+        mushrooms[i]->SetPosition(XMFLOAT3{ x, y, z });
+    }
+
+    // "Venus_Blue" íƒ€ì… ëª¬ìŠ¤í„° ë°°ì¹˜
+    auto& venusGroup = m_monsterGroups["Venus_Blue"];
+    for (int i = 0; i < venusGroup.size(); ++i)
+    {
+        float angle = XM_2PI * i / venusGroup.size();
+        float radius = 28.0f; // ìœ„ì¹˜ ì¡°ì •
+        float x = 40.f + radius * cos(angle);
+        float z = -50.f + radius * sin(angle);
+        float y = 0.f;
+
+        venusGroup[i]->SetPosition(XMFLOAT3{ x, y, z });
+    }
+
+    // "Plant_Dionaea" íƒ€ì… ëª¬ìŠ¤í„° ë°°ì¹˜
+    auto& DionaeaGroup = m_monsterGroups["Plant_Dionaea"];
+    for (int i = 0; i < DionaeaGroup.size(); ++i)
+    {
+        float angle = XM_2PI * i / DionaeaGroup.size();
+        float radius = 28.0f; // ìœ„ì¹˜ ì¡°ì •
+        float x = 160.f + radius * cos(angle);
+        float z = 30.f + radius * sin(angle);
+        float y = 0.f;
+
+        DionaeaGroup[i]->SetPosition(XMFLOAT3{ x, y, z });
+    }
+
+    //ìŠ¤ì¹´ì´ë°•ìŠ¤
+    m_skybox = make_shared<GameObject>(device);
+    m_skybox->SetMesh(m_meshes["SKYBOX"]);
+    m_skybox->SetTextureIndex(m_textures["SKYBOX"]->GetTextureIndex());
+    m_skybox->SetTexture(m_textures["SKYBOX"]);
+    m_skybox->SetShader(m_shaders["SKYBOX"]);
+
+    //í„°ë ˆì¸
+    m_terrain = make_shared<Terrain>(device);
+    m_terrain->SetMesh(m_meshes["TERRAIN"]);
+    m_terrain->SetTextureIndex(m_textures["TERRAIN"]->GetTextureIndex());
+    m_terrain->SetTexture(m_textures["TERRAIN"]);
+    m_terrain->SetShader(m_shaders["DETAIL"]);
+    m_terrain->SetScale(XMFLOAT3{ 5.f, 0.25f, 5.f });
+    m_terrain->SetPosition(XMFLOAT3{ 0.f, -100.f, 0.f });
 
 
-	for (auto& obj : m_fbxObjects)
-	{
-		obj->SetTexture(m_textures["FBX"]);
-		obj->SetTextureIndex(m_textures["FBX"]->GetTextureIndex());
-		obj->SetShader(m_shaders["FBX"]);
-		obj->SetUseTexture(true); // UV ±â¹İ ÅØ½ºÃ³ Àû¿ë
-	}
-	auto healthBarZeroUI = make_shared<GameObject>(device);
+    for (auto& obj : m_fbxObjects)
+    {
+        obj->SetTexture(m_textures["FBX"]);
+        obj->SetTextureIndex(m_textures["FBX"]->GetTextureIndex());
+        obj->SetShader(m_shaders["FBX"]);
+        obj->SetUseTexture(true); // UV ê¸°ë°˜ í…ìŠ¤ì²˜ ì ìš©
+    }
+    auto healthBarZeroUI = make_shared<GameObject>(device);
 
-	healthBarZeroUI->SetTexture(m_textures["HealthBarZero"]);  // ¿ì¸®°¡ ¹æ±İ ·ÎµåÇÑ ÅØ½ºÃ³ »ç¿ë  
-	healthBarZeroUI->SetTextureIndex(m_textures["HealthBarZero"]->GetTextureIndex());  //   
-	healthBarZeroUI->SetMesh(CreateScreenQuad(device, gGameFramework->GetCommandList(), 1.4f, 0.15f, 0.98f));
-	//healthBarUI->SetPosition({0.f, -0.6f, -0.85f });        // NDC ÁÂÇ¥·Î ÇÏ´Ü ¿ŞÂÊ °íÁ¤ (·Ñ ½ºÅ¸ÀÏ)
-	//healthBarUI->SetPosition(XMFLOAT3(0.f, 0.2f, 0.98f));        // NDC ÁÂÇ¥·Î ÇÏ´Ü ¿ŞÂÊ °íÁ¤ (·Ñ ½ºÅ¸ÀÏ)
-	healthBarZeroUI->SetPosition(XMFLOAT3(-0.3f, -0.7f, 0.98f));
-	healthBarZeroUI->SetScale(XMFLOAT3(1.2f, 1.2f, 1.2f));
-	healthBarZeroUI->SetUseTexture(true);
-	healthBarZeroUI->SetBaseColor(XMFLOAT4(1, 1, 1, 1));
+    healthBarZeroUI->SetTexture(m_textures["HealthBarZero"]);  // ìš°ë¦¬ê°€ ë°©ê¸ˆ ë¡œë“œí•œ í…ìŠ¤ì²˜ ì‚¬ìš©  
+    healthBarZeroUI->SetTextureIndex(m_textures["HealthBarZero"]->GetTextureIndex());  //   
+    healthBarZeroUI->SetMesh(CreateScreenQuad(device, gGameFramework->GetCommandList(), 1.4f, 0.15f, 0.98f));
+    //healthBarUI->SetPosition({0.f, -0.6f, -0.85f });        // NDC ì¢Œí‘œë¡œ í•˜ë‹¨ ì™¼ìª½ ê³ ì • (ë¡¤ ìŠ¤íƒ€ì¼)
+    //healthBarUI->SetPosition(XMFLOAT3(0.f, 0.2f, 0.98f));        // NDC ì¢Œí‘œë¡œ í•˜ë‹¨ ì™¼ìª½ ê³ ì • (ë¡¤ ìŠ¤íƒ€ì¼)
+    healthBarZeroUI->SetPosition(XMFLOAT3(-0.3f, -0.7f, 0.98f));
+    healthBarZeroUI->SetScale(XMFLOAT3(1.2f, 1.2f, 1.2f));
+    healthBarZeroUI->SetUseTexture(true);
+    healthBarZeroUI->SetBaseColor(XMFLOAT4(1, 1, 1, 1));
 
-	m_uiObjects.push_back(healthBarZeroUI);
+    m_uiObjects.push_back(healthBarZeroUI);
 
-	auto healthBarUI = make_shared<GameObject>(device);
+    auto healthBarUI = make_shared<GameObject>(device);
 
-	healthBarUI->SetTexture(m_textures["HealthBar"]);  // ¿ì¸®°¡ ¹æ±İ ·ÎµåÇÑ ÅØ½ºÃ³ »ç¿ë
-	healthBarUI->SetTextureIndex(m_textures["HealthBar"]->GetTextureIndex());  // 
-	healthBarUI->SetMesh(CreateScreenQuad(device, gGameFramework->GetCommandList(), 1.4f, 0.15f, 0.98f));
-	//healthBarUI->SetPosition({0.f, -0.6f, -0.85f });        // NDC ÁÂÇ¥·Î ÇÏ´Ü ¿ŞÂÊ °íÁ¤ (·Ñ ½ºÅ¸ÀÏ)
-	//healthBarUI->SetPosition(XMFLOAT3(0.f, 0.2f, 0.98f));        // NDC ÁÂÇ¥·Î ÇÏ´Ü ¿ŞÂÊ °íÁ¤ (·Ñ ½ºÅ¸ÀÏ)
-	healthBarUI->SetPosition(XMFLOAT3(-0.3f, -0.7f, 0.98f));
-	healthBarUI->SetScale(XMFLOAT3(1.2f, 1.2f, 1.2f));
-	healthBarUI->SetUseTexture(true);
-	healthBarUI->SetBaseColor(XMFLOAT4(1, 1, 1, 1));
+    healthBarUI->SetTexture(m_textures["HealthBar"]);  // ìš°ë¦¬ê°€ ë°©ê¸ˆ ë¡œë“œí•œ í…ìŠ¤ì²˜ ì‚¬ìš©
+    healthBarUI->SetTextureIndex(m_textures["HealthBar"]->GetTextureIndex());  // 
+    healthBarUI->SetMesh(CreateScreenQuad(device, gGameFramework->GetCommandList(), 1.4f, 0.15f, 0.98f));
+    //healthBarUI->SetPosition({0.f, -0.6f, -0.85f });        // NDC ì¢Œí‘œë¡œ í•˜ë‹¨ ì™¼ìª½ ê³ ì • (ë¡¤ ìŠ¤íƒ€ì¼)
+    //healthBarUI->SetPosition(XMFLOAT3(0.f, 0.2f, 0.98f));        // NDC ì¢Œí‘œë¡œ í•˜ë‹¨ ì™¼ìª½ ê³ ì • (ë¡¤ ìŠ¤íƒ€ì¼)
+    healthBarUI->SetPosition(XMFLOAT3(-0.3f, -0.7f, 0.98f));
+    healthBarUI->SetScale(XMFLOAT3(1.2f, 1.2f, 1.2f));
+    healthBarUI->SetUseTexture(true);
+    healthBarUI->SetBaseColor(XMFLOAT4(1, 1, 1, 1));
 
-	m_uiObjects.push_back(healthBarUI);
+    m_uiObjects.push_back(healthBarUI);
 
-	auto Inventory = make_shared<GameObject>(device);
+    auto Inventory = make_shared<GameObject>(device);
 
-	Inventory->SetTexture(m_textures["Inventory"]);  // ¿ì¸®°¡ ¹æ±İ ·ÎµåÇÑ ÅØ½ºÃ³ »ç¿ë
-	Inventory->SetTextureIndex(m_textures["Inventory"]->GetTextureIndex());  // 
-	Inventory->SetMesh(CreateScreenQuad(device, gGameFramework->GetCommandList(), 0.5f, 0.5f, 0.98f));
-	Inventory->SetPosition(XMFLOAT3(0.8f, -0.55f, 0.98f));
-	Inventory->SetUseTexture(true);
-	Inventory->SetBaseColor(XMFLOAT4(1, 1, 1, 1));
+    Inventory->SetTexture(m_textures["Inventory"]);  // ìš°ë¦¬ê°€ ë°©ê¸ˆ ë¡œë“œí•œ í…ìŠ¤ì²˜ ì‚¬ìš©
+    Inventory->SetTextureIndex(m_textures["Inventory"]->GetTextureIndex());  // 
+    Inventory->SetMesh(CreateScreenQuad(device, gGameFramework->GetCommandList(), 0.5f, 0.5f, 0.98f));
+    Inventory->SetPosition(XMFLOAT3(0.8f, -0.55f, 0.98f));
+    Inventory->SetUseTexture(true);
+    Inventory->SetBaseColor(XMFLOAT4(1, 1, 1, 1));
 
 	m_uiObjects.push_back(Inventory);
 
 
 	auto Portrait = make_shared<GameObject>(device);
 
-	Portrait->SetTexture(m_textures["Portrait"]);  // ¿ì¸®°¡ ¹æ±İ ·ÎµåÇÑ ÅØ½ºÃ³ »ç¿ë
+	Portrait->SetTexture(m_textures["Portrait"]);  // ìš°ë¦¬ê°€ ë°©ê¸ˆ ë¡œë“œí•œ í…ìŠ¤ì²˜ ì‚¬ìš©
 	Portrait->SetTextureIndex(m_textures["Portrait"]->GetTextureIndex());  // 
 	Portrait->SetMesh(CreateScreenQuad(device, gGameFramework->GetCommandList(), 0.25f, 0.25f, 0.98f));
 	Portrait->SetPosition(XMFLOAT3(-0.9f, -0.4f, 0.98f));

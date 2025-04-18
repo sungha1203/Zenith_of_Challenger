@@ -229,7 +229,9 @@
     <ClCompile Include="MonsterLoader.cpp">
       <Filter>소스 파일\Model Load</Filter>
     </ClCompile>
-    <ClCompile Include="FrightFly.hlsl" />
+    <ClCompile Include="FrightFly.hlsl">
+      <Filter>셰이더 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Zenith of Challenger.rc">

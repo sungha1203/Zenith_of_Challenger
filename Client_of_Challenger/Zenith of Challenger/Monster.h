@@ -7,29 +7,38 @@ public:
     Frightfly(const ComPtr<ID3D12Device>& device) : Monsters(device){}
 };
 
-class PeaShooter : public Monsters
+class FlowerFairy : public Monsters
 {
 public:
-    PeaShooter(const ComPtr<ID3D12Device>& device) : Monsters(device)
+    FlowerFairy(const ComPtr<ID3D12Device>& device) : Monsters(device)
     {
-        SetScale(XMFLOAT3(1.2f, 1.2f, 1.2f));
+        SetScale(XMFLOAT3(1.0f, 1.0f, 1.0f));
     }
 };
 
-class PlantDionae : public Monsters
+class MushroomDark : public Monsters
 {
 public:
-    PlantDionae(const ComPtr<ID3D12Device>& device) : Monsters(device)
+    MushroomDark(const ComPtr<ID3D12Device>& device) : Monsters(device)
     {
-        SetScale(XMFLOAT3(0.9f, 0.9f, 0.9f));
+        SetScale(XMFLOAT3(1.0f, 1.0f, 1.0f));
     }
 };
 
-class PlantVenus : public Monsters
+class VenusBlue : public Monsters
 {
 public:
-    PlantVenus(const ComPtr<ID3D12Device>& device) : Monsters(device)
+    VenusBlue(const ComPtr<ID3D12Device>& device) : Monsters(device)
     {
-        SetScale(XMFLOAT3(1.1f, 1.1f, 1.1f));
+        SetScale(XMFLOAT3(1.0f, 1.0f, 1.0f));
+    }
+};
+
+class PlantDionaea : public Monsters
+{
+public:
+    PlantDionaea(const ComPtr<ID3D12Device>& device) : Monsters(device)
+    {
+        SetScale(XMFLOAT3(1.0f, 1.0f, 1.0f));
     }
 };
