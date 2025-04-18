@@ -154,6 +154,39 @@ void GameScene::Update(FLOAT timeElapsed)
             }
         }
     }
+
+    for (auto& obj : m_objects)
+    {
+        const BoundingBox& objBox = obj->GetBoundingBox();
+        const XMFLOAT3& objCenter = objBox.Center;
+
+        XMFLOAT3 objPos = obj->GetPosition();
+        XMFLOAT3 objCenterWorld = {
+            objPos.x + objCenter.x,
+            objPos.y + objCenter.y,
+            objPos.z + objCenter.z
+        };
+
+        XMFLOAT3 playerPos = m_player->GetPosition();
+        XMFLOAT3 playerCenterWorld = {
+            playerPos.x,
+            playerPos.y + 5.0f,
+            playerPos.z
+        };
+
+        const XMFLOAT3& objExtent = objBox.Extents;
+
+        bool intersectX = abs(playerCenterWorld.x - objCenterWorld.x) <= (playerBox.Extents.x + objExtent.x);
+        bool intersectY = abs(playerCenterWorld.y - objCenterWorld.y) <= (playerBox.Extents.y + objExtent.y);
+        bool intersectZ = abs(playerCenterWorld.z - objCenterWorld.z) <= (playerBox.Extents.z + objExtent.z);
+
+        if (intersectX && intersectY && intersectZ)
+        {
+            OutputDebugStringA("[Collision Detection] Player <-> Object\n");
+            m_player->SetPosition(m_player->m_prevPosition);
+        }
+    }
+
 }
 
 void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
@@ -203,6 +236,16 @@ void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) con
             ui->Render(commandList);
         }
     }
+
+    // 충돌체크용 일반 오브젝트 렌더링
+    if (!m_objects.empty() && m_debugDrawEnabled == true)
+    {
+        for (const auto& object : m_objects)
+        {
+            object->Render(commandList);
+        }
+    }
+
 }
 
 
@@ -332,7 +375,6 @@ void GameScene::BuildMeshes(const ComPtr<ID3D12Device>& device,
             OutputDebugStringA("[FBXLoader] Venus_Blue 메쉬 없음\n");
         }
     }
-
     // Plant_Dionaea FBX 메쉬 저장
     auto Plant_DionaeaLoader = make_shared<FBXLoader>();
     if (Plant_DionaeaLoader->LoadFBXModel("Model/Monsters/Plant_Dionaea/Plant_Dionaea.fbx", XMMatrixScaling(0.1f, 0.1f, 0.1f)))
@@ -474,7 +516,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
         player->SetRotationY(0.f);                  // 정면을 보게 초기화
 
         // [4] 위치 및 스케일 설정
-        player->SetPosition(XMFLOAT3{ 40.f, 1.7f, -50.f });
+        player->SetPosition(XMFLOAT3{ -180, 0.7f, -185 });
         //player->SetPosition(gGameFramework->g_pos);
 
         // [5] FBX 메시 전부 등록
@@ -516,6 +558,35 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
     }
 
     m_player->SetCamera(m_camera);
+
+
+    //맵의 오브젝트들 바운딩 박스
+
+    //AddCubeCollider({ -212, 5, -211 }, { 10, 15, 10 });
+    //AddCubeCollider({ -209, 11, -104 }, { 5, 5, 6.5 });
+
+    AddCubeCollider({ -212, 0, -211 }, { 21, 15, 20 });
+    AddCubeCollider({ -209, 0, -107 }, { 9, 23, 13 });
+    AddCubeCollider({ -200, 0, 70 }, { 20, 15, 20 });
+    AddCubeCollider({ -105, 20, -1 }, { 30, 30, 28 });
+    AddCubeCollider({ -130, 0, -85 }, { 10, 20, 20 }, 75.f);
+    AddCubeCollider({ -157, 0, -103 }, { 10, 15, 10 });
+    AddCubeCollider({ 31, 20, -136 }, { 1, 1, 1 });
+    AddCubeCollider({ 113, 20, -196 }, { 1, 1, 1 });
+    AddCubeCollider({ 133, 20, -223 }, { 1, 1, 1 });
+    AddCubeCollider({ 132, 20, -86 }, { 1, 1, 1 });
+    AddCubeCollider({ 204, 20, -117 }, { 1, 1, 1 });
+    AddCubeCollider({ 225, 20,-90 }, { 1, 1, 1 });
+    AddCubeCollider({ 55, 5, 30 }, { 1, 1, 1 });
+    AddCubeCollider({ -3, 5, 67 }, { 1, 1, 1 });
+    AddCubeCollider({ -81, 5, 118 }, { 1, 1, 1 });
+    AddCubeCollider({ 44, 5, 140 }, { 1, 1, 1 });
+    AddCubeCollider({ 17, 5, 181 }, { 1, 1, 1 });
+    AddCubeCollider({ 107, 5, 152 }, { 1, 1, 1 });
+
+
+
+
 
     //몬스터 로드
     LoadAllMonsters(
@@ -667,4 +738,33 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 	Portrait->SetBaseColor(XMFLOAT4(1, 1, 1, 1));
 
 	m_uiObjects.push_back(Portrait);
+
+}
+
+void GameScene::AddCubeCollider(const XMFLOAT3& position, const XMFLOAT3& extents, const FLOAT& rotate)
+{
+    auto cube = make_shared<GameObject>(gGameFramework->GetDevice());
+
+    // 메시: 미리 로드된 CUBE 메시 사용
+    cube->SetMesh(m_meshes.at("CUBE"));
+
+    // 위치 및 스케일 설정
+    cube->SetScale(XMFLOAT3{ 1.f, 1.f, 1.f }); // extents는 반지름이라 *2 필요
+    cube->SetRotationY(rotate);
+    cube->SetPosition(position);
+
+    // 바운딩 박스 설정
+    BoundingBox box;
+	box.Center = { 0.f, 0.f, 0.f };
+    box.Extents = extents;
+    cube->SetBoundingBox(box);
+
+    // 와이어프레임 디버깅
+    cube->SetDrawBoundingBox(true);
+    cube->SetDebugLineShader(m_shaders.at("DebugLineShader")); // 반드시 등록돼야 함
+
+    // 색상만으로 표현할 경우
+    cube->SetBaseColor(XMFLOAT4(1, 0, 0, 1)); // 빨간색 등 원하는 색
+
+    m_objects.push_back(cube); // 오브젝트 등록
 }

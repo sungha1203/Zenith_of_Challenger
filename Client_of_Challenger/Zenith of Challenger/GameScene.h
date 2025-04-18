@@ -34,6 +34,8 @@ public:
         const ComPtr<ID3D12GraphicsCommandList>& commandList);
     virtual void BuildObjects(const ComPtr<ID3D12Device>& device);
 
+    void AddCubeCollider(const XMFLOAT3& position, const XMFLOAT3& extents, const FLOAT& rotate = 0.f);
+
 private:
     shared_ptr<FBXLoader> m_fbxLoader; // FBX 로더 추가
     shared_ptr<FBXLoader> m_playerLoader;

@@ -124,7 +124,7 @@ void GameObject::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) co
 	if (m_texture) m_texture->UpdateShaderVariable(commandList, m_textureIndex);
 	if (m_material) m_material->UpdateShaderVariable(commandList);
 
-	m_mesh->Render(commandList);
+	if (m_shader) m_mesh->Render(commandList);
 
 	if (m_drawBoundingBox && m_debugBoxMesh && m_debugLineShader)
 	{

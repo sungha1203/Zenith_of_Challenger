@@ -146,9 +146,9 @@ void LoadAllMonsters(
 
         monster->SetMesh(meshLibrary.at("Plant_Dionaea"));
         monster->SetAnimationClips({ animClipLibrary.at("Idle") });
-        monster->SetCurrentAnimation("Idle");
         monster->SetBoneOffsets(boneOffsetLibrary);
         monster->SetBoneNameToIndex(boneMap);
+        monster->SetCurrentAnimation("Idle");
 
         BoundingBox box;
         box.Center = XMFLOAT3{ 0.f, 4.0f, 0.f };
