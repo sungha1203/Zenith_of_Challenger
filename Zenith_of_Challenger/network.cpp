@@ -540,8 +540,10 @@ void Network::SendInitMonster(const std::vector<int>& client_id, const std::unor
 		packet.size = sizeof(packet);
 
 		for (int id : client_id) {
-			if (clients[id].m_used)
+			if (clients[id].m_used) {
 				clients[id].do_send(packet);
+				std::this_thread::sleep_for(std::chrono::milliseconds(1));
+			}
 		}
 	}
 }

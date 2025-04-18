@@ -5,6 +5,16 @@
 #include "d3dUtil.h"
 #include "Shader.h"            // Shader를 shared_ptr로 보관하고 있음
 
+enum class NormalMonsterType
+{
+	Mushroom,
+	FightFly,
+	PlantDionaea,
+	PeaShooter,
+	PlantVenus,
+	FlowerFairy
+};
+
 class Monsters : public GameObject
 {
 public:

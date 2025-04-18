@@ -126,5 +126,7 @@ void ClientNetwork::ProcessInitialstate(char* buffer)
 
 void ClientNetwork::ProcessInitMonster(char* buffer)
 {
-
+	SC_Packet_InitMonster* pkt = reinterpret_cast<SC_Packet_InitMonster*>(buffer);
+	XMFLOAT3 pos(pkt->x, pkt->y, pkt->z);
+	gGameFramework->monstersCoord[pkt->monsterid -1] = pos;
 }

@@ -24,6 +24,7 @@ public:
     ClientState* GetClientState() const { return m_clientstate.get(); }
     bool IsSuccess = false;                                 // 게임시작 성공했음?
     XMFLOAT3 g_pos;
+    std::unordered_map<int, XMFLOAT3> monstersCoord;
 
     void OnCreate(HINSTANCE hInstance, HWND hMainWnd);
     void OnDestroy();
