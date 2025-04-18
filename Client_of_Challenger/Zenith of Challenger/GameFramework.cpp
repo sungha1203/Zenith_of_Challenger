@@ -347,8 +347,8 @@ void CGameFramework::CreateRootSignature()
 {
 	CD3DX12_DESCRIPTOR_RANGE descriptorRange[DescriptorRange::Count];
 	descriptorRange[DescriptorRange::TextureCube].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);   // t0, space0
-	descriptorRange[DescriptorRange::Texture].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 10, 1, 0);       // t1~t10, space0
-	descriptorRange[DescriptorRange::BoneMatrix].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 11, 0); // t11
+	descriptorRange[DescriptorRange::Texture].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 9, 1, 0);       // t1~t9, space0
+	descriptorRange[DescriptorRange::BoneMatrix].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 10, 0); // t10
 
 	CD3DX12_ROOT_PARAMETER rootParameter[RootParameter::Count];
 	rootParameter[RootParameter::GameObject].InitAsConstantBufferView(0, 0); // b0, space0

@@ -250,6 +250,12 @@ void GameScene::BuildTextures(const ComPtr<ID3D12Device>& device,
 		TEXT("Image/InGameUI/Inventory.dds"), RootParameter::Texture); 
 	inventoryTexture->CreateShaderVariable(device, true);
 	m_textures.insert({ "Inventory", inventoryTexture });
+
+	auto PortraitTexture = make_shared<Texture>(device, commandList,
+		TEXT("Image/InGameUI/Portrait.dds"), RootParameter::Texture);
+	PortraitTexture->CreateShaderVariable(device, true);
+	m_textures.insert({ "Portrait", PortraitTexture });
+
 }
 
 void GameScene::BuildMaterials(const ComPtr<ID3D12Device>& device,
@@ -280,7 +286,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 	m_playerLoader = make_shared<FBXLoader>();
 	cout << "캐릭터 로드 중!!!!" << endl;
 
-	if (m_playerLoader->LoadFBXModel("Model/Player/Player2.fbx", playerTransform))
+	if (m_playerLoader->LoadFBXModel("Model/Player/Challenger.fbx", playerTransform))
 	{
 		auto& meshes = m_playerLoader->GetMeshes();
 		if (meshes.empty()) {
@@ -398,4 +404,16 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 	Inventory->SetBaseColor(XMFLOAT4(1, 1, 1, 1));
 
 	m_uiObjects.push_back(Inventory);
+
+
+	auto Portrait = make_shared<GameObject>(device);
+
+	Portrait->SetTexture(m_textures["Portrait"]);  // 우리가 방금 로드한 텍스처 사용
+	Portrait->SetTextureIndex(m_textures["Portrait"]->GetTextureIndex());  // 
+	Portrait->SetMesh(CreateScreenQuad(device, gGameFramework->GetCommandList(), 0.25f, 0.25f, 0.98f));
+	Portrait->SetPosition(XMFLOAT3(-0.9f, -0.4f, 0.98f));
+	Portrait->SetUseTexture(true);
+	Portrait->SetBaseColor(XMFLOAT4(1, 1, 1, 1));
+
+	m_uiObjects.push_back(Portrait);
 }
