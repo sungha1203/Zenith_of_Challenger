@@ -422,11 +422,6 @@ void GameScene::BuildTextures(const ComPtr<ID3D12Device>& device,
         TEXT("Image/Monsters/Plant_Dionaea.dds"), RootParameter::Texture);
     Plant_DionaeaTexture->CreateShaderVariable(device, true);
     m_textures.insert({ "Plant_Dionaea", Plant_DionaeaTexture });
-
-	auto healthBarTexture = make_shared<Texture>(device, commandList,
-		TEXT("Image/HealthBar_BC3.dds"), RootParameter::Texture);
-	healthBarTexture->CreateShaderVariable(device, true);
-	m_textures.insert({ "HealthBar", healthBarTexture });
 	
 	auto PortraitTexture = make_shared<Texture>(device, commandList,
 		TEXT("Image/InGameUI/Portrait.dds"), RootParameter::Texture);
