@@ -25,11 +25,20 @@ public:
     }
 };
 
-class PlantVenus : public Monsters
+class VenusBlue : public Monsters
 {
 public:
-    PlantVenus(const ComPtr<ID3D12Device>& device) : Monsters(device)
+    VenusBlue(const ComPtr<ID3D12Device>& device) : Monsters(device)
     {
-        SetScale(XMFLOAT3(1.1f, 1.1f, 1.1f));
+        SetScale(XMFLOAT3(1.0f, 1.0f, 1.0f));
+    }
+};
+
+class PlantDionaea : public Monsters
+{
+public:
+    PlantDionaea(const ComPtr<ID3D12Device>& device) : Monsters(device)
+    {
+        SetScale(XMFLOAT3(1.0f, 1.0f, 1.0f));
     }
 };
