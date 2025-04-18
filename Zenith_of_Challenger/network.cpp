@@ -323,7 +323,6 @@ void Network::ProcessRoomJoin(int client_id, char* buffer, int length)
 
 	if (g_room_manager.JoinRoom(client_id, room_id)) {
 		SendRoomJoinResponse(client_id, true, room_id);
-		SendClientInformation(client_id);
 		clients[client_id].do_recv();
 	}
 	else {
@@ -524,15 +523,27 @@ void Network::SendUpdateInventory(const std::vector<int>& client_id)
 	//
 }
 
-// [임시] 캐릭터 정보 전달
-void Network::SendClientInformation(int client_id)
+// 몬스터 좌표 초기 설정
+void Network::SendInitMonster(const std::vector<int>& client_id, const std::unordered_map<int , Monster>& monsters)
 {
-	SC_Packet_ClientInformation packet;
-	packet.type = SC_PACKET_CLIENTINFORMATION;
-	packet.size = sizeof(packet);
-	packet.hp = g_client[client_id].GetHP();
-	packet.attack = g_client[client_id].GetAttack();
-	packet.speed = g_client[client_id].GetSpeed();
-	packet.attackspeed = g_client[client_id].GetAttackSpeed();
-	clients[client_id].do_send(packet);
+	for (auto it = monsters.begin(); it != monsters.end(); ++it){
+		int monster_id = it->first;
+		const Monster& monster = it->second;
+
+		SC_Packet_InitMonster packet;
+		packet.type = SC_PACKET_INITMONSTER;
+		packet.monsterid = monster_id;
+		packet.monstertype = static_cast<int>(monster.GetType());
+		packet.x = monster.GetX();
+		packet.y = monster.GetY();
+		packet.z = monster.GetZ();
+		packet.size = sizeof(packet);
+
+		for (int id : client_id) {
+			if (clients[id].m_used) {
+				clients[id].do_send(packet);
+				std::this_thread::sleep_for(std::chrono::milliseconds(1));
+			}
+		}
+	}
 }

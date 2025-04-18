@@ -464,11 +464,11 @@ void GameScene::BuildTextures(const ComPtr<ID3D12Device>& device,
         TEXT("Image/Monsters/Plant_Dionaea.dds"), RootParameter::Texture);
     Plant_DionaeaTexture->CreateShaderVariable(device, true);
     m_textures.insert({ "Plant_Dionaea", Plant_DionaeaTexture });
-	
-	auto PortraitTexture = make_shared<Texture>(device, commandList,
-		TEXT("Image/InGameUI/Portrait.dds"), RootParameter::Texture);
-	PortraitTexture->CreateShaderVariable(device, true);
-	m_textures.insert({ "Portrait", PortraitTexture });
+
+    auto PortraitTexture = make_shared<Texture>(device, commandList,
+        TEXT("Image/InGameUI/Portrait.dds"), RootParameter::Texture);
+    PortraitTexture->CreateShaderVariable(device, true);
+    m_textures.insert({ "Portrait", PortraitTexture });
 
 }
 
@@ -516,8 +516,8 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
         player->SetRotationY(0.f);                  // 정면을 보게 초기화
 
         // [4] 위치 및 스케일 설정
-        player->SetPosition(XMFLOAT3{ -180, 0.7f, -185 });
-        //player->SetPosition(gGameFramework->g_pos);
+        //player->SetPosition(XMFLOAT3{ 40.f, 1.7f, -50.f });
+        player->SetPosition(gGameFramework->g_pos);
 
         // [5] FBX 메시 전부 등록
         for (int i = 0; i < meshes.size(); ++i)
@@ -603,65 +603,71 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
     auto& frightflies = m_monsterGroups["Frightfly"];
     for (int i = 0; i < frightflies.size(); ++i)
     {
-        float angle = XM_2PI * i / frightflies.size();
-        float radius = 15.0f;
-        float x = -170.f + radius * cos(angle);
-        float z = 15.f + radius * sin(angle);
-        float y = 0.f;
-
-        frightflies[i]->SetPosition(XMFLOAT3{ x, y, z });
+        //float angle = XM_2PI * i / frightflies.size();
+        //float radius = 15.0f;
+        //float x = -170.f + radius * cos(angle);
+        //float z = 15.f + radius * sin(angle);
+        //float y = 0.f;
+        
+        //frightflies[i]->SetPosition(XMFLOAT3{ x, y, z });
+        frightflies[i]->SetPosition(gGameFramework->monstersCoord[i + 10]);
     }
 
     // "Flower_Fairy" 타입 몬스터 배치
     auto& fairies = m_monsterGroups["Flower_Fairy"];
     for (int i = 0; i < fairies.size(); ++i)
     {
-        float angle = XM_2PI * i / fairies.size();
-        float radius = 20.0f;
-        float x = 190.f + radius * cos(angle);
-        float z = -190.f + radius * sin(angle);
-        float y = -5.f;
+        //float angle = XM_2PI * i / fairies.size();
+        //float radius = 20.0f;
+        //float x = 190.f + radius * cos(angle);
+        //float z = -190.f + radius * sin(angle);
+        //float y = -5.f;
 
-        fairies[i]->SetPosition(XMFLOAT3{ x, y, z });
+        //fairies[i]->SetPosition(XMFLOAT3{ x, y, z });
+        fairies[i]->SetPosition(gGameFramework->monstersCoord[i + 40]);
+
     }
 
     // "Mushroom_Dark" 타입 몬스터 배치
     auto& mushrooms = m_monsterGroups["Mushroom_Dark"];
     for (int i = 0; i < mushrooms.size(); ++i)
     {
-        float angle = XM_2PI * i / mushrooms.size();
-        float radius = 25.0f; // 조금 더 넓게 배치
-        float x = -100.f + radius * cos(angle);
-        float z = -165.f + radius * sin(angle);
-        float y = 0.f; // 지면 높이에 맞게 조절
+        //float angle = XM_2PI * i / mushrooms.size();
+        //float radius = 25.0f; // 조금 더 넓게 배치
+        //float x = -100.f + radius * cos(angle);
+        //float z = -165.f + radius * sin(angle);
+        //float y = 0.f; // 지면 높이에 맞게 조절
 
-        mushrooms[i]->SetPosition(XMFLOAT3{ x, y, z });
+        //mushrooms[i]->SetPosition(XMFLOAT3{ x, y, z });
+        mushrooms[i]->SetPosition(gGameFramework->monstersCoord[i]);
     }
 
     // "Venus_Blue" 타입 몬스터 배치
     auto& venusGroup = m_monsterGroups["Venus_Blue"];
     for (int i = 0; i < venusGroup.size(); ++i)
     {
-        float angle = XM_2PI * i / venusGroup.size();
-        float radius = 28.0f; // 위치 조정
-        float x = 40.f + radius * cos(angle);
-        float z = -50.f + radius * sin(angle);
-        float y = 0.f;
+        //float angle = XM_2PI * i / venusGroup.size();
+        //float radius = 28.0f; // 위치 조정
+        //float x = 40.f + radius * cos(angle);
+        //float z = -50.f + radius * sin(angle);
+        //float y = 0.f;
 
-        venusGroup[i]->SetPosition(XMFLOAT3{ x, y, z });
+        //venusGroup[i]->SetPosition(XMFLOAT3{ x, y, z });
+        venusGroup[i]->SetPosition(gGameFramework->monstersCoord[i + 30]);
     }
 
     // "Plant_Dionaea" 타입 몬스터 배치
     auto& DionaeaGroup = m_monsterGroups["Plant_Dionaea"];
     for (int i = 0; i < DionaeaGroup.size(); ++i)
     {
-        float angle = XM_2PI * i / DionaeaGroup.size();
-        float radius = 28.0f; // 위치 조정
-        float x = 160.f + radius * cos(angle);
-        float z = 30.f + radius * sin(angle);
-        float y = 0.f;
+        //float angle = XM_2PI * i / DionaeaGroup.size();
+        //float radius = 28.0f; // 위치 조정
+        //float x = 160.f + radius * cos(angle);
+        //float z = 30.f + radius * sin(angle);
+        //float y = 0.f;
 
-        DionaeaGroup[i]->SetPosition(XMFLOAT3{ x, y, z });
+        //DionaeaGroup[i]->SetPosition(XMFLOAT3{ x, y, z });
+        DionaeaGroup[i]->SetPosition(gGameFramework->monstersCoord[i + 20]);
     }
 
     //스카이박스
@@ -725,17 +731,17 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
     Inventory->SetUseTexture(true);
     Inventory->SetBaseColor(XMFLOAT4(1, 1, 1, 1));
 
-	m_uiObjects.push_back(Inventory);
+    m_uiObjects.push_back(Inventory);
 
 
-	auto Portrait = make_shared<GameObject>(device);
+    auto Portrait = make_shared<GameObject>(device);
 
-	Portrait->SetTexture(m_textures["Portrait"]);  // 우리가 방금 로드한 텍스처 사용
-	Portrait->SetTextureIndex(m_textures["Portrait"]->GetTextureIndex());  // 
-	Portrait->SetMesh(CreateScreenQuad(device, gGameFramework->GetCommandList(), 0.25f, 0.25f, 0.98f));
-	Portrait->SetPosition(XMFLOAT3(-0.9f, -0.4f, 0.98f));
-	Portrait->SetUseTexture(true);
-	Portrait->SetBaseColor(XMFLOAT4(1, 1, 1, 1));
+    Portrait->SetTexture(m_textures["Portrait"]);  // 우리가 방금 로드한 텍스처 사용
+    Portrait->SetTextureIndex(m_textures["Portrait"]->GetTextureIndex());  // 
+    Portrait->SetMesh(CreateScreenQuad(device, gGameFramework->GetCommandList(), 0.25f, 0.25f, 0.98f));
+    Portrait->SetPosition(XMFLOAT3(-0.9f, -0.4f, 0.98f));
+    Portrait->SetUseTexture(true);
+    Portrait->SetBaseColor(XMFLOAT4(1, 1, 1, 1));
 
 	m_uiObjects.push_back(Portrait);
 

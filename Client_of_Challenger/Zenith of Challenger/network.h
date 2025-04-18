@@ -26,6 +26,7 @@ public:
 	void		ProcessRoomjoin(char* buffer);
 	void		ProcessGamestart(char* buffer);
 	void		ProcessInitialstate(char* buffer);
+	void		ProcessInitMonster(char* buffer);
 
 public:
 	SOCKET			m_clientsocket = INVALID_SOCKET;

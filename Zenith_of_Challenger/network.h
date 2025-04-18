@@ -2,6 +2,8 @@
 #include "stdafx.h"
 #include "session.h"
 
+class Monster;
+
 class Network
 {
 public:
@@ -33,7 +35,7 @@ public:
 	void		SendStartRepairTime(const std::vector<int>& client_id);			// 정비 시간(8분 지나고 시작의 땅으로 이동)
 	void		SendStartZenithStage(const std::vector<int>& client_id);		// 도전 -> 정점 스테이지
 	void		SendUpdateInventory(const std::vector<int>& client_id);			// 인벤토리 업데이트
-	void		SendClientInformation(int client_id);							// 임시@@@@@@@@@@@@@@@	
+	void		SendInitMonster(const std::vector<int>& client_id, const std::unordered_map<int, Monster>& monsters);	// 몬스터 초기 좌표 설정
 	// ---------패킷 뿌려주기---------
 
 public:

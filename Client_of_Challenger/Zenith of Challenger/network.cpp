@@ -74,6 +74,8 @@ void ClientNetwork::Receive()
 			case SC_PACKET_INITIALSTATE:
 				ProcessInitialstate(buffer);
 				break;
+			case SC_PACKET_INITMONSTER:
+				ProcessInitMonster(buffer);
 			default:
 				break;
 			}
@@ -120,4 +122,11 @@ void ClientNetwork::ProcessInitialstate(char* buffer)
 		//	player->SetPosition(pos);
 	}
 
+}
+
+void ClientNetwork::ProcessInitMonster(char* buffer)
+{
+	SC_Packet_InitMonster* pkt = reinterpret_cast<SC_Packet_InitMonster*>(buffer);
+	XMFLOAT3 pos(pkt->x, pkt->y, pkt->z);
+	gGameFramework->monstersCoord[pkt->monsterid -1] = pos;
 }
