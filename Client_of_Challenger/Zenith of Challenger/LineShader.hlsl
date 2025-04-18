@@ -23,5 +23,5 @@ PSInput VSMain(VSInput input)
 
 float4 PSMain(PSInput input) : SV_Target
 {
-    return float4(1, 0, 0, 1); // 說除 摹
+    return float4(0, 0, 0, 1); // 說除 摹
 }
