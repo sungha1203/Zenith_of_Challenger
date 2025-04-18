@@ -355,8 +355,8 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
         player->SetRotationY(0.f);                  // 정면을 보게 초기화
 
         // [4] 위치 및 스케일 설정
-        player->SetPosition(XMFLOAT3{ 190.f, 1.7f, -190.f });
-        //player->SetPosition(gGameFramework->g_pos);
+        //player->SetPosition(XMFLOAT3{ 190.f, 1.7f, -190.f });
+        player->SetPosition(gGameFramework->g_pos);
 
         // [5] FBX 메시 전부 등록
         for (int i = 0; i < meshes.size(); ++i)

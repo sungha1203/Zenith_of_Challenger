@@ -74,6 +74,8 @@ void ClientNetwork::Receive()
 			case SC_PACKET_INITIALSTATE:
 				ProcessInitialstate(buffer);
 				break;
+			case SC_PACKET_INITMONSTER:
+				ProcessInitMonster(buffer);
 			default:
 				break;
 			}
@@ -119,5 +121,10 @@ void ClientNetwork::ProcessInitialstate(char* buffer)
 		//if (player)
 		//	player->SetPosition(pos);
 	}
+
+}
+
+void ClientNetwork::ProcessInitMonster(char* buffer)
+{
 
 }

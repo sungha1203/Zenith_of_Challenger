@@ -46,10 +46,14 @@ void Room::PushStartGameButton(int RoomMasterID)
 		return;
 	}
 
-	g_network.SendInitialState(GetClients());		// 게임방 안에 본인 포함 모두한테 초기 좌표 패킷 보내기
+	InitChallengeMonsters();									// 도전 스테이지 몬스터 초기화
+
+	g_network.SendInitialState(GetClients());					// 게임방 안에 본인 포함 모두한테 초기 좌표 패킷 보내기
+	//g_network.SendInitMonster(GetClients(),GetMonsters());		// 게임방 안의 모든 몬스터 초기화
 	Sleep(800);
-	g_network.SendGameStart(GetClients());			// 게임방 안에 본인 포함 모두한테 게임시작 패킷 보내기
-	AllPlayerNum(m_clients.size());					// 게임에 입장한 플레이어가 몇명이야?
+
+	g_network.SendGameStart(GetClients());						// 게임방 안에 본인 포함 모두한테 게임시작 패킷 보내기
+	AllPlayerNum(m_clients.size());								// 게임에 입장한 플레이어가 몇명이야?
 
 	m_IsGaming = true;
 	std::cout << "[INFO] 방[" << m_room_id << "] 게임을 시작하였습니다!\n";
@@ -113,6 +117,8 @@ void Room::EndGame()
 	// TODO
 }
 
+
+// 인벤토리
 void Room::AddGold(int plusgold)
 {
 	std::lock_guard<std::mutex> lock(m_inventoryMx);
@@ -157,4 +163,91 @@ void Room::DecideJobDocument(JobDocument job)		// 클라 코드에서 한번 정했으면 자
 	std::lock_guard<std::mutex> lock(m_inventoryMx);
 	--m_inventory.JobDocuments[job];
 	// update packet
+}
+
+// 몬스터
+void Room::InitChallengeMonsters()
+{
+	m_monsters.clear();
+	int monsterID = 0;
+
+	// Mushroom
+	{
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::Mushroom,-60.f, 0.f, 60.f };
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::Mushroom,-60.f, 0.f, 60.f };
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::Mushroom,-60.f, 0.f, 60.f };
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::Mushroom,-60.f, 0.f, 60.f };
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::Mushroom,-60.f, 0.f, 60.f };
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::Mushroom,-60.f, 0.f, 60.f };
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::Mushroom,-60.f, 0.f, 60.f };
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::Mushroom,-60.f, 0.f, 60.f };
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::Mushroom,-60.f, 0.f, 60.f };
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::Mushroom,-60.f, 0.f, 60.f };
+	}
+	// Fight Fly
+	{
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::FightFly,-60.f, 0.f, 60.f };
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::FightFly,-60.f, 0.f, 60.f };
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::FightFly,-60.f, 0.f, 60.f };
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::FightFly,-60.f, 0.f, 60.f };
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::FightFly,-60.f, 0.f, 60.f };
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::FightFly,-60.f, 0.f, 60.f };
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::FightFly,-60.f, 0.f, 60.f };
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::FightFly,-60.f, 0.f, 60.f };
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::FightFly,-60.f, 0.f, 60.f };
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::FightFly,-60.f, 0.f, 60.f };
+	}
+	// Plant Dionaea
+	{
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::PlantDionaea,-60.f, 0.f, 60.f };
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::PlantDionaea,-60.f, 0.f, 60.f };
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::PlantDionaea,-60.f, 0.f, 60.f };
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::PlantDionaea,-60.f, 0.f, 60.f };
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::PlantDionaea,-60.f, 0.f, 60.f };
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::PlantDionaea,-60.f, 0.f, 60.f };
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::PlantDionaea,-60.f, 0.f, 60.f };
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::PlantDionaea,-60.f, 0.f, 60.f };
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::PlantDionaea,-60.f, 0.f, 60.f };
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::PlantDionaea,-60.f, 0.f, 60.f };
+	}
+	// Pea Shooter
+	{
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::PeaShooter,-60.f, 0.f, 60.f };
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::PeaShooter,-60.f, 0.f, 60.f };
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::PeaShooter,-60.f, 0.f, 60.f };
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::PeaShooter,-60.f, 0.f, 60.f };
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::PeaShooter,-60.f, 0.f, 60.f };
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::PeaShooter,-60.f, 0.f, 60.f };
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::PeaShooter,-60.f, 0.f, 60.f };
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::PeaShooter,-60.f, 0.f, 60.f };
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::PeaShooter,-60.f, 0.f, 60.f };
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::PeaShooter,-60.f, 0.f, 60.f };
+	}
+	// Plant Venus
+	{
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::PlantVenus,-60.f, 0.f, 60.f };
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::PlantVenus,-60.f, 0.f, 60.f };
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::PlantVenus,-60.f, 0.f, 60.f };
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::PlantVenus,-60.f, 0.f, 60.f };
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::PlantVenus,-60.f, 0.f, 60.f };
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::PlantVenus,-60.f, 0.f, 60.f };
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::PlantVenus,-60.f, 0.f, 60.f };
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::PlantVenus,-60.f, 0.f, 60.f };
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::PlantVenus,-60.f, 0.f, 60.f };
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::PlantVenus,-60.f, 0.f, 60.f };
+	}
+	// Flower Fairy
+	{
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::FlowerFairy,-60.f, 0.f, 60.f };
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::FlowerFairy,-60.f, 0.f, 60.f };
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::FlowerFairy,-60.f, 0.f, 60.f };
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::FlowerFairy,-60.f, 0.f, 60.f };
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::FlowerFairy,-60.f, 0.f, 60.f };
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::FlowerFairy,-60.f, 0.f, 60.f };
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::FlowerFairy,-60.f, 0.f, 60.f };
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::FlowerFairy,-60.f, 0.f, 60.f };
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::FlowerFairy,-60.f, 0.f, 60.f };
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::FlowerFairy,-60.f, 0.f, 60.f };
+	}
+	m_MonsterNum = monsterID;
 }

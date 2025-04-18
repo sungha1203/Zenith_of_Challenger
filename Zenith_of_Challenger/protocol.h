@@ -2,7 +2,6 @@
 #pragma pack(push,1)
 
 constexpr int SERVER_PORT = 4000;
-constexpr int WORKER_THREAD_COUNT = 4;
 
 constexpr int BUF_SIZE = 1024;				
 constexpr int MAX_USER = 10;				// 접속 가능한 총 유저 수
@@ -27,7 +26,8 @@ constexpr int NAME_SIZE = 20;				// 이름 글자 수
 #define SC_PACKET_GAMESTART			 106		// 게임 시작
 #define SC_PACKET_REPAIRTIME		 107		// 정비 시간
 #define SC_PACKET_ZENITHSTAGE		 108		// 도전 -> 정점
-#define SC_PACKET_LOGOUT			 110		// 로그아웃
+#define SC_PACKET_INITMONSTER		 109		// 몬스터 초기 설정
+#define SC_PACKET_LOGOUT			 777		// 로그아웃
 
 // [임시]
 #define SC_PACKET_CLIENTINFORMATION	 999
@@ -156,14 +156,14 @@ struct SC_Packet_ZenithStage
 	bool	startZS;			// 정점 스테이지
 };
 
-// [임시]
-struct SC_Packet_ClientInformation
+struct SC_Packet_InitMonster 
 {
 	char	type;
-	UCHAR   size;
-	int		hp;
-	int		attack;
-	int		speed;
-	int		attackspeed;
+	int		size;
+	int		monsterid;
+	int		monstertype;
+	float	x;
+	float	y;
+	float	z;
 };
 #pragma pack(pop)
