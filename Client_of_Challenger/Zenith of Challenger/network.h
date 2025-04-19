@@ -27,6 +27,7 @@ public:
 	void		ProcessGamestart(char* buffer);
 	void		ProcessInitialstate(char* buffer);
 	void		ProcessInitMonster(char* buffer);
+	void		ProcessUpdateCoord2Player(char* buffer);
 
 public:
 	SOCKET			m_clientsocket = INVALID_SOCKET;

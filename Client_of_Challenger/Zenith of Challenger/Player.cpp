@@ -89,6 +89,16 @@ void Player::KeyboardEvent(FLOAT timeElapsed)
     XMFLOAT3 movement = Vector3::Mul(velocity, timeElapsed);
     Transform(movement);
 
+    //{
+    //    CS_Packet_UPDATECOORD pkt;
+    //    pkt.type = CS_PACKET_UPDATECOORD;
+    //    pkt.x = movement.x;
+    //    pkt.y = movement.y;
+    //    pkt.z = movement.z;
+    //    pkt.size = sizeof(pkt);
+    //    gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
+    //}
+
     // 회전 적용: 8방향 고정 회전
     if (!Vector3::IsZero(faceDirection))
     {

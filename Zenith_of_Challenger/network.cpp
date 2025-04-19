@@ -316,6 +316,8 @@ void Network::HandlePacket(int client_id, char* buffer, int length)
 	}
 }
 
+//------------------------------------[Recv Packet]------------------------------------
+
 // 방 입장 성공 여부
 void Network::ProcessRoomJoin(int client_id, char* buffer, int length)
 {

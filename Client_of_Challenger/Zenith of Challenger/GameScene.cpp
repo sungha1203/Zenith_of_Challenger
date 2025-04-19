@@ -608,7 +608,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
         //float x = -170.f + radius * cos(angle);
         //float z = 15.f + radius * sin(angle);
         //float y = 0.f;
-        
+
         //frightflies[i]->SetPosition(XMFLOAT3{ x, y, z });
         frightflies[i]->SetPosition(gGameFramework->monstersCoord[i + 10]);
     }
@@ -743,7 +743,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
     Portrait->SetUseTexture(true);
     Portrait->SetBaseColor(XMFLOAT4(1, 1, 1, 1));
 
-	m_uiObjects.push_back(Portrait);
+    m_uiObjects.push_back(Portrait);
 
 }
 
@@ -761,7 +761,7 @@ void GameScene::AddCubeCollider(const XMFLOAT3& position, const XMFLOAT3& extent
 
     // 바운딩 박스 설정
     BoundingBox box;
-	box.Center = { 0.f, 0.f, 0.f };
+    box.Center = { 0.f, 0.f, 0.f };
     box.Extents = extents;
     cube->SetBoundingBox(box);
 

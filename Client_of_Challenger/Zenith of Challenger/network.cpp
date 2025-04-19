@@ -130,3 +130,11 @@ void ClientNetwork::ProcessInitMonster(char* buffer)
 	XMFLOAT3 pos(pkt->x, pkt->y, pkt->z);
 	gGameFramework->monstersCoord[pkt->monsterid -1] = pos;
 }
+
+void ClientNetwork::ProcessUpdateCoord2Player(char* buffer)
+{
+	SC_Packet_Update2Player* pkt = reinterpret_cast<SC_Packet_Update2Player*>(buffer);
+	XMFLOAT3 pos(pkt->x, pkt->y, pkt->z);
+	// @@@ = pkt->client_id;		// 받은 좌표의 아이디 
+	// @@@ = pos;					// 그 아이디의 좌표 
+}
