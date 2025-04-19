@@ -68,6 +68,9 @@ void ClientNetwork::Receive()
 			case SC_PACKET_ROOM_RESPONSE:
 				ProcessRoomjoin(buffer);
 				break;
+			case SC_PACKET_WHOISMYTEAM:
+				ProcessWhoismyteam(buffer);
+				break;
 			case SC_PACKET_GAMESTART:
 				ProcessGamestart(buffer);
 				break;
@@ -101,6 +104,15 @@ void ClientNetwork::ProcessRoomjoin(char* buffer)
 	SC_Packet_RoomResponse* pkt = reinterpret_cast<SC_Packet_RoomResponse*>(buffer);
 	if(pkt->success)
 		gGameFramework->GetClientState()->SetClientRoomNum(pkt->room_id);
+}
+
+void ClientNetwork::ProcessWhoismyteam(char* buffer)
+{
+	SC_Packet_MyTeam* pkt = reinterpret_cast<SC_Packet_MyTeam*>(buffer);
+	for (int i = 0; i < 3; ++i) {
+		if (pkt->teamID[i] != m_clientID)		// 내 클라면 저장안함
+			//@@@ = pkt->teamID[i];
+	}
 }
 
 void ClientNetwork::ProcessGamestart(char* buffer)
