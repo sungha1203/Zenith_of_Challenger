@@ -21,12 +21,13 @@ constexpr int NAME_SIZE = 20;				// 이름 글자 수
 #define SC_PACKET_LOGIN_RESPONSE	 101		// 로그인 응답
 #define SC_PACKET_ROOM_RESPONSE		 102		// 게임방 응답
 #define SC_PACKET_ROOMLIST			 103		// 게임방 인원수 갱신
-#define SC_PACKET_INITIALSTATE		 104		// 다른 플레이어들한테 내 초기 상태
-#define SC_PACKET_UPDATE2PLAYER		 105		// 다른 플레이어들한테 바뀐 좌표 갱신
-#define SC_PACKET_GAMESTART			 106		// 게임 시작
-#define SC_PACKET_REPAIRTIME		 107		// 정비 시간
-#define SC_PACKET_ZENITHSTAGE		 108		// 도전 -> 정점
-#define SC_PACKET_INITMONSTER		 109		// 몬스터 초기 설정
+#define SC_PACKET_WHOISMYTEAM		 104		// 팀에 누구 있는지 말해줄게
+#define SC_PACKET_INITIALSTATE		 105		// 다른 플레이어들한테 내 초기 상태
+#define SC_PACKET_UPDATE2PLAYER		 106		// 다른 플레이어들한테 바뀐 좌표 갱신
+#define SC_PACKET_GAMESTART			 107		// 게임 시작
+#define SC_PACKET_REPAIRTIME		 108		// 정비 시간
+#define SC_PACKET_ZENITHSTAGE		 109		// 도전 -> 정점
+#define SC_PACKET_INITMONSTER		 110		// 몬스터 초기 설정
 #define SC_PACKET_LOGOUT			 777		// 로그아웃
 
 // [임시]
@@ -117,6 +118,13 @@ struct SC_Packet_RoomList
 	UCHAR	size;
 	int		room_id;			// 게임방 넘버
 	int		current_players;	// 현재 플레이어 수
+};
+
+struct SC_Packet_MyTeam
+{
+	char	type;
+	int		size;
+	int		teamID[3];
 };
 
 struct SC_Packet_initialstate

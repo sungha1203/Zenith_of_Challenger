@@ -468,6 +468,23 @@ void Network::SendGameStart(const std::vector<int>& client_id)
 	}
 }
 
+// 아이디 값 보내주기
+void Network::SendWhoIsMyTeam(const std::vector<int>& client_id)
+{
+	SC_Packet_MyTeam packet;
+	packet.type = SC_PACKET_WHOISMYTEAM;
+	packet.size = sizeof(packet);
+
+	int teamcnt = static_cast<int>(client_id.size());
+	for (int i = 0; i < teamcnt; ++i)
+		packet.teamID[i] = client_id[i];
+
+	for (int id : client_id) {
+		if (clients[id].m_used)
+			clients[id].do_send(packet);
+	}
+}
+
 // 스폰 시 위치 설정
 void Network::SendInitialState(const std::vector<int>& client_id)
 {
