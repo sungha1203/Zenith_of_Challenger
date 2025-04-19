@@ -5,22 +5,16 @@
 #include "d3dUtil.h"
 #include "Shader.h"            // Shader를 shared_ptr로 보관하고 있음
 
-class Player : public GameObject
+class OtherPlayer : public GameObject
 {
 public:
-	Player(const ComPtr<ID3D12Device>& device); // 이거 추가해줘야 함!
-	~Player() override = default;
-
-	void MouseEvent(FLOAT timeElapsed);
-	void KeyboardEvent(FLOAT timeElapsed);
+	OtherPlayer(const ComPtr<ID3D12Device>& device); // 이거 추가해줘야 함!
+	~OtherPlayer() override = default;
 
 	virtual void Update(FLOAT timeElapsed) override;
 	virtual void Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const override; // 추가
 
 	void Move(XMFLOAT3 direction, FLOAT speed);  // 이동 로직 추가
-
-	void SetCamera(const shared_ptr<Camera>& camera);
-	shared_ptr<Camera> GetCamera() const { return m_camera; }  // 추가
 
 	void SetScale(XMFLOAT3 scale);
 	XMFLOAT3 GetScale() const;
@@ -35,9 +29,9 @@ public:
 	void SetBoneOffsets(const unordered_map<string, XMMATRIX>& offsets) { m_boneOffsets = offsets; }
 	void SetBoneNameToIndex(const unordered_map<string, int>& map) { m_boneNameToIndex = map; }
 	void AddMesh(const shared_ptr<MeshBase>& mesh) { m_meshes.push_back(mesh); }
-	int m_id;
+	int m_id = -1;
+	bool m_used = false;
 private:
-	shared_ptr<Camera> m_camera;
 
 	FLOAT m_speed;
 

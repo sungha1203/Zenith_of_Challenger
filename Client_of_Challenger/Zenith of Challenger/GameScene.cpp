@@ -1,8 +1,8 @@
 #include "GameScene.h"
 #include "monster.h"
 #include "MonsterLoader.h"
-
-
+#include "OtherPlayer.h"
+#include "FBXLoader.h"
 void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device,
     const ComPtr<ID3D12GraphicsCommandList>& commandList,
     const ComPtr<ID3D12RootSignature>& rootSignature)
@@ -211,7 +211,10 @@ void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) con
     {
         m_player->Render(commandList);
     }
-
+    for (auto op : m_Otherplayer)
+    {
+        if(op)op->Render(commandList);
+    }
     // 몬스터 렌더링 (map 기반으로 수정)
     for (const auto& [type, group] : m_monsterGroups)
     {
@@ -558,6 +561,17 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
     }
 
     m_player->SetCamera(m_camera);
+    
+    for(auto op : m_Otherplayer)
+    {
+        if(op)
+        {
+            if (op->m_used)
+                op = m_playerLoader->LoadOtherPlayer(device, m_textures, m_shaders);
+        }
+    }
+
+
 
 
     //맵의 오브젝트들 바운딩 박스

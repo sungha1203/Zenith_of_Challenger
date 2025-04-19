@@ -11,7 +11,7 @@
 #include "stdafx.h"
 #include "Instance.h"
 #include "Lighting.h"
-
+#include "OtherPlayer.h"
 class Scene
 {
 public:
@@ -65,6 +65,9 @@ protected:
 	shared_ptr<Camera> m_camera;
 
 	shared_ptr<Player> m_player;
+
+	shared_ptr<OtherPlayer> m_Otherplayer[2];
+	
 	vector<shared_ptr<GameObject>> m_objects;
 	shared_ptr<GameObject> m_skybox;
 	shared_ptr<Terrain> m_terrain;
