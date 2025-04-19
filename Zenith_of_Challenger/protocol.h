@@ -125,6 +125,7 @@ struct SC_Packet_MyTeam
 	char	type;
 	int		size;
 	int		teamID[3];
+	int		teamSize;
 };
 
 struct SC_Packet_initialstate

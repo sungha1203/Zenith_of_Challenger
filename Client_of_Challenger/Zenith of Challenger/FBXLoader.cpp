@@ -106,7 +106,12 @@ shared_ptr<OtherPlayer> FBXLoader::LoadOtherPlayer(const ComPtr<ID3D12Device>& d
 
         // [4] 위치 및 스케일 설정
         //player->SetPosition(XMFLOAT3{ 40.f, 1.7f, -50.f });
-        player->SetPosition(gGameFramework->g_pos2);
+       
+       
+       
+       
+
+       
 
         // [5] FBX 메시 전부 등록
         for (int i = 0; i < meshes.size(); ++i)
@@ -122,7 +127,7 @@ shared_ptr<OtherPlayer> FBXLoader::LoadOtherPlayer(const ComPtr<ID3D12Device>& d
 
         // [7] 텍스처, 머티리얼 설정
         player->SetTexture(textures.at("CHARACTER"));
-        //player->SetTextureIndex(textures.at("CHARACTER")->GetTextureIndex()); 
+        player->SetTextureIndex(textures.at("CHARACTER")->GetTextureIndex()); 
         //player->SetMaterial(materials.at("CHARACTER")); // 없으면 생성 필요
         player->SetShader(shaders.at("CHARACTER")); // 없으면 생성 필요
         player->SetDebugLineShader(shaders.at("DebugLineShader"));
@@ -140,7 +145,7 @@ shared_ptr<OtherPlayer> FBXLoader::LoadOtherPlayer(const ComPtr<ID3D12Device>& d
         // [9] Player 등록 및 GameScene 내부에 저장
         //gGameFramework->SetPlayer(player);
         //m_player = gGameFramework->GetPlayer();
-
+        
         return player;
     }
     else

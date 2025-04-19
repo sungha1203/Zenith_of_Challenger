@@ -31,6 +31,7 @@ public:
 	void AddMesh(const shared_ptr<MeshBase>& mesh) { m_meshes.push_back(mesh); }
 	int m_id = -1;
 	bool m_used = false;
+	XMFLOAT3 m_position;
 private:
 
 	FLOAT m_speed;

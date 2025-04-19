@@ -61,8 +61,12 @@ void OtherPlayer::Update(FLOAT timeElapsed)
     }
 
     {
-        /////////////////////////여기다가 GetPosition()사용해서 float값 3개 가지고 오면 될거야
-
+        /////////////////////////여기다가 GetPosition()사용해서 float값 3개 가지고 오면 될거야        
+        if (m_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[0])
+            m_position = gGameFramework->GetSceneManager()->GetCurrentScene()->otherpos[0];
+        else if (m_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[1])
+            m_position = gGameFramework->GetSceneManager()->GetCurrentScene()->otherpos[1];
+        SetPosition(m_position);
     }
 
     XMFLOAT3 pos = GetPosition();

@@ -33,7 +33,12 @@ void SceneManager::ChangeScene(const std::string& name, const ComPtr<ID3D12Devic
             std::cout << "씬 해제 중: " << name << std::endl;
 
             gGameFramework->WaitForGpuComplete(); // 추가
+            
+            smotherid[0]= m_currentScene->otherid[0];
+            smotherid[1]= m_currentScene->otherid[1];
 
+            smotherpos[0] = m_currentScene->otherpos[0];
+            smotherpos[1] = m_currentScene->otherpos[1];
             //모든 리소스 해제
             m_currentScene->ReleaseUploadBuffer();
             m_currentScene->ClearSceneResources(); // 추가적으로 해제
@@ -44,6 +49,11 @@ void SceneManager::ChangeScene(const std::string& name, const ComPtr<ID3D12Devic
 
         m_currentScene = m_scenes[name];
 
+        m_currentScene->otherid[0]= smotherid[0];
+        m_currentScene->otherid[1]= smotherid[1];
+
+        m_currentScene->otherpos[0]=smotherpos[0];
+        m_currentScene->otherpos[1]=smotherpos[1];
         // 새로운 씬에 DirectX 객체 전달
         m_currentScene->SetDevice(device);
         m_currentScene->SetCommandList(commandList);

@@ -213,7 +213,7 @@ void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) con
     }
     for (auto op : m_Otherplayer)
     {
-        if(op)op->Render(commandList);
+        if (op)op->Render(commandList);
     }
     // 몬스터 렌더링 (map 기반으로 수정)
     for (const auto& [type, group] : m_monsterGroups)
@@ -561,17 +561,23 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
     }
 
     m_player->SetCamera(m_camera);
+
+
+          if(otherid[0]!=-2) 
+          {
+              m_Otherplayer[0] = m_playerLoader->LoadOtherPlayer(device, m_textures, m_shaders);
+              m_Otherplayer[0]->m_id = otherid[0];
+              m_Otherplayer[0]->m_position = otherpos[0];
+              m_Otherplayer[0]->SetPosition(m_Otherplayer[0]->m_position);
+          }
+          if(otherid[1]!=-2) 
+          {
+              m_Otherplayer[1] = m_playerLoader->LoadOtherPlayer(device, m_textures, m_shaders);
+              m_Otherplayer[1]->m_id = otherid[1];
+              m_Otherplayer[1]->m_position = otherpos[1];
+              m_Otherplayer[1]->SetPosition(m_Otherplayer[1]->m_position);
+          }
     
-    for(auto op : m_Otherplayer)
-    {
-        if(op)
-        {
-            if (op->m_used)
-                op = m_playerLoader->LoadOtherPlayer(device, m_textures, m_shaders);
-        }
-    }
-
-
 
 
     //맵의 오브젝트들 바운딩 박스
@@ -777,7 +783,7 @@ void GameScene::AddCubeCollider(const XMFLOAT3& position, const XMFLOAT3& extent
     BoundingBox box;
     box.Center = { 0.f, 0.f, 0.f };
     box.Extents = extents;
-    cube->SetBoundingBox(box);
+    cube->SetBoundingBox(box); 
 
     // 와이어프레임 디버깅
     cube->SetDrawBoundingBox(true);

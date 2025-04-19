@@ -5,6 +5,8 @@
 #include "stdafx.h"
 #include "GameFramework.h"
 
+
+
 Scene::Scene()
 {
 }
