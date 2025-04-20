@@ -516,8 +516,8 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
         player->SetRotationY(0.f);                  // 정면을 보게 초기화
 
         // [4] 위치 및 스케일 설정
-        //player->SetPosition(XMFLOAT3{ 40.f, 1.7f, -50.f });
-        player->SetPosition(gGameFramework->g_pos);
+        player->SetPosition(XMFLOAT3{ 40.f, 1.7f, -50.f });
+        //player->SetPosition(gGameFramework->g_pos);
 
         // [5] FBX 메시 전부 등록
         for (int i = 0; i < meshes.size(); ++i)
@@ -568,21 +568,24 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
     AddCubeCollider({ -212, 0, -211 }, { 21, 15, 20 });
     AddCubeCollider({ -209, 0, -107 }, { 9, 23, 13 });
     AddCubeCollider({ -200, 0, 70 }, { 20, 15, 20 });
-    AddCubeCollider({ -105, 20, -1 }, { 30, 30, 28 });
-    AddCubeCollider({ -130, 0, -85 }, { 10, 20, 20 }, 75.f);
+    AddCubeCollider({ -105, 5, -1 }, { 30, 30, 28 });
+    AddCubeCollider({ -130, 0, -80 }, { 20, 20, 13 });
     AddCubeCollider({ -157, 0, -103 }, { 10, 15, 10 });
-    AddCubeCollider({ 31, 20, -136 }, { 1, 1, 1 });
-    AddCubeCollider({ 113, 20, -196 }, { 1, 1, 1 });
-    AddCubeCollider({ 133, 20, -223 }, { 1, 1, 1 });
-    AddCubeCollider({ 132, 20, -86 }, { 1, 1, 1 });
-    AddCubeCollider({ 204, 20, -117 }, { 1, 1, 1 });
-    AddCubeCollider({ 225, 20,-90 }, { 1, 1, 1 });
-    AddCubeCollider({ 55, 5, 30 }, { 1, 1, 1 });
-    AddCubeCollider({ -3, 5, 67 }, { 1, 1, 1 });
-    AddCubeCollider({ -81, 5, 118 }, { 1, 1, 1 });
-    AddCubeCollider({ 44, 5, 140 }, { 1, 1, 1 });
-    AddCubeCollider({ 17, 5, 181 }, { 1, 1, 1 });
-    AddCubeCollider({ 107, 5, 152 }, { 1, 1, 1 });
+    AddCubeCollider({ 31, 0, -136 }, { 20, 16, 18 });
+    AddCubeCollider({ 113, 0, -196 }, { 30, 16, 20 });
+    AddCubeCollider({ 128, 0, -223 }, { 14, 22, 10 });
+    AddCubeCollider({ 137, 10, -86 }, { 15, 10, 60 });
+    AddCubeCollider({ -24, 10, -111 }, { 20, 20, 20 });
+    AddCubeCollider({ -26, 10, -50 }, { 18, 20, 20 });
+    AddCubeCollider({ 204, 10, -117 }, { 15, 10, 15 });
+    AddCubeCollider({ 221, 10,-86 }, { 20, 15, 15 });
+    AddCubeCollider({ 54, 10, 17 }, { 13, 20, 13 });
+    AddCubeCollider({ 64, 10, 43 }, { 13, 20, 13 });
+    AddCubeCollider({ -3, 10, 67 }, { 13, 20, 15 });
+    AddCubeCollider({ -78, 20, 115 }, { 12, 20, 10 });
+    AddCubeCollider({ 107, 10, 152 }, { 12, 15, 12 });
+    AddCubeCollider({ 46, 10, 135 }, { 12, 15, 14 });
+    AddCubeCollider({ 12, 10, 190 }, { 22, 25, 15 });
 
 
 
@@ -603,28 +606,28 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
     auto& frightflies = m_monsterGroups["Frightfly"];
     for (int i = 0; i < frightflies.size(); ++i)
     {
-        //float angle = XM_2PI * i / frightflies.size();
-        //float radius = 15.0f;
-        //float x = -170.f + radius * cos(angle);
-        //float z = 15.f + radius * sin(angle);
-        //float y = 0.f;
+        float angle = XM_2PI * i / frightflies.size();
+        float radius = 15.0f;
+        float x = -170.f + radius * cos(angle);
+        float z = 15.f + radius * sin(angle);
+        float y = 0.f;
 
-        //frightflies[i]->SetPosition(XMFLOAT3{ x, y, z });
-        frightflies[i]->SetPosition(gGameFramework->monstersCoord[i + 10]);
+        frightflies[i]->SetPosition(XMFLOAT3{ x, y, z });
+        //frightflies[i]->SetPosition(gGameFramework->monstersCoord[i + 10]);
     }
 
     // "Flower_Fairy" 타입 몬스터 배치
     auto& fairies = m_monsterGroups["Flower_Fairy"];
     for (int i = 0; i < fairies.size(); ++i)
     {
-        //float angle = XM_2PI * i / fairies.size();
-        //float radius = 20.0f;
-        //float x = 190.f + radius * cos(angle);
-        //float z = -190.f + radius * sin(angle);
-        //float y = -5.f;
+        float angle = XM_2PI * i / fairies.size();
+        float radius = 20.0f;
+        float x = 190.f + radius * cos(angle);
+        float z = -190.f + radius * sin(angle);
+        float y = -5.f;
 
-        //fairies[i]->SetPosition(XMFLOAT3{ x, y, z });
-        fairies[i]->SetPosition(gGameFramework->monstersCoord[i + 40]);
+        fairies[i]->SetPosition(XMFLOAT3{ x, y, z });
+        //fairies[i]->SetPosition(gGameFramework->monstersCoord[i + 40]);
 
     }
 
@@ -632,42 +635,42 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
     auto& mushrooms = m_monsterGroups["Mushroom_Dark"];
     for (int i = 0; i < mushrooms.size(); ++i)
     {
-        //float angle = XM_2PI * i / mushrooms.size();
-        //float radius = 25.0f; // 조금 더 넓게 배치
-        //float x = -100.f + radius * cos(angle);
-        //float z = -165.f + radius * sin(angle);
-        //float y = 0.f; // 지면 높이에 맞게 조절
+        float angle = XM_2PI * i / mushrooms.size();
+        float radius = 25.0f; // 조금 더 넓게 배치
+        float x = -100.f + radius * cos(angle);
+        float z = -165.f + radius * sin(angle);
+        float y = 0.f; // 지면 높이에 맞게 조절
 
-        //mushrooms[i]->SetPosition(XMFLOAT3{ x, y, z });
-        mushrooms[i]->SetPosition(gGameFramework->monstersCoord[i]);
+        mushrooms[i]->SetPosition(XMFLOAT3{ x, y, z });
+        //mushrooms[i]->SetPosition(gGameFramework->monstersCoord[i]);
     }
 
     // "Venus_Blue" 타입 몬스터 배치
     auto& venusGroup = m_monsterGroups["Venus_Blue"];
     for (int i = 0; i < venusGroup.size(); ++i)
     {
-        //float angle = XM_2PI * i / venusGroup.size();
-        //float radius = 28.0f; // 위치 조정
-        //float x = 40.f + radius * cos(angle);
-        //float z = -50.f + radius * sin(angle);
-        //float y = 0.f;
+        float angle = XM_2PI * i / venusGroup.size();
+        float radius = 28.0f; // 위치 조정
+        float x = 40.f + radius * cos(angle);
+        float z = -50.f + radius * sin(angle);
+        float y = 0.f;
 
-        //venusGroup[i]->SetPosition(XMFLOAT3{ x, y, z });
-        venusGroup[i]->SetPosition(gGameFramework->monstersCoord[i + 30]);
+        venusGroup[i]->SetPosition(XMFLOAT3{ x, y, z });
+        //venusGroup[i]->SetPosition(gGameFramework->monstersCoord[i + 30]);
     }
 
     // "Plant_Dionaea" 타입 몬스터 배치
     auto& DionaeaGroup = m_monsterGroups["Plant_Dionaea"];
     for (int i = 0; i < DionaeaGroup.size(); ++i)
     {
-        //float angle = XM_2PI * i / DionaeaGroup.size();
-        //float radius = 28.0f; // 위치 조정
-        //float x = 160.f + radius * cos(angle);
-        //float z = 30.f + radius * sin(angle);
-        //float y = 0.f;
+        float angle = XM_2PI * i / DionaeaGroup.size();
+        float radius = 28.0f; // 위치 조정
+        float x = 160.f + radius * cos(angle);
+        float z = 30.f + radius * sin(angle);
+        float y = 0.f;
 
-        //DionaeaGroup[i]->SetPosition(XMFLOAT3{ x, y, z });
-        DionaeaGroup[i]->SetPosition(gGameFramework->monstersCoord[i + 20]);
+        DionaeaGroup[i]->SetPosition(XMFLOAT3{ x, y, z });
+        //DionaeaGroup[i]->SetPosition(gGameFramework->monstersCoord[i + 20]);
     }
 
     //스카이박스
