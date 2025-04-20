@@ -8,6 +8,7 @@
 #include "Object.h"      // DirectX 12에서 사용할 오브젝트 클래스 포함
 #include "Mesh.h"        // DirectX 12에서 사용할 Mesh 클래스 포함
 #include "GameFramework.h" // DirectX 12에서 gGameFramework 참조
+#include "OtherPlayer.h"
 
 class FBXLoader
 {
@@ -32,7 +33,10 @@ public:
 
     const auto& GetBoneOffsets() const { return m_boneOffsets; }
     const auto& GetBoneNameToIndex() const { return m_boneNameToIndex; }
-
+    shared_ptr<OtherPlayer> LoadOtherPlayer(
+        const ComPtr<ID3D12Device>& device,
+        const unordered_map<string, shared_ptr<Texture>>& textures,
+        const unordered_map<string, shared_ptr<Shader>>& shaders);
 private:
     void ProcessNode(aiNode* node, const aiScene* scene, const XMMATRIX& parentTransform); // FBX 노드 처리
     shared_ptr<GameObject> ProcessMesh(aiMesh* mesh, const aiScene* scene, const XMMATRIX& transformMatrix); // FBX 메시 처리

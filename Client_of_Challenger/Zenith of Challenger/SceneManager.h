@@ -19,9 +19,10 @@ public:
     void Render(const ComPtr<ID3D12GraphicsCommandList>& commandList);
     void ReleaseUploadBuffer();
     void Release();
-
+    int smotherid[2] = { -2,-2 };
+    XMFLOAT3 smotherpos[2];
     shared_ptr<Scene> GetCurrentScene() const { return m_currentScene; }
-
+    
 private:
     unordered_map<string, shared_ptr<Scene>> m_scenes;
     shared_ptr<Scene> m_currentScene;

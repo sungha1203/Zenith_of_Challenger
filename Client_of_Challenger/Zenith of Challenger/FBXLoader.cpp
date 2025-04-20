@@ -1,5 +1,5 @@
 #include "FBXLoader.h"
-
+#include"OtherPlayer.h"
 bool FBXLoader::LoadFBXModel(const std::string& filename, const XMMATRIX& rootTransform)
 {
     Assimp::Importer importer;
@@ -79,6 +79,81 @@ bool FBXLoader::LoadFBXModel(const std::string& filename, const XMMATRIX& rootTr
 }
 
 
+
+shared_ptr<OtherPlayer> FBXLoader::LoadOtherPlayer(const ComPtr<ID3D12Device>& device, const unordered_map<string, shared_ptr<Texture>>& textures, const unordered_map<string, shared_ptr<Shader>>& shaders)
+{    
+    // [1] 플레이어 모델용 스케일 행렬 설정 (크기 조절)
+    XMMATRIX playerTransform = XMMatrixScaling(0.05f, 0.05f, 0.05);
+
+    // [2] FBX 로더 생성 및 모델 로드
+    auto otherPlayer = make_shared<FBXLoader>();
+    cout << "캐릭터 로드 중!!!!" << endl;
+
+    if (otherPlayer->LoadFBXModel("Model/Player/Player2.fbx", playerTransform))
+    {
+        auto& meshes = otherPlayer->GetMeshes();
+        if (meshes.empty()) {
+            OutputDebugStringA("[ERROR] FBX에서 메시를 찾을 수 없습니다.\n");
+            return NULL; 
+        }
+
+        // [3] Player 객체 생성
+        auto player = make_shared<OtherPlayer>(device); 
+
+
+        player->SetScale(XMFLOAT3{ 1.f, 1.f, 1.f }); // 기본값 확정
+        player->SetRotationY(0.f);                  // 정면을 보게 초기화
+
+        // [4] 위치 및 스케일 설정
+        //player->SetPosition(XMFLOAT3{ 40.f, 1.7f, -50.f });
+       
+       
+       
+       
+
+       
+
+        // [5] FBX 메시 전부 등록
+        for (int i = 0; i < meshes.size(); ++i)
+        {
+            player->AddMesh(meshes[i]);
+        }
+
+        // [6] 애니메이션 클립 및 본 정보 설정
+        player->SetAnimationClips(otherPlayer->GetAnimationClips());
+        player->SetCurrentAnimation("Idle");
+        player->SetBoneOffsets(otherPlayer->GetBoneOffsets());
+        player->SetBoneNameToIndex(otherPlayer->GetBoneNameToIndex());
+
+        // [7] 텍스처, 머티리얼 설정
+        player->SetTexture(textures.at("CHARACTER"));
+        player->SetTextureIndex(textures.at("CHARACTER")->GetTextureIndex()); 
+        //player->SetMaterial(materials.at("CHARACTER")); // 없으면 생성 필요
+        player->SetShader(shaders.at("CHARACTER")); // 없으면 생성 필요
+        player->SetDebugLineShader(shaders.at("DebugLineShader"));
+
+        // m_player 생성 이후 위치
+        BoundingBox playerBox;
+        playerBox.Center = XMFLOAT3{ 0.f, 4.0f, 0.f };
+        playerBox.Extents = { 1.0f, 4.0f, 1.0f }; // 스케일링된 값
+        player->SetBoundingBox(playerBox);
+
+        // [8] 본 행렬 StructuredBuffer용 SRV 생성
+        auto [cpuHandle, gpuHandle] = gGameFramework->AllocateDescriptorHeapSlot();
+        player->CreateBoneMatrixSRV(device, cpuHandle, gpuHandle);
+
+        // [9] Player 등록 및 GameScene 내부에 저장
+        //gGameFramework->SetPlayer(player);
+        //m_player = gGameFramework->GetPlayer();
+        
+        return player;
+    }
+    else
+    {
+        OutputDebugStringA("[ERROR] 플레이어 FBX 로드 실패!\n");
+    }
+
+}
 
 void FBXLoader::ProcessNode(aiNode* node, const aiScene* scene, const XMMATRIX& parentTransform)
 {

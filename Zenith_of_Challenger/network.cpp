@@ -360,10 +360,11 @@ void Network::ProcessUpdatePlayer(int client_id, char* buffer, int length)
 	pkt2.x = pkt->x;
 	pkt2.y = pkt->y;
 	pkt2.z = pkt->z;
-
+	
 	for (int other_id : client) {
 		if (other_id == client_id) continue;
 		clients[other_id].do_send(pkt2);
+		std::this_thread::sleep_for(std::chrono::milliseconds(1));
 	}
 	clients[client_id].do_recv();
 }
@@ -464,6 +465,23 @@ void Network::SendGameStart(const std::vector<int>& client_id)
 
 	for (int id : client_id) {
 		if(clients[id].m_used)
+			clients[id].do_send(packet);
+	}
+}
+
+// 아이디 값 보내주기
+void Network::SendWhoIsMyTeam(const std::vector<int>& client_id)
+{
+	SC_Packet_MyTeam packet;
+	packet.type = SC_PACKET_WHOISMYTEAM;
+	packet.size = sizeof(packet);
+	packet.teamSize = client_id.size();
+	int teamcnt = static_cast<int>(client_id.size());
+	for (int i = 0; i < teamcnt; ++i)
+		packet.teamID[i] = client_id[i];
+
+	for (int id : client_id) {
+		if (clients[id].m_used)
 			clients[id].do_send(packet);
 	}
 }

@@ -48,6 +48,7 @@ void Room::PushStartGameButton(int RoomMasterID)
 
 	InitChallengeMonsters();									// 도전 스테이지 몬스터 초기화
 
+	g_network.SendWhoIsMyTeam(GetClients());					// 아이디 값 보내주기
 	g_network.SendInitialState(GetClients());					// 게임방 안에 본인 포함 모두한테 초기 좌표 패킷 보내기
 	g_network.SendInitMonster(GetClients(),GetMonsters());		// 게임방 안의 모든 몬스터 초기화
 	Sleep(2000);

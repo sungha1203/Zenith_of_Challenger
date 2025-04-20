@@ -453,3 +453,4 @@ GameSceneUIShader::GameSceneUIShader(const ComPtr<ID3D12Device>& device, const C
 
 	HRESULT hr = device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_pipelineState));
 }
+

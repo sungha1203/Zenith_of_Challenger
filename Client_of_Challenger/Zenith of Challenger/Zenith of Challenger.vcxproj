@@ -172,6 +172,7 @@
     <ClInclude Include="Monsters.h" />
     <ClInclude Include="network.h" />
     <ClInclude Include="Object.h" />
+    <ClInclude Include="OtherPlayer.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="protocol.h" />
     <ClInclude Include="Resource.h" />
@@ -210,6 +211,7 @@
     <ClCompile Include="Monsters.cpp" />
     <ClCompile Include="network.cpp" />
     <ClCompile Include="Object.cpp" />
+    <ClCompile Include="OtherPlayer.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="SceneManager.cpp" />

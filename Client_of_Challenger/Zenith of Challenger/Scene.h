@@ -11,7 +11,7 @@
 #include "stdafx.h"
 #include "Instance.h"
 #include "Lighting.h"
-
+#include "OtherPlayer.h"
 class Scene
 {
 public:
@@ -37,6 +37,9 @@ public:
 	void SetDevice(const ComPtr<ID3D12Device>& device) { m_device = device; }
 	void SetCommandList(const ComPtr<ID3D12GraphicsCommandList>& commandList) { m_commandList = commandList; }
 	void SetRootSignature(const ComPtr<ID3D12RootSignature>& rootSignature) { m_rootSignature = rootSignature; }
+	int otherid[2] = {-2,-2};
+	XMFLOAT3 otherpos[2];
+	shared_ptr<OtherPlayer> m_Otherplayer[2];
 protected:
 	virtual void BuildShaders(const ComPtr<ID3D12Device>& device,
 		const ComPtr<ID3D12GraphicsCommandList>& commandList,
@@ -65,6 +68,7 @@ protected:
 	shared_ptr<Camera> m_camera;
 
 	shared_ptr<Player> m_player;
+
 	vector<shared_ptr<GameObject>> m_objects;
 	shared_ptr<GameObject> m_skybox;
 	shared_ptr<Terrain> m_terrain;

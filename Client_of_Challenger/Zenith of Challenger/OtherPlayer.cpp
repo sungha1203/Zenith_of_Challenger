@@ -2,17 +2,17 @@
 // File: CPlayer.cpp
 //-----------------------------------------------------------------------------
 
-#include "player.h"
+#include "OtherPlayer.h"
 #include "stdafx.h"
 #include "GameFramework.h"
 
 // 키 입력 상태 저장용
-static unordered_map<int, bool> keyStates;
-XMFLOAT3 velocity = { 0.f, 0.f, 0.f };  // 현재 이동 속도
-const float maxSpeed = Settings::PlayerSpeed; // 최대 속도
-const float acceleration = 50.0f; // 즉각적인 반응을 위한 가속도 증가
+//static unordered_map<int, bool> keyStates;
+//XMFLOAT3 velocity = { 0.f, 0.f, 0.f };  // 현재 이동 속도
+//const float maxSpeed = Settings::PlayerSpeed; // 최대 속도
+//const float acceleration = 50.0f; // 즉각적인 반응을 위한 가속도 증가
 
-Player::Player(const ComPtr<ID3D12Device>& device) :
+OtherPlayer::OtherPlayer(const ComPtr<ID3D12Device>& device) :
     GameObject(device), m_speed{ Settings::PlayerSpeed }
 {
     const UINT MAX_BONES = 128;
@@ -34,94 +34,23 @@ Player::Player(const ComPtr<ID3D12Device>& device) :
     OutputDebugStringA(msg);
 }
 
-
-void Player::MouseEvent(FLOAT timeElapsed)
+void OtherPlayer::Update(FLOAT timeElapsed)
 {
-}
 
-void Player::KeyboardEvent(FLOAT timeElapsed)
-{
-    if (!m_camera) return;
-
-    XMFLOAT3 front = m_camera->GetN(); front.y = 0.f;
-    front = Vector3::Normalize(front);
-
-    XMFLOAT3 right = m_camera->GetU(); right.y = 0.f;
-    right = Vector3::Normalize(right);
-
-    XMFLOAT3 moveDirection{ 0.f, 0.f, 0.f };
-    XMFLOAT3 faceDirection{ 0.f, 0.f, 0.f };
-
-    // 키 입력 상태 업데이트
-    keyStates['W'] = (GetAsyncKeyState('W') & 0x8000);
-    keyStates['S'] = (GetAsyncKeyState('S') & 0x8000);
-    keyStates['A'] = (GetAsyncKeyState('A') & 0x8000);
-    keyStates['D'] = (GetAsyncKeyState('D') & 0x8000);
-    keyStates[VK_PRIOR] = (GetAsyncKeyState(VK_PRIOR) & 0x8000); // 위
-    keyStates[VK_NEXT] = (GetAsyncKeyState(VK_NEXT) & 0x8000);   // 아래
-
-    // 이동 방향 계산
-    if (keyStates['W']) moveDirection = Vector3::Add(moveDirection, front);
-    if (keyStates['S']) moveDirection = Vector3::Add(moveDirection, Vector3::Negate(front));
-    if (keyStates['A']) moveDirection = Vector3::Add(moveDirection, Vector3::Negate(right));
-    if (keyStates['D']) moveDirection = Vector3::Add(moveDirection, right);
-    if (keyStates[VK_PRIOR]) moveDirection = Vector3::Add(moveDirection, { 0.f, 1.f, 0.f });
-    if (keyStates[VK_NEXT]) moveDirection = Vector3::Add(moveDirection, { 0.f, -1.f, 0.f });
-
-    // 바라보는 방향도 똑같이 구성 (8방향 고정 회전용)
-    if (keyStates['W']) faceDirection = Vector3::Add(faceDirection, front);
-    if (keyStates['S']) faceDirection = Vector3::Add(faceDirection, Vector3::Negate(front));
-    if (keyStates['A']) faceDirection = Vector3::Add(faceDirection, Vector3::Negate(right));
-    if (keyStates['D']) faceDirection = Vector3::Add(faceDirection, right);
-
-    // 속도 적용
-    if (!Vector3::IsZero(moveDirection))
-    {
-        XMFLOAT3 normalized = Vector3::Normalize(moveDirection);
-        velocity = Vector3::Mul(normalized, maxSpeed);
-    }
-    else
-    {
-        velocity = { 0.f, 0.f, 0.f };
-    }
-
-    // 최종 이동
-    XMFLOAT3 movement = Vector3::Mul(velocity, timeElapsed);
-    if (!(movement.x == 0 && movement.y == 0 && movement.z == 0))
-    {
-        Transform(movement);
-        
-    }
-
-    // 회전 적용: 8방향 고정 회전
-    if (!Vector3::IsZero(faceDirection))
-    {
-        faceDirection = Vector3::Normalize(faceDirection);
-        float angle = atan2f(faceDirection.x, faceDirection.z);
-        float degrees = XMConvertToDegrees(angle);
-        SetRotationY(degrees + 180.f); // 모델 Z-가 정면이면 +180도 필요
-    }
-}
-
-
-void Player::Update(FLOAT timeElapsed)
-{
-    if (m_camera) m_camera->UpdateEye(GetPosition());
-
-    bool isMoving = keyStates['W'] || keyStates['A'] || keyStates['S'] || keyStates['D'];
-
-    if (isMoving)
-    {
-        if (keyStates[VK_SHIFT] && m_animationClips.contains("Running"))
-            SetCurrentAnimation("Running");
-        else if (m_animationClips.contains("Walking"))
-            SetCurrentAnimation("Walking");
-    }
-    else
-    {
-        if (m_animationClips.contains("M_C3FC_ModularMale_03"))
-            SetCurrentAnimation("M_C3FC_ModularMale_03");
-    }
+   //bool isMoving = keyStates['W'] || keyStates['A'] || keyStates['S'] || keyStates['D'];
+   //
+   //if (isMoving)
+   //{
+   //    if (keyStates[VK_SHIFT] && m_animationClips.contains("Running"))
+   //        SetCurrentAnimation("Running");
+   //    else if (m_animationClips.contains("Walking"))
+   //        SetCurrentAnimation("Walking");
+   //}
+   //else
+   //{
+   //    if (m_animationClips.contains("M_C3FC_ModularMale_03"))
+   //        SetCurrentAnimation("M_C3FC_ModularMale_03");
+   //}
 
     if (m_animationClips.contains(m_currentAnim))
     {
@@ -132,8 +61,12 @@ void Player::Update(FLOAT timeElapsed)
     }
 
     {
-        /////////////////////////여기다가 GetPosition()사용해서 float값 3개 가지고 오면 될거야
-
+        /////////////////////////여기다가 GetPosition()사용해서 float값 3개 가지고 오면 될거야        
+        if (m_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[0])
+            m_position = gGameFramework->GetSceneManager()->GetCurrentScene()->otherpos[0];
+        else if (m_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[1])
+            m_position = gGameFramework->GetSceneManager()->GetCurrentScene()->otherpos[1];
+        SetPosition(m_position);
     }
 
     XMFLOAT3 pos = GetPosition();
@@ -147,7 +80,7 @@ void Player::Update(FLOAT timeElapsed)
 }
 
 
-void Player::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
+void OtherPlayer::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
 {
     // 애니메이션 본 행렬 업로드
     if (m_animationClips.contains(m_currentAnim))
@@ -155,7 +88,7 @@ void Player::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
         const auto& clip = m_animationClips.at(m_currentAnim);
         float animTime = fmod(m_animTime, clip.duration);
         auto boneTransforms = clip.GetBoneTransforms(animTime);
-        const_cast<Player*>(this)->UploadBoneMatricesToShader(boneTransforms, commandList);
+        const_cast<OtherPlayer*>(this)->UploadBoneMatricesToShader(boneTransforms, commandList);
     }
 
     // 본 행렬 StructuredBuffer 바인딩
@@ -194,7 +127,7 @@ void Player::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
 }
 
 
-void Player::UploadBoneMatricesToShader(const unordered_map<string, XMMATRIX>& boneTransforms, const ComPtr<ID3D12GraphicsCommandList>& commandList)
+void OtherPlayer::UploadBoneMatricesToShader(const unordered_map<string, XMMATRIX>& boneTransforms, const ComPtr<ID3D12GraphicsCommandList>& commandList)
 {
     const UINT MAX_BONES = 128;
     vector<XMMATRIX> finalMatrices(MAX_BONES, XMMatrixIdentity());
@@ -232,7 +165,7 @@ void Player::UploadBoneMatricesToShader(const unordered_map<string, XMMATRIX>& b
 
 
 
-void Player::CreateBoneMatrixSRV(const ComPtr<ID3D12Device>& device, D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle, D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle)
+void OtherPlayer::CreateBoneMatrixSRV(const ComPtr<ID3D12Device>& device, D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle, D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle)
 {
     D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
     srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
@@ -247,35 +180,30 @@ void Player::CreateBoneMatrixSRV(const ComPtr<ID3D12Device>& device, D3D12_CPU_D
     m_boneMatrixSRV = gpuHandle;
 }
 
-void Player::Move(XMFLOAT3 direction, FLOAT speed)
+void OtherPlayer::Move(XMFLOAT3 direction, FLOAT speed)
 {
     direction = Vector3::Normalize(direction);
     Transform(Vector3::Mul(direction, speed));
 }
 
-void Player::SetCamera(const shared_ptr<Camera>& camera)
-{
-    m_camera = camera;
-}
-
-void Player::SetScale(XMFLOAT3 scale)
+void OtherPlayer::SetScale(XMFLOAT3 scale)
 {
     m_scale = scale;
     UpdateWorldMatrix();
 }
 
-XMFLOAT3 Player::GetScale() const
+XMFLOAT3 OtherPlayer::GetScale() const
 {
     return m_scale;
 }
 
-void Player::SetAnimationClips(const std::vector<AnimationClip>& clips)
+void OtherPlayer::SetAnimationClips(const std::vector<AnimationClip>& clips)
 {
     for (const auto& clip : clips)
         m_animationClips[clip.name] = clip;
 }
 
-void Player::SetCurrentAnimation(const std::string& name)
+void OtherPlayer::SetCurrentAnimation(const std::string& name)
 {
     if (m_animationClips.contains(name))
     {
