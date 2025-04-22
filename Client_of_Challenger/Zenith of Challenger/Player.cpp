@@ -149,8 +149,10 @@ void Player::Update(FLOAT timeElapsed)
 
 void Player::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
 {
+    bool isShadowPass = m_shader && m_shader->IsShadowShader();
+
     // 애니메이션 본 행렬 업로드
-    if (m_animationClips.contains(m_currentAnim))
+    if (!isShadowPass && m_animationClips.contains(m_currentAnim))
     {
         const auto& clip = m_animationClips.at(m_currentAnim);
         float animTime = fmod(m_animTime, clip.duration);
@@ -159,7 +161,7 @@ void Player::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
     }
 
     // 본 행렬 StructuredBuffer 바인딩
-    if (m_boneMatrixSRV.ptr != 0)
+    if (!isShadowPass && m_boneMatrixSRV.ptr != 0)
     {
         commandList->SetGraphicsRootDescriptorTable(RootParameter::BoneMatrix, m_boneMatrixSRV);
     }
@@ -169,12 +171,11 @@ void Player::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
     {
         if (m_shader) m_shader->UpdateShaderVariable(commandList); // 셰이더 설정
 
-        // 텍스처 바인딩
-        if (m_texture) {
-            m_texture->UpdateShaderVariable(commandList, m_textureIndex); // 보통 0번
+        if (!isShadowPass)
+        {
+            if (m_texture)  m_texture->UpdateShaderVariable(commandList, m_textureIndex);
+            if (m_material) m_material->UpdateShaderVariable(commandList);
         }
-        // 머티리얼 바인딩
-        if (m_material) m_material->UpdateShaderVariable(commandList);
 
         // 상속받은 GameObject의 상수버퍼 (world matrix 등)
         UpdateShaderVariable(commandList);
@@ -184,10 +185,9 @@ void Player::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
     }
 
     //와이어 프레임 렌더링
-    if (m_drawBoundingBox && m_debugBoxMesh && m_debugLineShader)
+    if (!isShadowPass && m_drawBoundingBox && m_debugBoxMesh && m_debugLineShader)
     {
         m_debugLineShader->UpdateShaderVariable(commandList);
-
         m_debugBoxMesh->Render(commandList);
     }
 

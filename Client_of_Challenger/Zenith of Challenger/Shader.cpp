@@ -48,7 +48,7 @@ ObjectShader::ObjectShader(const ComPtr<ID3D12Device>& device,
 	psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 	psoDesc.NumRenderTargets = 1;
 	psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
-	psoDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
 	psoDesc.SampleDesc.Count = 1;
 	psoDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
 	device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_pipelineState));
@@ -89,7 +89,7 @@ SkyboxShader::SkyboxShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D
 	psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 	psoDesc.NumRenderTargets = 1;
 	psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
-	psoDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
 	psoDesc.SampleDesc.Count = 1;
 	psoDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
 	device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_pipelineState));
@@ -130,7 +130,7 @@ DetailShader::DetailShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D
 	psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 	psoDesc.NumRenderTargets = 1;
 	psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
-	psoDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
 	psoDesc.SampleDesc.Count = 1;
 	psoDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
 	device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_pipelineState));
@@ -197,7 +197,7 @@ FBXShader::FBXShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12Root
 	psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 	psoDesc.NumRenderTargets = 1;
 	psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
-	psoDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
 	psoDesc.SampleDesc.Count = 1;
 	psoDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
 
@@ -249,7 +249,7 @@ UIScreenShader::UIScreenShader(const ComPtr<ID3D12Device>& device, const ComPtr<
 	psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 	psoDesc.NumRenderTargets = 1;
 	psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
-	psoDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
 	psoDesc.SampleDesc.Count = 1;
 
 	HRESULT hr=device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_pipelineState));
@@ -299,7 +299,7 @@ CharacterShader::CharacterShader(const ComPtr<ID3D12Device>& device, const ComPt
 	psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 	psoDesc.NumRenderTargets = 1;
 	psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
-	psoDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
 	psoDesc.SampleDesc.Count = 1;
 
 	device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_pipelineState));
@@ -349,7 +349,7 @@ FrightFlyShader::FrightFlyShader(const ComPtr<ID3D12Device>& device, const ComPt
 	psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 	psoDesc.NumRenderTargets = 1;
 	psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
-	psoDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
 	psoDesc.SampleDesc.Count = 1;
 
 	device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_pipelineState));
@@ -406,7 +406,7 @@ DebugLineShader::DebugLineShader(const ComPtr<ID3D12Device>& device, const ComPt
 	// 렌더 타겟 포맷
 	psoDesc.NumRenderTargets = 1;
 	psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
-	psoDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
 	// 샘플링
 	psoDesc.SampleDesc.Count = 1;
 
@@ -448,9 +448,95 @@ GameSceneUIShader::GameSceneUIShader(const ComPtr<ID3D12Device>& device, const C
 	psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 	psoDesc.NumRenderTargets = 1;
 	psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
-	psoDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
 	psoDesc.SampleDesc.Count = 1;
 
 	HRESULT hr = device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_pipelineState));
 }
 
+ShadowMapShader::ShadowMapShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSignature)
+{
+	vector<D3D12_INPUT_ELEMENT_DESC> inputLayout = {
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,
+			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+	};
+
+#if defined(_DEBUG)
+	UINT compileFlags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
+#else
+	UINT compileFlags = 0;
+#endif
+
+	ComPtr<ID3DBlob> vsByteCode, psByteCode, errors;
+
+	// [1] VS 컴파일
+	HRESULT hr = D3DCompileFromFile(TEXT("ShadowMap.hlsl"), nullptr,
+		D3D_COMPILE_STANDARD_FILE_INCLUDE, "VSMain", "vs_5_1", compileFlags, 0, &vsByteCode, &errors);
+	if (FAILED(hr) && errors)
+		OutputDebugStringA((char*)errors->GetBufferPointer());
+
+	// [2] PS 컴파일
+	hr = D3DCompileFromFile(TEXT("ShadowMap.hlsl"), nullptr,
+		D3D_COMPILE_STANDARD_FILE_INCLUDE, "PSMain", "ps_5_1", compileFlags, 0, &psByteCode, &errors);
+	if (FAILED(hr) && errors)
+		OutputDebugStringA((char*)errors->GetBufferPointer());
+
+	// [3] PSO 구성
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc{};
+	psoDesc.InputLayout = { inputLayout.data(), (UINT)inputLayout.size() };
+	psoDesc.pRootSignature = rootSignature.Get();
+	psoDesc.VS = { vsByteCode->GetBufferPointer(), vsByteCode->GetBufferSize() };
+	psoDesc.PS = { psByteCode->GetBufferPointer(), psByteCode->GetBufferSize() }; // Pixel Shader 연결됨!
+	psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+	psoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
+	psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+	psoDesc.SampleMask = UINT_MAX;
+	psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+	psoDesc.NumRenderTargets = 1; // RTV 1개 (linear depth를 출력하기 위해)
+	psoDesc.RTVFormats[0] = DXGI_FORMAT_R32_FLOAT; // 깊이를 float로 출력
+	psoDesc.DSVFormat = DXGI_FORMAT_UNKNOWN;
+	psoDesc.SampleDesc.Count = 1;
+
+	ThrowIfFailed(device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_pipelineState)));
+}
+
+DebugShadowShader::DebugShadowShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSig)
+{
+#if defined(_DEBUG)
+	UINT compileFlags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
+#else
+	UINT compileFlags = 0;
+#endif
+
+	ComPtr<ID3DBlob> vs, ps, err;
+	D3DCompileFromFile(L"FullScreenQuadShader.hlsl", nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE,
+		"VSMain", "vs_5_1", compileFlags, 0, &vs, &err);
+	D3DCompileFromFile(L"FullScreenQuadShader.hlsl", nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE,
+		"PSMain", "ps_5_1", compileFlags, 0, &ps, &err);
+
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC desc = {};
+	desc.InputLayout = { nullptr, 0 };
+	desc.pRootSignature = rootSig.Get();
+	desc.VS = { vs->GetBufferPointer(), vs->GetBufferSize() };
+	desc.PS = { ps->GetBufferPointer(), ps->GetBufferSize() };
+	desc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+	desc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+	desc.DepthStencilState.DepthEnable = FALSE;
+	desc.DepthStencilState.StencilEnable = FALSE;
+	desc.SampleMask = UINT_MAX;
+	desc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+	desc.NumRenderTargets = 1;
+	desc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+	desc.SampleDesc.Count = 1;
+
+	ThrowIfFailed(device->CreateGraphicsPipelineState(&desc, IID_PPV_ARGS(&m_pipelineState)));
+}
+
+void DebugShadowShader::Render(const ComPtr<ID3D12GraphicsCommandList>& cmdList, D3D12_GPU_DESCRIPTOR_HANDLE shadowSrv)
+{
+	cmdList->SetPipelineState(m_pipelineState.Get());
+	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	cmdList->SetGraphicsRootDescriptorTable(RootParameter::ShadowMap, shadowSrv);
+	cmdList->DrawInstanced(3, 1, 0, 0); // Fullscreen triangle
+
+}

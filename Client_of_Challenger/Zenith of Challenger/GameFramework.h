@@ -75,6 +75,12 @@ public:
     HWND GetHWND() const { return m_hWnd; } 
 
     void WaitForGpuComplete();
+
+    //그림자 관련 Srv와 Dsv
+    D3D12_GPU_DESCRIPTOR_HANDLE GetShadowMapSrv() const { return m_shadowSrv; }
+    D3D12_CPU_DESCRIPTOR_HANDLE GetShadowMapDsv() const { return m_shadowDsv; }
+    void RenderShadowMap();
+
 private:
     void InitDirect3D();
 
@@ -89,7 +95,8 @@ private:
     void CreateRootSignature();
     void CreateDescriptorHeaps();
     void HandleSceneTransition();
-
+    void CreateShadowMapResources(); // Shadow 리소스 생성 함수
+    
     void BuildObjects();
 
     void Update();
@@ -153,5 +160,21 @@ private:
     //로그인 관련
     std::unordered_map<int, bool> m_keyPressed; // ← 키 입력 상태 저장
 
+
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //그림자 관련
+    // 그림자 매핑 관련 리소스
+    ComPtr<ID3D12Resource> m_shadowMapTexture; // Shadow Depth 텍스처
+
+    D3D12_CPU_DESCRIPTOR_HANDLE m_shadowDsv{};  // DSV 핸들
+    D3D12_GPU_DESCRIPTOR_HANDLE m_shadowSrv{};  // SRV 핸들
+    D3D12_CPU_DESCRIPTOR_HANDLE m_shadowRtv{};
+
+    ComPtr<ID3D12DescriptorHeap> m_shadowDsvHeap;
+    ComPtr<ID3D12DescriptorHeap> m_shadowRtvHeap;
+
+    D3D12_VIEWPORT m_shadowViewport{};
+    D3D12_RECT m_shadowScissorRect{};
 
 };

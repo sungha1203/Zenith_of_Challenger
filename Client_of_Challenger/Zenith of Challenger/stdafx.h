@@ -117,8 +117,10 @@ namespace RootParameter
 	constexpr UINT BoneMatrix = 7;
 	constexpr UINT LightingMaterial = 8;
 	constexpr UINT LightingLight = 9;
+	constexpr UINT ShadowMap = 10;
+	constexpr UINT ShadowCamera = 11;
 
-	constexpr UINT Count = 10;
+	constexpr UINT Count = 12;
 }
 
 namespace DescriptorRange
@@ -126,7 +128,8 @@ namespace DescriptorRange
 	constexpr UINT TextureCube = 0;
 	constexpr UINT Texture = 1;
 	constexpr UINT BoneMatrix = 2; 
-	constexpr UINT Count = 3;
+	constexpr UINT ShadowMap = 3;
+	constexpr UINT Count = 4;
 }
 
 

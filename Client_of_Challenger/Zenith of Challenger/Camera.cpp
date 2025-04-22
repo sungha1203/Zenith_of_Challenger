@@ -6,6 +6,7 @@ m_u{ 1.f, 0.f, 0.f }, m_v{ 0.f, 1.f, 0.f }, m_n{ 0.f, 0.f, 1.f }
 	XMStoreFloat4x4(&m_viewMatrix, XMMatrixIdentity());
 	XMStoreFloat4x4(&m_projectionMatrix, XMMatrixIdentity());
 	m_constantBuffer = make_unique<UploadBuffer<CameraData>>(device, (UINT)RootParameter::Camera, true);
+	m_shadowCameraCB = make_unique<UploadBuffer<ShadowCameraData>>(device, (UINT)RootParameter::ShadowCamera, true);
 }
 
 void Camera::UpdateShaderVariable(const ComPtr<ID3D12GraphicsCommandList>& commandList)
@@ -24,6 +25,16 @@ void Camera::UpdateShaderVariable(const ComPtr<ID3D12GraphicsCommandList>& comma
 	m_constantBuffer->UpdateRootConstantBuffer(commandList);
 }
 
+void Camera::UploadShadowMatrix(const ComPtr<ID3D12GraphicsCommandList>& commandList, const XMMATRIX& view, const XMMATRIX& proj)
+{
+	ShadowCameraData data;
+	XMStoreFloat4x4(&data.viewMatrix, XMMatrixTranspose(view));
+	XMStoreFloat4x4(&data.projMatrix, XMMatrixTranspose(proj));
+
+	m_shadowCameraCB->Copy(data);
+	m_shadowCameraCB->UpdateRootConstantBuffer(commandList);
+}
+
 void Camera::SetLens(FLOAT fovy, FLOAT aspect, FLOAT minZ, FLOAT maxZ)
 {
 	XMStoreFloat4x4(&m_projectionMatrix, XMMatrixPerspectiveFovLH(fovy, aspect, minZ, maxZ));
@@ -39,6 +50,28 @@ void Camera::SetLookAt(const XMFLOAT3& lookAt)
 {
 	m_at = lookAt;
 	UpdateBasis();
+}
+
+void Camera::SetViewMatrix(const XMMATRIX& view)
+{
+	XMStoreFloat4x4(&m_viewMatrix, view);
+}
+
+void Camera::SetProjectionMatrix(const XMMATRIX& proj)
+{
+	XMStoreFloat4x4(&m_projectionMatrix, proj);
+}
+
+void Camera::SetTarget(const XMFLOAT3& target)
+{
+	m_at = target;
+	UpdateBasis();
+}
+
+void Camera::RegenerateViewMatrix()
+{
+	XMStoreFloat4x4(&m_viewMatrix,
+		XMMatrixLookAtLH(XMLoadFloat3(&m_eye), XMLoadFloat3(&m_at), XMLoadFloat3(&m_up)));
 }
 
 XMFLOAT3 Camera::GetEye() const

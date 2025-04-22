@@ -40,6 +40,14 @@ cbuffer Light : register(b3)
     float g_lightIntensity;
 };
 
+// Shadow Camera용 상수버퍼: b4
+cbuffer ShadowCamera : register(b4)
+{
+    matrix g_shadowViewMatrix;
+    matrix g_shadowProjMatrix;
+}
+
+
 // -----------------------------
 // Lighting 연산 함수
 // -----------------------------
@@ -52,6 +60,7 @@ cbuffer Light : register(b3)
 // 텍스처 슬롯
 TextureCube g_textureCube : register(t0);
 Texture2D g_texture[9] : register(t1); // t1 ~ t10 → space0
+Texture2D g_shadowMap : register(t11); // ShadowMap (t11)
 
 // InstanceData: t0, space1
 struct InstanceData
@@ -67,5 +76,25 @@ StructuredBuffer<float4x4> g_boneMatrices : register(t10);
 
 // 샘플러
 SamplerState g_sampler : register(s0);
+
+float ComputeShadowFactor(float3 worldPos)
+{
+    float4 shadowCoord = mul(float4(worldPos, 1.0f), g_shadowViewMatrix);
+    shadowCoord = mul(shadowCoord, g_shadowProjMatrix);
+    shadowCoord.xyz /= shadowCoord.w;
+
+    float2 uv = shadowCoord.xy * 0.5f + 0.5f;
+
+    if (uv.x < 0.0f || uv.x > 1.0f || uv.y < 0.0f || uv.y > 1.0f)
+        return 1.0f;
+
+    float shadowDepth = g_shadowMap.Sample(g_sampler, uv).r;
+    float currentDepth = shadowCoord.z * 0.5f + 0.5f;
+
+    float bias = 0.0005f;
+
+    return (currentDepth - bias > shadowDepth) ? 0.3f : 1.0f;
+    //return float4(abs(currentDepth - shadowDepth).xxx, 1.0f);
+}
 
 #endif // __SHADERS_HLSL__

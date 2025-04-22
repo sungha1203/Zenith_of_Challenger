@@ -9,6 +9,13 @@ struct CameraData : public BufferBase
 	XMFLOAT3 eye;
 };
 
+struct ShadowCameraData : public BufferBase
+{
+	XMFLOAT4X4 viewMatrix;
+	XMFLOAT4X4 projMatrix;
+};
+
+
 class Camera
 {
 public:
@@ -18,6 +25,7 @@ public:
 	virtual void Update(FLOAT timeElapsed) = 0;
 	virtual void UpdateEye(XMFLOAT3 position) = 0;
 	void UpdateShaderVariable(const ComPtr<ID3D12GraphicsCommandList>& commandList);
+	void UploadShadowMatrix(const ComPtr<ID3D12GraphicsCommandList>& commandList, const XMMATRIX& view, const XMMATRIX& proj);
 
 	virtual void RotatePitch(FLOAT radian) = 0;
 	virtual void RotateYaw(FLOAT radian) = 0;
@@ -26,6 +34,10 @@ public:
 	// Camera.h (protected or public¿¡ Ãß°¡)
 	void SetPosition(const XMFLOAT3& position);
 	void SetLookAt(const XMFLOAT3& lookAt);
+	void SetViewMatrix(const XMMATRIX& view);
+	void SetProjectionMatrix(const XMMATRIX& proj);
+	void SetTarget(const XMFLOAT3& target);
+	void RegenerateViewMatrix();
 
 	XMFLOAT3 GetEye() const;
 	XMFLOAT3 GetU() const;
@@ -54,6 +66,7 @@ protected:
 	XMFLOAT3 m_n;
 
 	unique_ptr<UploadBuffer<CameraData>> m_constantBuffer;
+	unique_ptr<UploadBuffer<ShadowCameraData>> m_shadowCameraCB;
 };
 
 class ThirdPersonCamera : public Camera

@@ -36,6 +36,8 @@ public:
 
     void AddCubeCollider(const XMFLOAT3& position, const XMFLOAT3& extents, const FLOAT& rotate = 0.f);
 
+    void RenderShadowPass(const ComPtr<ID3D12GraphicsCommandList>& commandList);
+
 private:
     shared_ptr<FBXLoader> m_fbxLoader; // FBX 로더 추가
     shared_ptr<FBXLoader> m_playerLoader;
@@ -44,6 +46,7 @@ private:
 
 
     bool m_debugDrawEnabled = false;
+    bool m_ShadowMapEnabled = false;
 
 
     ////////////////몬스터 관련////////////////
@@ -52,4 +55,10 @@ private:
     unordered_map<string, AnimationClip> m_animClipLibrary;
     unordered_map<string, XMMATRIX> m_boneOffsetLibrary;
     unordered_map<string, int> m_boneNameMap;
+
+
+    //그림자 관련
+    std::shared_ptr<DebugShadowShader> m_debugShadowShader;
+    XMMATRIX m_shadowViewMatrix;
+    XMMATRIX m_shadowProjMatrix;
 };

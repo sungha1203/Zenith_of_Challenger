@@ -124,22 +124,26 @@ void GameObject::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) co
 {
     if (!m_isVisible) return; //visible이 false면 렌더링 skip
 
+    bool isShadow = m_shader && m_shader->IsShadowShader();
+
     if (m_shader)
     {
         m_shader->UpdateShaderVariable(commandList); // 셰이더 설정
     }
+
     UpdateShaderVariable(commandList);
 
-    if (m_texture) m_texture->UpdateShaderVariable(commandList, m_textureIndex);
-    if (m_material) m_material->UpdateShaderVariable(commandList);
+    if (!isShadow) {
+        if (m_texture) m_texture->UpdateShaderVariable(commandList, m_textureIndex);
+        if (m_material) m_material->UpdateShaderVariable(commandList);
+    }
 
     m_mesh->Render(commandList);
 
     if (m_drawBoundingBox && m_debugBoxMesh && m_debugLineShader)
     {
-        m_debugLineShader->UpdateShaderVariable(commandList); // View/Proj
-        UpdateShaderVariable(commandList); // World matrix 등
-
+        m_debugLineShader->UpdateShaderVariable(commandList);
+        UpdateShaderVariable(commandList);
         m_debugBoxMesh->Render(commandList);
     }
 }
@@ -152,22 +156,20 @@ void GameObject::UpdateShaderVariable(const ComPtr<ID3D12GraphicsCommandList>& c
     XMStoreFloat4x4(&buffer.worldMatrix, XMMatrixTranspose(matrix));
     buffer.baseColor = m_baseColor;
     buffer.useTexture = m_useTexture;
-    if (!m_textureIndex)
-    {
-        buffer.textureIndex = m_textureIndex;
-    }
-    else
-    {
-        buffer.textureIndex = m_textureIndex - 1;
-    }
+    buffer.textureIndex = m_textureIndex;
     buffer.isHovered = m_isHovered ? 1 : 0;
     buffer.fillAmount = m_fillAmount;
 
     m_constantBuffer->Copy(buffer);
     m_constantBuffer->UpdateRootConstantBuffer(commandList);
 
-    if (m_texture) m_texture->UpdateShaderVariable(commandList, m_textureIndex);
-    if (m_material) m_material->UpdateShaderVariable(commandList);
+    bool isShadow = m_shader && m_shader->IsShadowShader();
+
+    if (!isShadow)
+    {
+        if (m_texture) m_texture->UpdateShaderVariable(commandList, m_textureIndex);
+        if (m_material) m_material->UpdateShaderVariable(commandList);
+    }
 }
 
 void GameObject::SetMesh(const shared_ptr<MeshBase>& mesh)

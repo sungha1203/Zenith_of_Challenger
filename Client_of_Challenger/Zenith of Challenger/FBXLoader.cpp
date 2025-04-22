@@ -27,15 +27,15 @@ bool FBXLoader::LoadFBXModel(const std::string& filename, const XMMATRIX& rootTr
     {
         char buffer[128];
         sprintf_s(buffer, "[FBXLoader] 메시 개수: %llu\n", m_meshes.size());
-        OutputDebugStringA(buffer);
+        //OutputDebugStringA(buffer);
     }
 
     // 본 인덱스 매핑 로그 출력
-    OutputDebugStringA("[FBXLoader] 본 인덱스 매핑 결과:\n");
+    //OutputDebugStringA("[FBXLoader] 본 인덱스 매핑 결과:\n");
     for (const auto& [name, index] : m_boneNameToIndex)
     {
         std::string log = "  [Index " + std::to_string(index) + "] : " + name + "\n";
-        OutputDebugStringA(log.c_str());
+        //OutputDebugStringA(log.c_str());
     }
 
     // 애니메이션 정보 출력
@@ -43,7 +43,7 @@ bool FBXLoader::LoadFBXModel(const std::string& filename, const XMMATRIX& rootTr
     {
         char buffer[256];
         sprintf_s(buffer, "[FBXLoader] 애니메이션 개수: %d\n", (int)scene->mNumAnimations);
-        OutputDebugStringA(buffer);
+        //OutputDebugStringA(buffer);
 
         for (UINT i = 0; i < scene->mNumAnimations; ++i)
         {
@@ -51,7 +51,7 @@ bool FBXLoader::LoadFBXModel(const std::string& filename, const XMMATRIX& rootTr
 
             sprintf_s(buffer, "[FBXLoader]  - [%d] 이름: %s | Duration: %.2f | 채널 수: %d\n",
                 i, anim->mName.C_Str(), anim->mDuration, (int)anim->mNumChannels);
-            OutputDebugStringA(buffer);
+            //OutputDebugStringA(buffer);
 
             for (UINT j = 0; j < anim->mNumChannels; ++j)
             {
@@ -62,7 +62,7 @@ bool FBXLoader::LoadFBXModel(const std::string& filename, const XMMATRIX& rootTr
                 std::replace(cleanName.begin(), cleanName.end(), ':', '_');
 
                 std::string log = "    [채널 " + std::to_string(j) + "] " + cleanName + "\n";
-                OutputDebugStringA(log.c_str());
+                //OutputDebugStringA(log.c_str());
             }
         }
     }

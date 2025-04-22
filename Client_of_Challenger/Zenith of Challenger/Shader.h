@@ -11,6 +11,7 @@ public:
 	virtual ~Shader() = default;
 
 	virtual void UpdateShaderVariable(const ComPtr<ID3D12GraphicsCommandList>& commandList);
+	virtual bool IsShadowShader() const { return false; }
 
 protected:
 	ComPtr<ID3D12PipelineState> m_pipelineState;
@@ -56,6 +57,7 @@ class GameSceneUIShader : public Shader
 public:
 	GameSceneUIShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSignature);
 	~GameSceneUIShader() override = default;
+	virtual bool IsShadowShader() const { return false; }
 };
 class CharacterShader : public Shader
 {
@@ -76,4 +78,19 @@ class DebugLineShader : public Shader
 public:
 	DebugLineShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSignature);
 	~DebugLineShader() override = default;
+};
+
+class ShadowMapShader : public Shader
+{
+public:
+	ShadowMapShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSignature);
+	~ShadowMapShader() override = default;
+	bool IsShadowShader() const override { return true; }
+};
+
+class DebugShadowShader : public Shader
+{
+public:
+	DebugShadowShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSig);
+	void Render(const ComPtr<ID3D12GraphicsCommandList>& cmdList, D3D12_GPU_DESCRIPTOR_HANDLE shadowSrv);
 };

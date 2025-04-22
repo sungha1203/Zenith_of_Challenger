@@ -45,5 +45,10 @@ float4 PSMain(PSInput input) : SV_TARGET
     float3 toEye = normalize(g_cameraPosition - input.WorldPos);
 
     // 기존 lighting 말고 toon lighting 사용
-    return ToonLighting(input.WorldPos, normal, toEye, texColor);
+    float shadow = ComputeShadowFactor(input.WorldPos);
+    
+    return ToonLighting(input.WorldPos, normal, toEye, texColor) * shadow;
+    //float4 debugShadow = ComputeShadowFactor(input.WorldPos);
+    //return debugShadow;
+    
 }

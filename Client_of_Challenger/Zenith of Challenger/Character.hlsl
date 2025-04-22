@@ -64,23 +64,30 @@ PixelInput VSMain(VertexInput input)
 
 float4 PSMain(PixelInput input) : SV_Target
 {
-    //float4 texColor = g_texture[g_textureIndex].Sample(g_sampler, input.texcoord);
+    // 텍스처 샘플링
     float4 texColor = g_texture[0].Sample(g_sampler, input.texcoord);
     
-    // 너무 어두우면 fallback 색상
+    // 너무 어두우면 fallback (마젠타)
     if (texColor.r + texColor.g + texColor.b < 0.01f)
-        texColor.rgb = float3(1, 0, 1); // 마젠타
+        texColor.rgb = float3(1, 0, 1);
 
-    //return texColor;
-    
+    // 벡터 계산
     float3 normal = normalize(input.normal);
     float3 toEye = normalize(g_cameraPosition - input.worldPos);
-    
+
+    // 머티리얼 데이터 설정
     MaterialData matData;
     matData.fresnelR0 = float3(0.01f, 0.01f, 0.01f);
     matData.roughness = 0.5f;
     matData.ambient = float3(0.8f, 0.8f, 0.8f);
 
-    return Lighting(input.worldPos, normal, toEye, texColor, matData);
+    // 그림자 계수 계산
+    float shadow = ComputeShadowFactor(input.worldPos);
+
+    // 조명 연산 후 그림자 적용
+    return Lighting(input.worldPos, normal, toEye, texColor, matData) * shadow;
+    
+    //float4 debugShadow = ComputeShadowFactor(input.worldPos);
+    //return debugShadow;
     
 }

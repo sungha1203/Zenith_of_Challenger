@@ -79,6 +79,8 @@ void Monsters::Update(FLOAT timeElapsed)
 
 void Monsters::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
 {
+    bool isShadowPass = m_shader && m_shader->IsShadowShader();
+
     //if (m_animationClips.contains(m_currentAnim))
     //{
     //    const auto& clip = m_animationClips.at(m_currentAnim);
@@ -96,21 +98,20 @@ void Monsters::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) cons
     {
         m_shader->UpdateShaderVariable(commandList);
 
-        if (m_texture)
-            m_texture->UpdateShaderVariable(commandList, m_textureIndex);
-
-        if (m_material)
-            m_material->UpdateShaderVariable(commandList);
+        if (!isShadowPass)
+        {
+            if (m_texture)  m_texture->UpdateShaderVariable(commandList, m_textureIndex);
+            if (m_material) m_material->UpdateShaderVariable(commandList);
+        }
 
         UpdateShaderVariable(commandList);
         mesh->Render(commandList);
     }
 
     //와이어 프레임 렌더링
-    if (m_drawBoundingBox && m_debugBoxMesh && m_debugLineShader)
+    if (!isShadowPass && m_drawBoundingBox && m_debugBoxMesh && m_debugLineShader)
     {
         m_debugLineShader->UpdateShaderVariable(commandList);
-
         m_debugBoxMesh->Render(commandList);
     }
 }
