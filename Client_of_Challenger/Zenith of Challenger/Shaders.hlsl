@@ -45,6 +45,8 @@ cbuffer ShadowCamera : register(b4)
 {
     matrix g_shadowViewMatrix;
     matrix g_shadowProjMatrix;
+    matrix viewProjMat;
+    matrix shadowMat;
 }
 
 
@@ -76,24 +78,19 @@ StructuredBuffer<float4x4> g_boneMatrices : register(t10);
 
 // »ùÇÃ·¯
 SamplerState g_sampler : register(s0);
+SamplerState shadowSampler : register(s0, space1);
 
 float ComputeShadowFactor(float3 worldPos)
 {
-    float4 shadowCoord = mul(float4(worldPos, 1.0f), g_shadowViewMatrix);
-    shadowCoord = mul(shadowCoord, g_shadowProjMatrix);
-    shadowCoord.xyz /= shadowCoord.w;
+    float2 uv = worldPos.xy;
+    //if (uv.x < 0.0f || uv.x > 1.0f || uv.y < 0.0f || uv.y > 1.0f)
+        //return 1.0f;
 
-    float2 uv = shadowCoord.xy * 0.5f + 0.5f;
 
-    if (uv.x < 0.0f || uv.x > 1.0f || uv.y < 0.0f || uv.y > 1.0f)
-        return 1.0f;
+    float shadowDepth = g_shadowMap.SampleLevel(shadowSampler, uv, 0.f).r;
+    float currentDepth = worldPos.z;
 
-    float shadowDepth = g_shadowMap.Sample(g_sampler, uv).r;
-    float currentDepth = shadowCoord.z * 0.5f + 0.5f;
-
-    float bias = 0.0005f;
-
-    return (currentDepth - bias > shadowDepth) ? 0.3f : 1.0f;
+    return (currentDepth >= shadowDepth) ? 0.3f : 1.0f;
     //return float4(abs(currentDepth - shadowDepth).xxx, 1.0f);
 }
 

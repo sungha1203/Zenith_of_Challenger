@@ -19,7 +19,7 @@ VSOutput VSMain(VSInput input)
     float4 view = mul(world, g_shadowViewMatrix);
     float4 proj = mul(view, g_shadowProjMatrix);
 
-    output.pos = proj;
+    output.pos = mul(world, viewProjMat);;
     output.depth = view.z; // View space Z값만 저장
 
     return output;
@@ -28,5 +28,5 @@ VSOutput VSMain(VSInput input)
 float PSMain(VSOutput input) : SV_Target
 {
     float ndcDepth = input.pos.z / input.pos.w;
-    return ndcDepth * 0.5f + 0.5f; // 이 값은 [0, 1] 범위로 자동 클립됨
+    return ndcDepth; 
 }

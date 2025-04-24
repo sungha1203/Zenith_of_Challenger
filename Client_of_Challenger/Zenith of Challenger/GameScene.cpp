@@ -207,7 +207,7 @@ void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) con
 	XMVECTOR lightUp = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 
 	XMMATRIX lightView = XMMatrixLookAtLH(lightPos, lightTarget, lightUp);
-	XMMATRIX lightProj = XMMatrixOrthographicLH(500.0f, 500.0f, 1.0f, 1000.0f);
+	XMMATRIX lightProj = XMMatrixOrthographicLH(1000.0f, 1000.0f, 1.0f, 1000.0f);
 
 	m_camera->UploadShadowMatrix(commandList, lightView, lightProj);
 
@@ -556,7 +556,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 		player->SetRotationY(0.f);                  // 정면을 보게 초기화
 
 		// [4] 위치 및 스케일 설정
-		//player->SetPosition(XMFLOAT3{ 40.f, 1.7f, -50.f });
+		//player->SetPosition(XMFLOAT3{ 40.f, 0.3f, -50.f });
 		player->SetPosition(gGameFramework->g_pos);
 
 		// [5] FBX 메시 전부 등록
@@ -840,15 +840,10 @@ void GameScene::RenderShadowPass(const ComPtr<ID3D12GraphicsCommandList>& comman
 	XMVECTOR lightUp = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 
 	XMMATRIX lightView = XMMatrixLookAtLH(lightPos, lightTarget, lightUp);
-	XMMATRIX lightProj = XMMatrixOrthographicLH(500.0f, 500.0f, 1.0f, 1000.0f);
+	XMMATRIX lightProj = XMMatrixOrthographicLH(1000.0f, 1000.0f, 1.0f, 1500.0f);
 
 	// [1] GPU에 Shadow 행렬 업로드 (b4)
 	m_camera->UploadShadowMatrix(commandList, lightView, lightProj);
-
-	//if (m_terrain) {
-	//	m_terrain->SetShader(m_shaders.at("SHADOW"));
-	//	m_terrain->Render(commandList); // 이미 ShadowShader 연결된 상태로 가정
-	//}
 
 	// [2] FBX 오브젝트 그림자 렌더링
 	for (auto& obj : m_fbxObjects)

@@ -496,6 +496,9 @@ ShadowMapShader::ShadowMapShader(const ComPtr<ID3D12Device>& device, const ComPt
 	psoDesc.RTVFormats[0] = DXGI_FORMAT_R32_FLOAT; // 깊이를 float로 출력
 	psoDesc.DSVFormat = DXGI_FORMAT_UNKNOWN;
 	psoDesc.SampleDesc.Count = 1;
+	psoDesc.RasterizerState.DepthBias = 10000.f;
+	psoDesc.RasterizerState.SlopeScaledDepthBias = 1.0f;
+	psoDesc.RasterizerState.DepthBiasClamp = 0.f;
 
 	ThrowIfFailed(device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_pipelineState)));
 }

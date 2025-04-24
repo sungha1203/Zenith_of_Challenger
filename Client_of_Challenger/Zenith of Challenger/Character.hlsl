@@ -15,6 +15,7 @@ struct PixelInput
     float3 worldPos : POSITION1;
     float3 normal : NORMAL;
     float2 texcoord : TEXCOORD;
+    float4 shadowPos : TEXCOORD1;
 };
 
 float4x4 ScaleMatrix(float4x4 m, float s)
@@ -58,6 +59,7 @@ PixelInput VSMain(VertexInput input)
     output.normal = normalize(worldNormal);
 
     output.texcoord = input.texcoord;
+    output.shadowPos = mul(worldPos, shadowMat);
 
     return output;
 }
@@ -82,7 +84,7 @@ float4 PSMain(PixelInput input) : SV_Target
     matData.ambient = float3(0.8f, 0.8f, 0.8f);
 
     // 그림자 계수 계산
-    float shadow = ComputeShadowFactor(input.worldPos);
+    float shadow = ComputeShadowFactor(input.shadowPos.xyz);
 
     // 조명 연산 후 그림자 적용
     return Lighting(input.worldPos, normal, toEye, texColor, matData) * shadow;

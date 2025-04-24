@@ -13,6 +13,8 @@ struct ShadowCameraData : public BufferBase
 {
 	XMFLOAT4X4 viewMatrix;
 	XMFLOAT4X4 projMatrix;
+	XMFLOAT4X4 viewProjMat;
+	XMFLOAT4X4 shadowMat;
 };
 
 

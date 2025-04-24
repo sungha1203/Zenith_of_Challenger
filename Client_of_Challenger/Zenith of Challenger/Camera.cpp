@@ -30,6 +30,17 @@ void Camera::UploadShadowMatrix(const ComPtr<ID3D12GraphicsCommandList>& command
 	ShadowCameraData data;
 	XMStoreFloat4x4(&data.viewMatrix, XMMatrixTranspose(view));
 	XMStoreFloat4x4(&data.projMatrix, XMMatrixTranspose(proj));
+	auto wiewProjMat = XMMatrixMultiply(view, proj);
+	XMMATRIX t =
+	{
+	  0.5f, 0.0f, 0.0f, 0.0f,
+	  0.0f, -0.5f, 0.0f, 0.0f,
+	  0.0f, 0.0f, 1.0f, 0.0f,
+	  0.5f, 0.5f, 0.0f, 1.0f,
+	};
+	//t = XMMatrixTranspose(t);
+	XMStoreFloat4x4(&data.viewProjMat, XMMatrixTranspose(wiewProjMat));
+	XMStoreFloat4x4(&data.shadowMat, XMMatrixTranspose(XMMatrixMultiply(wiewProjMat, t)));
 
 	m_shadowCameraCB->Copy(data);
 	m_shadowCameraCB->UpdateRootConstantBuffer(commandList);

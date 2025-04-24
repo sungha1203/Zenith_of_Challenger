@@ -15,6 +15,8 @@ struct PixelInput
 	float3 worldPos : POSITION1;
 	float3 normal : NORMAL;
 	float2 texcoord : TEXCOORD;
+    float4 shadowPos : TEXCOORD1;
+    
 };
 
 float4x4 ScaleMatrix(float4x4 m, float s)
@@ -58,6 +60,7 @@ PixelInput VSMain(VertexInput input)
 	output.normal = normalize(worldNormal);
 
 	output.texcoord = input.texcoord;
+    output.shadowPos = mul(worldPos, shadowMat);
 
 	return output;
 }
@@ -78,7 +81,7 @@ float4 PSMain(PixelInput input) : SV_Target
     matData.roughness = 0.5f;
     matData.ambient = float3(0.8f, 0.8f, 0.8f);
 
-    float shadow = ComputeShadowFactor(input.worldPos);
+    float shadow = ComputeShadowFactor(input.shadowPos.xyz);
 	
 	
     return Lighting(input.worldPos, normal, toEye, texColor, matData) * shadow;

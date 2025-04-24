@@ -81,10 +81,9 @@ void CGameFramework::FrameAdvance()
 	ThrowIfFailed(m_commandAllocator->Reset());
 	ThrowIfFailed(m_commandList->Reset(m_commandAllocator.Get(), nullptr));
 
-	if (!m_shouldTransition && dynamic_cast<GameScene*>(m_sceneManager->GetCurrentScene().get()))
-	{
-		RenderShadowMap(); // GameScene에서만, 전환 중에는 스킵
-	}
+
+	RenderShadowMap(); // GameScene에서만, 전환 중에는 스킵
+	
 
 	Render();
 
@@ -99,6 +98,7 @@ void CGameFramework::FrameAdvance()
 		ThrowIfFailed(m_commandList->Reset(m_commandAllocator.Get(), nullptr));
 
 		std::cout << "[GameFramework] GameScene으로 전환 실행\n";
+
 		CreateShadowMapResources();
 		m_sceneManager->ChangeScene("GameScene", m_device, m_commandList, m_rootSignature);
 
@@ -229,6 +229,7 @@ void CGameFramework::InitDirect3D()
 	CreateDepthStencilView();
 	// [추가] SRV 힙 생성
 	CreateDescriptorHeaps();
+	CreateShadowMapResources();
 	CreateRootSignature();
 }
 
@@ -411,13 +412,26 @@ void CGameFramework::CreateRootSignature()
 	rootParameter[RootParameter::LightingMaterial].InitAsConstantBufferView(0, 1); // b0, space1
 	rootParameter[RootParameter::LightingLight].InitAsConstantBufferView(0, 2);    // b0, space2
 
-	CD3DX12_STATIC_SAMPLER_DESC samplerDesc(0);
+	CD3DX12_STATIC_SAMPLER_DESC samplerDesc[2](0);
+	samplerDesc[0].ShaderRegister = 0;
+	samplerDesc[1].ShaderRegister = 0;
+	samplerDesc[1].RegisterSpace = 1;
+	samplerDesc[1].AddressU = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+	samplerDesc[1].AddressV = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+	samplerDesc[1].AddressW = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+	samplerDesc[1].Filter = D3D12_FILTER_MIN_MAG_LINEAR_MIP_POINT;
+	samplerDesc[1].MipLODBias = 0.0f;
+	samplerDesc[1].MaxAnisotropy = 8.f;
+	samplerDesc[1].ComparisonFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+	samplerDesc[1].BorderColor = D3D12_STATIC_BORDER_COLOR_OPAQUE_BLACK;
+	samplerDesc[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+
 	CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc;
 	rootSignatureDesc.Init(
 		_countof(rootParameter),
 		rootParameter,
-		1,
-		&samplerDesc,
+		2,
+		samplerDesc,
 		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 	ComPtr<ID3DBlob> signature, error;
@@ -466,72 +480,15 @@ void CGameFramework::HandleSceneTransition()
 	}
 }
 
-//void CGameFramework::CreateShadowMapResources()
-//{
-//	// 1. ShadowMap Depth 텍스처 생성
-//	D3D12_RESOURCE_DESC texDesc = {};
-//	texDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-//	texDesc.Width = 2048;
-//	texDesc.Height = 2048;
-//	texDesc.DepthOrArraySize = 1;
-//	texDesc.MipLevels = 1;
-//	texDesc.Format = DXGI_FORMAT_R32_TYPELESS;
-//	texDesc.SampleDesc.Count = 1;
-//	texDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
-//	texDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
-//
-//	D3D12_CLEAR_VALUE clearVal = {};
-//	clearVal.Format = DXGI_FORMAT_D32_FLOAT;
-//	clearVal.DepthStencil.Depth = 1.0f;
-//	clearVal.DepthStencil.Stencil = 0;
-//
-//	ThrowIfFailed(m_device->CreateCommittedResource(
-//		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
-//		D3D12_HEAP_FLAG_NONE,
-//		&texDesc,
-//		D3D12_RESOURCE_STATE_DEPTH_WRITE,
-//		&clearVal,
-//		IID_PPV_ARGS(&m_shadowMapTexture)));
-//
-//	// 2. DSV 생성
-//	D3D12_DESCRIPTOR_HEAP_DESC dsvDesc = {};
-//	dsvDesc.NumDescriptors = 1;
-//	dsvDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
-//	ThrowIfFailed(m_device->CreateDescriptorHeap(&dsvDesc, IID_PPV_ARGS(&m_shadowDsvHeap)));
-//	m_shadowDsv = m_shadowDsvHeap->GetCPUDescriptorHandleForHeapStart();
-//
-//	D3D12_DEPTH_STENCIL_VIEW_DESC dsvViewDesc = {};
-//	dsvViewDesc.Format = DXGI_FORMAT_D32_FLOAT;
-//	dsvViewDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
-//	m_device->CreateDepthStencilView(m_shadowMapTexture.Get(), &dsvViewDesc, m_shadowDsv);
-//
-//	// 3. 전역 SRV 힙에 SRV 등록
-//	D3D12_SHADER_RESOURCE_VIEW_DESC srvViewDesc = {};
-//	srvViewDesc.Format = DXGI_FORMAT_R32_FLOAT;
-//	srvViewDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-//	srvViewDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-//	srvViewDesc.Texture2D.MipLevels = 1;
-//
-//	CD3DX12_CPU_DESCRIPTOR_HANDLE cpuHandle(m_cbvSrvUavHeap->GetCPUDescriptorHandleForHeapStart(), m_srvHeapOffset, m_cbvSrvUavDescriptorSize);
-//	CD3DX12_GPU_DESCRIPTOR_HANDLE gpuHandle(m_cbvSrvUavHeap->GetGPUDescriptorHandleForHeapStart(), m_srvHeapOffset, m_cbvSrvUavDescriptorSize);
-//
-//	m_device->CreateShaderResourceView(m_shadowMapTexture.Get(), &srvViewDesc, cpuHandle);
-//	m_shadowSrv = gpuHandle;
-//	m_srvHeapOffset++;
-//
-//	// 4. 뷰포트 / 시저 설정
-//	m_shadowViewport = { 0.0f, 0.0f, 2048.0f, 2048.0f, 0.0f, 1.0f };
-//	m_shadowScissorRect = { 0, 0, 2048, 2048 };
-//}
-
-
 void CGameFramework::CreateShadowMapResources()
 {
 	// 1. ShadowMap 텍스처 생성 (선형 Depth 저장용)
 	D3D12_RESOURCE_DESC texDesc = {};
 	texDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-	texDesc.Width = 2048;
-	texDesc.Height = 2048;
+	float resolution = 2048 * 4;
+
+	texDesc.Width = resolution;
+	texDesc.Height = resolution;
 	texDesc.DepthOrArraySize = 1;
 	texDesc.MipLevels = 1;
 	texDesc.Format = DXGI_FORMAT_R32_FLOAT;
@@ -602,8 +559,8 @@ void CGameFramework::CreateShadowMapResources()
 	m_device->CreateDepthStencilView(nullptr, &dsvViewDesc, m_shadowDsv); // 안 쓰는 경우 null도 가능
 
 	// 5. Viewport / Scissor 설정
-	m_shadowViewport = { 0.0f, 0.0f, 2048.0f, 2048.0f, 0.0f, 1.0f };
-	m_shadowScissorRect = { 0, 0, 2048, 2048 };
+	m_shadowViewport = { 0.0f, 0.0f, resolution, resolution, 0.0f, 1.0f };
+	m_shadowScissorRect = { 0, 0, (int)resolution, (int)resolution };
 }
 
 

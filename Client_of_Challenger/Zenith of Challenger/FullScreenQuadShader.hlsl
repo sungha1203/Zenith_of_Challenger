@@ -31,6 +31,6 @@ VSOutput VSMain(uint id : SV_VertexID)
 
 float4 PSMain(VSOutput input) : SV_TARGET
 {
-    float depth = g_shadowMap.Sample(g_sampler, input.uv).r;
+    float depth = g_shadowMap.Sample(shadowSampler, input.uv).r;
     return float4(depth, depth, depth, 1.0f); // 0.0 °ËÁ¤ ~ 1.0 Èò»ö
 }
