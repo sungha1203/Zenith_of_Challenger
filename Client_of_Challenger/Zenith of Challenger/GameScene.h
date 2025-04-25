@@ -61,4 +61,11 @@ private:
     std::shared_ptr<DebugShadowShader> m_debugShadowShader;
     XMMATRIX m_shadowViewMatrix;
     XMMATRIX m_shadowProjMatrix;
+
+
+    //카메라 전환 관련
+    CameraMode m_currentCameraMode = CameraMode::QuarterView;
+    shared_ptr<QuarterViewCamera> m_quarterViewCamera;
+    shared_ptr<ThirdPersonCamera> m_thirdPersonCamera;
+
 };

@@ -43,10 +43,24 @@ void Player::KeyboardEvent(FLOAT timeElapsed)
 {
     if (!m_camera) return;
 
-    XMFLOAT3 front = m_camera->GetN(); front.y = 0.f;
-    front = Vector3::Normalize(front);
+    bool isTPS = dynamic_pointer_cast<ThirdPersonCamera>(m_camera) != nullptr;
+    bool isQuarter = dynamic_pointer_cast<QuarterViewCamera>(m_camera) != nullptr;
 
-    XMFLOAT3 right = m_camera->GetU(); right.y = 0.f;
+    XMFLOAT3 front, right;
+
+    // TPS와 쿼터뷰 둘 다 카메라 기준 방향으로 움직임
+    if (isTPS || isQuarter)
+    {
+        front = m_camera->GetN(); front.y = 0.f;
+        right = m_camera->GetU(); right.y = 0.f;
+    }
+    else
+    {
+        front = { 0.f, 0.f, 1.f };
+        right = { 1.f, 0.f, 0.f };
+    }
+
+    front = Vector3::Normalize(front);
     right = Vector3::Normalize(right);
 
     XMFLOAT3 moveDirection{ 0.f, 0.f, 0.f };
@@ -68,11 +82,14 @@ void Player::KeyboardEvent(FLOAT timeElapsed)
     if (keyStates[VK_PRIOR]) moveDirection = Vector3::Add(moveDirection, { 0.f, 1.f, 0.f });
     if (keyStates[VK_NEXT]) moveDirection = Vector3::Add(moveDirection, { 0.f, -1.f, 0.f });
 
-    // 바라보는 방향도 똑같이 구성 (8방향 고정 회전용)
-    if (keyStates['W']) faceDirection = Vector3::Add(faceDirection, front);
-    if (keyStates['S']) faceDirection = Vector3::Add(faceDirection, Vector3::Negate(front));
-    if (keyStates['A']) faceDirection = Vector3::Add(faceDirection, Vector3::Negate(right));
-    if (keyStates['D']) faceDirection = Vector3::Add(faceDirection, right);
+    // 쿼터뷰는 회전도 같이 처리
+    if (isQuarter)
+    {
+        if (keyStates['W']) faceDirection = Vector3::Add(faceDirection, front);
+        if (keyStates['S']) faceDirection = Vector3::Add(faceDirection, Vector3::Negate(front));
+        if (keyStates['A']) faceDirection = Vector3::Add(faceDirection, Vector3::Negate(right));
+        if (keyStates['D']) faceDirection = Vector3::Add(faceDirection, right);
+    }
 
     // 속도 적용
     if (!Vector3::IsZero(moveDirection))
@@ -87,21 +104,21 @@ void Player::KeyboardEvent(FLOAT timeElapsed)
 
     // 최종 이동
     XMFLOAT3 movement = Vector3::Mul(velocity, timeElapsed);
-    if (!(movement.x == 0 && movement.y == 0 && movement.z == 0))
+    if (!Vector3::IsZero(movement))
     {
         Transform(movement);
-        
     }
 
-    // 회전 적용: 8방향 고정 회전
-    if (!Vector3::IsZero(faceDirection))
+    // 쿼터뷰 회전
+    if (isQuarter && !Vector3::IsZero(faceDirection))
     {
         faceDirection = Vector3::Normalize(faceDirection);
         float angle = atan2f(faceDirection.x, faceDirection.z);
         float degrees = XMConvertToDegrees(angle);
-        SetRotationY(degrees + 180.f); // 모델 Z-가 정면이면 +180도 필요
+        SetRotationY(degrees + 180.f); // Z-가 앞일 경우 +180도
     }
 }
+
 
 
 void Player::Update(FLOAT timeElapsed)

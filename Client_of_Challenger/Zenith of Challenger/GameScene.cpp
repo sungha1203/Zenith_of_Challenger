@@ -56,10 +56,6 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
 {
 	m_player->KeyboardEvent(timeElapsed);
 
-	if (GetAsyncKeyState(VK_F2) & 0x0001) {
-		m_ShadowMapEnabled = !m_ShadowMapEnabled;
-	}
-
 	if (GetAsyncKeyState(VK_F1) & 0x0001)
 	{
 		m_debugDrawEnabled = !m_debugDrawEnabled;
@@ -77,6 +73,37 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
 
 		OutputDebugStringA(m_debugDrawEnabled ? "[Debug] AABB ON\n" : "[Debug] AABB OFF\n");
 	}
+
+	if (GetAsyncKeyState(VK_F2) & 0x0001) {
+		m_ShadowMapEnabled = !m_ShadowMapEnabled;
+	}
+
+	if (GetAsyncKeyState(VK_F3) & 0x0001) // F3 키 단일 입력
+	{
+		if (m_currentCameraMode == CameraMode::QuarterView)
+		{
+			m_currentCameraMode = CameraMode::ThirdPerson;
+			m_camera = m_thirdPersonCamera;
+			// 마우스 숨기고 중앙에 고정
+			ShowCursor(FALSE);
+
+			POINT center = { 720, 320 }; // 해상도 1440x1080 기준
+			ClientToScreen(gGameFramework->GetHWND(), &center);
+			SetCursorPos(center.x, center.y);
+
+		}
+		else
+		{
+			m_currentCameraMode = CameraMode::QuarterView;
+			m_camera = m_quarterViewCamera;
+			ShowCursor(TRUE);
+		}
+
+		m_camera->SetLens(0.25f * XM_PI, gGameFramework->GetAspectRatio(), 0.1f, 1000.f);
+		m_player->SetCamera(m_camera); // 카메라 바뀐 후 플레이어에도 재등록
+	}
+
+
 	if (GetAsyncKeyState(VK_LEFT) & 0x8000)
 		m_uiObjects[1]->m_fillAmount -= 0.1;
 
@@ -86,6 +113,23 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
 
 void GameScene::Update(FLOAT timeElapsed)
 {
+	if (m_currentCameraMode == CameraMode::ThirdPerson)
+	{
+		m_camera->Update(timeElapsed);
+
+		// 카메라 방향을 기준으로 플레이어 회전
+		XMFLOAT3 camDir = m_camera->GetN();
+		camDir.y = 0.f;
+
+		if (!Vector3::IsZero(camDir))
+		{
+			camDir = Vector3::Normalize(camDir);
+			float yaw = atan2f(camDir.x, camDir.z);
+			m_player->SetRotationY(XMConvertToDegrees(yaw) + 180.f);
+		}
+	}
+
+
 	m_player->Update(timeElapsed);
 	m_sun->Update(timeElapsed);
 
@@ -235,7 +279,10 @@ void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) con
 	}
 	for (auto op : m_Otherplayer)
 	{
-		if (op)op->Render(commandList);
+		if (op) {
+			op->SetShader(m_shaders.at("CHARACTER"));
+			op->Render(commandList);
+		}
 	}
 	// 몬스터 렌더링 (map 기반으로 수정)
 	for (const auto& [type, group] : m_monsterGroups)
@@ -523,8 +570,12 @@ void GameScene::BuildMaterials(const ComPtr<ID3D12Device>& device,
 
 void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 {
-	m_camera = make_shared<QuarterViewCamera>(device);
-	m_camera->SetLens(0.25 * XM_PI, gGameFramework->GetAspectRatio(), 0.1f, 1000.f);
+	m_quarterViewCamera = make_shared<QuarterViewCamera>(device);
+	m_thirdPersonCamera = make_shared<ThirdPersonCamera>(device);
+
+	m_camera = m_quarterViewCamera;  // 기본 카메라는 쿼터뷰
+	m_camera->SetLens(0.25f * XM_PI, gGameFramework->GetAspectRatio(), 0.1f, 1000.f);
+
 
 	m_lightSystem = make_unique<LightSystem>(device);
 	auto sunLight = make_shared<DirectionalLight>();
@@ -556,8 +607,8 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 		player->SetRotationY(0.f);                  // 정면을 보게 초기화
 
 		// [4] 위치 및 스케일 설정
-		//player->SetPosition(XMFLOAT3{ 40.f, 0.3f, -50.f });
-		player->SetPosition(gGameFramework->g_pos);
+		player->SetPosition(XMFLOAT3{ 40.f, 0.3f, -50.f });
+		//player->SetPosition(gGameFramework->g_pos);
 
 		// [5] FBX 메시 전부 등록
 		for (int i = 0; i < meshes.size(); ++i)
@@ -656,28 +707,28 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 	auto& frightflies = m_monsterGroups["Frightfly"];
 	for (int i = 0; i < frightflies.size(); ++i)
 	{
-		//float angle = XM_2PI * i / frightflies.size();
-		//float radius = 15.0f;
-		//float x = -170.f + radius * cos(angle);
-		//float z = 15.f + radius * sin(angle);
-		//float y = 0.f;
+		float angle = XM_2PI * i / frightflies.size();
+		float radius = 15.0f;
+		float x = -170.f + radius * cos(angle);
+		float z = 15.f + radius * sin(angle);
+		float y = 0.f;
 
-		//frightflies[i]->SetPosition(XMFLOAT3{ x, y, z });
-		frightflies[i]->SetPosition(gGameFramework->monstersCoord[i + 10]);
+		frightflies[i]->SetPosition(XMFLOAT3{ x, y, z });
+		//frightflies[i]->SetPosition(gGameFramework->monstersCoord[i + 10]);
 	}
 
 	// "Flower_Fairy" 타입 몬스터 배치
 	auto& fairies = m_monsterGroups["Flower_Fairy"];
 	for (int i = 0; i < fairies.size(); ++i)
 	{
-		//float angle = XM_2PI * i / fairies.size();
-		//float radius = 20.0f;
-		//float x = 190.f + radius * cos(angle);
-		//float z = -190.f + radius * sin(angle);
-		//float y = -5.f;
+		float angle = XM_2PI * i / fairies.size();
+		float radius = 20.0f;
+		float x = 190.f + radius * cos(angle);
+		float z = -190.f + radius * sin(angle);
+		float y = -5.f;
 
-		//fairies[i]->SetPosition(XMFLOAT3{ x, y, z });
-		fairies[i]->SetPosition(gGameFramework->monstersCoord[i + 40]);
+		fairies[i]->SetPosition(XMFLOAT3{ x, y, z });
+		//fairies[i]->SetPosition(gGameFramework->monstersCoord[i + 40]);
 
 	}
 
@@ -685,42 +736,42 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 	auto& mushrooms = m_monsterGroups["Mushroom_Dark"];
 	for (int i = 0; i < mushrooms.size(); ++i)
 	{
-		//float angle = XM_2PI * i / mushrooms.size();
-		//float radius = 25.0f; // 조금 더 넓게 배치
-		//float x = -100.f + radius * cos(angle);
-		//float z = -165.f + radius * sin(angle);
-		//float y = 0.f; // 지면 높이에 맞게 조절
+		float angle = XM_2PI * i / mushrooms.size();
+		float radius = 25.0f; // 조금 더 넓게 배치
+		float x = -100.f + radius * cos(angle);
+		float z = -165.f + radius * sin(angle);
+		float y = 0.f; // 지면 높이에 맞게 조절
 
-		//mushrooms[i]->SetPosition(XMFLOAT3{ x, y, z });
-		mushrooms[i]->SetPosition(gGameFramework->monstersCoord[i]);
+		mushrooms[i]->SetPosition(XMFLOAT3{ x, y, z });
+		//mushrooms[i]->SetPosition(gGameFramework->monstersCoord[i]);
 	}
 
 	// "Venus_Blue" 타입 몬스터 배치
 	auto& venusGroup = m_monsterGroups["Venus_Blue"];
 	for (int i = 0; i < venusGroup.size(); ++i)
 	{
-		//float angle = XM_2PI * i / venusGroup.size();
-		//float radius = 28.0f; // 위치 조정
-		//float x = 40.f + radius * cos(angle);
-		//float z = -50.f + radius * sin(angle);
-		//float y = 0.f;
+		float angle = XM_2PI * i / venusGroup.size();
+		float radius = 28.0f; // 위치 조정
+		float x = 40.f + radius * cos(angle);
+		float z = -50.f + radius * sin(angle);
+		float y = 0.f;
 
-		//venusGroup[i]->SetPosition(XMFLOAT3{ x, y, z });
-		venusGroup[i]->SetPosition(gGameFramework->monstersCoord[i + 30]);
+		venusGroup[i]->SetPosition(XMFLOAT3{ x, y, z });
+		//venusGroup[i]->SetPosition(gGameFramework->monstersCoord[i + 30]);
 	}
 
 	// "Plant_Dionaea" 타입 몬스터 배치
 	auto& DionaeaGroup = m_monsterGroups["Plant_Dionaea"];
 	for (int i = 0; i < DionaeaGroup.size(); ++i)
 	{
-		//float angle = XM_2PI * i / DionaeaGroup.size();
-		//float radius = 28.0f; // 위치 조정
-		//float x = 160.f + radius * cos(angle);
-		//float z = 30.f + radius * sin(angle);
-		//float y = 0.f;
+		float angle = XM_2PI * i / DionaeaGroup.size();
+		float radius = 28.0f; // 위치 조정
+		float x = 160.f + radius * cos(angle);
+		float z = 30.f + radius * sin(angle);
+		float y = 0.f;
 
-		//DionaeaGroup[i]->SetPosition(XMFLOAT3{ x, y, z });
-		DionaeaGroup[i]->SetPosition(gGameFramework->monstersCoord[i + 20]);
+		DionaeaGroup[i]->SetPosition(XMFLOAT3{ x, y, z });
+		//DionaeaGroup[i]->SetPosition(gGameFramework->monstersCoord[i + 20]);
 	}
 
 	//스카이박스
@@ -857,6 +908,15 @@ void GameScene::RenderShadowPass(const ComPtr<ID3D12GraphicsCommandList>& comman
 		m_player->SetShader(m_shaders.at("SHADOW"));
 		m_player->Render(commandList);
 	}
+
+	for (auto op : m_Otherplayer)
+	{
+		if (op) {
+			op->SetShader(m_shaders.at("SHADOW"));
+			op->Render(commandList);
+		}
+	}
+
 
 	for (const auto& [type, group] : m_monsterGroups)
 	{

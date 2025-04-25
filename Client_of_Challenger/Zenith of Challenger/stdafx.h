@@ -132,6 +132,12 @@ namespace DescriptorRange
 	constexpr UINT Count = 4;
 }
 
+enum class CameraMode
+{
+	QuarterView,
+	ThirdPerson
+};
+
 
 extern UINT	gnCbvSrvDescriptorIncrementSize;
 
