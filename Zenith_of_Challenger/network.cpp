@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include "stdafx.h"
 #include "network.h"
 #include "session.h"
@@ -421,6 +422,26 @@ void Network::ProcessZenithReady(int client_id, char* buffer, int length)
 		if (room.GetPlayerNum() == room.GetEnterZenithNum()) {
 			room.StartZenithStage();
 		}
+	}
+	clients[client_id].do_recv();
+}
+
+// 인게임 속 채팅
+void Network::ProcessChat(int client_id, char* buffer, int length)
+{
+	CS_Packet_Chat* pkt = reinterpret_cast<CS_Packet_Chat*>(buffer);
+
+	int room_id = g_room_manager.GetRoomID(client_id);
+	Room& room = g_room_manager.GetRoom(room_id);
+	const auto& client = room.GetClients();
+
+	SC_Packet_Chat pkt2;
+	pkt2.type = SC_PACKET_CHAT;
+	strcpy(pkt2.msg, pkt->msg);
+	pkt2.size = sizeof(pkt2);
+
+	for (int other_id : client) {
+		clients[other_id].do_send(pkt2);
 	}
 	clients[client_id].do_recv();
 }

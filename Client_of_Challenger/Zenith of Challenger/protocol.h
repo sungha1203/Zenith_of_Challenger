@@ -15,6 +15,7 @@ constexpr int NAME_SIZE = 20;				// 이름 글자 수
 #define CS_PACKET_GAMESTART			 5			// 게임 시작 버튼
 #define CS_PACKET_INGAMEREADY		 6			// 게임 시작 후 입장 완료
 #define CS_PACKET_STARTZENITH		 7			// 정점 스테이지 입장 완료
+#define CS_PACKET_CHAT				 8			// 인게임 속 채팅
 #define CS_PACKET_LOGOUT			 100		// 로그아웃
 
 // 패킷 타입 정의 (서버 -> 클라)
@@ -28,6 +29,7 @@ constexpr int NAME_SIZE = 20;				// 이름 글자 수
 #define SC_PACKET_REPAIRTIME		 108		// 정비 시간
 #define SC_PACKET_ZENITHSTAGE		 109		// 도전 -> 정점
 #define SC_PACKET_INITMONSTER		 110		// 몬스터 초기 설정
+#define SC_PACKET_CHAT				 111		// 인게임 속 채팅
 #define SC_PACKET_LOGOUT			 777		// 로그아웃
 
 // [임시]
@@ -80,6 +82,13 @@ struct CS_Packet_ZenithReady
 	char	type;
 	int		size;
 	bool	ReadySuccess;
+};
+
+struct CS_Packet_Chat
+{
+	char	type;
+	int		size;
+	char	msg[256];
 };
 
 struct CS_Packet_Logout
@@ -174,5 +183,12 @@ struct SC_Packet_InitMonster
 	float	x;
 	float	y;
 	float	z;
+};
+
+struct SC_Packet_Chat
+{
+	char	type;
+	int		size;
+	char	msg[256];
 };
 #pragma pack(pop)

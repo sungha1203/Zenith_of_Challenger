@@ -29,6 +29,7 @@ public:
 	void		ProcessInitialstate(char* buffer);
 	void		ProcessInitMonster(char* buffer);
 	void		ProcessUpdateCoord2Player(char* buffer);
+	void		ProcessChat(char* buffer);
 
 public:
 	SOCKET			m_clientsocket = INVALID_SOCKET;

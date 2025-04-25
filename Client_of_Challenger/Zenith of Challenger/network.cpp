@@ -193,3 +193,9 @@ void ClientNetwork::ProcessUpdateCoord2Player(char* buffer)
 		return;
 	}
 }
+
+void ClientNetwork::ProcessChat(char* buffer)
+{
+	SC_Packet_Chat* pkt = reinterpret_cast<SC_Packet_Chat*>(buffer);
+
+}
