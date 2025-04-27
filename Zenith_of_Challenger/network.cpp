@@ -311,6 +311,9 @@ void Network::HandlePacket(int client_id, char* buffer, int length)
 	case CS_PACKET_LOGOUT:
 		CloseClient(client_id);
 		break;
+	case CS_PACKET_SKIPCHALLENGE:
+		ProcessSkipChallenge(client_id, buffer, length);
+		break;
 	default:
 		std::cout << "[ERROR] 알 수 없는 패킷 수신함. 클라이언트 [" << client_id << "]" << std::endl;
 		break;
@@ -396,6 +399,22 @@ void Network::ProcessIngameReady(int client_id, char* buffer, int length)
 		}
 	}
 	clients[client_id].do_recv();
+}
+
+// 도전 스테이지 스킵(정비 시간 입장)
+void Network::ProcessSkipChallenge(int client_id, char* buffer, int length)
+{
+	CS_Packet_SkipChallenge* pkt = reinterpret_cast<CS_Packet_SkipChallenge*>(buffer);
+	if (pkt->skip == true) {
+		int room_id = g_room_manager.GetRoomID(client_id);
+		if (room_id == -1) return;
+
+		Room& room = g_room_manager.GetRoom(room_id);
+		if (room.GetSkipButton() == false) {
+			room.SetSkipTimer();
+			room.SetSkipButton(true);
+		}
+	}
 }
 
 // 정점 스테이지 입장 준비 완료 버튼 누른 직후
@@ -533,14 +552,24 @@ void Network::SendInitialState(const std::vector<int>& client_id)
 // 정비 시간 시작
 void Network::SendStartRepairTime(const std::vector<int>& client_id)
 {
-	SC_Packet_RepairTime packet;
-	packet.type = SC_PACKET_REPAIRTIME;
-	packet.size = sizeof(packet);
-	packet.startRT = true;
+	for (int target_id : client_id)
+	{
+		if (!clients[target_id].m_used) continue;
 
-	for (int id : client_id) {
-		if (clients[id].m_used)
-			clients[id].do_send(packet);
+		for (int other_id : client_id)
+		{
+			if (!clients[other_id].m_used) continue;
+			SC_Packet_RepairTime packet;
+			packet.type = SC_PACKET_REPAIRTIME;
+			packet.startRT = true;
+			packet.client_id = target_id;
+			packet.x = g_client[target_id].GetX();
+			packet.y = g_client[target_id].GetY();
+			packet.z = g_client[target_id].GetZ();
+			packet.size = sizeof(packet);
+
+			clients[other_id].do_send(packet);
+		}
 	}
 }
 

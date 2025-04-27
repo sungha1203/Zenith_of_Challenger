@@ -103,6 +103,15 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
         m_player->SetCamera(m_camera); // 카메라 바뀐 후 플레이어에도 재등록
     }
 
+    if (GetAsyncKeyState(VK_OEM_PLUS) & 0x0001) // = 키
+    {
+        CS_Packet_SkipChallenge pkt;
+        pkt.type = CS_PACKET_SKIPCHALLENGE;
+        pkt.skip = true;
+        pkt.size = sizeof(pkt);
+
+        gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
+    }
 
     if (GetAsyncKeyState(VK_LEFT) & 0x8000)
         m_uiObjects[1]->m_fillAmount -= 0.1;

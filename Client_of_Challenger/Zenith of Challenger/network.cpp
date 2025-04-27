@@ -57,7 +57,7 @@ bool ClientNetwork::SendPacket(const char* data, int length)
 
 void ClientNetwork::Receive()
 {
-	char buffer[1024] = {0};
+	char buffer[1024] = { 0 };
 	while (m_running) {
 		int received = recv(m_clientsocket, buffer, sizeof(buffer), 0);
 		if (received > 0) {
@@ -83,6 +83,9 @@ void ClientNetwork::Receive()
 			case SC_PACKET_UPDATE2PLAYER:
 				ProcessUpdateCoord2Player(buffer);
 				break;
+			case SC_PACKET_REPAIRTIME:
+				ProcessStartRepairTime(buffer);
+				break;
 			default:
 				break;
 			}
@@ -106,7 +109,7 @@ void ClientNetwork::ProcessLogin(char* buffer)
 void ClientNetwork::ProcessRoomjoin(char* buffer)
 {
 	SC_Packet_RoomResponse* pkt = reinterpret_cast<SC_Packet_RoomResponse*>(buffer);
-	if(pkt->success)
+	if (pkt->success)
 		gGameFramework->GetClientState()->SetClientRoomNum(pkt->room_id);
 }
 
@@ -119,7 +122,7 @@ void ClientNetwork::ProcessWhoismyteam(char* buffer)
 			//@@@ = pkt->teamID[i];
 			if (gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[0] == -2)
 				gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[0] = pkt->teamID[i];
-			else if(gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[1] == -2)
+			else if (gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[1] == -2)
 				gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[1] = pkt->teamID[i];
 		}
 	}
@@ -136,10 +139,10 @@ void ClientNetwork::ProcessInitialstate(char* buffer)
 {
 	SC_Packet_initialstate* pkt = reinterpret_cast<SC_Packet_initialstate*>(buffer);
 	// 일단 자기 좌표만 받을거임.
-		XMFLOAT3 pos(pkt->x, pkt->y, pkt->z);
+	XMFLOAT3 pos(pkt->x, pkt->y, pkt->z);
 	if (pkt->client_id == m_clientID) {
 		gGameFramework->g_pos = pos;
-		
+
 		//auto player = gGameFramework->GetPlayer();
 		//if (player)
 		//	player->SetPosition(pos);
@@ -148,7 +151,7 @@ void ClientNetwork::ProcessInitialstate(char* buffer)
 	{
 		gGameFramework->GetSceneManager()->GetCurrentScene()->otherpos[0] = pos;
 	}
-	else if(pkt->client_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[1])
+	else if (pkt->client_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[1])
 	{
 		gGameFramework->GetSceneManager()->GetCurrentScene()->otherpos[1] = pos;
 	}
@@ -164,7 +167,7 @@ void ClientNetwork::ProcessInitMonster(char* buffer)
 {
 	SC_Packet_InitMonster* pkt = reinterpret_cast<SC_Packet_InitMonster*>(buffer);
 	XMFLOAT3 pos(pkt->x, pkt->y, pkt->z);
-	gGameFramework->monstersCoord[pkt->monsterid -1] = pos;
+	gGameFramework->monstersCoord[pkt->monsterid - 1] = pos;
 }
 
 void ClientNetwork::ProcessUpdateCoord2Player(char* buffer)
@@ -197,5 +200,37 @@ void ClientNetwork::ProcessUpdateCoord2Player(char* buffer)
 void ClientNetwork::ProcessChat(char* buffer)
 {
 	SC_Packet_Chat* pkt = reinterpret_cast<SC_Packet_Chat*>(buffer);
+
+}
+
+void ClientNetwork::ProcessStartRepairTime(char* buffer)
+{
+	SC_Packet_RepairTime* pkt = reinterpret_cast<SC_Packet_RepairTime*>(buffer);
+	XMFLOAT3 pos(pkt->x, pkt->y, pkt->z);
+	if (pkt->startRT == true) {
+		if (pkt->client_id == m_clientID) {
+			gGameFramework->g_pos = pos;
+			gGameFramework->GetSceneManager()->GetCurrentScene()->m_player->SetPosition(pos);
+
+			//auto player = gGameFramework->GetPlayer();
+			//if (player)
+			//	player->SetPosition(pos);
+		}
+		else if (pkt->client_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[0])
+		{
+			gGameFramework->GetSceneManager()->GetCurrentScene()->otherpos[0] = pos;
+			gGameFramework->GetSceneManager()->GetCurrentScene()->m_Otherplayer[0]->m_position = pos;
+
+		}
+		else if (pkt->client_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[1])
+		{
+			gGameFramework->GetSceneManager()->GetCurrentScene()->otherpos[1] = pos;
+			gGameFramework->GetSceneManager()->GetCurrentScene()->m_Otherplayer[1]->m_position = pos;
+		}
+		else
+		{
+			return;
+		}
+	}
 
 }

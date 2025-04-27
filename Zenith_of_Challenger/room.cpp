@@ -12,6 +12,7 @@ void Room::AddClient(int client_id)
 
 	int idx = m_clients.size() - 1;
 	g_client[client_id].SetSpawnCoord(idx);
+	g_client[client_id].SetRoomIdx(idx);
 }
 
 void Room::RemoveClient(int client_id)
@@ -49,11 +50,13 @@ void Room::PushStartGameButton(int RoomMasterID)
 	InitChallengeMonsters();									// 도전 스테이지 몬스터 초기화
 
 	g_network.SendWhoIsMyTeam(GetClients());					// 아이디 값 보내주기
+	std::this_thread::sleep_for(std::chrono::milliseconds(100));
 	g_network.SendInitialState(GetClients());					// 게임방 안에 본인 포함 모두한테 초기 좌표 패킷 보내기
+	std::this_thread::sleep_for(std::chrono::milliseconds(100));
 	g_network.SendInitMonster(GetClients(),GetMonsters());		// 게임방 안의 모든 몬스터 초기화
-	Sleep(2000);
-
+	std::this_thread::sleep_for(std::chrono::milliseconds(100));
 	g_network.SendGameStart(GetClients());						// 게임방 안에 본인 포함 모두한테 게임시작 패킷 보내기
+	
 	AllPlayerNum(m_clients.size());								// 게임에 입장한 플레이어가 몇명이야?
 
 	m_IsGaming = true;
@@ -79,8 +82,11 @@ void Room::StartGame()
 void Room::ChallengeTimerThread()
 {
 	// 도전 스테이지 8분
-	std::this_thread::sleep_for(std::chrono::seconds(CHALLENGE_TIME));
-	if (m_stopTimer) return;
+	for (int i = 0; i < CHALLENGE_TIME; ++i) {
+		std::this_thread::sleep_for(std::chrono::seconds(1));
+		if (m_stopTimer) return;
+		if (m_skipTimer) break;
+	}
 	RepairTime();
 }
 
@@ -103,6 +109,9 @@ void Room::ZenithTimerThread() {
 void Room::RepairTime()
 {
 	m_RoomState = Stage::REPAIR_TIME;
+	for (int i = 0; i < GetClientsNum(); ++i) {		// 시작의 땅이 어딘데
+		g_client[m_clients[i]].SetRepairCoord(i);
+	}
 	g_network.SendStartRepairTime(GetClients());	// 다들 시작의 땅으로 이동하자
 }
 
@@ -116,6 +125,16 @@ void Room::EndGame()
 
 	std::cout << "[INFO][" << m_room_id << "]방 게임을 종료하였습니다!\n";
 	// TODO
+}
+
+void Room::SetSkipTimer()
+{
+	m_skipTimer = true;
+}
+
+void Room::SetSkipButton(bool check)
+{
+	m_skipButton = check;
 }
 
 

@@ -106,6 +106,13 @@ void CGameFramework::FrameAdvance()
 		ID3D12CommandList* lists[] = { m_commandList.Get() };
 		m_commandQueue->ExecuteCommandLists(1, lists);
 		WaitForGpuComplete();
+		{
+			CS_Packet_GameReady pkt;
+			pkt.type = CS_PACKET_INGAMEREADY;
+			pkt.ReadySuccess = true;
+			pkt.size = sizeof(pkt);
+			gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
+		}
 
 		m_shouldTransition = false;
 	}	
