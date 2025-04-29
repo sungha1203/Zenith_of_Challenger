@@ -42,6 +42,7 @@ public:
 
     unordered_map<string, vector<shared_ptr<Monsters>>>& GetMonsterGroups() { return m_monsterGroups; }
     shared_ptr<ParticleManager> GetParticleManager() const { return m_particleManager; }
+    void SetGoldScore(int score) { m_goldScore = score; }
 
 private:
     shared_ptr<FBXLoader> m_fbxLoader; // FBX 로더 추가

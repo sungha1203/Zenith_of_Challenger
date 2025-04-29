@@ -307,4 +307,14 @@ void ClientNetwork::ProcessInventory(char* buffer)
 {
 	SC_Packet_Inventory* pkt = reinterpret_cast<SC_Packet_Inventory*>(buffer);
 	pkt->gold;
+
+	// 현재 씬 가져오기 (GameScene으로 캐스팅 필요)
+	shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
+	GameScene* gameScene = dynamic_cast<GameScene*>(currentScene.get());
+
+	if (gameScene)
+	{
+		gameScene->SetGoldScore(pkt->gold);
+	}
+
 }
