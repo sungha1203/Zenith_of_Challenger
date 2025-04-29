@@ -54,6 +54,8 @@ public:
 	void SetBoneNameToIndex(const unordered_map<string, int>& map) { m_boneNameToIndex = map; }
 	void AddMesh(const shared_ptr<MeshBase>& mesh) { m_meshes.push_back(mesh); }
 
+	void SetHP(int hp);
+
 private:
 	shared_ptr<Camera> m_camera;
 

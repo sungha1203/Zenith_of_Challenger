@@ -86,6 +86,9 @@ void ClientNetwork::Receive()
 			case SC_PACKET_REPAIRTIME:
 				ProcessStartRepairTime(buffer);
 				break;
+			case SC_PACKET_MONSTERHP:
+				ProcessMonsterHP(buffer);
+				break;
 			default:
 				break;
 			}
@@ -238,6 +241,54 @@ void ClientNetwork::ProcessStartRepairTime(char* buffer)
 void ClientNetwork::ProcessMonsterHP(char* buffer)
 {
 	SC_Packet_MonsterHP* pkt = reinterpret_cast<SC_Packet_MonsterHP*>(buffer);
-	pkt->monsterID;
-	pkt->monsterHP;
+	int monsterID = pkt->monsterID;
+	int hp = pkt->monsterHP;
+
+	// 1. ID → 타입 + 인덱스 해석
+	string type;
+	int index = 0;
+
+	if (monsterID >= 0 && monsterID < 10) {
+		type = "Mushroom_Dark"; index = monsterID;
+	}
+	else if (monsterID < 20) {
+		type = "Frightfly"; index = monsterID - 10;
+	}
+	else if (monsterID < 30) {
+		type = "Plant_Dionaea"; index = monsterID - 20;
+	}
+	else if (monsterID < 40) {
+		type = "Venus_Blue"; index = monsterID - 30;
+	}
+	else if (monsterID < 50) {
+		type = "Flower_Fairy"; index = monsterID - 40;
+	}
+	else {
+		OutputDebugStringA("[ERROR] Invalid Monster ID!\n");
+		return;
+	}
+
+	// 2. 현재 씬이 GameScene인지 확인 및 캐스팅
+	shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
+	GameScene* gameScene = dynamic_cast<GameScene*>(currentScene.get());
+	if (!gameScene)
+	{
+		OutputDebugStringA("[ERROR] Current scene is not GameScene!\n");
+		return;
+	}
+
+	// 3. 몬스터 그룹에서 해당 몬스터 찾기
+	auto& monsterGroups = gameScene->GetMonsterGroups();
+	if (!monsterGroups.contains(type) || index >= monsterGroups[type].size())
+	{
+		OutputDebugStringA("[ERROR] Monster not found in group!\n");
+		return;
+	}
+
+	// 4. HP 갱신
+	auto& monster = monsterGroups[type][index];
+	if (monster)
+	{
+		monster->SetHP(hp);
+	}
 }

@@ -21,7 +21,7 @@ void Monster::SetMonster(int id, NormalMonsterType type, float x, float y, float
 		m_attackspeed = 1;
 		break;
 	case NormalMonsterType::FightFly:
-		m_hp = 20;
+		m_hp = 100;
 		m_attack = 3;
 		m_speed = 5;
 		m_attackspeed = 2;

@@ -218,6 +218,12 @@ void Monsters::CreateBoneMatrixSRV(const ComPtr<ID3D12Device>& device, D3D12_CPU
     m_boneMatrixSRV = gpuHandle;
 }
 
+void Monsters::SetHP(int hp)
+{
+    m_currentHP = hp;
+    if (m_healthBar) m_healthBar->SetHP(m_currentHP, m_maxHP);
+}
+
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

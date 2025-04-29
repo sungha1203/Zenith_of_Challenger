@@ -38,6 +38,8 @@ public:
 
     void RenderShadowPass(const ComPtr<ID3D12GraphicsCommandList>& commandList);
 
+    unordered_map<string, vector<shared_ptr<Monsters>>>& GetMonsterGroups() { return m_monsterGroups; }
+
 private:
     shared_ptr<FBXLoader> m_fbxLoader; // FBX 로더 추가
     shared_ptr<FBXLoader> m_playerLoader;
