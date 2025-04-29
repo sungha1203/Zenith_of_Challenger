@@ -90,6 +90,7 @@ public:
 	int		GetEnterClientNum() const { return m_enterClientNum; }							// 지금 몇명이 게임 대기중이야?
 	int		GetEnterZenithNum() const { return m_enterZenithNum;  }							// 지금 몇명이 정점 스테이지 대기중이야?
 	bool	GetSkipButton() const { return m_skipButton;  }									// 스킵 버튼 눌렀어 안눌렀어?
+	int		GetGold() const { return m_inventory.gold; }									// 인벤토리에 얼마있어?
 
 	const std::vector<int>& GetClients() const { return m_clients; }						// 게임 중인 모든 클라이언트
 	const Monster&	GetMonsters(int monsterID) const { return m_monsters[monsterID]; }		// 몬스터
@@ -105,5 +106,4 @@ public:
 
 	// 몬스터
 	void	InitChallengeMonsters();				// 도전 스테이지 몬스터 초기화
-	void    UpdateHP(int monster_ID, int damage);	// 몬스터 HP 업데이트
 };

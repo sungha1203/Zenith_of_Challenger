@@ -1,5 +1,4 @@
 // 몬스터 개별 행동
-#pragma once
 #include "stdafx.h"
 
 enum class NormalMonsterType
@@ -12,6 +11,12 @@ enum class NormalMonsterType
 	FlowerFairy
 };
 
+enum class DropItemType {
+	None,
+	SWORD, WAND, SHIELD,
+	WARRIOR, MAGE, HEALTANKER
+};
+
 class Monster
 {
 public:
@@ -20,9 +25,9 @@ public:
 
 	std::mutex mx;
 
-	void		SetMonster(int id, NormalMonsterType type, float x, float y, float z);
-	void		TakeDamage(int dmg);
-	void		die(bool check);
+	void			SetMonster(int id, NormalMonsterType type, float x, float y, float z);
+	void			TakeDamage(int dmg);
+	DropItemType	DropWHAT();
 
 	NormalMonsterType		GetType() const { return m_type; }
 	float					GetX() const { return m_x; }
