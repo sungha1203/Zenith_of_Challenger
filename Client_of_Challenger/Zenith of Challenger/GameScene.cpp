@@ -91,29 +91,29 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
             ClientToScreen(gGameFramework->GetHWND(), &center);
             SetCursorPos(center.x, center.y);
 
-			for (auto& [type, group] : m_monsterGroups)
-			{
-				for (auto& monster : group)
-				{
-					if (monster) monster->SetCamera(m_camera);
-				}
-			}
+            for (auto& [type, group] : m_monsterGroups)
+            {
+                for (auto& monster : group)
+                {
+                    if (monster) monster->SetCamera(m_camera);
+                }
+            }
 
-		}
-		else
-		{
-			m_currentCameraMode = CameraMode::QuarterView;
-			m_camera = m_quarterViewCamera;
-			ShowCursor(TRUE);
+        }
+        else
+        {
+            m_currentCameraMode = CameraMode::QuarterView;
+            m_camera = m_quarterViewCamera;
+            ShowCursor(TRUE);
 
-			for (auto& [type, group] : m_monsterGroups)
-			{
-				for (auto& monster : group)
-				{
-					if (monster) monster->SetCamera(m_camera);
-				}
-			}
-		}
+            for (auto& [type, group] : m_monsterGroups)
+            {
+                for (auto& monster : group)
+                {
+                    if (monster) monster->SetCamera(m_camera);
+                }
+            }
+        }
 
         m_camera->SetLens(0.25f * XM_PI, gGameFramework->GetAspectRatio(), 0.1f, 1000.f);
         m_player->SetCamera(m_camera); // 카메라 바뀐 후 플레이어에도 재등록
@@ -182,29 +182,29 @@ void GameScene::Update(FLOAT timeElapsed)
     if (playerBox.Extents.x == 0.f && playerBox.Extents.y == 0.f && playerBox.Extents.z == 0.f)
         return;
 
-	for (auto& [type, group] : m_monsterGroups)
-	{
-		for (size_t i = 0; i < group.size(); ++i)
-		{
-			auto& monster = group[i];
+    for (auto& [type, group] : m_monsterGroups)
+    {
+        for (size_t i = 0; i < group.size(); ++i)
+        {
+            auto& monster = group[i];
 
-			auto monsterBox = monster->GetBoundingBox();
-			auto monsterCenter = monsterBox.Center;
+            auto monsterBox = monster->GetBoundingBox();
+            auto monsterCenter = monsterBox.Center;
 
             XMFLOAT3 playerWorldPos = m_player->GetPosition();
             XMFLOAT3 monsterWorldPos = monster->GetPosition();
 
-			XMFLOAT3 playerCenterWorld = {
-				playerWorldPos.x,
-				playerWorldPos.y + 5.0f,
-				playerWorldPos.z
-			};
+            XMFLOAT3 playerCenterWorld = {
+               playerWorldPos.x,
+               playerWorldPos.y + 5.0f,
+               playerWorldPos.z
+            };
 
-			XMFLOAT3 monsterCenterWorld = {
-				monsterWorldPos.x + monsterCenter.x,
-				monsterWorldPos.y + monsterCenter.y,
-				monsterWorldPos.z + monsterCenter.z
-			};
+            XMFLOAT3 monsterCenterWorld = {
+               monsterWorldPos.x + monsterCenter.x,
+               monsterWorldPos.y + monsterCenter.y,
+               monsterWorldPos.z + monsterCenter.z
+            };
 
             float dx = abs(playerCenterWorld.x - monsterCenterWorld.x);
             float dy = abs(playerCenterWorld.y - monsterCenterWorld.y);
@@ -217,24 +217,44 @@ void GameScene::Update(FLOAT timeElapsed)
             bool intersectY = dy <= (playerExtent.y + monsterExtent.y);
             bool intersectZ = dz <= (playerExtent.z + monsterExtent.z);
 
-			if (intersectX && intersectY && intersectZ)
-			{
-				char debugMsg[256];
-				sprintf_s(debugMsg,
-					"[Collision Detection] Player collides with monster! Type: %s, Index: %llu\n",
-					type.c_str(), static_cast<unsigned long long>(i));
+            if (intersectX && intersectY && intersectZ)
+            {
+                char debugMsg[256];
+                sprintf_s(debugMsg,
+                    "[Collision Detection] Player collides with monster! Type: %s, Index: %llu\n",
+                    type.c_str(), static_cast<unsigned long long>(i));
 
-				OutputDebugStringA(debugMsg);
+                OutputDebugStringA(debugMsg);
 
-				m_player->SetPosition(m_player->m_prevPosition); // 이동 되돌리기
-				monster->SetBaseColor(XMFLOAT4(1.f, 0.f, 0.f, 1.f)); // 충돌 시 빨강
-			}
-			else
-			{
-				monster->SetBaseColor(XMFLOAT4(1.f, 1.f, 1.f, 1.f)); // 기본 흰색
-			}
-		}
-	}
+                m_player->SetPosition(m_player->m_prevPosition); // 이동 되돌리기
+                monster->SetBaseColor(XMFLOAT4(1.f, 0.f, 0.f, 1.f)); // 충돌 시 빨강
+
+                int offset = 0;
+                if (type == "Mushroom_Dark")
+                    offset = 0;
+                else if (type == "Frightfly")
+                    offset = 10;
+                else if (type == "Plant_Dionaea")
+                    offset = 20;
+                else if (type == "Venus_Blue")
+                    offset = 30;
+                else if (type == "Flower_Fairy")
+                    offset = 40;
+
+                CS_Packet_MonsterHP pkt;
+                pkt.type = CS_PACKET_MONSTERHP;
+                pkt.monsterID = offset + static_cast<int>(i);
+                pkt.damage = 20;
+                pkt.size = sizeof(pkt);
+                gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
+
+            }
+            else
+            {
+                monster->SetBaseColor(XMFLOAT4(1.f, 1.f, 1.f, 1.f)); // 기본 흰색
+            }
+        }
+    }
 
     for (auto& obj : m_objects)
     {
@@ -399,10 +419,10 @@ void GameScene::BuildShaders(const ComPtr<ID3D12Device>& device,
     auto shadowShader = make_shared<ShadowMapShader>(device, rootSignature);
     m_shaders.insert({ "SHADOW", shadowShader });
 
-	m_debugShadowShader = std::make_shared<DebugShadowShader>(device, rootSignature);
+    m_debugShadowShader = std::make_shared<DebugShadowShader>(device, rootSignature);
 
-	auto HealthbarShader = make_shared<HealthBarShader>(device, rootSignature);
-	m_shaders.insert({ "HealthBarShader", HealthbarShader });
+    auto HealthbarShader = make_shared<HealthBarShader>(device, rootSignature);
+    m_shaders.insert({ "HealthBarShader", HealthbarShader });
 }
 
 void GameScene::BuildMeshes(const ComPtr<ID3D12Device>& device,
@@ -728,17 +748,17 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 
 
 
-	//몬스터 로드
-	LoadAllMonsters(
-		device,
-		m_textures,
-		m_shaders,
-		m_meshLibrary,
-		m_animClipLibrary,
-		m_boneOffsetLibrary,
-		m_boneNameMap,
-		m_monsterGroups,
-		m_camera);
+    //몬스터 로드
+    LoadAllMonsters(
+        device,
+        m_textures,
+        m_shaders,
+        m_meshLibrary,
+        m_animClipLibrary,
+        m_boneOffsetLibrary,
+        m_boneNameMap,
+        m_monsterGroups,
+        m_camera);
 
     // "Frightfly" 타입 몬스터 배치
     auto& frightflies = m_monsterGroups["Frightfly"];

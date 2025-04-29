@@ -31,6 +31,7 @@ public:
 	void		ProcessUpdateCoord2Player(char* buffer);
 	void		ProcessChat(char* buffer);
 	void		ProcessStartRepairTime(char* buffer);
+	void		ProcessMonsterHP(char* buffer);
 
 public:
 	SOCKET			m_clientsocket = INVALID_SOCKET;

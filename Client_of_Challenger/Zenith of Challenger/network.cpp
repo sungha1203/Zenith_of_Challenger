@@ -234,3 +234,10 @@ void ClientNetwork::ProcessStartRepairTime(char* buffer)
 	}
 
 }
+
+void ClientNetwork::ProcessMonsterHP(char* buffer)
+{
+	SC_Packet_MonsterHP* pkt = reinterpret_cast<SC_Packet_MonsterHP*>(buffer);
+	pkt->monsterID;
+	pkt->monsterHP;
+}
