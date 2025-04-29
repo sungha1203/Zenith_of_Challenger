@@ -54,3 +54,9 @@ shared_ptr<Mesh<TextureVertex>> CreateScreenQuad(
     const ComPtr<ID3D12Device>& device,
     const ComPtr<ID3D12GraphicsCommandList>& commandList,
     float width, float height, float z = 0.f);
+
+shared_ptr<Mesh<TextureVertex>> CreateScreenQuadWithCustomUV(
+    const ComPtr<ID3D12Device>& device,
+    const ComPtr<ID3D12GraphicsCommandList>& commandList,
+    float width, float height, float z,
+    float u0, float v0, float u1, float v1);

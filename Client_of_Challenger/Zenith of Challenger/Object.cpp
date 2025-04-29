@@ -159,6 +159,8 @@ void GameObject::UpdateShaderVariable(const ComPtr<ID3D12GraphicsCommandList>& c
     buffer.textureIndex = m_textureIndex;
     buffer.isHovered = m_isHovered ? 1 : 0;
     buffer.fillAmount = m_fillAmount;
+    buffer.customUV = m_customUV;
+    buffer.useCustomUV = m_useCustomUV;
 
     m_constantBuffer->Copy(buffer);
     m_constantBuffer->UpdateRootConstantBuffer(commandList);
@@ -268,6 +270,16 @@ void GameObject::SetBoundingBox(const BoundingBox& box)
     m_debugBoxMesh = make_shared<Mesh<DebugVertex>>(
         gGameFramework->GetDevice(), gGameFramework->GetCommandList(),
         lines, D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+}
+
+void GameObject::SetCustomUV(float u0, float v0, float u1, float v1)
+{
+    m_customUV = { u0, v0, u1, v1 };
+}
+
+void GameObject::SetuseCustomUV(int useUV)
+{
+    m_useCustomUV = useUV;
 }
 
 

@@ -70,4 +70,7 @@ private:
     shared_ptr<QuarterViewCamera> m_quarterViewCamera;
     shared_ptr<ThirdPersonCamera> m_thirdPersonCamera;
 
+    //골드 관련
+    int m_goldScore = 0; // Gold 점수
+    std::vector<std::shared_ptr<GameObject>> m_goldDigits; // 각 자릿수마다 UI 오브젝트를 저장
 };

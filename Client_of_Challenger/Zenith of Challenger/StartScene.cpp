@@ -16,6 +16,39 @@ std::shared_ptr<Mesh<TextureVertex>> CreateScreenQuad(const ComPtr<ID3D12Device>
     return std::make_shared<Mesh<TextureVertex>>(device, commandList, vertices);
 }
 
+std::shared_ptr<Mesh<TextureVertex>> CreateScreenQuadWithCustomUV(
+    const ComPtr<ID3D12Device>& device,
+    const ComPtr<ID3D12GraphicsCommandList>& commandList,
+    float width, float height, float z,
+    float u0, float v0, float u1, float v1)
+{
+    std::vector<TextureVertex> vertices =
+    {
+        { XMFLOAT3{-width / 2,  height / 2, z}, XMFLOAT3{0, 0, -1}, XMFLOAT2{u0, v0} },
+        { XMFLOAT3{ width / 2,  height / 2, z}, XMFLOAT3{0, 0, -1}, XMFLOAT2{u1, v0} },
+        { XMFLOAT3{-width / 2, -height / 2, z}, XMFLOAT3{0, 0, -1}, XMFLOAT2{u0, v1} },
+        { XMFLOAT3{-width / 2, -height / 2, z}, XMFLOAT3{0, 0, -1}, XMFLOAT2{u0, v1} },
+        { XMFLOAT3{ width / 2,  height / 2, z}, XMFLOAT3{0, 0, -1}, XMFLOAT2{u1, v0} },
+        { XMFLOAT3{ width / 2, -height / 2, z}, XMFLOAT3{0, 0, -1}, XMFLOAT2{u1, v1} },
+    };
+
+    auto mesh = std::make_shared<Mesh<TextureVertex>>(device, commandList, vertices);
+
+    //여기 추가! 복사 완료 후 버텍스 버퍼용 상태로 전이
+    if (auto buffer = mesh->GetVertexBuffer())
+    {
+        D3D12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+            buffer,
+            D3D12_RESOURCE_STATE_COPY_DEST,
+            D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER
+        );
+        commandList->ResourceBarrier(1, &barrier);
+    }
+
+    return mesh;
+}
+
+
 const std::string correctUsername = "E";
 const std::string correctPassword = "1";
 

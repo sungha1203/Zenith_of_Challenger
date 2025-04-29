@@ -72,6 +72,8 @@ struct ObjectData : public BufferBase
 	UINT textureIndex;         // 4 bytes
 	UINT isHovered;			   // 4 bytes
 	FLOAT fillAmount = {};     // 12 bytes → 총 32 bytes로 16바이트 정렬 유지
+	XMFLOAT4 customUV;
+	UINT useCustomUV;
 };
 
 class GameObject : public Object
@@ -120,6 +122,9 @@ public:
 
 
 	void SetHealthBarShader(const shared_ptr<Shader>& shader) { m_HealthBarShader = shader; }
+
+	void SetCustomUV(float u0, float v0, float u1, float v1);
+	void SetuseCustomUV(int useUV);
 protected:
 	shared_ptr<MeshBase> m_mesh;
 	shared_ptr<Texture> m_texture;
@@ -143,6 +148,10 @@ protected:
 	shared_ptr<Shader> m_debugLineShader; //와이어프레임 전용 셰이더
 
 	shared_ptr<Shader> m_HealthBarShader; //일반 몬스터 HP바 전용 셰이더
+
+	//골드 스코어 전용
+	XMFLOAT4 m_customUV{ 0.f, 0.f, 1.f, 1.f };
+	UINT m_useCustomUV = 0;
 
 };
 

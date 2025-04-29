@@ -9,12 +9,14 @@
 cbuffer GameObject : register(b0)
 {
     matrix g_worldMatrix : packoffset(c0); // c0~c3 (16 x 4 = 64 byte)
-    float4 g_baseColor : packoffset(c4); // c4      (16 byte)
-    int g_useTexture : packoffset(c5.x); // c5.x (4 byte)
-    int g_textureIndex : packoffset(c5.y); // c5.y (4 byte)
-    int g_isHovered : packoffset(c5.z); // c5.z (4 byte)
+    float4 g_baseColor : packoffset(c4); // c4 (16 byte)
+    int g_useTexture : packoffset(c5.x);
+    int g_textureIndex : packoffset(c5.y);
+    int g_isHovered : packoffset(c5.z);
     float g_fillAmount : packoffset(c5.w);
-    //float padding : packoffset(c5.w); // c5.w (4 byte) ¡æ ÃÑ 16 byte Á¤·Ä        b0: ÃÑ 96
+
+    float4 g_customUV : packoffset(c6); // Ãß°¡ (c6 ÀüÃ¼ 16byte Â÷Áö)
+    int g_useCustomUV : packoffset(c7.x);
 };
 
 // Camera: b1, space0

@@ -3,6 +3,7 @@
 #include "MonsterLoader.h"
 #include "OtherPlayer.h"
 #include "FBXLoader.h"
+
 void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device,
     const ComPtr<ID3D12GraphicsCommandList>& commandList,
     const ComPtr<ID3D12RootSignature>& rootSignature)
@@ -134,6 +135,17 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
 
     if (GetAsyncKeyState(VK_RIGHT) & 0x8000)
         m_uiObjects[1]->m_fillAmount += 0.1;
+
+
+    if (GetAsyncKeyState(VK_UP) & 0x8000)
+    {
+        m_goldScore = std::min(m_goldScore + 10, 999); // 최대 999까지
+    }
+
+    if (GetAsyncKeyState(VK_DOWN) & 0x8000) 
+    {
+        m_goldScore = std::max(m_goldScore - 10, 0);   // 최소 0까지
+    }
 }
 
 void GameScene::Update(FLOAT timeElapsed)
@@ -288,6 +300,25 @@ void GameScene::Update(FLOAT timeElapsed)
         }
     }
 
+
+    int score = m_goldScore;
+    for (int i = 2; i >= 0; --i)
+    {
+        int digit = score % 10;
+        score /= 10;
+
+        if (i < m_goldDigits.size())
+        {
+            auto& digitUI = m_goldDigits[i];
+
+            float u0 = (digit * 100.0f) / 1000.0f;  // 픽셀 기준으로 계산
+            float u1 = ((digit + 1) * 100.0f) / 1000.0f;
+
+            digitUI->SetCustomUV(u0, 0.0f, u1, 1.0f);
+        }
+    }
+
+
 }
 
 void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
@@ -351,7 +382,7 @@ void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) con
     {
         m_shaders.at("UI")->UpdateShaderVariable(commandList);
 
-        float healthRatio = 1.0f/*m_player->GetCurrentHP() / m_player->GetMaxHP()*/;
+        float healthRatio = 1.0f /*m_player->GetCurrentHP() / m_player->GetMaxHP()*/;
 
         for (const auto& ui : m_uiObjects)
         {
@@ -372,13 +403,17 @@ void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) con
         }
     }
 
+    for (const auto& digit : m_goldDigits)
+    {
+        digit->Render(commandList); // 숫자 각각 렌더
+    }
+
 
     // 디버그용 그림자맵 시각화
     if (m_debugShadowShader && m_ShadowMapEnabled)
     {
         m_debugShadowShader->Render(commandList, gGameFramework->GetShadowMapSrv());
     }
-
 }
 
 
@@ -613,6 +648,15 @@ void GameScene::BuildTextures(const ComPtr<ID3D12Device>& device,
     PortraitTexture->CreateShaderVariable(device, true);
     m_textures.insert({ "Portrait", PortraitTexture });
 
+    auto GoldTexture = make_shared<Texture>(device, commandList,
+        TEXT("Image/InGameUI/Gold.dds"), RootParameter::Texture);
+    GoldTexture->CreateShaderVariable(device, true);
+    m_textures.insert({ "Gold", GoldTexture });
+
+    auto Gold_ScoreTexture = make_shared<Texture>(device, commandList,
+        TEXT("Image/InGameUI/Gold_Score.dds"), RootParameter::Texture);
+    Gold_ScoreTexture->CreateShaderVariable(device, true);
+    m_textures.insert({ "Gold_Score", Gold_ScoreTexture });
 }
 
 void GameScene::BuildMaterials(const ComPtr<ID3D12Device>& device,
@@ -906,6 +950,50 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 
     m_uiObjects.push_back(Portrait);
 
+    auto Gold = make_shared<GameObject>(device);
+
+    Gold->SetTexture(m_textures["Gold"]);  // 우리가 방금 로드한 텍스처 사용
+    Gold->SetTextureIndex(m_textures["Gold"]->GetTextureIndex());
+    Gold->SetMesh(CreateScreenQuad(device, gGameFramework->GetCommandList(), 0.25f, 0.25f, 0.98f));
+    Gold->SetPosition(XMFLOAT3(0.75f, 0.7f, 0.98f));
+    Gold->SetUseTexture(true);
+    Gold->SetBaseColor(XMFLOAT4(1, 1, 1, 1));
+
+    m_uiObjects.push_back(Gold);
+
+    // Gold 점수 3자리 숫자 UI 생성
+    for (int i = 0; i < 3; ++i)
+    {
+        auto digitUI = std::make_shared<GameObject>(device);
+
+        digitUI->SetTexture(m_textures["Gold_Score"]); // Gold_Score 텍스처 적용
+        digitUI->SetTextureIndex(m_textures["Gold_Score"]->GetTextureIndex());
+        digitUI->SetShader(m_shaders["UI"]); // UI용 셰이더 사용
+        digitUI->SetUseTexture(true);
+        digitUI->SetuseCustomUV(1); // customUV 사용 설정
+
+        // 처음에는 모두 0으로 보여야 하니까
+        float u0 = 0.0f;
+        float u1 = 1.0f;
+        digitUI->SetCustomUV(u0, 0.0f, u1, 1.0f);
+
+        // 처음 메쉬 설정 (0 숫자용 UV 기준)
+        digitUI->SetMesh(CreateScreenQuadWithCustomUV(
+            device,
+            gGameFramework->GetCommandList(),
+            0.05f,   // 너비
+            0.1f,    // 높이
+            0.98f,   // 깊이
+            u0, 0.0f, u1, 1.0f // UV 좌표
+        ));
+
+        // 오른쪽 상단에 배치 (NDC 좌표계 기준)
+        digitUI->SetPosition(XMFLOAT3(0.9f + i * 0.06f, 0.7f, 0.98f));
+        digitUI->SetScale(XMFLOAT3(1.f, 1.f, 1.f));
+        digitUI->SetBaseColor(XMFLOAT4(1, 1, 1, 1));
+
+        m_goldDigits.push_back(digitUI);
+    }
 }
 
 void GameScene::AddCubeCollider(const XMFLOAT3& position, const XMFLOAT3& extents, const FLOAT& rotate)
