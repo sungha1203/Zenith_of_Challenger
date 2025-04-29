@@ -203,6 +203,10 @@ void GameObject::SetUseTexture(bool use)
     m_useTexture = use;
 }
 
+void GameObject::SetHP(float currentHP, float maxHP)
+{
+}
+
 void GameObject::SetWorldMatrix(const XMMATRIX& worldMatrix)
 {
     XMStoreFloat4x4(&m_worldMatrix, worldMatrix);

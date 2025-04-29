@@ -93,6 +93,8 @@ public:
 
 	void SetTextureIndex(int index) { m_textureIndex = index; }
 
+	virtual void SetHP(float currentHP, float maxHP);
+
 	int GetTextureIndex() const { return m_textureIndex; }
 
 	// 변환 행렬 설정 함수 추가
@@ -115,6 +117,9 @@ public:
 	bool IsDrawBoundingBox() const { return m_drawBoundingBox; }
 	int m_textureIndex = 0;
 	float m_fillAmount = 2.0f;
+
+
+	void SetHealthBarShader(const shared_ptr<Shader>& shader) { m_HealthBarShader = shader; }
 protected:
 	shared_ptr<MeshBase> m_mesh;
 	shared_ptr<Texture> m_texture;
@@ -135,7 +140,9 @@ protected:
 	BoundingBox m_boundingBox;
 	shared_ptr<Mesh<DebugVertex>> m_debugBoxMesh;
 	bool m_drawBoundingBox = false;
-	shared_ptr<Shader> m_debugLineShader; // ← 와이어프레임 전용 셰이더
+	shared_ptr<Shader> m_debugLineShader; //와이어프레임 전용 셰이더
+
+	shared_ptr<Shader> m_HealthBarShader; //일반 몬스터 HP바 전용 셰이더
 
 };
 

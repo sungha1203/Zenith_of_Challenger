@@ -5,6 +5,8 @@
 #include "d3dUtil.h"
 #include "Shader.h"            // Shader를 shared_ptr로 보관하고 있음
 
+class HealthBarObject;
+
 enum class NormalMonsterType
 {
 	Mushroom,
@@ -71,7 +73,31 @@ private:
 	std::vector<std::shared_ptr<MeshBase>> m_meshes;
 	unordered_map<string, XMMATRIX> m_boneOffsets;
 
+	//몬스터 체력바 관련
+	shared_ptr<HealthBarObject> m_healthBar;
+	float m_currentHP = 100.f;
+	float m_maxHP = 100.f;
+
 	//-------------------------인게임 정보-------------------------
 
 
+};
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+class HealthBarObject : public GameObject
+{
+public:
+	HealthBarObject(const ComPtr<ID3D12Device>& device);
+	~HealthBarObject() override = default;
+
+	void SetHP(float currentHP, float maxHP);
+
+	virtual void Update(FLOAT timeElapsed) override; // 원래 Object 상속용
+	void Update(FLOAT timeElapsed, const shared_ptr<Camera>& camera);
+private:
+	float m_currentHP = 100.f;
+	float m_maxHP = 100.f;
+	bool m_rotationFixed = false;
 };

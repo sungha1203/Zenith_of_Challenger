@@ -94,3 +94,11 @@ public:
 	DebugShadowShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSig);
 	void Render(const ComPtr<ID3D12GraphicsCommandList>& cmdList, D3D12_GPU_DESCRIPTOR_HANDLE shadowSrv);
 };
+
+
+class HealthBarShader : public Shader
+{
+public:
+	HealthBarShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSignature);
+	~HealthBarShader() override = default;
+};

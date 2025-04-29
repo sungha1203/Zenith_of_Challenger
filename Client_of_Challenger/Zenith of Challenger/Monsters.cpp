@@ -22,6 +22,9 @@ Monsters::Monsters(const ComPtr<ID3D12Device>& device) : GameObject(device), m_s
         m_boneMatrixBuffer,
         m_boneMatrixUploadBuffer,
         D3D12_RESOURCE_STATE_GENERIC_READ);
+
+    //체력바 생성
+    m_healthBar = make_shared<HealthBarObject>(device);
 }
 
 void Monsters::MouseEvent(FLOAT timeElapsed)
@@ -75,6 +78,14 @@ void Monsters::Update(FLOAT timeElapsed)
 
 
     GameObject::Update(timeElapsed);
+
+    if (m_healthBar)
+    {
+        m_healthBar->SetPosition(XMFLOAT3(m_position.x, m_position.y + 11.0f, m_position.z));
+        m_healthBar->SetHP(m_currentHP, m_maxHP);
+        m_healthBar->Update(timeElapsed, m_camera);
+    }
+
 }
 
 void Monsters::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
@@ -113,6 +124,14 @@ void Monsters::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) cons
     {
         m_debugLineShader->UpdateShaderVariable(commandList);
         m_debugBoxMesh->Render(commandList);
+
+    }
+
+    if (!isShadowPass && m_healthBar)
+    {
+        m_HealthBarShader->UpdateShaderVariable(commandList);
+        UpdateShaderVariable(commandList);
+        m_healthBar->Render(commandList);
     }
 }
 
@@ -197,4 +216,79 @@ void Monsters::CreateBoneMatrixSRV(const ComPtr<ID3D12Device>& device, D3D12_CPU
 
     device->CreateShaderResourceView(m_boneMatrixBuffer.Get(), &srvDesc, cpuHandle);
     m_boneMatrixSRV = gpuHandle;
+}
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+HealthBarObject::HealthBarObject(const ComPtr<ID3D12Device>& device) : GameObject(device)
+{
+    // 체력바용 얇은 사각형 생성 (Position + Normal + UV)
+    vector<TextureVertex> vertices = {
+        TextureVertex(XMFLOAT3(-2.5f, 0.0f, 0.0f), XMFLOAT3(0,1,0), XMFLOAT2(0,0)),
+        TextureVertex(XMFLOAT3(2.5f, 0.0f, 0.0f), XMFLOAT3(0,1,0), XMFLOAT2(1,0)),
+        TextureVertex(XMFLOAT3(-2.5f, 0.2f, 0.0f), XMFLOAT3(0,1,0), XMFLOAT2(0,1)),
+
+        TextureVertex(XMFLOAT3(2.5f, 0.0f, 0.0f), XMFLOAT3(0,1,0), XMFLOAT2(1,0)),
+        TextureVertex(XMFLOAT3(2.5f, 0.2f, 0.0f), XMFLOAT3(0,1,0), XMFLOAT2(1,1)),
+        TextureVertex(XMFLOAT3(-2.5f, 0.2f, 0.0f), XMFLOAT3(0,1,0), XMFLOAT2(0,1))
+    };
+
+    auto deviceHandle = gGameFramework->GetDevice();
+    auto commandList = gGameFramework->GetCommandList();
+    m_mesh = make_shared<Mesh<TextureVertex>>(deviceHandle, commandList, vertices, D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+    m_baseColor = XMFLOAT4(1.f, 0.f, 0.f, 1.f); // 기본 빨간색
+    m_useTexture = FALSE;
+}
+
+void HealthBarObject::SetHP(float currentHP, float maxHP)
+{
+    m_currentHP = currentHP;
+    m_maxHP = maxHP;
+}
+
+void HealthBarObject::Update(FLOAT timeElapsed)
+{
+    Update(timeElapsed, nullptr);
+}
+
+void HealthBarObject::Update(FLOAT timeElapsed, const shared_ptr<Camera>& camera)
+{
+    // 체력 비율 계산
+    float ratio = m_currentHP / m_maxHP;
+    ratio = max(0.0f, min(1.0f, ratio)); // 0~1 범위로 클램프
+
+    // 체력 비율에 따라 스케일 조정 (가로만)
+    SetScale(XMFLOAT3(ratio, 1.f, 1.f));
+
+    // 체력량에 따라 색상도 바꿀 수 있음 (선택)
+    if (ratio > 0.5f)
+        m_baseColor = XMFLOAT4(1.f, 0.f, 0.f, 1.f); // 초록색
+    else if (ratio > 0.2f)
+        m_baseColor = XMFLOAT4(0.f, 1.f, 0.f, 1.f); // 노란색
+    else
+        m_baseColor = XMFLOAT4(0.f, 0.f, 1.f, 1.f); // 빨간색
+
+    if (camera)
+    {
+        XMFLOAT3 pos = GetPosition();
+
+        // 카메라 Basis 가져오기
+        XMFLOAT3 cameraRight = camera->GetU();  // 오른쪽 방향 (X)
+        XMFLOAT3 cameraUp = camera->GetV();     // 위쪽 방향 (Y)
+
+        // Billboard용 WorldMatrix 구성
+        XMMATRIX world =
+            XMMatrixScaling(m_scale.x, m_scale.y, m_scale.z) *
+            XMMATRIX(
+                XMLoadFloat3(&cameraRight),
+                XMLoadFloat3(&cameraUp),
+                XMVectorSet(0.f, 0.f, 1.f, 0.f), // 깊이방향 고정
+                XMVectorSet(pos.x, pos.y, pos.z, 1.f)
+            );
+
+        XMStoreFloat4x4(&m_worldMatrix, world);
+    }
+
 }

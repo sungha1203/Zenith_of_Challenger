@@ -69,7 +69,6 @@ public:
     UINT64 GetFenceValue() const { return m_fenceValue; }
     HANDLE GetFenceEvent() const { return m_fenceEvent; }
 
-
     std::pair<D3D12_CPU_DESCRIPTOR_HANDLE, D3D12_GPU_DESCRIPTOR_HANDLE> AllocateDescriptorHeapSlot();
     UINT GetCurrentSRVOffset() const { return m_srvHeapOffset; }
     HWND GetHWND() const { return m_hWnd; } 

@@ -543,3 +543,55 @@ void DebugShadowShader::Render(const ComPtr<ID3D12GraphicsCommandList>& cmdList,
 	cmdList->DrawInstanced(3, 1, 0, 0); // Fullscreen triangle
 
 }
+
+HealthBarShader::HealthBarShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSignature)
+{
+	vector<D3D12_INPUT_ELEMENT_DESC> inputLayout = {
+	   { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,
+		 D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+	   { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12,
+		 D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+	   { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24,
+		 D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+	};
+
+#if defined(_DEBUG)
+	UINT compileFlags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
+#else
+	UINT compileFlags = 0;
+#endif
+
+	ComPtr<ID3DBlob> vsByteCode, psByteCode, errors;
+
+	HRESULT hr1 = D3DCompileFromFile(TEXT("HealthBarShader.hlsl"), nullptr,
+		D3D_COMPILE_STANDARD_FILE_INCLUDE, "VSMain", "vs_5_1", compileFlags, 0, &vsByteCode, &errors);
+	if (FAILED(hr1) && errors)
+		OutputDebugStringA((char*)errors->GetBufferPointer());
+
+	HRESULT hr2 = D3DCompileFromFile(TEXT("HealthBarShader.hlsl"), nullptr,
+		D3D_COMPILE_STANDARD_FILE_INCLUDE, "PSMain", "ps_5_1", compileFlags, 0, &psByteCode, &errors);
+	if (FAILED(hr2) && errors)
+		OutputDebugStringA((char*)errors->GetBufferPointer());
+
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc{};
+	psoDesc.InputLayout = { inputLayout.data(), (UINT)inputLayout.size() };
+	psoDesc.pRootSignature = rootSignature.Get();
+	psoDesc.VS = { reinterpret_cast<BYTE*>(vsByteCode->GetBufferPointer()), vsByteCode->GetBufferSize() };
+	psoDesc.PS = { reinterpret_cast<BYTE*>(psByteCode->GetBufferPointer()), psByteCode->GetBufferSize() };
+	psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+	psoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
+	psoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
+
+	psoDesc.DepthStencilState.DepthEnable = FALSE;
+	psoDesc.DepthStencilState.StencilEnable = FALSE;
+
+	psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
+	psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+	psoDesc.SampleMask = UINT_MAX;
+	psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+	psoDesc.NumRenderTargets = 1;
+	psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+	psoDesc.SampleDesc.Count = 1;
+
+	device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_pipelineState));
+}

@@ -91,12 +91,28 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
 			ClientToScreen(gGameFramework->GetHWND(), &center);
 			SetCursorPos(center.x, center.y);
 
+			for (auto& [type, group] : m_monsterGroups)
+			{
+				for (auto& monster : group)
+				{
+					if (monster) monster->SetCamera(m_camera);
+				}
+			}
+
 		}
 		else
 		{
 			m_currentCameraMode = CameraMode::QuarterView;
 			m_camera = m_quarterViewCamera;
 			ShowCursor(TRUE);
+
+			for (auto& [type, group] : m_monsterGroups)
+			{
+				for (auto& monster : group)
+				{
+					if (monster) monster->SetCamera(m_camera);
+				}
+			}
 		}
 
 		m_camera->SetLens(0.25f * XM_PI, gGameFramework->GetAspectRatio(), 0.1f, 1000.f);
@@ -159,8 +175,10 @@ void GameScene::Update(FLOAT timeElapsed)
 
 	for (auto& [type, group] : m_monsterGroups)
 	{
-		for (auto& monster : group)
+		for (size_t i = 0; i < group.size(); ++i)
 		{
+			auto& monster = group[i];
+
 			auto monsterBox = monster->GetBoundingBox();
 			auto monsterCenter = monsterBox.Center;
 
@@ -168,15 +186,15 @@ void GameScene::Update(FLOAT timeElapsed)
 			XMFLOAT3 monsterWorldPos = monster->GetPosition();
 
 			XMFLOAT3 playerCenterWorld = {
-			   playerWorldPos.x,
-			   playerWorldPos.y + 5.0f,
-			   playerWorldPos.z
+				playerWorldPos.x,
+				playerWorldPos.y + 5.0f,
+				playerWorldPos.z
 			};
 
 			XMFLOAT3 monsterCenterWorld = {
-			   monsterWorldPos.x + monsterCenter.x,
-			   monsterWorldPos.y + monsterCenter.y,
-			   monsterWorldPos.z + monsterCenter.z
+				monsterWorldPos.x + monsterCenter.x,
+				monsterWorldPos.y + monsterCenter.y,
+				monsterWorldPos.z + monsterCenter.z
 			};
 
 			float dx = abs(playerCenterWorld.x - monsterCenterWorld.x);
@@ -192,7 +210,13 @@ void GameScene::Update(FLOAT timeElapsed)
 
 			if (intersectX && intersectY && intersectZ)
 			{
-				OutputDebugStringA("[Collision Detection]Players and monsters collide!\n");
+				char debugMsg[256];
+				sprintf_s(debugMsg,
+					"[Collision Detection] Player collides with monster! Type: %s, Index: %llu\n",
+					type.c_str(), static_cast<unsigned long long>(i));
+
+				OutputDebugStringA(debugMsg);
+
 				m_player->SetPosition(m_player->m_prevPosition); // 이동 되돌리기
 				monster->SetBaseColor(XMFLOAT4(1.f, 0.f, 0.f, 1.f)); // 충돌 시 빨강
 			}
@@ -367,6 +391,9 @@ void GameScene::BuildShaders(const ComPtr<ID3D12Device>& device,
 	m_shaders.insert({ "SHADOW", shadowShader });
 
 	m_debugShadowShader = std::make_shared<DebugShadowShader>(device, rootSignature);
+
+	auto HealthbarShader = make_shared<HealthBarShader>(device, rootSignature);
+	m_shaders.insert({ "HealthBarShader", HealthbarShader });
 }
 
 void GameScene::BuildMeshes(const ComPtr<ID3D12Device>& device,
@@ -701,7 +728,8 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 		m_animClipLibrary,
 		m_boneOffsetLibrary,
 		m_boneNameMap,
-		m_monsterGroups);
+		m_monsterGroups,
+		m_camera);
 
 	// "Frightfly" 타입 몬스터 배치
 	auto& frightflies = m_monsterGroups["Frightfly"];

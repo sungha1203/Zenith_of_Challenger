@@ -12,4 +12,5 @@ void LoadAllMonsters(
     const unordered_map<string, AnimationClip>& animClipLibrary,          
     const unordered_map<string, XMMATRIX>& boneOffsetLibrary,             
     const unordered_map<string, int>& boneMap,                            
-    unordered_map<string, vector<shared_ptr<Monsters>>>& outMonsterGroups);
+    unordered_map<string, vector<shared_ptr<Monsters>>>& outMonsterGroups,
+    const shared_ptr<Camera>& camera);
