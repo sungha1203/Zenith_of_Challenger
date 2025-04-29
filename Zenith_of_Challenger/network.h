@@ -27,6 +27,7 @@ public:
 	void		ProcessZenithStartButton(int client_id);						// 정점 스테이지 입장 준비 완료 버튼 누른 직후
 	void		ProcessZenithReady(int client_id, char* buffer, int length);	// 정점 스테이지 입장 성공 여부
 	void		ProcessChat(int client_id, char* buffer, int length);			// 인게임 속 채팅
+	void		ProcessMonsterHP(int client_id, char* buffer, int length);		// 몬스터 HP 업데이트
 
 	// ---------패킷 뿌려주기---------
 	void		SendLoginResponse(int client_id, bool success);
@@ -38,7 +39,7 @@ public:
 	void		SendStartRepairTime(const std::vector<int>& client_id);			// 정비 시간(8분 지나고 시작의 땅으로 이동)
 	void		SendStartZenithStage(const std::vector<int>& client_id);		// 도전 -> 정점 스테이지
 	void		SendUpdateInventory(const std::vector<int>& client_id);			// 인벤토리 업데이트
-	void		SendInitMonster(const std::vector<int>& client_id, const std::unordered_map<int, Monster>& monsters);	// 몬스터 초기 좌표 설정
+	void		SendInitMonster(const std::vector<int>& client_id, const std::array<Monster, 50>& monsters);	// 몬스터 초기 좌표 설정
 	// ---------패킷 뿌려주기---------
 
 public:

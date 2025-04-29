@@ -308,11 +308,17 @@ void Network::HandlePacket(int client_id, char* buffer, int length)
 	case CS_PACKET_STARTZENITH:
 		ProcessZenithReady(client_id, buffer, length);
 		break;
-	case CS_PACKET_LOGOUT:
-		CloseClient(client_id);
-		break;
 	case CS_PACKET_SKIPCHALLENGE:
 		ProcessSkipChallenge(client_id, buffer, length);
+		break;
+	case CS_PACKET_MONSTERHP:
+		ProcessMonsterHP(client_id, buffer, length);
+		break;
+
+
+
+	case CS_PACKET_LOGOUT:
+		CloseClient(client_id);
 		break;
 	default:
 		std::cout << "[ERROR] 알 수 없는 패킷 수신함. 클라이언트 [" << client_id << "]" << std::endl;
@@ -465,6 +471,28 @@ void Network::ProcessChat(int client_id, char* buffer, int length)
 	clients[client_id].do_recv();
 }
 
+// 몬스터 HP 업데이트
+void Network::ProcessMonsterHP(int client_id, char* buffer, int length)
+{
+	CS_Packet_MonsterHP* pkt = reinterpret_cast<CS_Packet_MonsterHP*>(buffer);
+	
+	int room_id = g_room_manager.GetRoomID(client_id);
+	Room& room = g_room_manager.GetRoom(room_id);
+	const auto& client = room.GetClients();
+
+	room.GetMonster(pkt->monsterID).TakeDamage(pkt->damage);
+
+	SC_Packet_MonsterHP pkt2;
+	pkt2.type = SC_PACKET_MONSTERHP;
+	pkt2.monsterID = pkt->monsterID;
+	pkt2.monsterHP = room.GetMonsters(pkt->monsterID).GetHP();
+
+	for (int other_id : client) {
+		clients[other_id].do_send(pkt2);
+	}
+	clients[client_id].do_recv();
+}
+
 //------------------------------------[Send Packet]------------------------------------
  
 // 방 입장 성공 여부 응답
@@ -594,11 +622,11 @@ void Network::SendUpdateInventory(const std::vector<int>& client_id)
 }
 
 // 몬스터 좌표 초기 설정
-void Network::SendInitMonster(const std::vector<int>& client_id, const std::unordered_map<int , Monster>& monsters)
+void Network::SendInitMonster(const std::vector<int>& client_id, const std::array<Monster, 50>& monsters)
 {
-	for (auto it = monsters.begin(); it != monsters.end(); ++it){
-		int monster_id = it->first;
-		const Monster& monster = it->second;
+	for (int monster_id = 0; monster_id < monsters.size(); ++monster_id)
+	{
+		const Monster& monster = monsters[monster_id];
 
 		SC_Packet_InitMonster packet;
 		packet.type = SC_PACKET_INITMONSTER;
@@ -609,8 +637,10 @@ void Network::SendInitMonster(const std::vector<int>& client_id, const std::unor
 		packet.z = monster.GetZ();
 		packet.size = sizeof(packet);
 
-		for (int id : client_id) {
-			if (clients[id].m_used) {
+		for (int id : client_id)
+		{
+			if (clients[id].m_used)
+			{
 				clients[id].do_send(packet);
 				std::this_thread::sleep_for(std::chrono::milliseconds(1));
 			}
