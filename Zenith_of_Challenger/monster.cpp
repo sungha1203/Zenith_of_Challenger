@@ -5,8 +5,14 @@ Monster::~Monster()
 
 }
 
-void Monster::SetMonster(NormalMonsterType type)
+void Monster::SetMonster(int id, NormalMonsterType type, float x, float y, float z)
 {
+	m_id = id;
+	m_type = type;
+	m_x = x;
+	m_y = y;
+	m_z = z;
+
 	switch (type) {
 	case NormalMonsterType::Mushroom:
 		m_hp = 100;
@@ -53,10 +59,16 @@ void Monster::SetMonster(NormalMonsterType type)
 	}
 }
 
-
 void Monster::TakeDamage(int dmg)
 {
+	mx.lock();
 	m_hp -= dmg;
 	if (m_hp < 0)
 		m_hp = 0;
+	mx.unlock();
+}
+
+void Monster::die(bool check)
+{
+	m_islived = false;
 }

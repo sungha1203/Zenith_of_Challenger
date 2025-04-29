@@ -57,8 +57,8 @@ private:
 	//static constexpr int REPAIR_TIME	= 120;		// 2분
 	static constexpr int ZENITH_TIME	= 300;		// 5분
 	
-	std::unordered_map<int, Monster> m_monsters;	// 방에서 관리하는 몬스터(도전, 정점)
-	int								 m_MonsterNum;  // 몬스터 수(도전)
+	std::array<Monster,50>	m_monsters;				// 방에서 관리하는 몬스터(도전)
+	int						m_MonsterNum;			// 몬스터 수(도전)
 
 public:
 	Room() : m_room_id(-1), m_IsGaming(false), m_RoomState(Stage::LOBBY) {}
@@ -90,17 +90,20 @@ public:
 	int		GetEnterClientNum() const { return m_enterClientNum; }							// 지금 몇명이 게임 대기중이야?
 	int		GetEnterZenithNum() const { return m_enterZenithNum;  }							// 지금 몇명이 정점 스테이지 대기중이야?
 	bool	GetSkipButton() const { return m_skipButton;  }									// 스킵 버튼 눌렀어 안눌렀어?
+
 	const std::vector<int>& GetClients() const { return m_clients; }						// 게임 중인 모든 클라이언트
-	const std::unordered_map<int, Monster>& GetMonsters() const { return m_monsters; }		// 몬스터
+	const Monster&	GetMonsters(int monsterID) const { return m_monsters[monsterID]; }		// 몬스터
+	Monster& GetMonster(int monsterID) { return m_monsters[monsterID]; }
 
 	// 인벤토리
-	void	AddGold(int plusgold);				// +골드
-	void    SpendGold(int minusgold);			// -골드
-	void	ADDJobWeapon(JobWeapon weapon);		// +무기
-	void	DecideJobWeapon(JobWeapon weapon);	// -무기
-	void	AddJobDocument(JobDocument job);	// +전직서
-	void	DecideJobDocument(JobDocument job);	// -전직서
+	void	AddGold(int plusgold);					// +골드
+	void    SpendGold(int minusgold);				// -골드
+	void	ADDJobWeapon(JobWeapon weapon);			// +무기
+	void	DecideJobWeapon(JobWeapon weapon);		// -무기
+	void	AddJobDocument(JobDocument job);		// +전직서
+	void	DecideJobDocument(JobDocument job);		// -전직서
 
 	// 몬스터
-	void	InitChallengeMonsters();			// 도전 스테이지 몬스터 초기화
+	void	InitChallengeMonsters();				// 도전 스테이지 몬스터 초기화
+	void    UpdateHP(int monster_ID, int damage);	// 몬스터 HP 업데이트
 };

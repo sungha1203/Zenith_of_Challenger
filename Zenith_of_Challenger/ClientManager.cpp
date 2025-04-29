@@ -42,19 +42,19 @@ void ClientInfo::SetSpawnCoord(int idx)
 {
     switch (idx) {
     case 0:
-        m_ingameInfo.x = 181.01f;
+        m_ingameInfo.x = -172.79f;
         m_ingameInfo.y = 0.21f;
-        m_ingameInfo.z = -186.98f;
+        m_ingameInfo.z = 77.81f;
         break;
     case 1:
-        m_ingameInfo.x = 195.10f;
+        m_ingameInfo.x = -164.28f;
         m_ingameInfo.y = 0.21f;
-        m_ingameInfo.z = -183.04f;
+        m_ingameInfo.z = 83.06f;
         break;
     case 2:
-        m_ingameInfo.x = 193.70f;
+        m_ingameInfo.x = -155.07f;
         m_ingameInfo.y = 0.21f;
-        m_ingameInfo.z = -199.20f;
+        m_ingameInfo.z = 88.75f;
         break;
     default:
         break;
