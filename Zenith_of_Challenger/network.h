@@ -23,8 +23,10 @@ public:
 	void		ProcessUpdatePlayer(int client_id, char* buffer, int length);	// 인게임 내 플레이어들한테 업데이트
 	void		ProcessGameStartButton(int client_id);							// 게임 시작 버튼 누른 직후
 	void		ProcessIngameReady(int client_id, char* buffer, int length);	// 도전 스테이지 입장 성공 여부
+	void        ProcessSkipChallenge(int client_id, char* buffer, int length);	// 도전 스테이지 스킵(정비 시간 입장)
 	void		ProcessZenithStartButton(int client_id);						// 정점 스테이지 입장 준비 완료 버튼 누른 직후
 	void		ProcessZenithReady(int client_id, char* buffer, int length);	// 정점 스테이지 입장 성공 여부
+	void		ProcessChat(int client_id, char* buffer, int length);			// 인게임 속 채팅
 
 	// ---------패킷 뿌려주기---------
 	void		SendLoginResponse(int client_id, bool success);

@@ -33,23 +33,51 @@ void ClientInfo::SetRoomNum(const int room_id)
     m_roomNum = room_id;
 }
 
+void ClientInfo::SetRoomIdx(const int room_idx)
+{
+    m_roomidx = room_idx;
+}
+
 void ClientInfo::SetSpawnCoord(int idx)
 {
     switch (idx) {
     case 0:
         m_ingameInfo.x = 181.01f;
-        m_ingameInfo.y = 1.30f;
+        m_ingameInfo.y = 0.21f;
         m_ingameInfo.z = -186.98f;
         break;
     case 1:
         m_ingameInfo.x = 195.10f;
-        m_ingameInfo.y = 1.30f;
+        m_ingameInfo.y = 0.21f;
         m_ingameInfo.z = -183.04f;
         break;
     case 2:
         m_ingameInfo.x = 193.70f;
-        m_ingameInfo.y = 1.30f;
+        m_ingameInfo.y = 0.21f;
         m_ingameInfo.z = -199.20f;
+        break;
+    default:
+        break;
+    }
+}
+
+void ClientInfo::SetRepairCoord(int idx)
+{
+    switch (idx) {
+    case 0:
+        m_ingameInfo.x = -168.f;
+        m_ingameInfo.y = 0.21f;
+        m_ingameInfo.z = 140.f;
+        break;
+    case 1:
+        m_ingameInfo.x = -151.f;
+        m_ingameInfo.y = 0.21f;
+        m_ingameInfo.z = 153.f;
+        break;
+    case 2:
+        m_ingameInfo.x = -158.f;
+        m_ingameInfo.y = 0.21f;
+        m_ingameInfo.z = 131.f;
         break;
     default:
         break;

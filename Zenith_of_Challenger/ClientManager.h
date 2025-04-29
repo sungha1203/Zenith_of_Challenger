@@ -34,6 +34,7 @@ private:
 	Player	m_ingameInfo;			// 인게임 정보 (1.직업 / 2.무기 / 3.옷종류 / 4.체력 / 5.공격력 / 6.이동속도 / 7.공격속도 / 8.좌표)
 	int		m_id;					// 클라이언트 ID
 	int		m_roomNum;				// 입장 방 번호
+	int		m_roomidx;				// 방의 몇번째 인덱스?
 
 public:
 	ClientInfo();
@@ -43,8 +44,10 @@ public:
 	int		GetID() const { return m_id; }
 
 	void	SetRoomNum(const int room_id);									// 방 선택
+	void	SetRoomIdx(const int room_idx);									// 방에서 몇번째 클라임?
 	void	SetClothes(const int clothes[3]);								// 옷 선택
 	void	SetSpawnCoord(int idx);											// 초기 스폰 좌표
+	void	SetRepairCoord(int idx);										// 시작의 땅 스폰 좌표
 	void	SetCoord(float x, float y, float z);							// 좌표 갱신
 
 	void	LeverUpPlayer(Player& player);									// 직업 전직 후 캐릭터 설정
