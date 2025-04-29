@@ -89,6 +89,11 @@ void ClientNetwork::Receive()
 			case SC_PACKET_MONSTERHP:
 				ProcessMonsterHP(buffer);
 				break;
+			case SC_PACKET_DROPITEM:
+				break;
+			case SC_PACKET_INVENTORY:
+				ProcessInventory(buffer);
+				break;
 			default:
 				break;
 			}
@@ -291,4 +296,15 @@ void ClientNetwork::ProcessMonsterHP(char* buffer)
 	{
 		monster->SetHP(hp);
 	}
+}
+
+void ClientNetwork::ProcessItemDrop(char* buffer)
+{
+
+}
+
+void ClientNetwork::ProcessInventory(char* buffer)
+{
+	SC_Packet_Inventory* pkt = reinterpret_cast<SC_Packet_Inventory*>(buffer);
+	pkt->gold;
 }

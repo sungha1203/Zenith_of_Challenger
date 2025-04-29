@@ -270,9 +270,3 @@ void Room::InitChallengeMonsters()
 	}
 	m_MonsterNum = monsterID;
 }
-
-void Room::UpdateHP(int monster_ID, int damage)
-{
-	m_monsters[monster_ID].TakeDamage(damage);
-	m_monsters[monster_ID].die(false);
-}

@@ -10,7 +10,6 @@ OVER_EXP							g_a_over;
 RoomManager							g_room_manager;
 std::unordered_map<int, ClientInfo> g_client;			// 인게임 정보
 
-
 Network::Network()
 {
 	m_client = WSASocket(AF_INET, SOCK_STREAM, 0, NULL, 0, WSA_FLAG_OVERLAPPED);
@@ -490,6 +489,27 @@ void Network::ProcessMonsterHP(int client_id, char* buffer, int length)
 	for (int other_id : client) {
 		clients[other_id].do_send(pkt2);
 	}
+
+	if (room.GetMonster(pkt->monsterID).GetHP() == 0) {
+		SC_Packet_DropItem pkt3;
+		pkt3.type = SC_PACKET_DROPITEM;
+		pkt3.item = (int)room.GetMonster(pkt->monsterID).DropWHAT();
+		pkt3.x = room.GetMonster(pkt->monsterID).GetX();
+		pkt3.y = room.GetMonster(pkt->monsterID).GetY();
+		pkt3.z = room.GetMonster(pkt->monsterID).GetZ();
+		pkt3.size = sizeof(pkt3);
+
+		std::random_device rd;
+		std::default_random_engine dre{ rd() };
+		std::uniform_int_distribution<int> uid1{ 1, 10 };
+
+		room.AddGold(uid1(dre));
+
+		for (int other_id : client) {
+			clients[other_id].do_send(pkt3);
+		}
+	}
+
 	clients[client_id].do_recv();
 }
 
@@ -618,7 +638,18 @@ void Network::SendStartZenithStage(const std::vector<int>& client_id)
 // 인벤토리 업데이트 (여기서부터 개발 이어서..)
 void Network::SendUpdateInventory(const std::vector<int>& client_id)
 {
-	//
+	int room_id = g_room_manager.GetRoomID(client_id[0]);
+	Room& room = g_room_manager.GetRoom(room_id);
+
+	SC_Packet_Inventory pkt;
+	pkt.type = SC_PACKET_INVENTORY;
+	pkt.gold = room.GetGold();
+	pkt.size = sizeof(pkt);
+
+	for (int id : client_id) {
+		if (clients[id].m_used)
+			clients[id].do_send(pkt);
+	}
 }
 
 // 몬스터 좌표 초기 설정

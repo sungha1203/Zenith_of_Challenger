@@ -63,12 +63,39 @@ void Monster::TakeDamage(int dmg)
 {
 	mx.lock();
 	m_hp -= dmg;
-	if (m_hp < 0)
+	if (m_hp < 0) {
+		m_islived = false;
 		m_hp = 0;
+	}
 	mx.unlock();
 }
 
-void Monster::die(bool check)
+DropItemType Monster::DropWHAT()
 {
-	m_islived = false;
+	std::random_device rd;
+	std::default_random_engine dre{ rd() };
+	std::uniform_int_distribution<int> uid{ 1,100 };
+	int num = uid(dre);
+
+	if (num <= 10) {							// 무기(검)
+		return DropItemType::SWORD;
+	}
+	else if (num >10 && num <= 20) {			// 무기(지팡이)
+		return DropItemType::WAND;
+	}
+	else if (num > 20 && num <= 30) {			// 무기(방패)
+		return DropItemType::SHIELD;
+	}
+	else if (num > 30 && num <= 40) {			// 전직서(전사)
+		return DropItemType::WARRIOR;
+	}
+	else if (num > 40 && num <= 50) {			// 전직서(마법사)
+		return DropItemType::MAGE;
+	}
+	else if (num > 50 && num <= 60) {			// 전직서(힐탱커)
+		return DropItemType::HEALTANKER;
+	}
+	else {										// 꽝
+		return DropItemType::None;
+	}
 }
