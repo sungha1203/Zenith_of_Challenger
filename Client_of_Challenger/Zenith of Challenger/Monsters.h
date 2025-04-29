@@ -55,6 +55,10 @@ public:
 	void AddMesh(const shared_ptr<MeshBase>& mesh) { m_meshes.push_back(mesh); }
 
 	void SetHP(int hp);
+	bool IsDead() const { return m_isDead; }
+	void ApplyDamage(float damage);
+	bool IsParticleSpawned() const { return m_particleSpawned; }
+	void MarkParticleSpawned() { m_particleSpawned = true; }
 
 private:
 	shared_ptr<Camera> m_camera;
@@ -80,6 +84,9 @@ private:
 	float m_currentHP = 100.f;
 	float m_maxHP = 100.f;
 
+	//몬스터 죽음, 파티클 관련
+	bool m_isDead = false;
+	bool m_particleSpawned = false;
 	//-------------------------인게임 정보-------------------------
 
 

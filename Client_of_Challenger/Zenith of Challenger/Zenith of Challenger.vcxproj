@@ -173,6 +173,8 @@
     <ClInclude Include="network.h" />
     <ClInclude Include="Object.h" />
     <ClInclude Include="OtherPlayer.h" />
+    <ClInclude Include="ParticleEffect.h" />
+    <ClInclude Include="ParticleManager.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="protocol.h" />
     <ClInclude Include="Resource.h" />
@@ -212,6 +214,8 @@
     <ClCompile Include="network.cpp" />
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="OtherPlayer.cpp" />
+    <ClCompile Include="ParticleEffect.cpp" />
+    <ClCompile Include="ParticleManager.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="SceneManager.cpp" />

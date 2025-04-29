@@ -3,6 +3,8 @@
 #include "GameFramework.h"
 #include "FBXLoader.h"
 #include "Monsters.h"
+#include "ParticleEffect.h"
+#include "ParticleManager.h"
 
 class FBXLoader; // 전방 선언 추가
 
@@ -39,6 +41,7 @@ public:
     void RenderShadowPass(const ComPtr<ID3D12GraphicsCommandList>& commandList);
 
     unordered_map<string, vector<shared_ptr<Monsters>>>& GetMonsterGroups() { return m_monsterGroups; }
+    shared_ptr<ParticleManager> GetParticleManager() const { return m_particleManager; }
 
 private:
     shared_ptr<FBXLoader> m_fbxLoader; // FBX 로더 추가
@@ -73,4 +76,8 @@ private:
     //골드 관련
     int m_goldScore = 0; // Gold 점수
     std::vector<std::shared_ptr<GameObject>> m_goldDigits; // 각 자릿수마다 UI 오브젝트를 저장
+
+    //파티클 관련
+    shared_ptr<ParticleManager> m_particleManager;
+
 };

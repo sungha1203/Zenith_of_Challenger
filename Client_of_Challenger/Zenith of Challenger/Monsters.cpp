@@ -90,6 +90,7 @@ void Monsters::Update(FLOAT timeElapsed)
 
 void Monsters::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
 {
+    if (m_isDead) return;
     bool isShadowPass = m_shader && m_shader->IsShadowShader();
 
     //if (m_animationClips.contains(m_currentAnim))
@@ -222,6 +223,21 @@ void Monsters::SetHP(int hp)
 {
     m_currentHP = hp;
     if (m_healthBar) m_healthBar->SetHP(m_currentHP, m_maxHP);
+    if (m_currentHP <= 0.f)
+    {
+        m_currentHP = 0.f;
+        m_isDead = true;
+    }
+}
+
+void Monsters::ApplyDamage(float damage)
+{
+    m_currentHP -= damage;
+    if (m_currentHP <= 0.f)
+    {
+        m_currentHP = 0.f;
+        m_isDead = true;
+    }
 }
 
 

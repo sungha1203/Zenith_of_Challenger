@@ -200,6 +200,8 @@ void GameScene::Update(FLOAT timeElapsed)
         {
             auto& monster = group[i];
 
+            if (monster->IsDead()) continue;
+
             auto monsterBox = monster->GetBoundingBox();
             auto monsterCenter = monsterBox.Center;
 
@@ -237,6 +239,18 @@ void GameScene::Update(FLOAT timeElapsed)
                     type.c_str(), static_cast<unsigned long long>(i));
 
                 OutputDebugStringA(debugMsg);
+
+                //monster->ApplyDamage(1.f);
+
+                if (monster->IsDead() && !monster->IsParticleSpawned())
+                {
+                    for (int i = 0; i < 100; ++i)
+                    {
+                        m_particleManager->SpawnParticle(monster->GetPosition());
+                    }
+                    monster->MarkParticleSpawned();
+                    continue;
+                }
 
                 m_player->SetPosition(m_player->m_prevPosition); // 이동 되돌리기
                 monster->SetBaseColor(XMFLOAT4(1.f, 0.f, 0.f, 1.f)); // 충돌 시 빨강
@@ -316,6 +330,11 @@ void GameScene::Update(FLOAT timeElapsed)
 
             digitUI->SetCustomUV(u0, 0.0f, u1, 1.0f);
         }
+    }
+
+    if (m_particleManager)
+    {
+        m_particleManager->Update(timeElapsed);
     }
 
 
@@ -408,6 +427,10 @@ void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) con
         digit->Render(commandList); // 숫자 각각 렌더
     }
 
+    if (m_particleManager)
+    {
+        m_particleManager->Render(commandList);
+    }
 
     // 디버그용 그림자맵 시각화
     if (m_debugShadowShader && m_ShadowMapEnabled)
@@ -994,6 +1017,16 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 
         m_goldDigits.push_back(digitUI);
     }
+
+    m_particleManager = make_shared<ParticleManager>();
+    m_particleManager->Initialize(
+        gGameFramework->GetDevice(),
+        200, // 최대 200개 파티클 풀
+        m_meshes["CUBE"], // 간단한 기본 큐브 메쉬로 (또는 별도 파티클 메쉬 만들 수도 있음)
+        m_shaders["HealthBarShader"]
+    );
+
+
 }
 
 void GameScene::AddCubeCollider(const XMFLOAT3& position, const XMFLOAT3& extents, const FLOAT& rotate)
@@ -1073,4 +1106,3 @@ void GameScene::RenderShadowPass(const ComPtr<ID3D12GraphicsCommandList>& comman
     }
 
 }
-
