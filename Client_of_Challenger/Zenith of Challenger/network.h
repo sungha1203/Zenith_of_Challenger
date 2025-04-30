@@ -33,7 +33,7 @@ public:
 	void		ProcessStartRepairTime(char* buffer);
 	void		ProcessMonsterHP(char* buffer);
 	void		ProcessItemDrop(char* buffer);
-	void		ProcessInventory(char* buffer);
+	void		ProcessGold(char* buffer);
 
 public:
 	SOCKET			m_clientsocket = INVALID_SOCKET;

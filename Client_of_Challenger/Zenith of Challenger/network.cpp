@@ -91,8 +91,8 @@ void ClientNetwork::Receive()
 				break;
 			case SC_PACKET_DROPITEM:
 				break;
-			case SC_PACKET_INVENTORY:
-				ProcessInventory(buffer);
+			case SC_PACKET_Gold:
+				ProcessGold(buffer);
 				break;
 			default:
 				break;
@@ -316,10 +316,9 @@ void ClientNetwork::ProcessItemDrop(char* buffer)
 
 }
 
-void ClientNetwork::ProcessInventory(char* buffer)
+void ClientNetwork::ProcessGold(char* buffer)
 {
-	SC_Packet_Inventory* pkt = reinterpret_cast<SC_Packet_Inventory*>(buffer);
-	pkt->gold;
+	SC_Packet_Gold* pkt = reinterpret_cast<SC_Packet_Gold*>(buffer);
 
 	// 현재 씬 가져오기 (GameScene으로 캐스팅 필요)
 	shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();

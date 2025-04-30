@@ -175,7 +175,7 @@ int Network::CreateClient()
 	for (int i = 0; i < MAX_USER; ++i) {
 		if (clients[i].m_used == false) {
 			clients[i].m_id = i;
-			g_client[i] = ClientInfo(i, -1);
+			g_client[i] = ClientInfo(i);
 			return i;
 		}
 	}
@@ -513,6 +513,55 @@ void Network::ProcessMonsterHP(int client_id, char* buffer, int length)
 	clients[client_id].do_recv();
 }
 
+// 인벤토리 무기 및 전직서 선택
+void Network::ProcessInventorySelcet(int client_id, char* buffer, int length)
+{
+	int room_id = g_room_manager.GetRoomID(client_id);
+	Room& room = g_room_manager.GetRoom(room_id);
+	const auto& client = room.GetClients();
+
+	CS_Packet_Inventory* pkt = reinterpret_cast<CS_Packet_Inventory*>(buffer);
+	SC_Packet_Inventory pkt2;
+	pkt2.item = pkt->item;
+
+	// 무기 선택했고, 선택한 무기가 없을 때(주먹), 선택한 무기가 1개이상일 때
+	if (pkt->item > 0 && pkt->item <= 3 
+		&& static_cast<int>(g_client[client_id].GetWeaponType()) == 0
+		&& room.GetWeaponTypeNum(pkt->item) > 0) 
+	{
+		g_client[client_id].SetWeapon(pkt->item);
+		room.DecideJobWeapon(pkt->item);				// 방(인벤토리)에 있는 해당 무기 하나 지움
+		pkt2.num = room.GetWeaponTypeNum(pkt->item);
+		// 지금 이거 선택됐다. 해당 클라한테 보내줘야함.
+	}
+	// 전직서 선택했고, 선택한 직업이 없을 때(도전자), 선택한 전직서가 1개 이상일때
+	else if (pkt->item > 3 && pkt->item <= 6 
+		&& static_cast<int>(g_client[client_id].GetJobType()) == 0
+		&& room.GetJobTypeNum(pkt->item) > 0)			// 방(인벤토리)에 있는 해당 전직서 하나 지움
+	{
+		g_client[client_id].SetJobType(pkt->item);
+		room.DecideJobDocument(pkt->item);
+		pkt2.num = room.GetJobTypeNum(pkt->item);
+		// 지금 이거 선택됐다. 해당 클라한테 보내줘야함.
+	}
+	else {
+		clients[client_id].do_recv();
+		return;
+	}
+
+
+	for (int other_id : client) {
+		clients[other_id].do_send(pkt2);
+	}
+	clients[client_id].do_recv();
+}
+
+// 강화 및 전직 설정(장비창)
+void Network::ProcessItemState(int client_id, char* buffer, int length)
+{
+
+}
+
 //------------------------------------[Send Packet]------------------------------------
  
 // 방 입장 성공 여부 응답
@@ -635,14 +684,14 @@ void Network::SendStartZenithStage(const std::vector<int>& client_id)
 	}
 }
 
-// 인벤토리 업데이트 (여기서부터 개발 이어서..)
-void Network::SendUpdateInventory(const std::vector<int>& client_id)
+// 골드 업데이트
+void Network::SendUpdateGold(const std::vector<int>& client_id)
 {
 	int room_id = g_room_manager.GetRoomID(client_id[0]);
 	Room& room = g_room_manager.GetRoom(room_id);
 
-	SC_Packet_Inventory pkt;
-	pkt.type = SC_PACKET_INVENTORY;
+	SC_Packet_Gold pkt;
+	pkt.type = SC_PACKET_GOLD;
 	pkt.gold = room.GetGold();
 	pkt.size = sizeof(pkt);
 
@@ -677,4 +726,10 @@ void Network::SendInitMonster(const std::vector<int>& client_id, const std::arra
 			}
 		}
 	}
+}
+
+// 강화 및 전직 설정
+void Network::SendItemState(const std::vector<int>& client_id)
+{
+
 }
