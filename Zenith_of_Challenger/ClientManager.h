@@ -25,7 +25,7 @@ struct Player
 	int				speed;					// 이동 속도
 	int				attackspeed;			// 공격 속도
 	float			x, y, z;				// 인게임 캐릭터 좌표
-	float			dir;					// 방향
+	float			angle;					// 방향
 };
 
 class ClientInfo       
@@ -44,6 +44,7 @@ public:
 	void	SetSpawnCoord(int idx);											// 초기 스폰 좌표
 	void	SetRepairCoord(int idx);										// 시작의 땅 스폰 좌표
 	void	SetCoord(float x, float y, float z);							// 좌표 갱신
+	void	SetAngle(float angle);											// 방향 갱신
 	
 	void	LeverUpPlayer(Player& player);									// 직업 전직 후 캐릭터 설정
 

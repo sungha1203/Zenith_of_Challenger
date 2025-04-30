@@ -89,6 +89,11 @@ void ClientInfo::SetCoord(float x, float y, float z)
     m_ingameInfo.z = z;
 }
 
+void ClientInfo::SetAngle(float angle)
+{
+    m_ingameInfo.angle = angle;
+}
+
 void ClientInfo::SetClothes(const int clothes[3])
 {
     memcpy(m_ingameInfo.clothes, clothes, sizeof(int) * 3);

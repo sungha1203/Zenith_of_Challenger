@@ -68,6 +68,7 @@ struct CS_Packet_UPDATECOORD
 	char	type;
 	int		size;
 	float	x, y, z;  // À§Ä¡
+	float	angle;
 };
 
 struct CS_Packet_GameStart
@@ -179,6 +180,7 @@ struct SC_Packet_Update2Player
 	int		size;
 	int		client_id;
 	float	x, y, z;
+	float   angle;
 };
 
 struct SC_Packet_GameStart

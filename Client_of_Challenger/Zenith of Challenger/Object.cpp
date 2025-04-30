@@ -16,12 +16,14 @@ void Object::Transform(XMFLOAT3 shift)
 {
     m_prevPosition = m_position; // 이동 전 위치 저장
     m_position = Vector3::Add(m_position, shift);
-    
+
     CS_Packet_UPDATECOORD pkt;
     pkt.type = CS_PACKET_UPDATECOORD;
     pkt.x = m_position.x;
     pkt.y = m_position.y;
     pkt.z = m_position.z;
+    pkt.angle = m_rotation.y;
+
     pkt.size = sizeof(pkt);
     gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
 

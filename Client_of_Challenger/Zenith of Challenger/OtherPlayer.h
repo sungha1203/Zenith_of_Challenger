@@ -32,6 +32,8 @@ public:
 	int m_id = -1;
 	bool m_used = false;
 	XMFLOAT3 m_position;
+
+	float m_angle; //방향각도 추가
 private:
 
 	FLOAT m_speed;

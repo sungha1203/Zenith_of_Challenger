@@ -355,6 +355,7 @@ void Network::ProcessUpdatePlayer(int client_id, char* buffer, int length)
 {
 	CS_Packet_UPDATECOORD* pkt = reinterpret_cast<CS_Packet_UPDATECOORD*>(buffer);
 	g_client[client_id].SetCoord(pkt->x, pkt->y, pkt->z);
+	g_client[client_id].SetAngle(pkt->angle);
 
 	int room_id = g_room_manager.GetRoomID(client_id);
 	if (room_id == -1) return;
@@ -369,6 +370,7 @@ void Network::ProcessUpdatePlayer(int client_id, char* buffer, int length)
 	pkt2.x = pkt->x;
 	pkt2.y = pkt->y;
 	pkt2.z = pkt->z;
+	pkt2.angle = pkt->angle;
 	
 	for (int other_id : client) {
 		if (other_id == client_id) continue;

@@ -37,20 +37,20 @@ OtherPlayer::OtherPlayer(const ComPtr<ID3D12Device>& device) :
 void OtherPlayer::Update(FLOAT timeElapsed)
 {
 
-   //bool isMoving = keyStates['W'] || keyStates['A'] || keyStates['S'] || keyStates['D'];
-   //
-   //if (isMoving)
-   //{
-   //    if (keyStates[VK_SHIFT] && m_animationClips.contains("Running"))
-   //        SetCurrentAnimation("Running");
-   //    else if (m_animationClips.contains("Walking"))
-   //        SetCurrentAnimation("Walking");
-   //}
-   //else
-   //{
-   //    if (m_animationClips.contains("M_C3FC_ModularMale_03"))
-   //        SetCurrentAnimation("M_C3FC_ModularMale_03");
-   //}
+    //bool isMoving = keyStates['W'] || keyStates['A'] || keyStates['S'] || keyStates['D'];
+    //
+    //if (isMoving)
+    //{
+    //    if (keyStates[VK_SHIFT] && m_animationClips.contains("Running"))
+    //        SetCurrentAnimation("Running");
+    //    else if (m_animationClips.contains("Walking"))
+    //        SetCurrentAnimation("Walking");
+    //}
+    //else
+    //{
+    //    if (m_animationClips.contains("M_C3FC_ModularMale_03"))
+    //        SetCurrentAnimation("M_C3FC_ModularMale_03");
+    //}
 
     if (m_animationClips.contains(m_currentAnim))
     {
@@ -60,14 +60,16 @@ void OtherPlayer::Update(FLOAT timeElapsed)
             m_animTime = fmod(m_animTime, clip.duration);
     }
 
-    {
-        /////////////////////////여기다가 GetPosition()사용해서 float값 3개 가지고 오면 될거야        
-        if (m_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[0])
-            m_position = gGameFramework->GetSceneManager()->GetCurrentScene()->otherpos[0];
-        else if (m_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[1])
-            m_position = gGameFramework->GetSceneManager()->GetCurrentScene()->otherpos[1];
-        SetPosition(m_position);
+    if (m_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[0]) {
+        m_position = gGameFramework->GetSceneManager()->GetCurrentScene()->otherpos[0];
+        SetRotationY(gGameFramework->GetSceneManager()->GetCurrentScene()->otherangle[0]);
     }
+    else if (m_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[1]) {
+        m_position = gGameFramework->GetSceneManager()->GetCurrentScene()->otherpos[1];
+        SetRotationY(gGameFramework->GetSceneManager()->GetCurrentScene()->otherangle[1]);
+    }
+
+    SetPosition(m_position);
 
     XMFLOAT3 pos = GetPosition();
     m_boundingBox.Center = XMFLOAT3{

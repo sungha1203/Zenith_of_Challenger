@@ -35,7 +35,7 @@ constexpr int NAME_SIZE = 20;				// 이름 글자 수
 #define SC_PACKET_INITMONSTER		 110		// 몬스터 초기 설정
 #define SC_PACKET_MONSTERHP			 111		// 몬스터 HP
 #define SC_PACKET_DROPITEM			 112		// 몬스터 드랍 아이템
-#define SC_PACKET_Gold				 113		// 인벤토리 현 상황 갱신
+#define SC_PACKET_GOLD				 113		// 골드 현 상황 갱신
 #define SC_PACKET_CHAT				 114		// 인게임 속 채팅
 
 #define SC_PACKET_SKIPCHALLENGE		 998		// 도전스테이지 스킵
@@ -68,6 +68,7 @@ struct CS_Packet_UPDATECOORD
 	char	type;
 	int		size;
 	float	x, y, z;  // 위치
+	float	angle;
 };
 
 struct CS_Packet_GameStart
@@ -110,6 +111,13 @@ struct CS_Packet_MonsterHP
 	int		size;
 	int		monsterID;
 	int		damage;
+};
+
+struct CS_Packet_Inventory
+{
+	char	type;
+	int		size;
+	int		item;	// 1.검 / 2.지팡이 / 3.방패 / 4.전사 전직서 / 5.마법사 전직서 / 6.힐탱커 전직서 
 };
 
 struct CS_Packet_Logout
@@ -172,6 +180,7 @@ struct SC_Packet_Update2Player
 	int		size;
 	int		client_id;
 	float	x, y, z;
+	float   angle;
 };
 
 struct SC_Packet_GameStart
@@ -231,6 +240,14 @@ struct SC_Packet_Gold
 	char	type;
 	int		size;
 	int		gold;
+};
+
+struct SC_Packet_Inventory
+{
+	char	type;
+	int		size;
+	int		item;	// 1.검 / 2.지팡이 / 3.방패 / 4.전사 전직서 / 5.마법사 전직서 / 6.힐탱커 전직서 
+	int		num;
 };
 
 struct SC_Packet_Chat
