@@ -282,6 +282,39 @@ void GameObject::SetuseCustomUV(int useUV)
     m_useCustomUV = useUV;
 }
 
+bool GameObject::IsPointInside(int mouseX, int mouseY) const
+{
+    int w, h;
+    RECT rect;
+    GetClientRect(gGameFramework->GetHWND(), &rect);
+    w = rect.right - rect.left;
+    h = rect.bottom - rect.top;
+
+    auto toPixelX = [&](float ndcX) {
+        return static_cast<int>((ndcX + 1.0f) * 0.5f * w);
+        };
+    auto toPixelY = [&](float ndcY) {
+        return static_cast<int>((1.0f - ndcY) * 0.5f * h); // Y축 반전 주의
+        };
+
+    XMFLOAT3 pos = GetPosition();
+    XMFLOAT3 scale = GetScale();
+
+    float leftNDC = pos.x - scale.x * 0.5f;
+    float rightNDC = pos.x + scale.x * 0.5f;
+    float topNDC = pos.y + scale.y * 0.5f;
+    float bottomNDC = pos.y - scale.y * 0.5f;
+
+    int margin = 1; // 마진 1픽셀 (정밀하게 맞추고 싶으면 0으로)
+
+    int left = toPixelX(leftNDC) + margin;
+    int right = toPixelX(rightNDC) - margin;
+    int top = toPixelY(topNDC) + margin;
+    int bottom = toPixelY(bottomNDC) - margin;
+
+    return (mouseX >= left && mouseX <= right && mouseY >= top && mouseY <= bottom);
+}
+
 
 RotatingObject::RotatingObject() : InstanceObject()
 {

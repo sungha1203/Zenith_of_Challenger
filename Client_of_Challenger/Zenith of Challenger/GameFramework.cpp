@@ -711,9 +711,23 @@ void CGameFramework::ProcessInput()
 		return;
 	}
 
+	// F11 눌렀을 때 전체화면 토글
+	if ((GetAsyncKeyState(VK_F11) & 0x8000) && !m_keyPressed[VK_F11])
+	{
+		ToggleFullScreen();
+		m_keyPressed[VK_F11] = true;
+	}
+	else if (!(GetAsyncKeyState(VK_F11) & 0x8000) && m_keyPressed[VK_F11])
+	{
+		m_keyPressed[VK_F11] = false;
+	}
+
+
 	// 키 입력이 제대로 감지되지 않을 경우 대비하여 `GetAsyncKeyState` 사용
 	for (int key = 0x08; key <= 0xFE; ++key)
 	{
+		if (key == VK_F11) continue; // 위에서 처리했으니 건너뜀
+
 		SHORT state = GetAsyncKeyState(key);
 
 		bool isDownNow = (state & 0x8000); // 지금 눌려있음
@@ -735,9 +749,40 @@ void CGameFramework::ProcessInput()
 
 	if (GetAsyncKeyState('Q') & 0x8000) exit(1);
 
+
 	m_commandList->Close();
 	ID3D12CommandList* ppCommandList[] = { m_commandList.Get() };
 	m_commandQueue->ExecuteCommandLists(_countof(ppCommandList), ppCommandList);
 
 	WaitForGpuComplete();
+}
+
+void CGameFramework::ToggleFullScreen()
+{
+	m_isFullScreen = !m_isFullScreen;
+
+	// 현재 윈도우 스타일 가져오기
+	DWORD dwStyle = GetWindowLong(m_hWnd, GWL_STYLE);
+	if (m_isFullScreen)
+	{
+		MONITORINFO mi = { sizeof(mi) };
+		if (GetWindowPlacement(m_hWnd, &m_wpPrev) &&
+			GetMonitorInfo(MonitorFromWindow(m_hWnd, MONITOR_DEFAULTTOPRIMARY), &mi))
+		{
+			SetWindowLong(m_hWnd, GWL_STYLE, dwStyle & ~WS_OVERLAPPEDWINDOW);
+			SetWindowPos(m_hWnd, HWND_TOP,
+				mi.rcMonitor.left, mi.rcMonitor.top,
+				mi.rcMonitor.right - mi.rcMonitor.left,
+				mi.rcMonitor.bottom - mi.rcMonitor.top,
+				SWP_NOOWNERZORDER | SWP_FRAMECHANGED);
+		}
+	}
+	else
+	{
+		SetWindowLong(m_hWnd, GWL_STYLE, dwStyle | WS_OVERLAPPEDWINDOW);
+		SetWindowPlacement(m_hWnd, &m_wpPrev);
+		SetWindowPos(m_hWnd, nullptr, 0, 0, 0, 0,
+			SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER |
+			SWP_NOOWNERZORDER | SWP_FRAMECHANGED);
+	}
 }

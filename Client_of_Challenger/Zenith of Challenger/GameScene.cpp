@@ -270,7 +270,7 @@ void GameScene::Update(FLOAT timeElapsed)
                 CS_Packet_MonsterHP pkt;
                 pkt.type = CS_PACKET_MONSTERHP;
                 pkt.monsterID = offset + static_cast<int>(i);
-                pkt.damage = 20;
+                pkt.damage = 1;
                 pkt.size = sizeof(pkt);
                 gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
 

@@ -12,6 +12,14 @@
 class ClientNetwork;
 class ClientState;
 
+inline void GetClientSize(HWND hWnd, int& width, int& height)
+{
+    RECT rect;
+    GetClientRect(hWnd, &rect);
+    width = rect.right - rect.left;
+    height = rect.bottom - rect.top;
+}
+
 class CGameFramework
 {
 public:
@@ -102,6 +110,9 @@ private:
     void Render();
 
     void ProcessInput();   // 키 입력 체크
+
+    void ToggleFullScreen();
+    WINDOWPLACEMENT m_wpPrev = { sizeof(WINDOWPLACEMENT) };
 private:
     static const UINT m_nSwapChainBuffers = 2;
 
@@ -176,4 +187,7 @@ private:
     D3D12_VIEWPORT m_shadowViewport{};
     D3D12_RECT m_shadowScissorRect{};
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //전체화면 관련
+    bool m_isFullScreen = false;
 };

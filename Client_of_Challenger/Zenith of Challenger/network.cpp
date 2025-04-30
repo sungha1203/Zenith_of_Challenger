@@ -295,6 +295,19 @@ void ClientNetwork::ProcessMonsterHP(char* buffer)
 	if (monster)
 	{
 		monster->SetHP(hp);
+
+		// HP가 0 이하 && 아직 파티클 안 뿌렸다면
+		if (hp <= 0 && !monster->IsParticleSpawned())
+		{
+			monster->MarkParticleSpawned(); // 한 번만 실행되게 설정
+
+			// 파티클 스폰
+			for (int i = 0; i < 100; ++i)
+			{
+				gameScene->GetParticleManager()->SpawnParticle(monster->GetPosition());
+			}
+		}
+
 	}
 }
 

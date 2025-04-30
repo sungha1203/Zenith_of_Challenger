@@ -125,6 +125,10 @@ public:
 
 	void SetCustomUV(float u0, float v0, float u1, float v1);
 	void SetuseCustomUV(int useUV);
+
+	//버튼 클릭 관련
+	bool GameObject::IsPointInside(int mouseX, int mouseY) const;
+
 protected:
 	shared_ptr<MeshBase> m_mesh;
 	shared_ptr<Texture> m_texture;
