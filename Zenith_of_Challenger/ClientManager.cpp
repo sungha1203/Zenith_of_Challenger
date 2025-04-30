@@ -5,11 +5,11 @@ ClientInfo::ClientInfo()
 {
 }
 
-ClientInfo::ClientInfo(int client_id, int roomNum)
+ClientInfo::ClientInfo(int client_id)
 {
     m_ingameInfo.classtype = Classtype::CHALLENGER;     // 초기 직업 : 도전자
     m_ingameInfo.weapon.type = 0;                       // 기본 무기 : 맨손
-    m_ingameInfo.weapon.level = 1;                      // 무기 레벨 : 1
+    m_ingameInfo.weapon.level = 0;                      // 무기 레벨 : 0
     m_ingameInfo.clothes[0] = 0;                        // 기본 머리 : X
     m_ingameInfo.clothes[1] = 0;                        // 기본 하의 : X
     m_ingameInfo.clothes[2] = 0;                        // 기본 하의 : X
@@ -20,23 +20,21 @@ ClientInfo::ClientInfo(int client_id, int roomNum)
     m_ingameInfo.z = 0;                                 // 도전 스테이지 리스폰 x
     m_ingameInfo.x = 0;                                 // 도전 스테이지 리스폰 y
     m_ingameInfo.y = 0;                                 // 도전 스테이지 리스폰 z
-    m_id = client_id;                                   // 클라이언트 id
-    m_roomNum = roomNum;                                // 게임방 번호
 }
 
 ClientInfo::~ClientInfo()
 {
 }
 
-void ClientInfo::SetRoomNum(const int room_id)
-{
-    m_roomNum = room_id;
-}
+//void ClientInfo::SetRoomNum(const int room_id)
+//{
+//    m_roomNum = room_id;
+//}
 
-void ClientInfo::SetRoomIdx(const int room_idx)
-{
-    m_roomidx = room_idx;
-}
+//void ClientInfo::SetRoomIdx(const int room_idx)
+//{
+//    m_roomidx = room_idx;
+//}
 
 void ClientInfo::SetSpawnCoord(int idx)
 {
@@ -94,6 +92,16 @@ void ClientInfo::SetCoord(float x, float y, float z)
 void ClientInfo::SetClothes(const int clothes[3])
 {
     memcpy(m_ingameInfo.clothes, clothes, sizeof(int) * 3);
+}
+
+void ClientInfo::SetJobType(int JobNum)
+{
+    m_ingameInfo.classtype = (Classtype)(JobNum - 3);
+}
+
+void ClientInfo::SetWeapon(int weaponNum)
+{
+    m_ingameInfo.weapon.type = weaponNum + 1;
 }
 
 void ClientInfo::LeverUpPlayer(Player& player)

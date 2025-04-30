@@ -30,6 +30,18 @@ struct InventoryItem								// 공통 인벤토리
 	int gold = 0;									// 재화
 	std::map<JobWeapon, int> JobWeapons;			// 무기
 	std::map<JobDocument, int> JobDocuments;		// 전직서
+
+	InventoryItem()
+	{
+		for (int i = 0; i <= 2; ++i)
+		{
+			JobWeapons[static_cast<JobWeapon>(i)] = 0;
+		}
+		for (int i = 0; i <= 2; ++i)
+		{
+			JobDocuments[static_cast<JobDocument>(i)] = 0;
+		}
+	}
 };
 
 // 게임 진행, 스테이지 변경, 클라이언트 관리
@@ -90,7 +102,9 @@ public:
 	int		GetEnterClientNum() const { return m_enterClientNum; }							// 지금 몇명이 게임 대기중이야?
 	int		GetEnterZenithNum() const { return m_enterZenithNum;  }							// 지금 몇명이 정점 스테이지 대기중이야?
 	bool	GetSkipButton() const { return m_skipButton;  }									// 스킵 버튼 눌렀어 안눌렀어?
-	int		GetGold() const { return m_inventory.gold; }									// 인벤토리에 얼마있어?
+	int		GetGold() const { return m_inventory.gold; }									// 골드 얼마있어?
+	int		GetWeaponTypeNum(int num) const { return m_inventory.JobWeapons.at(static_cast<JobWeapon>(num));}		// 해당 무기 몇개 있어?
+	int		GetJobTypeNum(int num) const { return m_inventory.JobDocuments.at(static_cast<JobDocument>(num));}		// 해당 전직서 몇개 있어?
 
 	const std::vector<int>& GetClients() const { return m_clients; }						// 게임 중인 모든 클라이언트
 	const Monster&	GetMonsters(int monsterID) const { return m_monsters[monsterID]; }		// 몬스터
@@ -100,9 +114,9 @@ public:
 	void	AddGold(int plusgold);					// +골드
 	void    SpendGold(int minusgold);				// -골드
 	void	ADDJobWeapon(JobWeapon weapon);			// +무기
-	void	DecideJobWeapon(JobWeapon weapon);		// -무기
+	void	DecideJobWeapon(int weapon);			// -무기
 	void	AddJobDocument(JobDocument job);		// +전직서
-	void	DecideJobDocument(JobDocument job);		// -전직서
+	void	DecideJobDocument(int job);				// -전직서
 
 	// 몬스터
 	void	InitChallengeMonsters();				// 도전 스테이지 몬스터 초기화

@@ -24,7 +24,6 @@ bool RoomManager::JoinRoom(int client_id, int room_id)
 
     m_rooms[room_id].AddClient(client_id);                                  // 몇번방에 클라가 입장했어요
     m_client_room[client_id] = room_id;                                     // 몇번방에 어떤 클라가 입장했는지
-    g_client[client_id].SetRoomNum(room_id);                                // 방에 입장 및 기본 캐릭터 생성
 
     //g_network.SendRoomInfo(room_id, m_rooms[room_id].GetClientsNum());    // 모든 클라한테 게임방 상태 뿌려주기
 

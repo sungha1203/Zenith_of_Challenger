@@ -17,6 +17,7 @@ constexpr int NAME_SIZE = 20;				// 이름 글자 수
 #define CS_PACKET_STARTZENITH		 7			// 정점 스테이지 입장 완료
 #define CS_PACKET_MONSTERHP			 8			// 몬스터 HP
 #define CS_PACKET_CHAT				 9			// 인게임 속 채팅
+#define CS_PACKET_ITEMSTATE			 10			// 인벤토리에서 선택
 
 #define CS_PACKET_SKIPCHALLENGE		 99			// 도전스테이지 스킵
 #define CS_PACKET_LOGOUT			 100		// 로그아웃
@@ -34,7 +35,7 @@ constexpr int NAME_SIZE = 20;				// 이름 글자 수
 #define SC_PACKET_INITMONSTER		 110		// 몬스터 초기 설정
 #define SC_PACKET_MONSTERHP			 111		// 몬스터 HP
 #define SC_PACKET_DROPITEM			 112		// 몬스터 드랍 아이템
-#define SC_PACKET_INVENTORY			 113		// 인벤토리
+#define SC_PACKET_Gold				 113		// 인벤토리 현 상황 갱신
 #define SC_PACKET_CHAT				 114		// 인게임 속 채팅
 
 #define SC_PACKET_SKIPCHALLENGE		 998		// 도전스테이지 스킵
@@ -225,7 +226,7 @@ struct SC_Packet_DropItem
 	float	z;
 };
 
-struct SC_Packet_Inventory
+struct SC_Packet_Gold
 {
 	char	type;
 	int		size;

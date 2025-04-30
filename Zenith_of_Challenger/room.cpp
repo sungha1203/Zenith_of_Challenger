@@ -12,7 +12,6 @@ void Room::AddClient(int client_id)
 
 	int idx = m_clients.size() - 1;
 	g_client[client_id].SetSpawnCoord(idx);
-	g_client[client_id].SetRoomIdx(idx);
 }
 
 void Room::RemoveClient(int client_id)
@@ -143,7 +142,7 @@ void Room::AddGold(int plusgold)
 {
 	std::lock_guard<std::mutex> lock(m_inventoryMx);
 	m_inventory.gold += plusgold;
-	g_network.SendUpdateInventory(GetClients());
+	g_network.SendUpdateGold(GetClients());
 	// update packet
 }
 
@@ -164,10 +163,10 @@ void Room::ADDJobWeapon(JobWeapon weapon)
 	// update packet
 }
 
-void Room::DecideJobWeapon(JobWeapon weapon)
+void Room::DecideJobWeapon(int weapon)
 {
 	std::lock_guard<std::mutex> lock(m_inventoryMx);
-	--m_inventory.JobWeapons[weapon];
+	--m_inventory.JobWeapons[static_cast<JobWeapon>(weapon)];
 	// update packet
 }
 
@@ -178,10 +177,10 @@ void Room::AddJobDocument(JobDocument job)
 	// update packet
 }
 
-void Room::DecideJobDocument(JobDocument job)		// 클라 코드에서 한번 정했으면 자기 직업 정해지니까 바꾸기 못함을 적어야 할듯. (다른 직업이 클릭이 안되게 막음)
+void Room::DecideJobDocument(int job)		// 클라 코드에서 한번 정했으면 자기 직업 정해지니까 바꾸기 못함을 적어야 할듯. (다른 직업이 클릭이 안되게 막음)
 {													// 그리고 직업1 전직서가 없으면 클릭조차 안되게 클라자체에서 막자. (서버에서 해야할 일을 애초에 줄이자)
 	std::lock_guard<std::mutex> lock(m_inventoryMx);
-	--m_inventory.JobDocuments[job];
+	--m_inventory.JobDocuments[static_cast<JobDocument>(job - 4)];
 	// update packet
 }
 

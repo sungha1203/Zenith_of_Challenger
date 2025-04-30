@@ -142,7 +142,7 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
         m_goldScore = std::min(m_goldScore + 10, 999); // 최대 999까지
     }
 
-    if (GetAsyncKeyState(VK_DOWN) & 0x8000) 
+    if (GetAsyncKeyState(VK_DOWN) & 0x8000)
     {
         m_goldScore = std::max(m_goldScore - 10, 0);   // 최소 0까지
     }
