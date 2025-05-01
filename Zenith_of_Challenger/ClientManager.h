@@ -41,6 +41,8 @@ public:
 	void	SetClothes(const int clothes[3]);								// 옷 선택
 	void	SetJobType(int JobNum);											// 직업 선택
 	void	SetWeapon(int weaponNum);										// 무기 선택
+	void	SetWeaponGrade();												// 무기 강화
+	bool	SetEnhanceGradeUp(int weapongrade);								// 무기 강화 로직(성공 여부 반환)
 	void	SetSpawnCoord(int idx);											// 초기 스폰 좌표
 	void	SetRepairCoord(int idx);										// 시작의 땅 스폰 좌표
 	void	SetCoord(float x, float y, float z);							// 좌표 갱신
@@ -49,7 +51,8 @@ public:
 	void	LeverUpPlayer(Player& player);									// 직업 전직 후 캐릭터 설정
 
 	Classtype GetJobType() const { return m_ingameInfo.classtype; }			// 캐릭터 직업 반환
-	int		GetWeaponType() const { return m_ingameInfo.weapon.type; }		// 캐릭터 직업 반환
+	int		GetWeaponType() const { return m_ingameInfo.weapon.type; }		// 캐릭터 무기 반환
+	int		GetWeaponGrade() const { return m_ingameInfo.weapon.level; }	// 캐릭터 무기 등급 반환
 	float	GetX() const { return m_ingameInfo.x; }							// 캐릭터 X좌표 반환
 	float	GetY() const { return m_ingameInfo.y; }							// 캐릭터 y좌표 반환
 	float	GetZ() const { return m_ingameInfo.z; }							// 캐릭터 z좌표 반환

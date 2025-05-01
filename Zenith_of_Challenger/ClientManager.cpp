@@ -109,6 +109,29 @@ void ClientInfo::SetWeapon(int weaponNum)
     m_ingameInfo.weapon.type = weaponNum + 1;
 }
 
+void ClientInfo::SetWeaponGrade()
+{
+    bool res = SetEnhanceGradeUp(GetWeaponGrade());
+    if (res) {
+        ++m_ingameInfo.weapon.level;                    // 성공했으므로 강화 1업
+    }
+}
+
+bool ClientInfo::SetEnhanceGradeUp(int weapongrade)
+{
+    int probabilities[] = { 100, 90, 80, 70, 60, 50, 40, 30, 20 };
+    // 0 -> 1 : 100%   |   3 -> 4 : 70%   |   6 -> 7 : 40%
+    // 1 -> 2 : 90%    |   4 -> 5 : 60%   |   7 -> 8 : 30%
+    // 2 -> 3 : 80%    |   5 -> 6 : 50%   |   8 -> 9 : 20%
+
+    std::random_device rd;
+    std::default_random_engine dre{ rd() };
+    std::uniform_int_distribution<int> uid{ 1, 100 };
+
+    int roll = uid(dre);
+    return roll <= probabilities[weapongrade];
+}
+
 void ClientInfo::LeverUpPlayer(Player& player)
 {
     switch (player.classtype) {
