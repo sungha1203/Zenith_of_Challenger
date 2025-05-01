@@ -81,4 +81,7 @@ private:
     //파티클 관련
     shared_ptr<ParticleManager> m_particleManager;
 
+    //인벤토리 숫자 관련
+    std::vector<std::shared_ptr<GameObject>> m_inventoryDigits;
+    int m_inventoryCounts[6] = { 0, 0, 0, 0, 0, 0 };
 };

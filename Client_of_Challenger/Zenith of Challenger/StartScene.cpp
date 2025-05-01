@@ -118,17 +118,19 @@ void StartScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) co
             if (m_startBtn->IsVisible()) {
                 m_startBtn->Render(commandList);
             }
-        }
-    }
 
-    if (m_isMouseOnStartBtn) {
-        if (m_shaders.contains("UI"))
-        {
-            m_shaders.at("UI")->UpdateShaderVariable(commandList);
-            for (const auto& obj : m_startBar)
-            {
-                obj->Render(commandList);
+            if (m_isMouseOnStartBtn) {
+                if (m_shaders.contains("UI"))
+                {
+                    m_shaders.at("UI")->UpdateShaderVariable(commandList);
+                    for (const auto& obj : m_startBar)
+                    {
+                        obj->Render(commandList);
+                    }
+                }
             }
+
+            m_loadingScreen->Render(commandList);
         }
     }
 }
@@ -170,6 +172,10 @@ void StartScene::MouseEvent(UINT message, LPARAM lParam)
             {
                 std::cout << "START 버튼 클릭됨 → GameScene 전환 예정\n";
                 m_isStartButtonClicked = true;
+
+                m_isLoading = true;
+                m_loadingElapsed = 0.0f;
+                m_loadingScreen->SetVisible(true);
 
                 // 서버 개발: GameStart 패킷 전송
                 CS_Packet_GameStart pkt;
@@ -294,6 +300,11 @@ void StartScene::BuildTextures(const ComPtr<ID3D12Device>& device, const ComPtr<
     startTex->LoadTexture(device, commandList, TEXT("Image/StartScene/StartScreen.dds"), RootParameter::Texture);
     startTex->CreateShaderVariable(device);
     m_textures.insert({ "START", startTex });
+
+    auto LoadTex = make_shared<Texture>(device);
+    LoadTex->LoadTexture(device, commandList, TEXT("Image/StartScene/Loading.dds"), RootParameter::Texture);
+    LoadTex->CreateShaderVariable(device);
+    m_textures.insert({ "LOAD", LoadTex });
 
     auto titleTex = make_shared<Texture>(device);
     titleTex->LoadTexture(device, commandList, TEXT("Image/StartScene/Title2.dds"), RootParameter::Texture); //Title_transparent
@@ -503,6 +514,13 @@ void StartScene::BuildObjects(const ComPtr<ID3D12Device>& device)
     ThirdRoom->SetPosition(XMFLOAT3(-0.47f, -0.35f, 0.98f));
     ThirdRoom->SetUseTexture(true);
     m_SelectSceneObjects.push_back(ThirdRoom);
+
+    m_loadingScreen = make_shared<GameObject>(device);
+    m_loadingScreen->SetMesh(CreateScreenQuad(device, gGameFramework->GetCommandList(), 1.1f, 0.9f, 0.99f));
+    m_loadingScreen->SetTexture(m_textures["LOAD"]);
+    m_loadingScreen->SetUseTexture(true);
+    m_loadingScreen->SetVisible(false);
+    m_loadingScreen->SetBaseColor(XMFLOAT4(1.f, 1.f, 1.f, 1.f));
 }
 
 void StartScene::UpdateLoginObjects()

@@ -50,7 +50,7 @@ void CGameFramework::FrameAdvance()
 {
 	WaitForGpuComplete();
 
-	m_GameTimer.Tick(60); // FPS 측정
+	m_GameTimer.Tick(0); // FPS 측정
 
 	m_srvHeapOffset = 0; // 매 프레임 디스크립터 오프셋 초기화
 
@@ -683,7 +683,7 @@ void CGameFramework::Render()
 	ID3D12CommandList* commandLists[] = { m_commandList.Get() };
 	m_commandQueue->ExecuteCommandLists(_countof(commandLists), commandLists);
 
-	ThrowIfFailed(m_swapChain->Present(1, 0));
+	ThrowIfFailed(m_swapChain->Present(0, 0));
 
 	WaitForGpuComplete();
 }

@@ -146,6 +146,16 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
     {
         m_goldScore = std::max(m_goldScore - 10, 0);   // 최소 0까지
     }
+
+    // 1~6 키를 눌렀을 때 해당 인덱스의 숫자 증가
+    for (int i = 0; i < 6; ++i)
+    {
+        if (GetAsyncKeyState('1' + i) & 0x0001)
+        {
+            m_inventoryCounts[i] = std::min(m_inventoryCounts[i] + 1, 9);
+        }
+    }
+
 }
 
 void GameScene::Update(FLOAT timeElapsed)
@@ -337,6 +347,16 @@ void GameScene::Update(FLOAT timeElapsed)
         m_particleManager->Update(timeElapsed);
     }
 
+    // 각 인벤토리 숫자의 UV 갱신
+    for (int i = 0; i < 6; ++i)
+    {
+        int digit = m_inventoryCounts[i];
+
+        float u0 = (digit * 100.0f) / 1000.0f;
+        float u1 = ((digit + 1) * 100.0f) / 1000.0f;
+
+        m_inventoryDigits[i]->SetCustomUV(u0, 0.0f, u1, 1.0f);
+    }
 
 }
 
@@ -425,6 +445,11 @@ void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) con
     for (const auto& digit : m_goldDigits)
     {
         digit->Render(commandList); // 숫자 각각 렌더
+    }
+    
+    for (const auto& digit : m_inventoryDigits)
+    {
+        digit->Render(commandList);
     }
 
     if (m_particleManager)
@@ -680,6 +705,12 @@ void GameScene::BuildTextures(const ComPtr<ID3D12Device>& device,
         TEXT("Image/InGameUI/Gold_Score.dds"), RootParameter::Texture);
     Gold_ScoreTexture->CreateShaderVariable(device, true);
     m_textures.insert({ "Gold_Score", Gold_ScoreTexture });
+
+
+    auto Item_numTexture = make_shared<Texture>(device, commandList,
+        TEXT("Image/InGameUI/Item_num.dds"), RootParameter::Texture);
+    Item_numTexture->CreateShaderVariable(device, true);
+    m_textures.insert({ "Item_num", Item_numTexture });
 }
 
 void GameScene::BuildMaterials(const ComPtr<ID3D12Device>& device,
@@ -955,7 +986,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
     Inventory->SetTexture(m_textures["Inventory"]);  // 우리가 방금 로드한 텍스처 사용
     Inventory->SetTextureIndex(m_textures["Inventory"]->GetTextureIndex());  // 
     Inventory->SetMesh(CreateScreenQuad(device, gGameFramework->GetCommandList(), 0.5f, 0.5f, 0.98f));
-    Inventory->SetPosition(XMFLOAT3(0.8f, -0.55f, 0.98f));
+    Inventory->SetPosition(XMFLOAT3(0.8f, -0.55f, 0.97f));
     Inventory->SetUseTexture(true);
     Inventory->SetBaseColor(XMFLOAT4(1, 1, 1, 1));
 
@@ -1026,6 +1057,30 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
         m_shaders["HealthBarShader"]
     );
 
+    //장비창 아이템 개수
+    for (int i = 0; i < 6; ++i)
+    {
+        auto digitUI = std::make_shared<GameObject>(device);
+
+        digitUI->SetTexture(m_textures["Item_num"]); // 텍스처 지정
+        digitUI->SetTextureIndex(m_textures["Item_num"]->GetTextureIndex());
+        digitUI->SetShader(m_shaders["UI"]);
+        digitUI->SetUseTexture(true);
+        digitUI->SetuseCustomUV(1);
+
+        float u0 = 0.0f;
+        float u1 = 1.0f;
+
+        digitUI->SetCustomUV(u0, 0.0f, u1, 1.0f);
+        digitUI->SetMesh(CreateScreenQuadWithCustomUV(
+            device, gGameFramework->GetCommandList(), 0.03f, 0.06f, 0.98f, u0, 0.0f, u1, 1.0f));
+
+        digitUI->SetPosition(XMFLOAT3(0.7f + (i % 3) * 0.15f, -0.5f - (i / 3) * 0.2f, 0.99f));
+        digitUI->SetScale(XMFLOAT3(1.f, 1.f, 1.f));
+        digitUI->SetBaseColor(XMFLOAT4(1, 1, 1, 1));
+
+        m_inventoryDigits.push_back(digitUI);
+    }
 
 }
 
