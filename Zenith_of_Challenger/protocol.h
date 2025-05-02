@@ -240,6 +240,7 @@ struct SC_Packet_DropItem
 	char	type;
 	int		size;
 	int		item;
+	int		itemNum;
 	float	x;
 	float	y;
 	float	z;

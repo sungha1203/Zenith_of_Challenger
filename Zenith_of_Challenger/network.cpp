@@ -472,7 +472,7 @@ void Network::ProcessChat(int client_id, char* buffer, int length)
 	clients[client_id].do_recv();
 }
 
-// 몬스터 HP 업데이트
+// 몬스터 HP 업데이트 (임시)
 void Network::ProcessMonsterHP(int client_id, char* buffer, int length)
 {
 	CS_Packet_MonsterHP* pkt = reinterpret_cast<CS_Packet_MonsterHP*>(buffer);
@@ -493,23 +493,37 @@ void Network::ProcessMonsterHP(int client_id, char* buffer, int length)
 	}
 
 	if (room.GetMonster(pkt->monsterID).GetHP() == 0) {
-		SC_Packet_DropItem pkt3;
-		pkt3.type = SC_PACKET_DROPITEM;
-		pkt3.item = (int)room.GetMonster(pkt->monsterID).DropWHAT();
-		pkt3.x = room.GetMonster(pkt->monsterID).GetX();
-		pkt3.y = room.GetMonster(pkt->monsterID).GetY();
-		pkt3.z = room.GetMonster(pkt->monsterID).GetZ();
-		pkt3.size = sizeof(pkt3);
+		int dropItem = static_cast<int>(room.GetMonster(pkt->monsterID).DropWHAT());
 
 		std::random_device rd;
 		std::default_random_engine dre{ rd() };
 		std::uniform_int_distribution<int> uid1{ 1, 10 };
 
-		room.AddGold(uid1(dre));
 
+		SC_Packet_DropItem pkt3;
+		pkt3.type = SC_PACKET_DROPITEM;
+		pkt3.item = dropItem - 1;
+		pkt3.x = room.GetMonster(pkt->monsterID).GetX();
+		pkt3.y = room.GetMonster(pkt->monsterID).GetY();
+		pkt3.z = room.GetMonster(pkt->monsterID).GetZ();
+		pkt3.size = sizeof(pkt3);
+
+		if (dropItem > 0 && dropItem <= 3) {		// 무기
+			room.ADDJobWeapon(dropItem);
+			pkt3.itemNum = room.GetWeaponTypeNum(dropItem - 1);
+		}
+		else if (dropItem > 3 && dropItem <= 6) {	// 전직서
+			room.AddJobDocument(dropItem);
+			pkt3.itemNum = room.GetJobTypeNum(dropItem - 4);
+		}
+		
 		for (int other_id : client) {
 			clients[other_id].do_send(pkt3);
 		}
+
+		std::this_thread::sleep_for(std::chrono::milliseconds(1));
+
+		room.AddGold(uid1(dre));
 	}
 
 	clients[client_id].do_recv();

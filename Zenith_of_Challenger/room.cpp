@@ -156,24 +156,24 @@ void Room::SpendGold(int minusgold)
 	// update packet
 }
 
-void Room::ADDJobWeapon(JobWeapon weapon)			
+void Room::ADDJobWeapon(int weapon)			
 {
 	std::lock_guard<std::mutex> lock(m_inventoryMx);
-	++m_inventory.JobWeapons[weapon];
+	++m_inventory.JobWeapons[static_cast<JobWeapon>(weapon - 1)];
 	// update packet
 }
 
 void Room::DecideJobWeapon(int weapon)
 {
 	std::lock_guard<std::mutex> lock(m_inventoryMx);
-	--m_inventory.JobWeapons[static_cast<JobWeapon>(weapon)];
+	--m_inventory.JobWeapons[static_cast<JobWeapon>(weapon - 1)];
 	// update packet
 }
 
-void Room::AddJobDocument(JobDocument job)			
+void Room::AddJobDocument(int job)			
 {
 	std::lock_guard<std::mutex> lock(m_inventoryMx);
-	++m_inventory.JobDocuments[job];
+	++m_inventory.JobDocuments[static_cast<JobDocument>(job - 4)];
 	// update packet
 }
 
