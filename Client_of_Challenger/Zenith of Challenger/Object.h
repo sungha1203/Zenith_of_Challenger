@@ -129,6 +129,10 @@ public:
 	//¹öÆ° Å¬¸¯ °ü·Ã
 	bool GameObject::IsPointInside(int mouseX, int mouseY) const;
 
+	//Å÷·»´õ¸µ ¿Ü°û¼±¿ë
+	virtual void RenderOutline(const ComPtr<ID3D12GraphicsCommandList>& commandList) const;
+	void SetOutlineShader(const std::shared_ptr<Shader>& shader) { m_outlineShader = shader; }
+
 protected:
 	shared_ptr<MeshBase> m_mesh;
 	shared_ptr<Texture> m_texture;
@@ -157,6 +161,8 @@ protected:
 	XMFLOAT4 m_customUV{ 0.f, 0.f, 1.f, 1.f };
 	UINT m_useCustomUV = 0;
 
+	//¿Ü°û¼± Àü¿ë
+	shared_ptr<Shader> m_outlineShader;
 };
 
 class RotatingObject : public InstanceObject

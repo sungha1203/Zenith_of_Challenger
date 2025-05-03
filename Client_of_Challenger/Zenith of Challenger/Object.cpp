@@ -317,6 +317,11 @@ bool GameObject::IsPointInside(int mouseX, int mouseY) const
     return (mouseX >= left && mouseX <= right && mouseY >= top && mouseY <= bottom);
 }
 
+//¿Ü°û¼± Àü¿ë
+void GameObject::RenderOutline(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
+{
+}
+
 
 RotatingObject::RotatingObject() : InstanceObject()
 {

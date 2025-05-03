@@ -102,3 +102,9 @@ public:
 	HealthBarShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSignature);
 	~HealthBarShader() override = default;
 };
+
+class OutlineShader : public Shader {
+public:
+	OutlineShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSignature);
+	~OutlineShader() override = default;
+};

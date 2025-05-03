@@ -240,6 +240,19 @@ void Monsters::ApplyDamage(float damage)
     }
 }
 
+void Monsters::RenderOutline(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
+{
+    if (m_isDead) return;
+    if (!m_outlineShader) return;
+
+    for (const auto& mesh : m_meshes)
+    {
+        m_outlineShader->UpdateShaderVariable(commandList);
+        UpdateShaderVariable(commandList); // 월드행렬 전송
+        mesh->Render(commandList);
+    }
+}
+
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

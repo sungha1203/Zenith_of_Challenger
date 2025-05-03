@@ -60,6 +60,9 @@ public:
 	bool IsParticleSpawned() const { return m_particleSpawned; }
 	void MarkParticleSpawned() { m_particleSpawned = true; }
 
+	//몬스터 외곽선 호출
+	void RenderOutline(const ComPtr<ID3D12GraphicsCommandList>& commandList) const;
+
 private:
 	shared_ptr<Camera> m_camera;
 

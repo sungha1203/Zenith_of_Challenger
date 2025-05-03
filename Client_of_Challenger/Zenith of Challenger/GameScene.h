@@ -84,4 +84,8 @@ private:
     //인벤토리 숫자 관련
     std::vector<std::shared_ptr<GameObject>> m_inventoryDigits;
     int m_inventoryCounts[6] = { 0, 0, 0, 0, 0, 0 };
+
+
+    //툰 렌더링 외곽선 토글키
+    bool m_OutLine = false;
 };

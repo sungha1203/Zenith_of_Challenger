@@ -36,13 +36,6 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device,
         gameObject->SetScale(XMFLOAT3{ 0.01f, 0.01f, 0.01f }); // 원래 크기로 유지
         gameObject->SetPosition(XMFLOAT3{ 0.0f, 0.0f, 0.0f }); // Y축 위치 조정
 
-        // 여기서 AABB 생성 (정적 오브젝트는 1회만)
-        BoundingBox box;
-        box.Center = gameObject->GetPosition();
-        box.Extents = { 1.0f, 1.0f, 1.0f }; // 적절한 값으로 조절
-
-        gameObject->SetBoundingBox(box);
-
         m_fbxObjects.push_back(gameObject);
     }
 
@@ -118,6 +111,9 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
 
         m_camera->SetLens(0.25f * XM_PI, gGameFramework->GetAspectRatio(), 0.1f, 1000.f);
         m_player->SetCamera(m_camera); // 카메라 바뀐 후 플레이어에도 재등록
+    }
+    if (GetAsyncKeyState(VK_F4) & 0x0001) { // F3 키 단일 입력
+        m_OutLine = !m_OutLine;
     }
 
     if (GetAsyncKeyState(VK_OEM_PLUS) & 0x0001) // = 키
@@ -412,6 +408,13 @@ void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) con
     {
         for (const auto& monster : group)
         {
+            // 1. 외곽선 Pass
+            if (m_OutLine)
+            {
+                monster->SetOutlineShader(m_shaders.at("OUTLINE"));
+                monster->RenderOutline(commandList);
+            }
+
             monster->SetShader(m_shaders.at("FrightFly"));
             monster->Render(commandList);
         }
@@ -506,6 +509,10 @@ void GameScene::BuildShaders(const ComPtr<ID3D12Device>& device,
 
     auto HealthbarShader = make_shared<HealthBarShader>(device, rootSignature);
     m_shaders.insert({ "HealthBarShader", HealthbarShader });
+
+    //외곽선 전용 셰이더
+    auto outlineShader = make_shared<OutlineShader>(device, rootSignature);
+    m_shaders.insert({ "OUTLINE", outlineShader });
 }
 
 void GameScene::BuildMeshes(const ComPtr<ID3D12Device>& device,

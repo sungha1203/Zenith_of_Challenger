@@ -595,3 +595,42 @@ HealthBarShader::HealthBarShader(const ComPtr<ID3D12Device>& device, const ComPt
 
 	device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_pipelineState));
 }
+
+OutlineShader::OutlineShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSignature)
+{
+	vector<D3D12_INPUT_ELEMENT_DESC> inputLayout = {
+	   { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+	   { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+	   { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+	};
+
+#if defined(_DEBUG)
+	UINT compileFlags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
+#else
+	UINT compileFlags = 0;
+#endif
+
+	ComPtr<ID3DBlob> vs, ps, errors;
+	D3DCompileFromFile(TEXT("OutlineShader.hlsl"), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE,
+		"VSMain", "vs_5_1", compileFlags, 0, &vs, &errors);
+	D3DCompileFromFile(TEXT("OutlineShader.hlsl"), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE,
+		"PSMain", "ps_5_1", compileFlags, 0, &ps, &errors);
+
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC desc{};
+	desc.InputLayout = { inputLayout.data(), (UINT)inputLayout.size() };
+	desc.pRootSignature = rootSignature.Get();
+	desc.VS = { vs->GetBufferPointer(), vs->GetBufferSize() };
+	desc.PS = { ps->GetBufferPointer(), ps->GetBufferSize() };
+	desc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+	desc.RasterizerState.CullMode = D3D12_CULL_MODE_FRONT; // 외곽선용: 전면 컬링
+	desc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
+	desc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+	desc.SampleMask = UINT_MAX;
+	desc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+	desc.NumRenderTargets = 1;
+	desc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+	desc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
+	desc.SampleDesc.Count = 1;
+
+	device->CreateGraphicsPipelineState(&desc, IID_PPV_ARGS(&m_pipelineState));
+}
