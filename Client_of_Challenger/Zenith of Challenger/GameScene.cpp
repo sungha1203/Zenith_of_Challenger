@@ -449,7 +449,7 @@ void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) con
     {
         digit->Render(commandList); // 숫자 각각 렌더
     }
-    
+
     for (const auto& digit : m_inventoryDigits)
     {
         digit->Render(commandList);

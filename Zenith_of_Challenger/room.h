@@ -113,9 +113,9 @@ public:
 	// 인벤토리
 	void	AddGold(int plusgold);					// +골드
 	void    SpendGold(int minusgold);				// -골드
-	void	ADDJobWeapon(JobWeapon weapon);			// +무기
+	void	ADDJobWeapon(int weapon);				// +무기
 	void	DecideJobWeapon(int weapon);			// -무기
-	void	AddJobDocument(JobDocument job);		// +전직서
+	void	AddJobDocument(int job);				// +전직서
 	void	DecideJobDocument(int job);				// -전직서
 
 	// 몬스터

@@ -472,7 +472,7 @@ void Network::ProcessChat(int client_id, char* buffer, int length)
 	clients[client_id].do_recv();
 }
 
-// 몬스터 HP 업데이트
+// 몬스터 HP 업데이트 (임시)
 void Network::ProcessMonsterHP(int client_id, char* buffer, int length)
 {
 	CS_Packet_MonsterHP* pkt = reinterpret_cast<CS_Packet_MonsterHP*>(buffer);
@@ -493,23 +493,37 @@ void Network::ProcessMonsterHP(int client_id, char* buffer, int length)
 	}
 
 	if (room.GetMonster(pkt->monsterID).GetHP() == 0) {
-		SC_Packet_DropItem pkt3;
-		pkt3.type = SC_PACKET_DROPITEM;
-		pkt3.item = (int)room.GetMonster(pkt->monsterID).DropWHAT();
-		pkt3.x = room.GetMonster(pkt->monsterID).GetX();
-		pkt3.y = room.GetMonster(pkt->monsterID).GetY();
-		pkt3.z = room.GetMonster(pkt->monsterID).GetZ();
-		pkt3.size = sizeof(pkt3);
+		int dropItem = static_cast<int>(room.GetMonster(pkt->monsterID).DropWHAT());
 
 		std::random_device rd;
 		std::default_random_engine dre{ rd() };
 		std::uniform_int_distribution<int> uid1{ 1, 10 };
 
-		room.AddGold(uid1(dre));
 
+		SC_Packet_DropItem pkt3;
+		pkt3.type = SC_PACKET_DROPITEM;
+		pkt3.item = dropItem - 1;
+		pkt3.x = room.GetMonster(pkt->monsterID).GetX();
+		pkt3.y = room.GetMonster(pkt->monsterID).GetY();
+		pkt3.z = room.GetMonster(pkt->monsterID).GetZ();
+		pkt3.size = sizeof(pkt3);
+
+		if (dropItem > 0 && dropItem <= 3) {		// 무기
+			room.ADDJobWeapon(dropItem);
+			pkt3.itemNum = room.GetWeaponTypeNum(dropItem - 1);
+		}
+		else if (dropItem > 3 && dropItem <= 6) {	// 전직서
+			room.AddJobDocument(dropItem);
+			pkt3.itemNum = room.GetJobTypeNum(dropItem - 4);
+		}
+		
 		for (int other_id : client) {
 			clients[other_id].do_send(pkt3);
 		}
+
+		std::this_thread::sleep_for(std::chrono::milliseconds(1));
+
+		room.AddGold(uid1(dre));
 	}
 
 	clients[client_id].do_recv();
@@ -523,8 +537,11 @@ void Network::ProcessInventorySelcet(int client_id, char* buffer, int length)
 	const auto& client = room.GetClients();
 
 	CS_Packet_Inventory* pkt = reinterpret_cast<CS_Packet_Inventory*>(buffer);
-	SC_Packet_Inventory pkt2;
+	SC_Packet_Inventory pkt2;		// 모든 클라의 인벤토리에서 해당 아이템을 하나 삭제하기 위한 패킷
 	pkt2.item = pkt->item;
+
+	SC_Packet_SelectItem pkt3;		// 해당 클라의 장비창에 해당 아이템을 장착하기 위한 패킷
+	pkt3.item = pkt->item;
 
 	// 무기 선택했고, 선택한 무기가 없을 때(주먹), 선택한 무기가 1개이상일 때
 	if (pkt->item > 0 && pkt->item <= 3 
@@ -534,7 +551,7 @@ void Network::ProcessInventorySelcet(int client_id, char* buffer, int length)
 		g_client[client_id].SetWeapon(pkt->item);
 		room.DecideJobWeapon(pkt->item);				// 방(인벤토리)에 있는 해당 무기 하나 지움
 		pkt2.num = room.GetWeaponTypeNum(pkt->item);
-		// 지금 이거 선택됐다. 해당 클라한테 보내줘야함.
+		clients[client_id].do_send(pkt3);				// 해당 클라 장비창에 무기 추가
 	}
 	// 전직서 선택했고, 선택한 직업이 없을 때(도전자), 선택한 전직서가 1개 이상일때
 	else if (pkt->item > 3 && pkt->item <= 6 
@@ -543,8 +560,8 @@ void Network::ProcessInventorySelcet(int client_id, char* buffer, int length)
 	{
 		g_client[client_id].SetJobType(pkt->item);
 		room.DecideJobDocument(pkt->item);
-		pkt2.num = room.GetJobTypeNum(pkt->item);
-		// 지금 이거 선택됐다. 해당 클라한테 보내줘야함.
+		pkt2.num = room.GetJobTypeNum(pkt->item);	
+		clients[client_id].do_send(pkt3);				// 해당 클라 장비창에 전직서 추가
 	}
 	else {
 		clients[client_id].do_recv();
@@ -558,10 +575,29 @@ void Network::ProcessInventorySelcet(int client_id, char* buffer, int length)
 	clients[client_id].do_recv();
 }
 
-// 강화 및 전직 설정(장비창)
+// 무기 강화(장비창)
 void Network::ProcessItemState(int client_id, char* buffer, int length)
 {
+	CS_Packet_ItemState* pkt = reinterpret_cast<CS_Packet_ItemState*>(buffer);
+	
+	int room_id = g_room_manager.GetRoomID(client_id);
+	Room& room = g_room_manager.GetRoom(room_id);
+	//const auto& client = room.GetClients();
 
+	// 1. 강화 시도 버튼을 눌렀을 때 2. 게임 골드가 0원 이상일 때  3. 강화 무기 등급이 9등급 아래일 때
+	if (pkt->enhanceTry == true && room.GetGold() > 0 && g_client[client_id].GetWeaponGrade() < 9) {
+		room.SpendGold(g_client[client_id].GetWeaponGrade() + 1);		// 무기 강화 비용 지불
+		g_client[client_id].SetWeaponGrade();							// 무기 강화 시도
+	}
+
+	SC_Packet_ItemState pkt2;
+	pkt2.type = SC_PACKET_ITEMSTATE;
+	pkt2.result = g_client[client_id].GetWeaponGrade();
+	pkt2.size = sizeof(pkt2);
+
+	clients[client_id].do_send(pkt2);
+
+	clients[client_id].do_recv();
 }
 
 //------------------------------------[Send Packet]------------------------------------
@@ -728,10 +764,4 @@ void Network::SendInitMonster(const std::vector<int>& client_id, const std::arra
 			}
 		}
 	}
-}
-
-// 강화 및 전직 설정
-void Network::SendItemState(const std::vector<int>& client_id)
-{
-
 }

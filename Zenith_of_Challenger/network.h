@@ -42,7 +42,6 @@ public:
 	void		SendStartZenithStage(const std::vector<int>& client_id);		// 도전 -> 정점 스테이지
 	void		SendUpdateGold(const std::vector<int>& client_id);				// 골드 업데이트
 	void		SendInitMonster(const std::vector<int>& client_id, const std::array<Monster, 50>& monsters);	// 몬스터 초기 좌표 설정
-	void		SendItemState(const std::vector<int>& client_id);				// 강화 및 전직 설정 
 	// ---------패킷 뿌려주기---------
 
 public:

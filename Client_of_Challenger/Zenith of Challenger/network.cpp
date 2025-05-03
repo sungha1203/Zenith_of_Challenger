@@ -90,6 +90,7 @@ void ClientNetwork::Receive()
                 ProcessMonsterHP(buffer);
                 break;
             case SC_PACKET_DROPITEM:
+                ProcessItemDrop(buffer);
                 break;
             case SC_PACKET_GOLD:
                 ProcessGold(buffer);
@@ -310,7 +311,16 @@ void ClientNetwork::ProcessMonsterHP(char* buffer)
 
 void ClientNetwork::ProcessItemDrop(char* buffer)
 {
+    SC_Packet_DropItem* pkt = reinterpret_cast<SC_Packet_DropItem*>(buffer);
 
+    // 현재 씬 가져오기 (GameScene으로 캐스팅 필요)
+    shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
+    GameScene* gameScene = dynamic_cast<GameScene*>(currentScene.get());
+
+    if (gameScene)
+    {
+        gameScene->SetInventoryCount(pkt->item, pkt->itemNum);
+    }
 }
 
 void ClientNetwork::ProcessGold(char* buffer)
