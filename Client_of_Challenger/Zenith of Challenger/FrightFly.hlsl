@@ -1,3 +1,4 @@
+#pragma enable_d3d11_debug_symbols
 #include "Shaders.hlsl"
 
 struct VertexInput
@@ -15,55 +16,85 @@ struct PixelInput
 	float3 worldPos : POSITION1;
 	float3 normal : NORMAL;
 	float2 texcoord : TEXCOORD;
+    
+    float4 debugColor : COLOR0;
 };
 
-float4x4 ScaleMatrix(float4x4 m, float s)
-{
-	return float4x4(
-        m[0] * s,
-        m[1] * s,
-        m[2] * s,
-        m[3] * s
-    );
-}
+//float4x4 ScaleMatrix(float4x4 m, float s)
+//{
+//	return float4x4(
+//        m[0] * s,
+//        m[1] * s,
+//        m[2] * s,
+//        m[3] * s
+//    );
+//}
 
 PixelInput VSMain(VertexInput input)
 {
 	PixelInput output;
 
-    // 스키닝 행렬 계산
-	float4x4 skinMatrix =
-    ScaleMatrix(g_boneMatrices[input.boneIndices.x], input.boneWeights.x) +
-    ScaleMatrix(g_boneMatrices[input.boneIndices.y], input.boneWeights.y) +
-    ScaleMatrix(g_boneMatrices[input.boneIndices.z], input.boneWeights.z) +
-    ScaleMatrix(g_boneMatrices[input.boneIndices.w], input.boneWeights.w);
-
-    // 위치 변환
-	float4 localPos = mul(float4(input.position, 1.0f), skinMatrix);
-	float4 worldPos = mul(localPos, g_worldMatrix);
-	float4 viewProjPos = mul(worldPos, mul(g_viewMatrix, g_projectionMatrix));
-
-	output.position = viewProjPos;
-	output.worldPos = worldPos.xyz;
-	output.normal = input.normal; // 스키닝 없이 원래 노멀 사용
+    float totalWeight = input.boneWeights.x + input.boneWeights.y + input.boneWeights.z + input.boneWeights.w;
+    if (totalWeight > 0.0001f)
+    {
+        input.boneWeights /= totalWeight; // 정규화
+    }
+    else
+    {
+        input.boneWeights = float4(1, 0, 0, 0); // fallback: 첫 번째 본만 사용
+    }
     
-    //// 노멀 변환
-	float3 localNormal =
-    g_boneMatrices[input.boneIndices.x][0].xyz * input.boneWeights.x +
-    g_boneMatrices[input.boneIndices.y][0].xyz * input.boneWeights.y +
-    g_boneMatrices[input.boneIndices.z][0].xyz * input.boneWeights.z +
-    g_boneMatrices[input.boneIndices.w][0].xyz * input.boneWeights.w;
+    float4 pos = float4(input.position, 1.0f);
 
-	float3 worldNormal = mul(localNormal, (float3x3) g_worldMatrix);
-	output.normal = normalize(worldNormal);
+// 각각의 본 행렬에 포지션 곱해주고, weight로 가중합
+    float4 skinpos =
+    mul(pos, g_MboneMatrices[input.boneIndices.x]) * input.boneWeights.x +
+    mul(pos, g_MboneMatrices[input.boneIndices.y]) * input.boneWeights.y +
+    mul(pos, g_MboneMatrices[input.boneIndices.z]) * input.boneWeights.z +
+    mul(pos, g_MboneMatrices[input.boneIndices.w]) * input.boneWeights.w;
+	
+      // --- 여기 추가 ---
+    //output.debugColor = float4(
+    //input.boneIndices.x / 39.0f,
+    //input.boneIndices.y / 39.0f,
+    //input.boneIndices.z / 39.0f,
+    //1.0f);
+    // ------------------
 
-	output.texcoord = input.texcoord;
+    
+    float4 worldPos = mul(skinpos, g_worldMatrix);
+    output.position = mul(worldPos, mul(g_viewMatrix, g_projectionMatrix));
+    output.worldPos = worldPos.xyz;
+    
+	 // 노멀 스키닝도 고쳐야 함
+    float3 n = normalize(input.normal);
 
+    float3 skinnedNormal =
+        mul((float3x3) g_MboneMatrices[input.boneIndices.x], n) * input.boneWeights.x +
+        mul((float3x3) g_MboneMatrices[input.boneIndices.y], n) * input.boneWeights.y +
+        mul((float3x3) g_MboneMatrices[input.boneIndices.z], n) * input.boneWeights.z +
+        mul((float3x3) g_MboneMatrices[input.boneIndices.w], n) * input.boneWeights.w;
+
+    output.normal = normalize(mul(skinnedNormal, (float3x3) g_worldMatrix));
+    output.texcoord = input.texcoord;
+    
+     // --- 추가: 디버그용 컬러 encode ---
+    // 디버깅할 정보: boneIndices (0~39 범위) 를 컬러로 뿌리기
+   // output.debugColor = float4(
+   //     input.boneIndices.x / 39.0f, // R: 첫 번째 본 인덱스
+   //     input.boneIndices.y / 39.0f, // G: 두 번째 본 인덱스
+   //     input.boneIndices.z / 39.0f, // B: 세 번째 본 인덱스
+   //     1.0f // A: 고정
+   // );
+  
 	return output;
 }
 
 float4 PSMain(PixelInput input) : SV_Target
 {
+    
+    //return input.debugColor;
+    
 	float4 texColor = g_texture[0].Sample(g_sampler, input.texcoord);
 
     // 너무 어두우면 fallback 색상

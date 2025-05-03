@@ -117,8 +117,9 @@ namespace RootParameter
 	constexpr UINT BoneMatrix = 7;
 	constexpr UINT LightingMaterial = 8;
 	constexpr UINT LightingLight = 9;
+	constexpr UINT MonsterBoneMatrix = 10;
 
-	constexpr UINT Count = 10;
+	constexpr UINT Count = 11;
 }
 
 namespace DescriptorRange
@@ -126,7 +127,8 @@ namespace DescriptorRange
 	constexpr UINT TextureCube = 0;
 	constexpr UINT Texture = 1;
 	constexpr UINT BoneMatrix = 2; 
-	constexpr UINT Count = 3;
+	constexpr UINT MonsterBoneMatrix = 3; 
+	constexpr UINT Count = 4;
 }
 
 
@@ -378,3 +380,4 @@ namespace Plane
 		return(xmf4Result);
 	}
 }
+std::string MatrixToString(const XMFLOAT4X4& mat); 

@@ -30,18 +30,25 @@ public:
     void SetSharedTexture(std::shared_ptr<Texture> texture) {
         m_sharedFBXTexture = texture;
     }
-
+    unordered_map<string, XMMATRIX> m_staticNodeTransforms;
     const auto& GetBoneOffsets() const { return m_boneOffsets; }
     const auto& GetBoneNameToIndex() const { return m_boneNameToIndex; }
+    const auto& GetBoneHierarchy() const { return m_boneHierarchy; }
+    const auto& GetStaticNodeTransforms() const { return m_staticNodeTransforms; }
+    const auto& GetNodeNameToGlobalTransform() const { return m_nodeNameToGlobalTransform; }
     shared_ptr<OtherPlayer> LoadOtherPlayer(
         const ComPtr<ID3D12Device>& device,
         const unordered_map<string, shared_ptr<Texture>>& textures,
         const unordered_map<string, shared_ptr<Shader>>& shaders);
+    XMMATRIX m_rootTransform;
+    void PrintBoneHierarchy(aiNode* node, int depth = 0);
+    void DumpBoneHierarchy(const aiScene* scene);
+    std::unordered_map<std::string, XMMATRIX> m_nodeNameToGlobalTransform;
 private:
     void ProcessNode(aiNode* node, const aiScene* scene, const XMMATRIX& parentTransform); // FBX 노드 처리
     shared_ptr<GameObject> ProcessMesh(aiMesh* mesh, const aiScene* scene, const XMMATRIX& transformMatrix); // FBX 메시 처리
     void ProcessAnimations(const aiScene* scene);
-
+    void FBXLoader::BuildBoneHierarchy(aiNode* node, const std::string& parentName, const XMMATRIX& parentTransform);
 private:
     vector<shared_ptr<MeshBase>> m_meshes;
     vector<shared_ptr<GameObject>> m_gameObjects; // FBX 모델용 GameObject 저장
@@ -49,6 +56,8 @@ private:
     std::vector<AnimationClip> m_animationClips;
 
     std::shared_ptr<Texture> m_sharedFBXTexture;
-    unordered_map<string, XMMATRIX> m_boneOffsets;
+    unordered_map<int, XMMATRIX> m_boneOffsets;
+    unordered_map<int, XMMATRIX> m_globalInverseTransform;
     unordered_map<string, int> m_boneNameToIndex;
+    unordered_map<string, string> m_boneHierarchy; // child -parent
 };

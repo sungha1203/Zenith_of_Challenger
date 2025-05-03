@@ -214,3 +214,20 @@ ID3D12Resource* CreateTextureResourceFromWICFile(ID3D12Device* pd3dDevice, ID3D1
 
 	return(pd3dTexture);
 }
+std::string MatrixToString(const XMFLOAT4X4& mat)
+{
+	std::ostringstream oss;
+	oss.precision(6);
+	oss << std::fixed;
+
+	for (int i = 0; i < 4; ++i)
+	{
+		oss << "[ ";
+		for (int j = 0; j < 4; ++j)
+		{
+			oss << mat.m[i][j] << (j < 3 ? ", " : " ");
+		}
+		oss << "]\n";
+	}
+	return oss.str();
+}

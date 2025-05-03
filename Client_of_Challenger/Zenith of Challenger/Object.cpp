@@ -70,6 +70,69 @@ void Object::SetRotationY(float yaw)
     m_rotation.y = yaw;
     UpdateWorldMatrix(); // 회전 반영해서 월드행렬 다시 계산
 }
+void Object::SetRotationZ(float pitch)
+{
+    m_rotation.z = pitch;
+    UpdateWorldMatrix(); // 회전 반영해서 월드행렬 다시 계산
+}
+void Object::PlusRotationY(float yaw)
+{
+    m_rotation.y += yaw;
+    UpdateWorldMatrix(); // 회전 반영해서 월드행렬 다시 계산
+}
+void Object::PlusRotationZ(float pitch)
+{
+    m_rotation.z += pitch;
+    UpdateWorldMatrix(); // 회전 반영해서 월드행렬 다시 계산
+}
+void Object::RotationX90()
+{
+    // 1. 기존 행렬을 XMMATRIX로 로드
+    XMMATRIX currentWorld = XMLoadFloat4x4(&m_worldMatrix);
+
+    // 2. 추가 회전 행렬 생성
+    XMMATRIX rotX = XMMatrixRotationX(XMConvertToRadians(90.0f));
+
+    // 3. 기존 행렬에 회전 행렬 곱하기 (회전 → 기존)
+    // 순서 중요: 회전을 "추가"하려면 → rotY * rotZ * 기존
+    XMMATRIX updated = XMMatrixMultiply(rotX,currentWorld);
+
+    // 4. 다시 저장
+    XMStoreFloat4x4(&m_worldMatrix, updated);
+}
+
+void Object::RotationY90()
+{
+    // 1. 기존 행렬을 XMMATRIX로 로드
+    XMMATRIX currentWorld = XMLoadFloat4x4(&m_worldMatrix);
+
+    // 2. 추가 회전 행렬 생성
+    XMMATRIX rotY = XMMatrixRotationY(XMConvertToRadians(90.0f));
+
+    // 3. 기존 행렬에 회전 행렬 곱하기 (회전 → 기존)
+    // 순서 중요: 회전을 "추가"하려면 → rotY * rotZ * 기존
+    XMMATRIX updated = XMMatrixMultiply(rotY, currentWorld);
+
+    // 4. 다시 저장
+    XMStoreFloat4x4(&m_worldMatrix, updated);
+}
+
+void Object::RotationZ90()
+{
+    // 1. 기존 행렬을 XMMATRIX로 로드
+    XMMATRIX currentWorld = XMLoadFloat4x4(&m_worldMatrix);
+
+    // 2. 추가 회전 행렬 생성
+    XMMATRIX rotZ = XMMatrixRotationZ(XMConvertToRadians(90.0f));
+
+    // 3. 기존 행렬에 회전 행렬 곱하기 (회전 → 기존)
+    // 순서 중요: 회전을 "추가"하려면 → rotY * rotZ * 기존
+    XMMATRIX updated = XMMatrixMultiply(rotZ, currentWorld);
+
+    // 4. 다시 저장
+    XMStoreFloat4x4(&m_worldMatrix, updated);
+}
+
 
 void Object::SetScale(XMFLOAT3 scale)
 {
@@ -130,8 +193,8 @@ void GameObject::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) co
     }
     UpdateShaderVariable(commandList);
 
-    if (m_texture) m_texture->UpdateShaderVariable(commandList, m_textureIndex);
-    if (m_material) m_material->UpdateShaderVariable(commandList);
+    //if (m_texture) m_texture->UpdateShaderVariable(commandList, m_textureIndex);
+    //if (m_material) m_material->UpdateShaderVariable(commandList);
 
     m_mesh->Render(commandList);
 

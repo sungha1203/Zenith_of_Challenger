@@ -4,7 +4,7 @@
 
 #include "stdafx.h"
 #include "GameFramework.h"
-
+#include <pix.h>
 CGameFramework::CGameFramework(UINT windowWidth, UINT windowHeight) :
 	m_nWndClientWidth{ windowWidth }, m_nWndClientHeight{ windowHeight },
 	m_aspectRatio{ static_cast<FLOAT>(windowWidth) / static_cast<FLOAT>(windowHeight) },
@@ -33,7 +33,8 @@ void CGameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd)
 	m_clientstate = std::make_unique<ClientState>();
 	m_clientNetwork->Connect();								// 서버 연결
 	//-----------[서버]-----------
-
+	//PIXSetMarker(0, "PIX 캡처 진입");
+	//std::this_thread::sleep_for(std::chrono::seconds(1)); // 1초 대기
 	InitDirect3D();
 	BuildObjects();
 }
@@ -48,6 +49,9 @@ void CGameFramework::OnDestroy()
 
 void CGameFramework::FrameAdvance()
 {
+	//PIXBeginEvent(0, "프레임 렌더링");
+	//Sleep(100); // 일부러 GPU 작업 시간 확보
+	//PIXEndEvent();
 	m_GameTimer.Tick(60); // FPS 측정
 
 	//m_srvHeapOffset = 0; // 매 프레임 디스크립터 오프셋 초기화
@@ -347,8 +351,9 @@ void CGameFramework::CreateRootSignature()
 {
 	CD3DX12_DESCRIPTOR_RANGE descriptorRange[DescriptorRange::Count];
 	descriptorRange[DescriptorRange::TextureCube].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);   // t0, space0
-	descriptorRange[DescriptorRange::Texture].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 9, 1, 0);       // t1~t9, space0
-	descriptorRange[DescriptorRange::BoneMatrix].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 10, 0); // t10
+	descriptorRange[DescriptorRange::Texture].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 13, 1, 0);       // t1~t13, space0
+	descriptorRange[DescriptorRange::BoneMatrix].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 14, 0); // t14
+	descriptorRange[DescriptorRange::MonsterBoneMatrix].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 15, 0); // t15
 
 	CD3DX12_ROOT_PARAMETER rootParameter[RootParameter::Count];
 	rootParameter[RootParameter::GameObject].InitAsConstantBufferView(0, 0); // b0, space0
@@ -363,6 +368,7 @@ void CGameFramework::CreateRootSignature()
 
 	rootParameter[RootParameter::LightingMaterial].InitAsConstantBufferView(0, 1); // b0, space1
 	rootParameter[RootParameter::LightingLight].InitAsConstantBufferView(0, 2);    // b0, space2
+	rootParameter[RootParameter::MonsterBoneMatrix].InitAsDescriptorTable(1, &descriptorRange[DescriptorRange::MonsterBoneMatrix], D3D12_SHADER_VISIBILITY_VERTEX);
 
 	CD3DX12_STATIC_SAMPLER_DESC samplerDesc(0);
 	CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc;

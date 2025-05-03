@@ -51,7 +51,7 @@ cbuffer Light : register(b3)
 
 // ÅØ½ºÃ³ ½½·Ô
 TextureCube g_textureCube : register(t0);
-Texture2D g_texture[9] : register(t1); // t1 ~ t10 ¡æ space0
+Texture2D g_texture[13] : register(t1); // t1 ~ t10 ¡æ space0
 
 // InstanceData: t0, space1
 struct InstanceData
@@ -63,7 +63,8 @@ struct InstanceData
 StructuredBuffer<InstanceData> g_instanceData : register(t0, space1);
 
 // BoneMatrix: t2, space0
-StructuredBuffer<float4x4> g_boneMatrices : register(t10);
+StructuredBuffer<float4x4> g_boneMatrices : register(t14);
+StructuredBuffer<float4x4> g_MboneMatrices : register(t15);
 
 // »ùÇÃ·¯
 SamplerState g_sampler : register(s0);

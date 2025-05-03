@@ -1,357 +1,452 @@
-#include "FBXLoader.h"
+ï»¿#include "FBXLoader.h"
 #include"OtherPlayer.h"
+#define DEG_TO_RAD (XM_PI / 180.0f)
 bool FBXLoader::LoadFBXModel(const std::string& filename, const XMMATRIX& rootTransform)
 {
-    Assimp::Importer importer;
+	Assimp::Importer importer;
 
-    const aiScene* scene = importer.ReadFile(filename,
-        aiProcess_Triangulate |
-        aiProcess_ConvertToLeftHanded |
-        aiProcess_GenNormals |
-        aiProcess_FlipUVs);
+	const aiScene* scene = importer.ReadFile(filename,
+		aiProcess_Triangulate |
+		aiProcess_ConvertToLeftHanded |
+		aiProcess_GenNormals |
+		aiProcess_FlipUVs);
 
-    if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
-    {
-        std::string errorMsg = "[Assimp] Load Failed: ";
-        errorMsg += importer.GetErrorString();
-        OutputDebugStringA(errorMsg.c_str());
-        return false;
-    }
+	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
+	{
+		std::string errorMsg = "[Assimp] Load Failed: ";
+		errorMsg += importer.GetErrorString();
+		OutputDebugStringA(errorMsg.c_str());
+		return false;
+	}
 
-    OutputDebugStringA("[FBXLoader] ===== LoadFBXModel ½ÃÀÛ =====\n");
+	OutputDebugStringA("[FBXLoader] ===== LoadFBXModel ì‹œì‘ =====\n");
 
-    // ³ëµå ¹× ¸Ş½Ã ÆÄ½Ì
-    ProcessNode(scene->mRootNode, scene, rootTransform);
 
-    // ¸Ş½Ã ¼ö Ãâ·Â
-    {
-        char buffer[128];
-        sprintf_s(buffer, "[FBXLoader] ¸Ş½Ã °³¼ö: %llu\n", m_meshes.size());
-        OutputDebugStringA(buffer);
-    }
+	ProcessNode(scene->mRootNode, scene, rootTransform);
+	BuildBoneHierarchy(scene->mRootNode, "", XMMatrixIdentity());
 
-    // º» ÀÎµ¦½º ¸ÅÇÎ ·Î±× Ãâ·Â
-    OutputDebugStringA("[FBXLoader] º» ÀÎµ¦½º ¸ÅÇÎ °á°ú:\n");
-    for (const auto& [name, index] : m_boneNameToIndex)
-    {
-        std::string log = "  [Index " + std::to_string(index) + "] : " + name + "\n";
-        OutputDebugStringA(log.c_str());
-    }
 
-    // ¾Ö´Ï¸ŞÀÌ¼Ç Á¤º¸ Ãâ·Â
-    if (scene->HasAnimations())
-    {
-        char buffer[256];
-        sprintf_s(buffer, "[FBXLoader] ¾Ö´Ï¸ŞÀÌ¼Ç °³¼ö: %d\n", (int)scene->mNumAnimations);
-        OutputDebugStringA(buffer);
+	//ê³„ì¸µì •ë³´ ì €ì¥
 
-        for (UINT i = 0; i < scene->mNumAnimations; ++i)
-        {
-            aiAnimation* anim = scene->mAnimations[i];
+	// ë©”ì‹œ ìˆ˜ ì¶œë ¥
+	{
+		char buffer[128];
+		sprintf_s(buffer, "[FBXLoader] ë©”ì‹œ ê°œìˆ˜: %llu\n", m_meshes.size());
+		OutputDebugStringA(buffer);
+	}
 
-            sprintf_s(buffer, "[FBXLoader]  - [%d] ÀÌ¸§: %s | Duration: %.2f | Ã¤³Î ¼ö: %d\n",
-                i, anim->mName.C_Str(), anim->mDuration, (int)anim->mNumChannels);
-            OutputDebugStringA(buffer);
+	// ë³¸ ì¸ë±ìŠ¤ ë§¤í•‘ ë¡œê·¸ ì¶œë ¥
+	OutputDebugStringA("[FBXLoader] ë³¸ ì¸ë±ìŠ¤ ë§¤í•‘ ê²°ê³¼:\n");
+	for (const auto& [name, index] : m_boneNameToIndex)
+	{
+		std::string log = "  [Index " + std::to_string(index) + "] : " + name + "\n";
+		OutputDebugStringA(log.c_str());
+	}
 
-            for (UINT j = 0; j < anim->mNumChannels; ++j)
-            {
-                std::string rawName = anim->mChannels[j]->mNodeName.C_Str();
+	// ì• ë‹ˆë©”ì´ì…˜ ì •ë³´ ì¶œë ¥
+	if (scene->HasAnimations())
+	{
+		char buffer[256];
+		sprintf_s(buffer, "[FBXLoader] ì• ë‹ˆë©”ì´ì…˜ ê°œìˆ˜: %d\n", (int)scene->mNumAnimations);
+		OutputDebugStringA(buffer);
 
-                // Æ÷¸Ë Á¤Á¦: ³×ÀÓ½ºÆäÀÌ½º, °æ·Î Á¦°Å
-                std::string cleanName = rawName.substr(rawName.find_last_of('|') + 1);
-                std::replace(cleanName.begin(), cleanName.end(), ':', '_');
+		for (UINT i = 0; i < scene->mNumAnimations; ++i)
+		{
+			aiAnimation* anim = scene->mAnimations[i];
 
-                std::string log = "    [Ã¤³Î " + std::to_string(j) + "] " + cleanName + "\n";
-                OutputDebugStringA(log.c_str());
-            }
-        }
-    }
-    else
-    {
-        OutputDebugStringA("[FBXLoader] ¾Ö´Ï¸ŞÀÌ¼Ç ¾øÀ½\n");
-    }
+			sprintf_s(buffer, "[FBXLoader]  - [%d] ì´ë¦„: %s | Duration: %.2f | ì±„ë„ ìˆ˜: %d\n",
+				i, anim->mName.C_Str(), anim->mDuration, (int)anim->mNumChannels);
+			OutputDebugStringA(buffer);
 
-    // ¾Ö´Ï¸ŞÀÌ¼Ç µ¥ÀÌÅÍ ÆÄ½Ì
-    ProcessAnimations(scene);
+			for (UINT j = 0; j < anim->mNumChannels; ++j)
+			{
+				std::string rawName = anim->mChannels[j]->mNodeName.C_Str();
 
-    OutputDebugStringA("[FBXLoader] ===== LoadFBXModel ¿Ï·á =====\n");
-    return true;
+				// í¬ë§· ì •ì œ: ë„¤ì„ìŠ¤í˜ì´ìŠ¤, ê²½ë¡œ ì œê±°
+				std::string cleanName = rawName.substr(rawName.find_last_of('|') + 1);
+				std::replace(cleanName.begin(), cleanName.end(), ':', '_');
+
+				std::string log = "    [ì±„ë„ " + std::to_string(j) + "] " + cleanName + "\n";
+				OutputDebugStringA(log.c_str());
+			}
+		}
+	}
+	else
+	{
+		OutputDebugStringA("[FBXLoader] ì• ë‹ˆë©”ì´ì…˜ ì—†ìŒ\n");
+	}
+
+	// ì• ë‹ˆë©”ì´ì…˜ ë°ì´í„° íŒŒì‹±
+	ProcessAnimations(scene);
+	return true;
 }
 
 
 
 shared_ptr<OtherPlayer> FBXLoader::LoadOtherPlayer(const ComPtr<ID3D12Device>& device, const unordered_map<string, shared_ptr<Texture>>& textures, const unordered_map<string, shared_ptr<Shader>>& shaders)
-{    
-    // [1] ÇÃ·¹ÀÌ¾î ¸ğµ¨¿ë ½ºÄÉÀÏ Çà·Ä ¼³Á¤ (Å©±â Á¶Àı)
-    XMMATRIX playerTransform = XMMatrixScaling(0.05f, 0.05f, 0.05);
+{
+	// [1] í”Œë ˆì´ì–´ ëª¨ë¸ìš© ìŠ¤ì¼€ì¼ í–‰ë ¬ ì„¤ì • (í¬ê¸° ì¡°ì ˆ)
+	XMMATRIX playerTransform = XMMatrixScaling(0.05f, 0.05f, 0.05);
 
-    // [2] FBX ·Î´õ »ı¼º ¹× ¸ğµ¨ ·Îµå
-    auto otherPlayer = make_shared<FBXLoader>();
-    cout << "Ä³¸¯ÅÍ ·Îµå Áß!!!!" << endl;
+	// [2] FBX ë¡œë” ìƒì„± ë° ëª¨ë¸ ë¡œë“œ
+	auto otherPlayer = make_shared<FBXLoader>();
+	cout << "ìºë¦­í„° ë¡œë“œ ì¤‘!!!!" << endl;
 
-    if (otherPlayer->LoadFBXModel("Model/Player/Player2.fbx", playerTransform))
-    {
-        auto& meshes = otherPlayer->GetMeshes();
-        if (meshes.empty()) {
-            OutputDebugStringA("[ERROR] FBX¿¡¼­ ¸Ş½Ã¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù.\n");
-            return NULL; 
-        }
+	if (otherPlayer->LoadFBXModel("Model/Player/Player2.fbx", playerTransform))
+	{
+		auto& meshes = otherPlayer->GetMeshes();
+		if (meshes.empty()) {
+			OutputDebugStringA("[ERROR] FBXì—ì„œ ë©”ì‹œë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤.\n");
+			return NULL;
+		}
 
-        // [3] Player °´Ã¼ »ı¼º
-        auto player = make_shared<OtherPlayer>(device); 
+		// [3] Player ê°ì²´ ìƒì„±
+		auto player = make_shared<OtherPlayer>(device);
 
 
-        player->SetScale(XMFLOAT3{ 1.f, 1.f, 1.f }); // ±âº»°ª È®Á¤
-        player->SetRotationY(0.f);                  // Á¤¸éÀ» º¸°Ô ÃÊ±âÈ­
+		player->SetScale(XMFLOAT3{ 1.f, 1.f, 1.f }); // ê¸°ë³¸ê°’ í™•ì •
+		player->SetRotationY(0.f);                  // ì •ë©´ì„ ë³´ê²Œ ì´ˆê¸°í™”
 
-        // [4] À§Ä¡ ¹× ½ºÄÉÀÏ ¼³Á¤
-        //player->SetPosition(XMFLOAT3{ 40.f, 1.7f, -50.f });
-       
-       
-       
-       
+		// [4] ìœ„ì¹˜ ë° ìŠ¤ì¼€ì¼ ì„¤ì •
+		//player->SetPosition(XMFLOAT3{ 40.f, 1.7f, -50.f });
 
-       
 
-        // [5] FBX ¸Ş½Ã ÀüºÎ µî·Ï
-        for (int i = 0; i < meshes.size(); ++i)
-        {
-            player->AddMesh(meshes[i]);
-        }
 
-        // [6] ¾Ö´Ï¸ŞÀÌ¼Ç Å¬¸³ ¹× º» Á¤º¸ ¼³Á¤
-        player->SetAnimationClips(otherPlayer->GetAnimationClips());
-        player->SetCurrentAnimation("Idle");
-        player->SetBoneOffsets(otherPlayer->GetBoneOffsets());
-        player->SetBoneNameToIndex(otherPlayer->GetBoneNameToIndex());
+		// [5] FBX ë©”ì‹œ ì „ë¶€ ë“±ë¡
+		for (int i = 0; i < meshes.size(); ++i)
+		{
+			player->AddMesh(meshes[i]);
+		}
 
-        // [7] ÅØ½ºÃ³, ¸ÓÆ¼¸®¾ó ¼³Á¤
-        player->SetTexture(textures.at("CHARACTER"));
-        player->SetTextureIndex(textures.at("CHARACTER")->GetTextureIndex()); 
-        //player->SetMaterial(materials.at("CHARACTER")); // ¾øÀ¸¸é »ı¼º ÇÊ¿ä
-        player->SetShader(shaders.at("CHARACTER")); // ¾øÀ¸¸é »ı¼º ÇÊ¿ä
-        player->SetDebugLineShader(shaders.at("DebugLineShader"));
+		// [6] ì• ë‹ˆë©”ì´ì…˜ í´ë¦½ ë° ë³¸ ì •ë³´ ì„¤ì •
+		player->SetAnimationClips(otherPlayer->GetAnimationClips());
+		player->SetCurrentAnimation("Idle");
+		player->SetBoneOffsets(otherPlayer->GetBoneOffsets());
+		player->SetBoneNameToIndex(otherPlayer->GetBoneNameToIndex());
+		player->SetBoneHierarchy(otherPlayer->GetBoneHierarchy());
+		player->SetstaticNodeTransforms(otherPlayer->GetStaticNodeTransforms());
 
-        // m_player »ı¼º ÀÌÈÄ À§Ä¡
-        BoundingBox playerBox;
-        playerBox.Center = XMFLOAT3{ 0.f, 4.0f, 0.f };
-        playerBox.Extents = { 1.0f, 4.0f, 1.0f }; // ½ºÄÉÀÏ¸µµÈ °ª
-        player->SetBoundingBox(playerBox);
+		// [7] í…ìŠ¤ì²˜, ë¨¸í‹°ë¦¬ì–¼ ì„¤ì •
+		player->SetTexture(textures.at("CHARACTER"));
+		player->SetTextureIndex(textures.at("CHARACTER")->GetTextureIndex());
+		//player->SetMaterial(materials.at("CHARACTER")); // ì—†ìœ¼ë©´ ìƒì„± í•„ìš”
+		player->SetShader(shaders.at("CHARACTER")); // ì—†ìœ¼ë©´ ìƒì„± í•„ìš”
+		player->SetDebugLineShader(shaders.at("DebugLineShader"));
 
-        // [8] º» Çà·Ä StructuredBuffer¿ë SRV »ı¼º
-        auto [cpuHandle, gpuHandle] = gGameFramework->AllocateDescriptorHeapSlot();
-        player->CreateBoneMatrixSRV(device, cpuHandle, gpuHandle);
+		// m_player ìƒì„± ì´í›„ ìœ„ì¹˜
+		BoundingBox playerBox;
+		playerBox.Center = XMFLOAT3{ 0.f, 4.0f, 0.f };
+		playerBox.Extents = { 1.0f, 4.0f, 1.0f }; // ìŠ¤ì¼€ì¼ë§ëœ ê°’
+		player->SetBoundingBox(playerBox);
 
-        // [9] Player µî·Ï ¹× GameScene ³»ºÎ¿¡ ÀúÀå
-        //gGameFramework->SetPlayer(player);
-        //m_player = gGameFramework->GetPlayer();
-        
-        return player;
-    }
-    else
-    {
-        OutputDebugStringA("[ERROR] ÇÃ·¹ÀÌ¾î FBX ·Îµå ½ÇÆĞ!\n");
-    }
+		// [8] ë³¸ í–‰ë ¬ StructuredBufferìš© SRV ìƒì„±
+		auto [cpuHandle, gpuHandle] = gGameFramework->AllocateDescriptorHeapSlot();
+		player->CreateBoneMatrixSRV(device, cpuHandle, gpuHandle);
+
+		// [9] Player ë“±ë¡ ë° GameScene ë‚´ë¶€ì— ì €ì¥
+		//gGameFramework->SetPlayer(player);
+		//m_player = gGameFramework->GetPlayer();
+
+		return player;
+	}
+	else
+	{
+		OutputDebugStringA("[ERROR] í”Œë ˆì´ì–´ FBX ë¡œë“œ ì‹¤íŒ¨!\n");
+	}
 
 }
 
+void FBXLoader::PrintBoneHierarchy(aiNode* node, int depth)
+{
+	// depthë§Œí¼ ë“¤ì—¬ì“°ê¸°
+	for (int i = 0; i < depth; ++i)
+		OutputDebugStringA("  ");
+
+	OutputDebugStringA(("[Node] " + std::string(node->mName.C_Str()) + "\n").c_str());
+
+	// ìì‹ë“¤ ìˆœíšŒ
+	for (UINT i = 0; i < node->mNumChildren; ++i)
+	{
+		PrintBoneHierarchy(node->mChildren[i], depth + 1);
+	}
+}
+
+void FBXLoader::DumpBoneHierarchy(const aiScene* scene)
+{
+	if (!scene || !scene->mRootNode) return;
+
+	OutputDebugStringA("================ Bone Hierarchy Dump ================\n");
+	PrintBoneHierarchy(scene->mRootNode);
+	OutputDebugStringA("=====================================================\n");
+}
+
+
 void FBXLoader::ProcessNode(aiNode* node, const aiScene* scene, const XMMATRIX& parentTransform)
 {
-    // ³ëµåÀÇ ·ÎÄÃ Çà·ÄÀ» XMMATRIX·Î º¯È¯
-    aiMatrix4x4 mat = node->mTransformation;
-    aiMatrix4x4 transpose = mat; // Assimp´Â row-major
-    transpose.Transpose();       // DirectX´Â column-majorÀÌ¹Ç·Î ÀüÄ¡ ÇÊ¿ä
 
-    XMMATRIX nodeLocalTransform = XMLoadFloat4x4(reinterpret_cast<XMFLOAT4X4*>(&transpose));
+	aiMatrix4x4 mat = node->mTransformation; // AssimpëŠ” ê¸°ë³¸ì ìœ¼ë¡œ ë¡œì»¬ SRTê°€ ì €ì¥ë˜ì–´ ìˆìŒ
+	aiMatrix4x4 transpose = mat;
+	transpose.Transpose(); // DirectXëŠ” column-majorë‹ˆê¹Œ ì „ì¹˜ í•„ìš”
 
-    // ±Û·Î¹ú º¯È¯ = ºÎ¸ğ * ·ÎÄÃ
-    XMMATRIX globalTransform = XMMatrixMultiply(nodeLocalTransform, parentTransform);
+	XMMATRIX nodeLocalTransform = XMLoadFloat4x4(reinterpret_cast<XMFLOAT4X4*>(&transpose));
+	// ë©”ì‰¬ ë Œë”ë§ìš©ìœ¼ë¡œëŠ” ê¸€ë¡œë²Œ ë³€í™˜ í•„ìš”
+	XMMATRIX globalTransform = XMMatrixMultiply(nodeLocalTransform, parentTransform);
 
-    // ¸Ş½Ã°¡ Á¸ÀçÇÏ¸é Ã³¸®
-    for (UINT i = 0; i < node->mNumMeshes; i++)
-    {
-        aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
+	// ë©”ì‹œ ì²˜ë¦¬
+	for (UINT i = 0; i < node->mNumMeshes; ++i)
+	{
+		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
+		auto object = ProcessMesh(mesh, scene, globalTransform);
+		m_gameObjects.push_back(object);
+	}
 
-        //std::cout << "[Mesh] Name: " << mesh->mName.C_Str() << std::endl;
-
-        auto object = ProcessMesh(mesh, scene, globalTransform);
-        m_gameObjects.push_back(object);
-    }
-
-    // ÀÚ½Ä ³ëµå ¼øÈ¸
-    for (UINT i = 0; i < node->mNumChildren; i++)
-    {
-        ProcessNode(node->mChildren[i], scene, globalTransform);
-    }
+	// ìì‹ ë…¸ë“œ ìˆœíšŒ
+	for (UINT i = 0; i < node->mNumChildren; ++i)
+	{
+		ProcessNode(node->mChildren[i], scene, globalTransform);
+	}
 }
 
 shared_ptr<GameObject> FBXLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene, const XMMATRIX& globalTransform)
 {
-    float scaleFactor = 1.0f;
-    auto device = gGameFramework->GetDevice();
-    auto commandList = gGameFramework->GetCommandList();
+	float scaleFactor = 1.0f;
+	auto device = gGameFramework->GetDevice();
+	auto commandList = gGameFramework->GetCommandList();
 
-    // [1] ¾Ö´Ï¸ŞÀÌ¼Ç º»ÀÌ ÀÖ´Â °æ¿ì
-    if (mesh->HasBones())
-    {
-        std::vector<SkinnedVertex> vertices(mesh->mNumVertices);
+	// [1] ì• ë‹ˆë©”ì´ì…˜ ë³¸ì´ ìˆëŠ” ê²½ìš°
+	if (mesh->HasBones())
+	{
+		std::vector<SkinnedVertex> vertices(mesh->mNumVertices);
 
-        for (UINT i = 0; i < mesh->mNumVertices; ++i)
-        {
-            XMFLOAT3 pos = { -mesh->mVertices[i].x * 0.9f, mesh->mVertices[i].y * 0.9f, mesh->mVertices[i].z * 0.9f };
-            XMStoreFloat3(&vertices[i].position, XMVector3Transform(XMLoadFloat3(&pos), globalTransform));
+		for (UINT i = 0; i < mesh->mNumVertices; ++i)
+		{
+			XMFLOAT3 pos = { mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z };
+			vertices[i].position = pos; // ê·¸ëƒ¥ ì›ë³¸ pos
 
-            XMFLOAT3 normal = { mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z };
-            XMStoreFloat3(&vertices[i].normal, XMVector3Normalize(XMVector3TransformNormal(XMLoadFloat3(&normal), globalTransform)));
+			vertices[i].normal = { mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z }; // ê·¸ëƒ¥ ì›ë³¸ normal
+			vertices[i].uv = mesh->HasTextureCoords(0) ?
+				XMFLOAT2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y) :
+				XMFLOAT2(0.0f, 0.0f);
 
-            vertices[i].uv = mesh->HasTextureCoords(0) ?
-                XMFLOAT2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y) :
-                XMFLOAT2(0.0f, 0.0f);
+			vertices[i].boneIndices = XMUINT4(0, 0, 0, 0);
+			vertices[i].boneWeights = XMFLOAT4(0.f, 0.f, 0.f, 0.f);
 
-            vertices[i].boneIndices = XMUINT4(0, 0, 0, 0);
-            vertices[i].boneWeights = XMFLOAT4(0.f, 0.f, 0.f, 0.f);
-        }
+		}
 
-        // Bone Á¤º¸ ÀúÀå
-        for (UINT i = 0; i < mesh->mNumBones; ++i)
-        {
-            aiBone* bone = mesh->mBones[i];
-            string boneName = bone->mName.C_Str();
+		// Bone ì •ë³´ ì €ì¥
+		for (UINT i = 0; i < mesh->mNumBones; ++i)
+		{
+			aiBone* bone = mesh->mBones[i];
+			string boneName = bone->mName.C_Str();
 
-            aiMatrix4x4 offset = bone->mOffsetMatrix;
-            offset.Transpose();
-            XMMATRIX offsetMatrix = XMLoadFloat4x4(reinterpret_cast<XMFLOAT4X4*>(&offset));
-
-            // Àß¸øµÈ ÀÎµ¦½º ¡æ Àü¿ª ÀÎµ¦½º ºÎ¿© ¹æ½ÄÀ¸·Î ¼öÁ¤
-            if (!m_boneNameToIndex.contains(boneName))
-            {
-                m_boneNameToIndex[boneName] = static_cast<int>(m_boneNameToIndex.size());
-                m_boneOffsets[boneName] = offsetMatrix;
-            }
-
-            int boneIndex = m_boneNameToIndex[boneName];
-
-            // º» ¿µÇâ ¹İ¿µ
-            for (UINT j = 0; j < bone->mNumWeights; ++j)
-            {
-                UINT vertexId = bone->mWeights[j].mVertexId;
-                float weight = bone->mWeights[j].mWeight;
-
-                auto& vertex = vertices[vertexId];
-
-                if (vertex.boneWeights.x == 0.0f) {
-                    vertex.boneIndices.x = boneIndex;
-                    vertex.boneWeights.x = weight;
-                }
-                else if (vertex.boneWeights.y == 0.0f) {
-                    vertex.boneIndices.y = boneIndex;
-                    vertex.boneWeights.y = weight;
-                }
-                else if (vertex.boneWeights.z == 0.0f) {
-                    vertex.boneIndices.z = boneIndex;
-                    vertex.boneWeights.z = weight;
-                }
-                else if (vertex.boneWeights.w == 0.0f) {
-                    vertex.boneIndices.w = boneIndex;
-                    vertex.boneWeights.w = weight;
-                }
-            }
-        }
-
-        auto meshPtr = std::make_shared<Mesh<SkinnedVertex>>(device, commandList, vertices);
-        m_meshes.push_back(meshPtr);
-
-        auto gameObject = std::make_shared<GameObject>(device);
-        gameObject->SetMesh(meshPtr);
-        gameObject->SetWorldMatrix(globalTransform);
-        return gameObject;
-    }
-    // [2] ÀÏ¹İ ¸Ş½Ã (ÅØ½ºÃ³ ÀÖÀ½)
-    else
-    {
-        std::vector<TextureVertex> vertices;
-        for (UINT i = 0; i < mesh->mNumVertices; ++i)
-        {
-            TextureVertex vertex{};
-            XMFLOAT3 pos = { mesh->mVertices[i].x * scaleFactor, mesh->mVertices[i].y * scaleFactor, mesh->mVertices[i].z * scaleFactor };
-            XMStoreFloat3(&vertex.position, XMVector3Transform(XMLoadFloat3(&pos), globalTransform));
-
-            XMFLOAT3 normal = { mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z };
-            XMStoreFloat3(&vertex.normal, XMVector3Normalize(XMVector3TransformNormal(XMLoadFloat3(&normal), globalTransform)));
-
-            vertex.uv = mesh->HasTextureCoords(0) ?
-                XMFLOAT2(mesh->mTextureCoords[0][i].x, 1.0f - mesh->mTextureCoords[0][i].y) :
-                XMFLOAT2(0.0f, 0.0f);
-
-            vertices.push_back(vertex);
-        }
-
-        auto meshPtr = std::make_shared<Mesh<TextureVertex>>(device, commandList, vertices);
-        m_meshes.push_back(meshPtr);
+			aiMatrix4x4 offset = bone->mOffsetMatrix;
+			offset.Transpose();
+			XMMATRIX offsetMatrix = XMLoadFloat4x4(reinterpret_cast<XMFLOAT4X4*>(&offset));
 
 
-        auto gameObject = std::make_shared<GameObject>(device);
-        gameObject->SetMesh(meshPtr);
-        gameObject->SetBaseColor(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
-        gameObject->SetWorldMatrix(globalTransform);
 
-        // ÅØ½ºÃ³´Â GameScene¿¡¼­ ÀÏ°ı ÇÒ´ç
-        return gameObject;
-    }
+			// ì˜ëª»ëœ ì¸ë±ìŠ¤ â†’ ì „ì—­ ì¸ë±ìŠ¤ ë¶€ì—¬ ë°©ì‹ìœ¼ë¡œ ìˆ˜ì •
+			if (!m_boneNameToIndex.contains(boneName))
+			{
+				m_boneNameToIndex[boneName] = static_cast<int>(m_boneNameToIndex.size());
+				m_boneOffsets[m_boneNameToIndex[boneName]] = offsetMatrix;
+			}
+
+			int boneIndex = m_boneNameToIndex[boneName];
+			// ë³¸ ì˜í–¥ ë°˜ì˜
+			for (UINT j = 0; j < bone->mNumWeights; ++j)
+			{
+				UINT vertexId = bone->mWeights[j].mVertexId;
+				float weight = bone->mWeights[j].mWeight;
+				auto& vertex = vertices[vertexId];
+
+				if (vertex.boneWeights.x == 0.0f) {
+					vertex.boneIndices.x = boneIndex;
+					vertex.boneWeights.x = weight;
+				}
+				else if (vertex.boneWeights.y == 0.0f) {
+					vertex.boneIndices.y = boneIndex;
+					vertex.boneWeights.y = weight;
+				}
+				else if (vertex.boneWeights.z == 0.0f) {
+					vertex.boneIndices.z = boneIndex;
+					vertex.boneWeights.z = weight;
+				}
+				else if (vertex.boneWeights.w == 0.0f) {
+					vertex.boneIndices.w = boneIndex;
+					vertex.boneWeights.w = weight;
+				}
+
+
+			}
+		}
+		auto meshPtr = std::make_shared<Mesh<SkinnedVertex>>(device, commandList, vertices);
+		m_meshes.push_back(meshPtr);
+
+		auto gameObject = std::make_shared<GameObject>(device);
+		gameObject->SetMesh(meshPtr);
+		gameObject->SetWorldMatrix(globalTransform);
+		DumpBoneHierarchy(scene);
+		return gameObject;
+	}
+	// [2] ì¼ë°˜ ë©”ì‹œ (í…ìŠ¤ì²˜ ìˆìŒ)
+	else
+	{
+		std::vector<TextureVertex> vertices;
+		for (UINT i = 0; i < mesh->mNumVertices; ++i)
+		{
+			TextureVertex vertex{};
+			XMFLOAT3 pos = { mesh->mVertices[i].x * scaleFactor, mesh->mVertices[i].y * scaleFactor, mesh->mVertices[i].z * scaleFactor };
+			XMStoreFloat3(&vertex.position, XMVector3Transform(XMLoadFloat3(&pos), globalTransform));
+
+			XMFLOAT3 normal = { mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z };
+			XMStoreFloat3(&vertex.normal, XMVector3Normalize(XMVector3TransformNormal(XMLoadFloat3(&normal), globalTransform)));
+
+			vertex.uv = mesh->HasTextureCoords(0) ?
+				XMFLOAT2(mesh->mTextureCoords[0][i].x, 1.0f - mesh->mTextureCoords[0][i].y) :
+				XMFLOAT2(0.0f, 0.0f);
+
+			vertices.push_back(vertex);
+		}
+
+		auto meshPtr = std::make_shared<Mesh<TextureVertex>>(device, commandList, vertices);
+		m_meshes.push_back(meshPtr);
+
+
+		auto gameObject = std::make_shared<GameObject>(device);
+		gameObject->SetMesh(meshPtr);
+		gameObject->SetBaseColor(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
+		gameObject->SetWorldMatrix(globalTransform);
+
+		// í…ìŠ¤ì²˜ëŠ” GameSceneì—ì„œ ì¼ê´„ í• ë‹¹
+		return gameObject;
+	}
 }
 
 
 void FBXLoader::ProcessAnimations(const aiScene* scene)
 {
-    if (!scene->HasAnimations()) return;
+	if (!scene->HasAnimations()) return;
 
-    for (UINT i = 0; i < scene->mNumAnimations; ++i)
-    {
-        aiAnimation* aiAnim = scene->mAnimations[i];
+	for (UINT i = 0; i < scene->mNumAnimations; ++i)
+	{
+		aiAnimation* aiAnim = scene->mAnimations[i];
 
-        AnimationClip clip;
-        clip.name = aiAnim->mName.C_Str();
-        clip.duration = static_cast<float>(aiAnim->mDuration);
-        clip.ticksPerSecond = static_cast<float>(aiAnim->mTicksPerSecond != 0 ? aiAnim->mTicksPerSecond : 30.0f);
+		AnimationClip clip;
+		clip.name = aiAnim->mName.C_Str();
+		clip.duration = static_cast<float>(aiAnim->mDuration);
+		clip.ticksPerSecond = static_cast<float>(aiAnim->mTicksPerSecond != 0 ? aiAnim->mTicksPerSecond : 30.0f);
 
-        for (UINT j = 0; j < aiAnim->mNumChannels; ++j)
-        {
-            aiNodeAnim* aiNodeAnim = aiAnim->mChannels[j];
-            BoneAnimation boneAnim;
-            boneAnim.boneName = aiNodeAnim->mNodeName.C_Str();
+		for (UINT j = 0; j < aiAnim->mNumChannels; ++j)
+		{
+			aiNodeAnim* aiNodeAnim = aiAnim->mChannels[j];
+			BoneAnimation boneAnim;
+			boneAnim.boneName = aiNodeAnim->mNodeName.C_Str();
 
-            for (UINT k = 0; k < aiNodeAnim->mNumPositionKeys; ++k)
-            {
-                Keyframe keyframe;
-                keyframe.time = static_cast<float>(aiNodeAnim->mPositionKeys[k].mTime);
-                keyframe.position = XMFLOAT3(
-                    aiNodeAnim->mPositionKeys[k].mValue.x,
-                    aiNodeAnim->mPositionKeys[k].mValue.y,
-                    aiNodeAnim->mPositionKeys[k].mValue.z);
+			UINT keyCount = std::max({ aiNodeAnim->mNumPositionKeys, aiNodeAnim->mNumRotationKeys, aiNodeAnim->mNumScalingKeys });
 
-                if (k < aiNodeAnim->mNumRotationKeys)
-                {
-                    keyframe.rotation = XMFLOAT4(
-                        aiNodeAnim->mRotationKeys[k].mValue.x,
-                        aiNodeAnim->mRotationKeys[k].mValue.y,
-                        aiNodeAnim->mRotationKeys[k].mValue.z,
-                        aiNodeAnim->mRotationKeys[k].mValue.w);
-                }
+			for (UINT k = 0; k < keyCount; ++k)
+			{
+				Keyframe keyframe;
 
-                if (k < aiNodeAnim->mNumScalingKeys)
-                {
-                    keyframe.scale = XMFLOAT3(
-                        aiNodeAnim->mScalingKeys[k].mValue.x,
-                        aiNodeAnim->mScalingKeys[k].mValue.y,
-                        aiNodeAnim->mScalingKeys[k].mValue.z);
-                }
+				keyframe.time = (float)aiNodeAnim->mPositionKeys[k].mTime;
+				//keyframe.time = static_cast<float>(aiNodeAnim->mPositionKeys[k].mTime) / clip.ticksPerSecond;
+				if (k < aiNodeAnim->mNumPositionKeys)
+				{
+					keyframe.position = {
+						aiNodeAnim->mPositionKeys[k].mValue.x,
+						aiNodeAnim->mPositionKeys[k].mValue.y,
+						aiNodeAnim->mPositionKeys[k].mValue.z
+					};
+				}
 
-                boneAnim.keyframes.push_back(keyframe);
-            }
+				if (k < aiNodeAnim->mNumRotationKeys)
+				{
+					keyframe.rotation = {
+						aiNodeAnim->mRotationKeys[k].mValue.x,
+						aiNodeAnim->mRotationKeys[k].mValue.y,
+						aiNodeAnim->mRotationKeys[k].mValue.z,
+						aiNodeAnim->mRotationKeys[k].mValue.w
+					};
+				}
 
-            clip.boneAnimations[boneAnim.boneName] = boneAnim;
-        }
+				if (k < aiNodeAnim->mNumScalingKeys)
+				{
+					keyframe.scale = {
+						aiNodeAnim->mScalingKeys[k].mValue.x,
+						aiNodeAnim->mScalingKeys[k].mValue.y,
+						aiNodeAnim->mScalingKeys[k].mValue.z
+					};
 
-        m_animationClips.push_back(clip);
-    }
+				}
+
+				boneAnim.keyframes.push_back(keyframe);
+			}
+
+			clip.boneAnimations[boneAnim.boneName] = boneAnim;
+		}
+
+		m_animationClips.push_back(clip);
+	}
+}
+
+//void FBXLoader::BuildBoneHierarchy(aiNode* node, const std::string& parentName, const XMMATRIX& parentTransform)
+//{
+//	std::string nodeName = node->mName.C_Str();
+//
+//	// í˜„ì¬ ë…¸ë“œì˜ Local Transform ê³„ì‚°
+//	aiMatrix4x4 localMat = node->mTransformation;
+//	localMat.Transpose(); // AssimpëŠ” row-majorì´ë¯€ë¡œ
+//
+//	XMMATRIX localTransform = XMLoadFloat4x4(reinterpret_cast<XMFLOAT4X4*>(&localMat));
+//
+//	// Assimp Dummy Node (_$AssimpFbx$)ëŠ” ë¬´ì‹œ
+//	if (nodeName.find("_$AssimpFbx$") != std::string::npos)
+//	{
+//		// ìì‹ë“¤ì—ê²Œ ë¶€ëª¨ì˜ Transform ëˆ„ì  ì „ë‹¬
+//		for (UINT i = 0; i < node->mNumChildren; ++i)
+//			BuildBoneHierarchy(node->mChildren[i], parentName, XMMatrixMultiply( localTransform, parentTransform));
+//		return;
+//	}
+//
+//	// ë¶€ëª¨ ì´ë¦„ ê¸°ë¡
+//	if (!parentName.empty())
+//		m_boneHierarchy[nodeName] = parentName;
+//
+//	// í˜„ì¬ ë…¸ë“œì˜ Global Transform ê¸°ë¡ : parentTransform,localTransformë¡œ ê³ ì •
+//	m_nodeNameToGlobalTransform[nodeName] = XMMatrixMultiply(localTransform,parentTransform); 
+//
+//
+//	// ìì‹ë“¤ ì¬ê·€ í˜¸ì¶œ
+//	for (UINT i = 0; i < node->mNumChildren; ++i)
+//		BuildBoneHierarchy(node->mChildren[i], nodeName, m_nodeNameToGlobalTransform[nodeName]);
+//}
+void FBXLoader::BuildBoneHierarchy(aiNode* node, const std::string& parentName, const XMMATRIX& accumulatedTransform)
+{
+	std::string nodeName = node->mName.C_Str();
+
+	// í˜„ì¬ ë…¸ë“œì˜ ë¡œì»¬ í–‰ë ¬ ì¶”ì¶œ
+	aiMatrix4x4 localMat = node->mTransformation;
+	localMat.Transpose(); // AssimpëŠ” row-major
+	XMMATRIX localTransform = XMLoadFloat4x4(reinterpret_cast<XMFLOAT4X4*>(&localMat));
+
+	// ëˆ„ì ëœ íŠ¸ëœìŠ¤í¼
+	XMMATRIX combinedTransform = XMMatrixMultiply(localTransform, accumulatedTransform);
+
+	// $AssimpFbx$ ë…¸ë“œëŠ” ì´ë¦„ ë¬´ì‹œí•˜ê³  íŠ¸ëœìŠ¤í¼ë§Œ ëˆ„ì 
+	if (nodeName.find("_$AssimpFbx$") != std::string::npos)
+	{
+		for (UINT i = 0; i < node->mNumChildren; ++i)
+			BuildBoneHierarchy(node->mChildren[i], parentName, combinedTransform); // ì´ë¦„ì€ ì´ì „ ê·¸ëŒ€ë¡œ, íŠ¸ëœìŠ¤í¼ ëˆ„ì 
+		return;
+	}
+
+	// ìµœì¢… ë³¸ ë…¸ë“œ ì´ë¦„: nodeName
+	m_nodeNameToGlobalTransform[nodeName] = combinedTransform;
+
+	if (!parentName.empty())
+		m_boneHierarchy[nodeName] = parentName;
+
+	for (UINT i = 0; i < node->mNumChildren; ++i)
+		BuildBoneHierarchy(node->mChildren[i], nodeName, XMMatrixIdentity()); // â† ë‹¤ìŒì€ ìƒˆë¡œ ì‹œì‘
 }

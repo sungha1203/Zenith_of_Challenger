@@ -49,7 +49,10 @@ private:
     ////////////////몬스터 관련////////////////
     unordered_map<string, vector<shared_ptr<Monsters>>> m_monsterGroups;
     unordered_map<string, shared_ptr<MeshBase>> m_meshLibrary;
-    unordered_map<string, AnimationClip> m_animClipLibrary;
-    unordered_map<string, XMMATRIX> m_boneOffsetLibrary;
-    unordered_map<string, int> m_boneNameMap;
+    unordered_map<string, unordered_map<string, AnimationClip>> m_animClipLibrary;
+    unordered_map<string, unordered_map<int, XMMATRIX>> m_boneOffsetLibrary;
+    unordered_map<string, unordered_map<string, int>> m_boneNameMap;
+    unordered_map<string, unordered_map<string, string>> m_BoneHierarchy;
+    unordered_map<string, unordered_map<string, XMMATRIX>> m_staticNodeTransforms;
+    unordered_map<string, unordered_map<string, XMMATRIX>> m_NodeNameToGlobalTransform;
 };

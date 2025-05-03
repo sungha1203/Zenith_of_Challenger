@@ -7,12 +7,12 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device,
     const ComPtr<ID3D12GraphicsCommandList>& commandList,
     const ComPtr<ID3D12RootSignature>& rootSignature)
 {
+    PreRender(commandList);
     m_meshes.clear();
     m_textures.clear();
     m_objects.clear();
     m_fbxMeshes.clear(); // FBX 메쉬 초기화
-
-
+   
     BuildShaders(device, commandList, rootSignature);
     BuildMeshes(device, commandList);
     BuildTextures(device, commandList);
@@ -78,6 +78,32 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
 
     if (GetAsyncKeyState(VK_RIGHT) & 0x8000)
         m_uiObjects[1]->m_fillAmount += 0.1;
+
+    if (GetAsyncKeyState(VK_SPACE) & 0x8000)
+    {
+        if(m_monsterGroups["FrightFly"][0]->GetCurrentAnimation()=="Idle")
+        {
+            for (int i = 0; i < 10; i++)
+            {
+                m_monsterGroups["FrightFly"][i]->SetCurrentAnimation("Die");
+                m_monsterGroups["Flower_Fairy"][i]->SetCurrentAnimation("Die");
+                m_monsterGroups["Mushroom_Dark"][i]->SetCurrentAnimation("Die");
+                m_monsterGroups["Plant_Dionaea"][i]->SetCurrentAnimation("Die");
+                m_monsterGroups["Venus_Blue"][i]->SetCurrentAnimation("Die");
+            }
+        }
+        else
+        {
+            for (int i = 0; i < 10; i++)
+            {
+                m_monsterGroups["FrightFly"][i]->SetCurrentAnimation("Idle");
+                m_monsterGroups["Flower_Fairy"][i]->SetCurrentAnimation("Idle");
+                m_monsterGroups["Mushroom_Dark"][i]->SetCurrentAnimation("Idle");
+                m_monsterGroups["Plant_Dionaea"][i]->SetCurrentAnimation("Idle");
+                m_monsterGroups["Venus_Blue"][i]->SetCurrentAnimation("Idle");
+            }
+        }
+    }
 }
 
 void GameScene::Update(FLOAT timeElapsed)
@@ -299,25 +325,29 @@ void GameScene::BuildMeshes(const ComPtr<ID3D12Device>& device,
     m_meshes.insert({ "TERRAIN", terrainMesh });
     // Frightfly FBX 메쉬 저장
     auto frightflyLoader = make_shared<FBXLoader>();
-    if (frightflyLoader->LoadFBXModel("Model/Monsters/Frightfly/Frightfly_01.fbx", XMMatrixScaling(0.05f, 0.05f, 0.05f)))
+    //if (frightflyLoader->LoadFBXModel("Model/Monsters/Frightfly/Frightfly_01.fbx", XMMatrixIdentity()))
+    if (frightflyLoader->LoadFBXModel("Model/Monsters/Frightfly/Polygonal Frightfly 08.fbx", XMMatrixIdentity()))
     {
         auto meshes = frightflyLoader->GetMeshes();
         if (!meshes.empty())
         {
-            m_meshLibrary["Frightfly"] = meshes[0]; // 여러 개면 처리 필요
+            m_meshLibrary["FrightFly"] = meshes[0]; // 여러 개면 처리 필요
 
             // 애니메이션 정보도 캐싱
             const auto& clips = frightflyLoader->GetAnimationClips();
             for (auto& clip : clips)
-                m_animClipLibrary[clip.name] = clip;
+                m_animClipLibrary["FrightFly"][clip.name] = clip;
 
-            m_boneOffsetLibrary = frightflyLoader->GetBoneOffsets();
-            m_boneNameMap = frightflyLoader->GetBoneNameToIndex();
+            m_boneOffsetLibrary["FrightFly"] = frightflyLoader->GetBoneOffsets();
+            m_boneNameMap["FrightFly"] = frightflyLoader->GetBoneNameToIndex();
+            m_BoneHierarchy["FrightFly"] = frightflyLoader->GetBoneHierarchy();
+            m_staticNodeTransforms["FrightFly"] = frightflyLoader->GetStaticNodeTransforms(); 
+            m_NodeNameToGlobalTransform["FrightFly"]= frightflyLoader->GetNodeNameToGlobalTransform();
         }
     }
     // Flower_Fairy FBX 메쉬 저장
     auto flowerFairyLoader = make_shared<FBXLoader>();
-    if (flowerFairyLoader->LoadFBXModel("Model/Monsters/Flower_Fairy/Flower_Fairy.fbx", XMMatrixScaling(0.1f, 0.1f, 0.1f)))
+    if (flowerFairyLoader->LoadFBXModel("Model/Monsters/Flower_Fairy/Flower_Fairy.fbx", XMMatrixIdentity()))//scale 0.1 
     {
         auto meshes = flowerFairyLoader->GetMeshes();
         if (!meshes.empty())
@@ -326,10 +356,13 @@ void GameScene::BuildMeshes(const ComPtr<ID3D12Device>& device,
 
             const auto& clips = flowerFairyLoader->GetAnimationClips();
             for (auto& clip : clips)
-                m_animClipLibrary[clip.name] = clip;
+                m_animClipLibrary["Flower_Fairy"][clip.name] = clip;
 
-            m_boneOffsetLibrary = flowerFairyLoader->GetBoneOffsets();
-            m_boneNameMap = flowerFairyLoader->GetBoneNameToIndex();
+            m_boneOffsetLibrary["Flower_Fairy"] = flowerFairyLoader->GetBoneOffsets();
+            m_boneNameMap["Flower_Fairy"] = flowerFairyLoader->GetBoneNameToIndex();
+            m_BoneHierarchy["Flower_Fairy"] = flowerFairyLoader->GetBoneHierarchy();
+            m_staticNodeTransforms["Flower_Fairy"] = flowerFairyLoader->GetStaticNodeTransforms();
+            m_NodeNameToGlobalTransform["Flower_Fairy"] = flowerFairyLoader->GetNodeNameToGlobalTransform();
         }
         else
         {
@@ -338,7 +371,7 @@ void GameScene::BuildMeshes(const ComPtr<ID3D12Device>& device,
     }
     // Mushroom_Dark FBX 메쉬 저장
     auto mushroomDarkLoader = make_shared<FBXLoader>();
-    if (mushroomDarkLoader->LoadFBXModel("Model/Monsters/Mushroom_Dark/Mushroom_Dark.fbx", XMMatrixScaling(0.1f, 0.1f, 0.1f)))
+    if (mushroomDarkLoader->LoadFBXModel("Model/Monsters/Mushroom_Dark/Mushroom_Dark.fbx", XMMatrixIdentity()))//scale 0.1 
     {
         auto meshes = mushroomDarkLoader->GetMeshes();
         if (!meshes.empty())
@@ -347,10 +380,13 @@ void GameScene::BuildMeshes(const ComPtr<ID3D12Device>& device,
 
             const auto& clips = mushroomDarkLoader->GetAnimationClips();
             for (auto& clip : clips)
-                m_animClipLibrary[clip.name] = clip;
+                m_animClipLibrary["Mushroom_Dark"][clip.name] = clip;
 
-            m_boneOffsetLibrary = mushroomDarkLoader->GetBoneOffsets();
-            m_boneNameMap = mushroomDarkLoader->GetBoneNameToIndex();
+            m_boneOffsetLibrary["Mushroom_Dark"] = mushroomDarkLoader->GetBoneOffsets();
+            m_boneNameMap["Mushroom_Dark"] = mushroomDarkLoader->GetBoneNameToIndex();
+            m_BoneHierarchy["Mushroom_Dark"] = mushroomDarkLoader->GetBoneHierarchy();
+            m_staticNodeTransforms["Mushroom_Dark"] = mushroomDarkLoader->GetStaticNodeTransforms();
+            m_NodeNameToGlobalTransform["Mushroom_Dark"] = mushroomDarkLoader->GetNodeNameToGlobalTransform();
         }
         else
         {
@@ -359,7 +395,7 @@ void GameScene::BuildMeshes(const ComPtr<ID3D12Device>& device,
     }
     // Venus_Blue FBX 메쉬 저장
     auto venusBlueLoader = make_shared<FBXLoader>();
-    if (venusBlueLoader->LoadFBXModel("Model/Monsters/Venus_Blue/Venus_Blue.fbx", XMMatrixScaling(0.1f, 0.1f, 0.1f)))
+    if (venusBlueLoader->LoadFBXModel("Model/Monsters/Venus_Blue/Venus_Blue1.fbx", XMMatrixIdentity()))//scale 0.1 
     {
         auto meshes = venusBlueLoader->GetMeshes();
         if (!meshes.empty())
@@ -368,10 +404,13 @@ void GameScene::BuildMeshes(const ComPtr<ID3D12Device>& device,
 
             const auto& clips = venusBlueLoader->GetAnimationClips();
             for (auto& clip : clips)
-                m_animClipLibrary[clip.name] = clip;
+                m_animClipLibrary["Venus_Blue"][clip.name] = clip;
 
-            m_boneOffsetLibrary = venusBlueLoader->GetBoneOffsets();
-            m_boneNameMap = venusBlueLoader->GetBoneNameToIndex();
+            m_boneOffsetLibrary["Venus_Blue"] = venusBlueLoader->GetBoneOffsets();
+            m_boneNameMap["Venus_Blue"] = venusBlueLoader->GetBoneNameToIndex();
+            m_BoneHierarchy["Venus_Blue"] = venusBlueLoader->GetBoneHierarchy();
+            m_staticNodeTransforms["Venus_Blue"] = venusBlueLoader->GetStaticNodeTransforms();
+            m_NodeNameToGlobalTransform["Venus_Blue"] = venusBlueLoader->GetNodeNameToGlobalTransform();
         }
         else
         {
@@ -380,7 +419,7 @@ void GameScene::BuildMeshes(const ComPtr<ID3D12Device>& device,
     }
     // Plant_Dionaea FBX 메쉬 저장
     auto Plant_DionaeaLoader = make_shared<FBXLoader>();
-    if (Plant_DionaeaLoader->LoadFBXModel("Model/Monsters/Plant_Dionaea/Plant_Dionaea.fbx", XMMatrixScaling(0.1f, 0.1f, 0.1f)))
+    if (Plant_DionaeaLoader->LoadFBXModel("Model/Monsters/Plant_Dionaea/Plant_Dionaea.fbx", XMMatrixIdentity()))//scale 0.1     
     {
         auto meshes = Plant_DionaeaLoader->GetMeshes();
         if (!meshes.empty())
@@ -389,14 +428,17 @@ void GameScene::BuildMeshes(const ComPtr<ID3D12Device>& device,
 
             const auto& clips = Plant_DionaeaLoader->GetAnimationClips();
             for (auto& clip : clips)
-                m_animClipLibrary[clip.name] = clip;
+                m_animClipLibrary["Plant_Dionaea"][clip.name] = clip;
 
-            m_boneOffsetLibrary = Plant_DionaeaLoader->GetBoneOffsets();
-            m_boneNameMap = Plant_DionaeaLoader->GetBoneNameToIndex();
+            m_boneOffsetLibrary["Plant_Dionaea"] = Plant_DionaeaLoader->GetBoneOffsets();
+            m_boneNameMap["Plant_Dionaea"] = Plant_DionaeaLoader->GetBoneNameToIndex();
+            m_BoneHierarchy["Plant_Dionaea"] = Plant_DionaeaLoader->GetBoneHierarchy();
+            m_staticNodeTransforms["Plant_Dionaea"] = Plant_DionaeaLoader->GetStaticNodeTransforms();
+            m_NodeNameToGlobalTransform["Plant_Dionaea"] = Plant_DionaeaLoader->GetNodeNameToGlobalTransform();
         }
         else
         {
-            OutputDebugStringA("[FBXLoader] Venus_Blue 메쉬 없음\n");
+            OutputDebugStringA("[FBXLoader] Plant_Dionaea 메쉬 없음\n");
         }
     }
 
@@ -503,7 +545,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
     m_playerLoader = make_shared<FBXLoader>();
     cout << "캐릭터 로드 중!!!!" << endl;
 
-    if (m_playerLoader->LoadFBXModel("Model/Player/Player2.fbx", playerTransform))
+    if (m_playerLoader->LoadFBXModel("Model/Player/M_C3FC_ModularMale_06.fbx", playerTransform))
     {
         auto& meshes = m_playerLoader->GetMeshes();
         if (meshes.empty()) {
@@ -515,7 +557,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
         auto player = make_shared<Player>(device);
 
 
-        player->SetScale(XMFLOAT3{ 1.f, 1.f, 1.f }); // 기본값 확정
+        player->SetScale(XMFLOAT3{ 0.05,0.05,0.05}); // 기본값 확정
         player->SetRotationY(0.f);                  // 정면을 보게 초기화
 
         // [4] 위치 및 스케일 설정
@@ -533,6 +575,8 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
         player->SetCurrentAnimation("Idle");
         player->SetBoneOffsets(m_playerLoader->GetBoneOffsets());
         player->SetBoneNameToIndex(m_playerLoader->GetBoneNameToIndex());
+        player->SetBoneHierarchy(m_playerLoader->GetBoneHierarchy());
+        player->SetstaticNodeTransforms(m_playerLoader->GetStaticNodeTransforms());
 
         // [7] 텍스처, 머티리얼 설정
         player->SetTexture(m_textures["CHARACTER"]);
@@ -563,21 +607,21 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
     m_player->SetCamera(m_camera);
 
 
-          if(otherid[0]!=-2) 
-          {
-              m_Otherplayer[0] = m_playerLoader->LoadOtherPlayer(device, m_textures, m_shaders);
-              m_Otherplayer[0]->m_id = otherid[0];
-              m_Otherplayer[0]->m_position = otherpos[0];
-              m_Otherplayer[0]->SetPosition(m_Otherplayer[0]->m_position);
-          }
-          if(otherid[1]!=-2) 
-          {
-              m_Otherplayer[1] = m_playerLoader->LoadOtherPlayer(device, m_textures, m_shaders);
-              m_Otherplayer[1]->m_id = otherid[1];
-              m_Otherplayer[1]->m_position = otherpos[1];
-              m_Otherplayer[1]->SetPosition(m_Otherplayer[1]->m_position);
-          }
-    
+    if (otherid[0] != -2)
+    {
+        m_Otherplayer[0] = m_playerLoader->LoadOtherPlayer(device, m_textures, m_shaders);
+        m_Otherplayer[0]->m_id = otherid[0];
+        m_Otherplayer[0]->m_position = otherpos[0];
+        m_Otherplayer[0]->SetPosition(m_Otherplayer[0]->m_position);
+    }
+    if (otherid[1] != -2)
+    {
+        m_Otherplayer[1] = m_playerLoader->LoadOtherPlayer(device, m_textures, m_shaders);
+        m_Otherplayer[1]->m_id = otherid[1];
+        m_Otherplayer[1]->m_position = otherpos[1];
+        m_Otherplayer[1]->SetPosition(m_Otherplayer[1]->m_position);
+    }
+
 
 
     //맵의 오브젝트들 바운딩 박스
@@ -617,20 +661,22 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
         m_animClipLibrary,
         m_boneOffsetLibrary,
         m_boneNameMap,
+        m_BoneHierarchy,
+        m_NodeNameToGlobalTransform,
         m_monsterGroups);
 
     // "Frightfly" 타입 몬스터 배치
-    auto& frightflies = m_monsterGroups["Frightfly"];
+    auto& frightflies = m_monsterGroups["FrightFly"];
     for (int i = 0; i < frightflies.size(); ++i)
     {
-        //float angle = XM_2PI * i / frightflies.size();
-        //float radius = 15.0f;
-        //float x = -170.f + radius * cos(angle);
-        //float z = 15.f + radius * sin(angle);
-        //float y = 0.f;
+        float angle = XM_2PI * i / frightflies.size();
+        float radius = 15.0f;
+        float x = -170.f +radius * cos(angle);
+        float z = 15.f +radius * sin(angle);
+        float y = 45.f;
 
-        //frightflies[i]->SetPosition(XMFLOAT3{ x, y, z });
-        frightflies[i]->SetPosition(gGameFramework->monstersCoord[i + 10]);
+        frightflies[i]->SetPosition(XMFLOAT3{ x, y, z });
+        frightflies[i]->SetPosition(gGameFramework->monstersCoord[i + 10]);       
     }
 
     // "Flower_Fairy" 타입 몬스터 배치
@@ -783,7 +829,7 @@ void GameScene::AddCubeCollider(const XMFLOAT3& position, const XMFLOAT3& extent
     BoundingBox box;
     box.Center = { 0.f, 0.f, 0.f };
     box.Extents = extents;
-    cube->SetBoundingBox(box); 
+    cube->SetBoundingBox(box);
 
     // 와이어프레임 디버깅
     cube->SetDrawBoundingBox(true);

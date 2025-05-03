@@ -26,7 +26,13 @@ public:
 
 	void UpdateWorldMatrix();
 	void SetRotationY(float yaw);
+	void SetRotationZ(float pitch);
 
+	void PlusRotationY(float yaw);
+	void PlusRotationZ(float pitch);
+	void RotationX90();
+	void RotationY90();
+	void RotationZ90();
 	virtual void SetScale(XMFLOAT3 scale);
 	virtual XMFLOAT3 GetScale() const;
 	XMFLOAT3			m_prevPosition;

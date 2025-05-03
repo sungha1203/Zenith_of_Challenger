@@ -87,8 +87,8 @@ void OtherPlayer::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) c
     {
         const auto& clip = m_animationClips.at(m_currentAnim);
         float animTime = fmod(m_animTime, clip.duration);
-        auto boneTransforms = clip.GetBoneTransforms(animTime);
-        const_cast<OtherPlayer*>(this)->UploadBoneMatricesToShader(boneTransforms, commandList);
+        auto [boneTransforms, animBoneIndex] = clip.GetBoneTransforms(animTime, m_boneNameToIndex, m_boneHierarchy,m_staticNodeTransforms);
+        const_cast<OtherPlayer*>(this)->UploadBoneMatricesToShader(boneTransforms, animBoneIndex, commandList);
     }
 
     // 본 행렬 StructuredBuffer 바인딩
@@ -127,25 +127,52 @@ void OtherPlayer::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) c
 }
 
 
-void OtherPlayer::UploadBoneMatricesToShader(const unordered_map<string, XMMATRIX>& boneTransforms, const ComPtr<ID3D12GraphicsCommandList>& commandList)
+void OtherPlayer::UploadBoneMatricesToShader(const std::vector<XMMATRIX>& boneTransforms, std::unordered_map<std::string, int>animBoneIndex, const ComPtr<ID3D12GraphicsCommandList>& commandList)
 {
-    const UINT MAX_BONES = 128;
+    //const UINT MAX_BONES = 128;
+    //vector<XMMATRIX> finalMatrices(MAX_BONES, XMMatrixIdentity());
+
+    //size_t count = std::min<size_t>(boneTransforms.size(), MAX_BONES);
+
+    //for (size_t i = 0; i < count; ++i)
+    //{
+    //    // 본 offset이 존재한다면 곱해줌
+    //    if (m_boneOffsets.contains(i))
+    //    {
+    //        finalMatrices[i] = XMMatrixMultiply(boneTransforms[i], m_boneOffsets.at(i));
+    //    }
+    //    else
+    //    {
+    //        finalMatrices[i] = boneTransforms[i]; // fallback
+    //    }
+    //}
+    const UINT MAX_BONES = boneTransforms.size();
     vector<XMMATRIX> finalMatrices(MAX_BONES, XMMatrixIdentity());
 
-    for (const auto& [name, transform] : boneTransforms)
+    size_t count = std::min<size_t>(boneTransforms.size(), MAX_BONES);
+
+    //for (size_t i = 0; i < count; ++i)
+    //{
+    //    // 본 offset이 존재한다면 곱해줌
+    //    if (m_boneOffsets.contains(i))
+    //    {
+    //        finalMatrices[i] = XMMatrixMultiply(boneTransforms[i], m_boneOffsets.at(i));
+    //        //finalMatrices[i] = XMMatrixMultiply(m_boneOffsets.at(i), boneTransforms[i]);
+    //    }
+    //    else
+    //    {
+    //        finalMatrices[i] = boneTransforms[i]; // fallback
+    //    }
+    //}
+    for (const auto& [boneName, vertexIndex] : m_boneNameToIndex)
     {
-        // 이름 -> 인덱스, 오프셋이 모두 존재하는 경우만 처리
-        if (m_boneNameToIndex.contains(name) && m_boneOffsets.contains(name))
+        // animBoneIndex: boneName → i (애니메이션 transform의 인덱스)
+        if (animBoneIndex.contains(boneName) && m_boneOffsets.contains(vertexIndex))
         {
-            int index = m_boneNameToIndex[name];
-            if (index < MAX_BONES)
-            {
-                // 핵심! 애니메이션 행렬 * 본 오프셋 행렬
-                finalMatrices[index] = XMMatrixMultiply(transform, m_boneOffsets[name]);
-            }
+            int animIndex = animBoneIndex.at(boneName);
+            finalMatrices[vertexIndex] = XMMatrixMultiply(boneTransforms[animIndex], m_boneOffsets.at(vertexIndex));
         }
     }
-
     // GPU에 업로드 (UploadBuffer → DefaultBuffer)
     D3D12_SUBRESOURCE_DATA subresourceData{};
     subresourceData.pData = finalMatrices.data();
