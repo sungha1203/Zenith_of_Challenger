@@ -11,7 +11,8 @@ void LoadAllMonsters(
     const unordered_map<string, unordered_map<string, int>>& boneMap,
     const unordered_map<string, unordered_map<string, string>>& boneHierarchy,
     const unordered_map<string, unordered_map<string, XMMATRIX>>& NodeNameToGlobalTransform,
-    unordered_map<string, vector<shared_ptr<Monsters>>>& outMonsterGroups) 
+    unordered_map<string, vector<shared_ptr<Monsters>>>& outMonsterGroups,
+    const shared_ptr<Camera>& camera)
 {
     // === 1. Frightfly 몬스터 생성 ===
     if (!meshLibrary.contains("FrightFly")) {
@@ -24,11 +25,14 @@ void LoadAllMonsters(
         auto frightfly = make_shared<Frightfly>(device);
 
         // [1] 메쉬, 텍스처, 셰이더 설정
+        frightfly->SetCamera(camera);
+        frightfly->SetMesh(meshLibrary.at("Frightfly"));
         frightfly->SetMesh(meshLibrary.at("FrightFly"));
         frightfly->SetTexture(textures.at("FrightFly"));
         frightfly->SetTextureIndex(textures.at("FrightFly")->GetTextureIndex());
         frightfly->SetShader(shaders.at("FrightFly"));
         frightfly->SetDebugLineShader(shaders.at("DebugLineShader"));
+        frightfly->SetHealthBarShader(shaders.at("HealthBarShader"));
         frightfly->SetScale(XMFLOAT3{ 0.05,0.05,0.05 }); 
 
         // [2] 애니메이션 설정
@@ -66,12 +70,14 @@ void LoadAllMonsters(
     for (int i = 0; i < 10; ++i)
     {
         auto monster = make_shared<FlowerFairy>(device);
+        monster->SetCamera(camera);
         // [1] 메쉬, 텍스처, 셰이더 설정
         monster->SetMesh(meshLibrary.at("Flower_Fairy"));
         monster->SetTexture(textures.at("Flower_Fairy"));
         monster->SetTextureIndex(textures.at("Flower_Fairy")->GetTextureIndex());
         monster->SetShader(shaders.at("FrightFly"));
         monster->SetDebugLineShader(shaders.at("DebugLineShader"));
+        monster->SetHealthBarShader(shaders.at("HealthBarShader"));
         monster->SetScale(XMFLOAT3{ 0.1,0.1,0.1 });
 
         // [2] 애니메이션 설정
@@ -107,6 +113,7 @@ void LoadAllMonsters(
     for (int i = 0; i < 10; ++i)
     {
         auto monster = make_shared<MushroomDark>(device);
+        monster->SetCamera(camera);
         // [1] 메쉬, 텍스처, 셰이더 설정
         monster->SetMesh(meshLibrary.at("Mushroom_Dark"));
         monster->SetTexture(textures.at("Mushroom_Dark"));
@@ -114,6 +121,7 @@ void LoadAllMonsters(
         monster->SetShader(shaders.at("FrightFly"));
         monster->SetDebugLineShader(shaders.at("DebugLineShader"));
         monster->SetScale(XMFLOAT3{ 0.1,0.1,0.1 });
+        monster->SetHealthBarShader(shaders.at("HealthBarShader"));
 
         // [2] 애니메이션 설정
         vector<AnimationClip> clips;
@@ -148,12 +156,14 @@ void LoadAllMonsters(
     for (int i = 0; i < 10; ++i)
     {
         auto monster = make_shared<VenusBlue>(device); // VenusBlue 클래스 필요
+        monster->SetCamera(camera);
         // [1] 메쉬, 텍스처, 셰이더 설정
         monster->SetMesh(meshLibrary.at("Venus_Blue"));
         monster->SetTexture(textures.at("Venus_Blue"));
         monster->SetTextureIndex(textures.at("Venus_Blue")->GetTextureIndex());
         monster->SetShader(shaders.at("FrightFly"));
         monster->SetDebugLineShader(shaders.at("DebugLineShader"));
+        monster->SetHealthBarShader(shaders.at("HealthBarShader"));
         monster->SetScale(XMFLOAT3{ 0.1,0.1,0.1 });
 
         // [2] 애니메이션 설정
@@ -192,6 +202,7 @@ void LoadAllMonsters(
         auto monster = make_shared<PlantDionaea>(device); // PlantDionaea 클래스 필요
         // [1] 메쉬, 텍스처, 셰이더 설정
         monster->SetMesh(meshLibrary.at("Plant_Dionaea"));
+        monster->SetCamera(camera);
         monster->SetTexture(textures.at("Plant_Dionaea"));
         monster->SetTextureIndex(textures.at("Plant_Dionaea")->GetTextureIndex());
         monster->SetShader(shaders.at("FrightFly"));
@@ -202,6 +213,7 @@ void LoadAllMonsters(
         vector<AnimationClip> clips;
         for (const auto& [name, clip] : animClipLibrary.at("Plant_Dionaea"))
             clips.push_back(clip);
+        monster->SetHealthBarShader(shaders.at("HealthBarShader"));
 
         monster->SetAnimationClips(clips);
         monster->SetCurrentAnimation("Idle");

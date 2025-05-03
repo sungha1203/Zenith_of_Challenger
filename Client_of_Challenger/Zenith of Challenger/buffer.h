@@ -15,6 +15,7 @@ public:
     void UpdateRootShaderResource(const ComPtr<ID3D12GraphicsCommandList>& commandList) const;
 
     void Copy(const T& data, UINT index = 0) const;
+    UINT GetRootParameterIndex() const { return m_rootParameterIndex; }
 
 private:
     ComPtr<ID3D12Resource>  m_uploadBuffer;

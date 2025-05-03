@@ -117,9 +117,11 @@ namespace RootParameter
 	constexpr UINT BoneMatrix = 7;
 	constexpr UINT LightingMaterial = 8;
 	constexpr UINT LightingLight = 9;
-	constexpr UINT MonsterBoneMatrix = 10;
+	constexpr UINT ShadowMap = 10;
+	constexpr UINT ShadowCamera = 11;
+	constexpr UINT MonsterBoneMatrix = 12;
 
-	constexpr UINT Count = 11;
+	constexpr UINT Count = 13;
 }
 
 namespace DescriptorRange
@@ -127,9 +129,16 @@ namespace DescriptorRange
 	constexpr UINT TextureCube = 0;
 	constexpr UINT Texture = 1;
 	constexpr UINT BoneMatrix = 2; 
-	constexpr UINT MonsterBoneMatrix = 3; 
-	constexpr UINT Count = 4;
+	constexpr UINT ShadowMap = 3;	
+	constexpr UINT MonsterBoneMatrix = 4; 
+	constexpr UINT Count = 5;
 }
+
+enum class CameraMode
+{
+	QuarterView,
+	ThirdPerson
+};
 
 
 extern UINT	gnCbvSrvDescriptorIncrementSize;

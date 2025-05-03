@@ -5,6 +5,8 @@
 #include "d3dUtil.h"
 #include "Shader.h"            // Shader를 shared_ptr로 보관하고 있음
 
+class HealthBarObject;
+
 enum class NormalMonsterType
 {
 	Mushroom,
@@ -56,6 +58,15 @@ public:
 	void SetNodeNameToGlobalTransform(const unordered_map<string, XMMATRIX>& nodeNameToGlobalTransform) { m_nodeNameToGlobalTransform = nodeNameToGlobalTransform;}
 	void AddMesh(const shared_ptr<MeshBase>& mesh) { m_meshes.push_back(mesh); }
 
+	void SetHP(int hp);
+	bool IsDead() const { return m_isDead; }
+	void ApplyDamage(float damage);
+	bool IsParticleSpawned() const { return m_particleSpawned; }
+	void MarkParticleSpawned() { m_particleSpawned = true; }
+
+	//몬스터 외곽선 호출
+	void RenderOutline(const ComPtr<ID3D12GraphicsCommandList>& commandList) const;
+
 private:
 	shared_ptr<Camera> m_camera;
 
@@ -76,7 +87,34 @@ private:
 	std::vector<std::shared_ptr<MeshBase>> m_meshes;
 	unordered_map<int, XMMATRIX> m_boneOffsets;
 
+	//몬스터 체력바 관련
+	shared_ptr<HealthBarObject> m_healthBar;
+	float m_currentHP = 100.f;
+	float m_maxHP = 100.f;
+
+	//몬스터 죽음, 파티클 관련
+	bool m_isDead = false;
+	bool m_particleSpawned = false;
 	//-------------------------인게임 정보-------------------------
 
 
+};
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+class HealthBarObject : public GameObject
+{
+public:
+	HealthBarObject(const ComPtr<ID3D12Device>& device);
+	~HealthBarObject() override = default;
+
+	void SetHP(float currentHP, float maxHP);
+
+	virtual void Update(FLOAT timeElapsed) override; // 원래 Object 상속용
+	void Update(FLOAT timeElapsed, const shared_ptr<Camera>& camera);
+private:
+	float m_currentHP = 100.f;
+	float m_maxHP = 100.f;
+	bool m_rotationFixed = false;
 };

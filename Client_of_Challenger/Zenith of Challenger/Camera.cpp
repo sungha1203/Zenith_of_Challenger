@@ -1,4 +1,5 @@
 ﻿#include "camera.h"
+#include "GameFramework.h"
 
 Camera::Camera(const ComPtr<ID3D12Device>& device) : m_eye{ 0.f, 0.f, 0.f }, m_at{ 0.f, 0.f, 1.f }, m_up{ 0.f, 1.f, 0.f },
 m_u{ 1.f, 0.f, 0.f }, m_v{ 0.f, 1.f, 0.f }, m_n{ 0.f, 0.f, 1.f }
@@ -6,6 +7,7 @@ m_u{ 1.f, 0.f, 0.f }, m_v{ 0.f, 1.f, 0.f }, m_n{ 0.f, 0.f, 1.f }
 	XMStoreFloat4x4(&m_viewMatrix, XMMatrixIdentity());
 	XMStoreFloat4x4(&m_projectionMatrix, XMMatrixIdentity());
 	m_constantBuffer = make_unique<UploadBuffer<CameraData>>(device, (UINT)RootParameter::Camera, true);
+	m_shadowCameraCB = make_unique<UploadBuffer<ShadowCameraData>>(device, (UINT)RootParameter::ShadowCamera, true);
 }
 
 void Camera::UpdateShaderVariable(const ComPtr<ID3D12GraphicsCommandList>& commandList)
@@ -24,6 +26,27 @@ void Camera::UpdateShaderVariable(const ComPtr<ID3D12GraphicsCommandList>& comma
 	m_constantBuffer->UpdateRootConstantBuffer(commandList);
 }
 
+void Camera::UploadShadowMatrix(const ComPtr<ID3D12GraphicsCommandList>& commandList, const XMMATRIX& view, const XMMATRIX& proj)
+{
+	ShadowCameraData data;
+	XMStoreFloat4x4(&data.viewMatrix, XMMatrixTranspose(view));
+	XMStoreFloat4x4(&data.projMatrix, XMMatrixTranspose(proj));
+	auto wiewProjMat = XMMatrixMultiply(view, proj);
+	XMMATRIX t =
+	{
+	  0.5f, 0.0f, 0.0f, 0.0f,
+	  0.0f, -0.5f, 0.0f, 0.0f,
+	  0.0f, 0.0f, 1.0f, 0.0f,
+	  0.5f, 0.5f, 0.0f, 1.0f,
+	};
+	//t = XMMatrixTranspose(t);
+	XMStoreFloat4x4(&data.viewProjMat, XMMatrixTranspose(wiewProjMat));
+	XMStoreFloat4x4(&data.shadowMat, XMMatrixTranspose(XMMatrixMultiply(wiewProjMat, t)));
+
+	m_shadowCameraCB->Copy(data);
+	m_shadowCameraCB->UpdateRootConstantBuffer(commandList);
+}
+
 void Camera::SetLens(FLOAT fovy, FLOAT aspect, FLOAT minZ, FLOAT maxZ)
 {
 	XMStoreFloat4x4(&m_projectionMatrix, XMMatrixPerspectiveFovLH(fovy, aspect, minZ, maxZ));
@@ -39,6 +62,28 @@ void Camera::SetLookAt(const XMFLOAT3& lookAt)
 {
 	m_at = lookAt;
 	UpdateBasis();
+}
+
+void Camera::SetViewMatrix(const XMMATRIX& view)
+{
+	XMStoreFloat4x4(&m_viewMatrix, view);
+}
+
+void Camera::SetProjectionMatrix(const XMMATRIX& proj)
+{
+	XMStoreFloat4x4(&m_projectionMatrix, proj);
+}
+
+void Camera::SetTarget(const XMFLOAT3& target)
+{
+	m_at = target;
+	UpdateBasis();
+}
+
+void Camera::RegenerateViewMatrix()
+{
+	XMStoreFloat4x4(&m_viewMatrix,
+		XMMatrixLookAtLH(XMLoadFloat3(&m_eye), XMLoadFloat3(&m_at), XMLoadFloat3(&m_up)));
 }
 
 XMFLOAT3 Camera::GetEye() const
@@ -71,27 +116,53 @@ void Camera::UpdateBasis()
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ThirdPersonCamera::ThirdPersonCamera(const ComPtr<ID3D12Device>& device) : Camera(device),
-m_radius{ Settings::DefaultCameraRadius },
-m_phi{ Settings::DefaultCameraPitch }, m_theta{ Settings::DefaultCameraYaw }
+m_radius{ 25.0f },
+m_phi{ XMConvertToRadians(45.0f) }, m_theta{ Settings::DefaultCameraYaw }
 {
 
 }
 
 void ThirdPersonCamera::Update(FLOAT timeElapsed)
 {
+	// 화면 중앙 고정 위치
+	POINT center = { 720, 320 };
+	ClientToScreen(gGameFramework->GetHWND(), &center);
 
+	static POINT lastPos = center; //한 번만 초기화됨
+
+	POINT currentPos;
+	GetCursorPos(&currentPos);
+
+	float dx = (currentPos.x - lastPos.x) * 0.0008f;
+	float dy = (currentPos.y - lastPos.y) * 0.0008f;
+
+	RotateYaw(-dx);
+	RotatePitch(-dy);
+
+	// 마우스 다시 중앙으로 고정
+	SetCursorPos(center.x, center.y);
+	lastPos = center;
+
+	UpdateEye(m_at);
 }
 
 void ThirdPersonCamera::UpdateEye(XMFLOAT3 position)
 {
+	//offset 계산
 	XMFLOAT3 offset{
-	m_radius * sin(m_phi) * cos(m_theta),
-	m_radius * cos(m_phi),
-	m_radius * sin(m_phi) * sin(m_theta) };
+		m_radius * sin(m_phi) * cos(m_theta),
+		m_radius * cos(m_phi),
+		m_radius * sin(m_phi) * sin(m_theta)
+	};
 
+	// 카메라 위치는 기존대로 설정
 	m_eye = Vector3::Add(position, offset);
+
+	// 바라보는 지점을 약간 위로 (등 상단 또는 머리 위쪽)
 	m_at = position;
-	UpdateBasis();
+	m_at.y += 6.f; // <- 여기 수치 조정 가능 (1.5~2.0f 추천)
+
+	UpdateBasis(); // 뷰 행렬 갱신용 방향 벡터 재계산
 }
 
 void ThirdPersonCamera::RotatePitch(FLOAT radian)

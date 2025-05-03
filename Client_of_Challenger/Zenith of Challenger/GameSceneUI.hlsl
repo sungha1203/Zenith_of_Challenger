@@ -29,7 +29,17 @@ PSInput VSMain(VSInput input)
     //output.Position = float4(input.Position, 1.0f);
     output.Position = mul(input.Position, worldPos);
     output.Position = mul(worldPos, transformLikeStartScene);
-    output.TexCoord = input.TexCoord;
+    
+    
+    if (g_useCustomUV == 1)
+    {
+        output.TexCoord = lerp(g_customUV.xy, g_customUV.zw, input.TexCoord);
+    }
+    else
+    {
+        output.TexCoord = input.TexCoord;
+    }
+    
     return output;
 }
 

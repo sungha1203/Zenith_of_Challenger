@@ -16,12 +16,14 @@ void Object::Transform(XMFLOAT3 shift)
 {
     m_prevPosition = m_position; // 이동 전 위치 저장
     m_position = Vector3::Add(m_position, shift);
-    
+
     CS_Packet_UPDATECOORD pkt;
     pkt.type = CS_PACKET_UPDATECOORD;
     pkt.x = m_position.x;
     pkt.y = m_position.y;
     pkt.z = m_position.z;
+    pkt.angle = m_rotation.y;
+
     pkt.size = sizeof(pkt);
     gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
 
@@ -187,22 +189,26 @@ void GameObject::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) co
 {
     if (!m_isVisible) return; //visible이 false면 렌더링 skip
 
+    bool isShadow = m_shader && m_shader->IsShadowShader();
+
     if (m_shader)
     {
         m_shader->UpdateShaderVariable(commandList); // 셰이더 설정
     }
+
     UpdateShaderVariable(commandList);
 
-    //if (m_texture) m_texture->UpdateShaderVariable(commandList, m_textureIndex);
-    //if (m_material) m_material->UpdateShaderVariable(commandList);
+    if (!isShadow) {
+        if (m_texture) m_texture->UpdateShaderVariable(commandList, m_textureIndex);
+        if (m_material) m_material->UpdateShaderVariable(commandList);
+    }
 
     m_mesh->Render(commandList);
 
     if (m_drawBoundingBox && m_debugBoxMesh && m_debugLineShader)
     {
-        m_debugLineShader->UpdateShaderVariable(commandList); // View/Proj
-        UpdateShaderVariable(commandList); // World matrix 등
-
+        m_debugLineShader->UpdateShaderVariable(commandList);
+        UpdateShaderVariable(commandList);
         m_debugBoxMesh->Render(commandList);
     }
 }
@@ -215,22 +221,22 @@ void GameObject::UpdateShaderVariable(const ComPtr<ID3D12GraphicsCommandList>& c
     XMStoreFloat4x4(&buffer.worldMatrix, XMMatrixTranspose(matrix));
     buffer.baseColor = m_baseColor;
     buffer.useTexture = m_useTexture;
-    if (!m_textureIndex)
-    {
-        buffer.textureIndex = m_textureIndex;
-    }
-    else
-    {
-        buffer.textureIndex = m_textureIndex - 1;
-    }
+    buffer.textureIndex = m_textureIndex;
     buffer.isHovered = m_isHovered ? 1 : 0;
     buffer.fillAmount = m_fillAmount;
+    buffer.customUV = m_customUV;
+    buffer.useCustomUV = m_useCustomUV;
 
     m_constantBuffer->Copy(buffer);
     m_constantBuffer->UpdateRootConstantBuffer(commandList);
 
-    if (m_texture) m_texture->UpdateShaderVariable(commandList, m_textureIndex);
-    if (m_material) m_material->UpdateShaderVariable(commandList);
+    bool isShadow = m_shader && m_shader->IsShadowShader();
+
+    if (!isShadow)
+    {
+        if (m_texture) m_texture->UpdateShaderVariable(commandList, m_textureIndex);
+        if (m_material) m_material->UpdateShaderVariable(commandList);
+    }
 }
 
 void GameObject::SetMesh(const shared_ptr<MeshBase>& mesh)
@@ -262,6 +268,10 @@ void GameObject::SetBaseColor(const XMFLOAT4& color)
 void GameObject::SetUseTexture(bool use)
 {
     m_useTexture = use;
+}
+
+void GameObject::SetHP(float currentHP, float maxHP)
+{
 }
 
 void GameObject::SetWorldMatrix(const XMMATRIX& worldMatrix)
@@ -325,6 +335,54 @@ void GameObject::SetBoundingBox(const BoundingBox& box)
     m_debugBoxMesh = make_shared<Mesh<DebugVertex>>(
         gGameFramework->GetDevice(), gGameFramework->GetCommandList(),
         lines, D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+}
+
+void GameObject::SetCustomUV(float u0, float v0, float u1, float v1)
+{
+    m_customUV = { u0, v0, u1, v1 };
+}
+
+void GameObject::SetuseCustomUV(int useUV)
+{
+    m_useCustomUV = useUV;
+}
+
+bool GameObject::IsPointInside(int mouseX, int mouseY) const
+{
+    int w, h;
+    RECT rect;
+    GetClientRect(gGameFramework->GetHWND(), &rect);
+    w = rect.right - rect.left;
+    h = rect.bottom - rect.top;
+
+    auto toPixelX = [&](float ndcX) {
+        return static_cast<int>((ndcX + 1.0f) * 0.5f * w);
+        };
+    auto toPixelY = [&](float ndcY) {
+        return static_cast<int>((1.0f - ndcY) * 0.5f * h); // Y축 반전 주의
+        };
+
+    XMFLOAT3 pos = GetPosition();
+    XMFLOAT3 scale = GetScale();
+
+    float leftNDC = pos.x - scale.x * 0.5f;
+    float rightNDC = pos.x + scale.x * 0.5f;
+    float topNDC = pos.y + scale.y * 0.5f;
+    float bottomNDC = pos.y - scale.y * 0.5f;
+
+    int margin = 1; // 마진 1픽셀 (정밀하게 맞추고 싶으면 0으로)
+
+    int left = toPixelX(leftNDC) + margin;
+    int right = toPixelX(rightNDC) - margin;
+    int top = toPixelY(topNDC) + margin;
+    int bottom = toPixelY(bottomNDC) - margin;
+
+    return (mouseX >= left && mouseX <= right && mouseY >= top && mouseY <= bottom);
+}
+
+//외곽선 전용
+void GameObject::RenderOutline(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
+{
 }
 
 

@@ -29,6 +29,11 @@ public:
 	void		ProcessInitialstate(char* buffer);
 	void		ProcessInitMonster(char* buffer);
 	void		ProcessUpdateCoord2Player(char* buffer);
+	void		ProcessChat(char* buffer);
+	void		ProcessStartRepairTime(char* buffer);
+	void		ProcessMonsterHP(char* buffer);
+	void		ProcessItemDrop(char* buffer);
+	void		ProcessGold(char* buffer);
 
 public:
 	SOCKET			m_clientsocket = INVALID_SOCKET;

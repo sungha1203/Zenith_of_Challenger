@@ -78,6 +78,8 @@ struct ObjectData : public BufferBase
 	UINT textureIndex;         // 4 bytes
 	UINT isHovered;			   // 4 bytes
 	FLOAT fillAmount = {};     // 12 bytes → 총 32 bytes로 16바이트 정렬 유지
+	XMFLOAT4 customUV;
+	UINT useCustomUV;
 };
 
 class GameObject : public Object
@@ -98,6 +100,8 @@ public:
 	void SetUseTexture(bool use);                        // 추가
 
 	void SetTextureIndex(int index) { m_textureIndex = index; }
+
+	virtual void SetHP(float currentHP, float maxHP);
 
 	int GetTextureIndex() const { return m_textureIndex; }
 
@@ -121,6 +125,20 @@ public:
 	bool IsDrawBoundingBox() const { return m_drawBoundingBox; }
 	int m_textureIndex = 0;
 	float m_fillAmount = 2.0f;
+
+
+	void SetHealthBarShader(const shared_ptr<Shader>& shader) { m_HealthBarShader = shader; }
+
+	void SetCustomUV(float u0, float v0, float u1, float v1);
+	void SetuseCustomUV(int useUV);
+
+	//버튼 클릭 관련
+	bool GameObject::IsPointInside(int mouseX, int mouseY) const;
+
+	//툰렌더링 외곽선용
+	virtual void RenderOutline(const ComPtr<ID3D12GraphicsCommandList>& commandList) const;
+	void SetOutlineShader(const std::shared_ptr<Shader>& shader) { m_outlineShader = shader; }
+
 protected:
 	shared_ptr<MeshBase> m_mesh;
 	shared_ptr<Texture> m_texture;
@@ -141,8 +159,16 @@ protected:
 	BoundingBox m_boundingBox;
 	shared_ptr<Mesh<DebugVertex>> m_debugBoxMesh;
 	bool m_drawBoundingBox = false;
-	shared_ptr<Shader> m_debugLineShader; // ← 와이어프레임 전용 셰이더
+	shared_ptr<Shader> m_debugLineShader; //와이어프레임 전용 셰이더
 
+	shared_ptr<Shader> m_HealthBarShader; //일반 몬스터 HP바 전용 셰이더
+
+	//골드 스코어 전용
+	XMFLOAT4 m_customUV{ 0.f, 0.f, 1.f, 1.f };
+	UINT m_useCustomUV = 0;
+
+	//외곽선 전용
+	shared_ptr<Shader> m_outlineShader;
 };
 
 class RotatingObject : public InstanceObject

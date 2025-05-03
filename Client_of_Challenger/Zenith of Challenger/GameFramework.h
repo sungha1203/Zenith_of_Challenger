@@ -12,6 +12,14 @@
 class ClientNetwork;
 class ClientState;
 
+inline void GetClientSize(HWND hWnd, int& width, int& height)
+{
+    RECT rect;
+    GetClientRect(hWnd, &rect);
+    width = rect.right - rect.left;
+    height = rect.bottom - rect.top;
+}
+
 class CGameFramework
 {
 public:
@@ -69,12 +77,17 @@ public:
     UINT64 GetFenceValue() const { return m_fenceValue; }
     HANDLE GetFenceEvent() const { return m_fenceEvent; }
 
-
     std::pair<D3D12_CPU_DESCRIPTOR_HANDLE, D3D12_GPU_DESCRIPTOR_HANDLE> AllocateDescriptorHeapSlot();
     UINT GetCurrentSRVOffset() const { return m_srvHeapOffset; }
     HWND GetHWND() const { return m_hWnd; } 
 
     void WaitForGpuComplete();
+
+    //그림자 관련 Srv와 Dsv
+    D3D12_GPU_DESCRIPTOR_HANDLE GetShadowMapSrv() const { return m_shadowSrv; }
+    D3D12_CPU_DESCRIPTOR_HANDLE GetShadowMapDsv() const { return m_shadowDsv; }
+    void RenderShadowMap();
+
 private:
     void InitDirect3D();
 
@@ -89,13 +102,17 @@ private:
     void CreateRootSignature();
     void CreateDescriptorHeaps();
     void HandleSceneTransition();
-
+    void CreateShadowMapResources(); // Shadow 리소스 생성 함수
+    
     void BuildObjects();
 
     void Update();
     void Render();
 
     void ProcessInput();   // 키 입력 체크
+
+    void ToggleFullScreen();
+    WINDOWPLACEMENT m_wpPrev = { sizeof(WINDOWPLACEMENT) };
 private:
     static const UINT m_nSwapChainBuffers = 2;
 
@@ -154,4 +171,23 @@ private:
     std::unordered_map<int, bool> m_keyPressed; // ← 키 입력 상태 저장
 
 
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //그림자 관련
+    // 그림자 매핑 관련 리소스
+    ComPtr<ID3D12Resource> m_shadowMapTexture; // Shadow Depth 텍스처
+
+    D3D12_CPU_DESCRIPTOR_HANDLE m_shadowDsv{};  // DSV 핸들
+    D3D12_GPU_DESCRIPTOR_HANDLE m_shadowSrv{};  // SRV 핸들
+    D3D12_CPU_DESCRIPTOR_HANDLE m_shadowRtv{};
+
+    ComPtr<ID3D12DescriptorHeap> m_shadowDsvHeap;
+    ComPtr<ID3D12DescriptorHeap> m_shadowRtvHeap;
+
+    D3D12_VIEWPORT m_shadowViewport{};
+    D3D12_RECT m_shadowScissorRect{};
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //전체화면 관련
+    bool m_isFullScreen = false;
 };

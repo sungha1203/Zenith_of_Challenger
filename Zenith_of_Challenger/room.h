@@ -30,6 +30,18 @@ struct InventoryItem								// 공통 인벤토리
 	int gold = 0;									// 재화
 	std::map<JobWeapon, int> JobWeapons;			// 무기
 	std::map<JobDocument, int> JobDocuments;		// 전직서
+
+	InventoryItem()
+	{
+		for (int i = 0; i <= 2; ++i)
+		{
+			JobWeapons[static_cast<JobWeapon>(i)] = 0;
+		}
+		for (int i = 0; i <= 2; ++i)
+		{
+			JobDocuments[static_cast<JobDocument>(i)] = 0;
+		}
+	}
 };
 
 // 게임 진행, 스테이지 변경, 클라이언트 관리
@@ -43,10 +55,13 @@ private:
 	InventoryItem		m_inventory;				// 아이템 인벤토리 창
 
 	std::atomic<bool>	m_stopTimer = false;		// 클라이언트 모두 접속을 끊었을 때를 대비
+	std::atomic<bool>	m_skipTimer = false;		// 도전스테이지 스킵을 눌렀을 때 -> true
+	std::atomic<bool>	m_skipButton = false;		// 스킵 버튼 두번 이상 못누름
 	std::thread			m_timer;
 	int					m_playerNum = 0;			// 게임 시작하는 총 플레이어 인원수
 	int					m_enterClientNum = 0;		// 도전 스테이지에 입장한 클라이언트 명수 (다 들어와야지 타이머 시작)
 	int					m_enterZenithNum = 0;		// 정점스테이지 입장 대기 명수 (다 들어와야지 타이머 시작)
+
 	std::mutex			m_PlayerMx;
 	std::mutex			m_inventoryMx;
 
@@ -54,8 +69,8 @@ private:
 	//static constexpr int REPAIR_TIME	= 120;		// 2분
 	static constexpr int ZENITH_TIME	= 300;		// 5분
 	
-	std::unordered_map<int, Monster> m_monsters;	// 방에서 관리하는 몬스터(도전, 정점)
-	int								 m_MonsterNum;  // 몬스터 수(도전)
+	std::array<Monster,50>	m_monsters;				// 방에서 관리하는 몬스터(도전)
+	int						m_MonsterNum;			// 몬스터 수(도전)
 
 public:
 	Room() : m_room_id(-1), m_IsGaming(false), m_RoomState(Stage::LOBBY) {}
@@ -78,22 +93,31 @@ public:
 	void	StartZenithStage();							// 도전 스테이지 -> 정점스테이지
 	void	EndGame();									// 정점 스테이지 -> 로비
 	
+	void	SetSkipTimer();
+	void	SetSkipButton(bool check);
+
 	int		GetClientsNum() const { return m_clients.size(); }								// 이 방에 몇명있어?
 	int		GetRoomMasterID() const { return m_clients.empty() ? -1 : m_clients.front(); }	// 방장 누구야?
 	int		GetPlayerNum() const { return m_playerNum; }									// 게임 시작할때 몇명에서 시작했어?
 	int		GetEnterClientNum() const { return m_enterClientNum; }							// 지금 몇명이 게임 대기중이야?
 	int		GetEnterZenithNum() const { return m_enterZenithNum;  }							// 지금 몇명이 정점 스테이지 대기중이야?
+	bool	GetSkipButton() const { return m_skipButton;  }									// 스킵 버튼 눌렀어 안눌렀어?
+	int		GetGold() const { return m_inventory.gold; }									// 골드 얼마있어?
+	int		GetWeaponTypeNum(int num) const { return m_inventory.JobWeapons.at(static_cast<JobWeapon>(num));}		// 해당 무기 몇개 있어?
+	int		GetJobTypeNum(int num) const { return m_inventory.JobDocuments.at(static_cast<JobDocument>(num));}		// 해당 전직서 몇개 있어?
+
 	const std::vector<int>& GetClients() const { return m_clients; }						// 게임 중인 모든 클라이언트
-	const std::unordered_map<int, Monster>& GetMonsters() const { return m_monsters; }		// 몬스터
+	const Monster&	GetMonsters(int monsterID) const { return m_monsters[monsterID]; }		// 몬스터
+	Monster& GetMonster(int monsterID) { return m_monsters[monsterID]; }
 
 	// 인벤토리
-	void	AddGold(int plusgold);				// +골드
-	void    SpendGold(int minusgold);			// -골드
-	void	ADDJobWeapon(JobWeapon weapon);		// +무기
-	void	DecideJobWeapon(JobWeapon weapon);	// -무기
-	void	AddJobDocument(JobDocument job);	// +전직서
-	void	DecideJobDocument(JobDocument job);	// -전직서
+	void	AddGold(int plusgold);					// +골드
+	void    SpendGold(int minusgold);				// -골드
+	void	ADDJobWeapon(int weapon);				// +무기
+	void	DecideJobWeapon(int weapon);			// -무기
+	void	AddJobDocument(int job);				// +전직서
+	void	DecideJobDocument(int job);				// -전직서
 
 	// 몬스터
-	void	InitChallengeMonsters();			// 도전 스테이지 몬스터 초기화
+	void	InitChallengeMonsters();				// 도전 스테이지 몬스터 초기화
 };

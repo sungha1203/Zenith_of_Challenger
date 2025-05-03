@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include "stdafx.h"
 #include "network.h"
 #include "session.h"
@@ -8,7 +9,6 @@ SOCKET								g_ListenSocket;
 OVER_EXP							g_a_over;
 RoomManager							g_room_manager;
 std::unordered_map<int, ClientInfo> g_client;			// 인게임 정보
-
 
 Network::Network()
 {
@@ -175,7 +175,7 @@ int Network::CreateClient()
 	for (int i = 0; i < MAX_USER; ++i) {
 		if (clients[i].m_used == false) {
 			clients[i].m_id = i;
-			g_client[i] = ClientInfo(i, -1);
+			g_client[i] = ClientInfo(i);
 			return i;
 		}
 	}
@@ -307,6 +307,15 @@ void Network::HandlePacket(int client_id, char* buffer, int length)
 	case CS_PACKET_STARTZENITH:
 		ProcessZenithReady(client_id, buffer, length);
 		break;
+	case CS_PACKET_SKIPCHALLENGE:
+		ProcessSkipChallenge(client_id, buffer, length);
+		break;
+	case CS_PACKET_MONSTERHP:
+		ProcessMonsterHP(client_id, buffer, length);
+		break;
+
+
+
 	case CS_PACKET_LOGOUT:
 		CloseClient(client_id);
 		break;
@@ -346,6 +355,7 @@ void Network::ProcessUpdatePlayer(int client_id, char* buffer, int length)
 {
 	CS_Packet_UPDATECOORD* pkt = reinterpret_cast<CS_Packet_UPDATECOORD*>(buffer);
 	g_client[client_id].SetCoord(pkt->x, pkt->y, pkt->z);
+	g_client[client_id].SetAngle(pkt->angle);
 
 	int room_id = g_room_manager.GetRoomID(client_id);
 	if (room_id == -1) return;
@@ -360,6 +370,7 @@ void Network::ProcessUpdatePlayer(int client_id, char* buffer, int length)
 	pkt2.x = pkt->x;
 	pkt2.y = pkt->y;
 	pkt2.z = pkt->z;
+	pkt2.angle = pkt->angle;
 	
 	for (int other_id : client) {
 		if (other_id == client_id) continue;
@@ -397,6 +408,22 @@ void Network::ProcessIngameReady(int client_id, char* buffer, int length)
 	clients[client_id].do_recv();
 }
 
+// 도전 스테이지 스킵(정비 시간 입장)
+void Network::ProcessSkipChallenge(int client_id, char* buffer, int length)
+{
+	CS_Packet_SkipChallenge* pkt = reinterpret_cast<CS_Packet_SkipChallenge*>(buffer);
+	if (pkt->skip == true) {
+		int room_id = g_room_manager.GetRoomID(client_id);
+		if (room_id == -1) return;
+
+		Room& room = g_room_manager.GetRoom(room_id);
+		if (room.GetSkipButton() == false) {
+			room.SetSkipTimer();
+			room.SetSkipButton(true);
+		}
+	}
+}
+
 // 정점 스테이지 입장 준비 완료 버튼 누른 직후
 void Network::ProcessZenithStartButton(int client_id)
 {
@@ -422,6 +449,154 @@ void Network::ProcessZenithReady(int client_id, char* buffer, int length)
 			room.StartZenithStage();
 		}
 	}
+	clients[client_id].do_recv();
+}
+
+// 인게임 속 채팅
+void Network::ProcessChat(int client_id, char* buffer, int length)
+{
+	CS_Packet_Chat* pkt = reinterpret_cast<CS_Packet_Chat*>(buffer);
+
+	int room_id = g_room_manager.GetRoomID(client_id);
+	Room& room = g_room_manager.GetRoom(room_id);
+	const auto& client = room.GetClients();
+
+	SC_Packet_Chat pkt2;
+	pkt2.type = SC_PACKET_CHAT;
+	strcpy(pkt2.msg, pkt->msg);
+	pkt2.size = sizeof(pkt2);
+
+	for (int other_id : client) {
+		clients[other_id].do_send(pkt2);
+	}
+	clients[client_id].do_recv();
+}
+
+// 몬스터 HP 업데이트 (임시)
+void Network::ProcessMonsterHP(int client_id, char* buffer, int length)
+{
+	CS_Packet_MonsterHP* pkt = reinterpret_cast<CS_Packet_MonsterHP*>(buffer);
+	
+	int room_id = g_room_manager.GetRoomID(client_id);
+	Room& room = g_room_manager.GetRoom(room_id);
+	const auto& client = room.GetClients();
+
+	room.GetMonster(pkt->monsterID).TakeDamage(pkt->damage);
+
+	SC_Packet_MonsterHP pkt2;
+	pkt2.type = SC_PACKET_MONSTERHP;
+	pkt2.monsterID = pkt->monsterID;
+	pkt2.monsterHP = room.GetMonsters(pkt->monsterID).GetHP();
+
+	for (int other_id : client) {
+		clients[other_id].do_send(pkt2);
+	}
+
+	if (room.GetMonster(pkt->monsterID).GetHP() == 0) {
+		int dropItem = static_cast<int>(room.GetMonster(pkt->monsterID).DropWHAT());
+
+		std::random_device rd;
+		std::default_random_engine dre{ rd() };
+		std::uniform_int_distribution<int> uid1{ 1, 10 };
+
+
+		SC_Packet_DropItem pkt3;
+		pkt3.type = SC_PACKET_DROPITEM;
+		pkt3.item = dropItem - 1;
+		pkt3.x = room.GetMonster(pkt->monsterID).GetX();
+		pkt3.y = room.GetMonster(pkt->monsterID).GetY();
+		pkt3.z = room.GetMonster(pkt->monsterID).GetZ();
+		pkt3.size = sizeof(pkt3);
+
+		if (dropItem > 0 && dropItem <= 3) {		// 무기
+			room.ADDJobWeapon(dropItem);
+			pkt3.itemNum = room.GetWeaponTypeNum(dropItem - 1);
+		}
+		else if (dropItem > 3 && dropItem <= 6) {	// 전직서
+			room.AddJobDocument(dropItem);
+			pkt3.itemNum = room.GetJobTypeNum(dropItem - 4);
+		}
+		
+		for (int other_id : client) {
+			clients[other_id].do_send(pkt3);
+		}
+
+		std::this_thread::sleep_for(std::chrono::milliseconds(1));
+
+		room.AddGold(uid1(dre));
+	}
+
+	clients[client_id].do_recv();
+}
+
+// 인벤토리 무기 및 전직서 선택
+void Network::ProcessInventorySelcet(int client_id, char* buffer, int length)
+{
+	int room_id = g_room_manager.GetRoomID(client_id);
+	Room& room = g_room_manager.GetRoom(room_id);
+	const auto& client = room.GetClients();
+
+	CS_Packet_Inventory* pkt = reinterpret_cast<CS_Packet_Inventory*>(buffer);
+	SC_Packet_Inventory pkt2;		// 모든 클라의 인벤토리에서 해당 아이템을 하나 삭제하기 위한 패킷
+	pkt2.item = pkt->item;
+
+	SC_Packet_SelectItem pkt3;		// 해당 클라의 장비창에 해당 아이템을 장착하기 위한 패킷
+	pkt3.item = pkt->item;
+
+	// 무기 선택했고, 선택한 무기가 없을 때(주먹), 선택한 무기가 1개이상일 때
+	if (pkt->item > 0 && pkt->item <= 3 
+		&& static_cast<int>(g_client[client_id].GetWeaponType()) == 0
+		&& room.GetWeaponTypeNum(pkt->item) > 0) 
+	{
+		g_client[client_id].SetWeapon(pkt->item);
+		room.DecideJobWeapon(pkt->item);				// 방(인벤토리)에 있는 해당 무기 하나 지움
+		pkt2.num = room.GetWeaponTypeNum(pkt->item);
+		clients[client_id].do_send(pkt3);				// 해당 클라 장비창에 무기 추가
+	}
+	// 전직서 선택했고, 선택한 직업이 없을 때(도전자), 선택한 전직서가 1개 이상일때
+	else if (pkt->item > 3 && pkt->item <= 6 
+		&& static_cast<int>(g_client[client_id].GetJobType()) == 0
+		&& room.GetJobTypeNum(pkt->item) > 0)			// 방(인벤토리)에 있는 해당 전직서 하나 지움
+	{
+		g_client[client_id].SetJobType(pkt->item);
+		room.DecideJobDocument(pkt->item);
+		pkt2.num = room.GetJobTypeNum(pkt->item);	
+		clients[client_id].do_send(pkt3);				// 해당 클라 장비창에 전직서 추가
+	}
+	else {
+		clients[client_id].do_recv();
+		return;
+	}
+
+
+	for (int other_id : client) {
+		clients[other_id].do_send(pkt2);
+	}
+	clients[client_id].do_recv();
+}
+
+// 무기 강화(장비창)
+void Network::ProcessItemState(int client_id, char* buffer, int length)
+{
+	CS_Packet_ItemState* pkt = reinterpret_cast<CS_Packet_ItemState*>(buffer);
+	
+	int room_id = g_room_manager.GetRoomID(client_id);
+	Room& room = g_room_manager.GetRoom(room_id);
+	//const auto& client = room.GetClients();
+
+	// 1. 강화 시도 버튼을 눌렀을 때 2. 게임 골드가 0원 이상일 때  3. 강화 무기 등급이 9등급 아래일 때
+	if (pkt->enhanceTry == true && room.GetGold() > 0 && g_client[client_id].GetWeaponGrade() < 9) {
+		room.SpendGold(g_client[client_id].GetWeaponGrade() + 1);		// 무기 강화 비용 지불
+		g_client[client_id].SetWeaponGrade();							// 무기 강화 시도
+	}
+
+	SC_Packet_ItemState pkt2;
+	pkt2.type = SC_PACKET_ITEMSTATE;
+	pkt2.result = g_client[client_id].GetWeaponGrade();
+	pkt2.size = sizeof(pkt2);
+
+	clients[client_id].do_send(pkt2);
+
 	clients[client_id].do_recv();
 }
 
@@ -512,14 +687,24 @@ void Network::SendInitialState(const std::vector<int>& client_id)
 // 정비 시간 시작
 void Network::SendStartRepairTime(const std::vector<int>& client_id)
 {
-	SC_Packet_RepairTime packet;
-	packet.type = SC_PACKET_REPAIRTIME;
-	packet.size = sizeof(packet);
-	packet.startRT = true;
+	for (int target_id : client_id)
+	{
+		if (!clients[target_id].m_used) continue;
 
-	for (int id : client_id) {
-		if (clients[id].m_used)
-			clients[id].do_send(packet);
+		for (int other_id : client_id)
+		{
+			if (!clients[other_id].m_used) continue;
+			SC_Packet_RepairTime packet;
+			packet.type = SC_PACKET_REPAIRTIME;
+			packet.startRT = true;
+			packet.client_id = target_id;
+			packet.x = g_client[target_id].GetX();
+			packet.y = g_client[target_id].GetY();
+			packet.z = g_client[target_id].GetZ();
+			packet.size = sizeof(packet);
+
+			clients[other_id].do_send(packet);
+		}
 	}
 }
 
@@ -537,18 +722,29 @@ void Network::SendStartZenithStage(const std::vector<int>& client_id)
 	}
 }
 
-// 인벤토리 업데이트 (여기서부터 개발 이어서..)
-void Network::SendUpdateInventory(const std::vector<int>& client_id)
+// 골드 업데이트
+void Network::SendUpdateGold(const std::vector<int>& client_id)
 {
-	//
+	int room_id = g_room_manager.GetRoomID(client_id[0]);
+	Room& room = g_room_manager.GetRoom(room_id);
+
+	SC_Packet_Gold pkt;
+	pkt.type = SC_PACKET_GOLD;
+	pkt.gold = room.GetGold();
+	pkt.size = sizeof(pkt);
+
+	for (int id : client_id) {
+		if (clients[id].m_used)
+			clients[id].do_send(pkt);
+	}
 }
 
 // 몬스터 좌표 초기 설정
-void Network::SendInitMonster(const std::vector<int>& client_id, const std::unordered_map<int , Monster>& monsters)
+void Network::SendInitMonster(const std::vector<int>& client_id, const std::array<Monster, 50>& monsters)
 {
-	for (auto it = monsters.begin(); it != monsters.end(); ++it){
-		int monster_id = it->first;
-		const Monster& monster = it->second;
+	for (int monster_id = 0; monster_id < monsters.size(); ++monster_id)
+	{
+		const Monster& monster = monsters[monster_id];
 
 		SC_Packet_InitMonster packet;
 		packet.type = SC_PACKET_INITMONSTER;
@@ -559,8 +755,10 @@ void Network::SendInitMonster(const std::vector<int>& client_id, const std::unor
 		packet.z = monster.GetZ();
 		packet.size = sizeof(packet);
 
-		for (int id : client_id) {
-			if (clients[id].m_used) {
+		for (int id : client_id)
+		{
+			if (clients[id].m_used)
+			{
 				clients[id].do_send(packet);
 				std::this_thread::sleep_for(std::chrono::milliseconds(1));
 			}

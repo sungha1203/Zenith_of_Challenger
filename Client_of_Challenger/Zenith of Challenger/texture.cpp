@@ -108,6 +108,8 @@ void Texture::CreateShaderVariable(const ComPtr<ID3D12Device>& device, bool useG
 	if (useGlobalHeap)
 	{
 		UINT baseIndex = gGameFramework->GetCurrentSRVOffset(); // 시작 인덱스 저장
+		// 하나의 Texture 객체 기준, 첫 번째 텍스처의 index만 저장
+		m_textureIndex = baseIndex;
 
 		for (const auto& tex : m_textures)
 		{
@@ -116,9 +118,6 @@ void Texture::CreateShaderVariable(const ComPtr<ID3D12Device>& device, bool useG
 			auto [cpuHandle, gpuHandle] = gGameFramework->AllocateDescriptorHeapSlot();
 			device->CreateShaderResourceView(tex.Get(), &srvDesc, cpuHandle);
 			m_gpuHandles.push_back(gpuHandle);
-
-			// 하나의 Texture 객체 기준, 첫 번째 텍스처의 index만 저장
-			m_textureIndex = baseIndex;
 
 #ifdef _DEBUG
 			for (size_t i = 0; i < m_gpuHandles.size(); ++i)

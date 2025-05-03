@@ -15,6 +15,11 @@ constexpr int NAME_SIZE = 20;				// 이름 글자 수
 #define CS_PACKET_GAMESTART			 5			// 게임 시작 버튼
 #define CS_PACKET_INGAMEREADY		 6			// 게임 시작 후 입장 완료
 #define CS_PACKET_STARTZENITH		 7			// 정점 스테이지 입장 완료
+#define CS_PACKET_MONSTERHP			 8			// 몬스터 HP
+#define CS_PACKET_CHAT				 9			// 인게임 속 채팅
+#define CS_PACKET_ITEMSTATE			 10			// 장비창에서 강화
+
+#define CS_PACKET_SKIPCHALLENGE		 99			// 도전스테이지 스킵
 #define CS_PACKET_LOGOUT			 100		// 로그아웃
 
 // 패킷 타입 정의 (서버 -> 클라)
@@ -28,10 +33,15 @@ constexpr int NAME_SIZE = 20;				// 이름 글자 수
 #define SC_PACKET_REPAIRTIME		 108		// 정비 시간
 #define SC_PACKET_ZENITHSTAGE		 109		// 도전 -> 정점
 #define SC_PACKET_INITMONSTER		 110		// 몬스터 초기 설정
-#define SC_PACKET_LOGOUT			 777		// 로그아웃
+#define SC_PACKET_MONSTERHP			 111		// 몬스터 HP
+#define SC_PACKET_DROPITEM			 112		// 몬스터 드랍 아이템
+#define SC_PACKET_GOLD				 113		// 골드 현 상황 갱신
+#define SC_PACKET_SELECTITEM		 114		// 인벤토리에서 무기 or 전직서 결정
+#define SC_PACKET_ITEMSTATE			 115		// 무기 강화 성공 여부
+#define SC_PACKET_CHAT				 116		// 인게임 속 채팅
 
-// [임시]
-#define SC_PACKET_CLIENTINFORMATION	 999
+#define SC_PACKET_SKIPCHALLENGE		 998		// 도전스테이지 스킵
+#define SC_PACKET_LOGOUT			 999		// 로그아웃
 
 //---------------------------------------
 struct CS_Packet_Login
@@ -60,6 +70,7 @@ struct CS_Packet_UPDATECOORD
 	char	type;
 	int		size;
 	float	x, y, z;  // 위치
+	float	angle;
 };
 
 struct CS_Packet_GameStart
@@ -80,6 +91,43 @@ struct CS_Packet_ZenithReady
 	char	type;
 	int		size;
 	bool	ReadySuccess;
+};
+
+struct CS_Packet_Chat
+{
+	char	type;
+	int		size;
+	char	msg[256];
+};
+
+struct CS_Packet_SkipChallenge
+{
+	char	type;
+	int		size;
+	bool	skip;
+};
+
+struct CS_Packet_MonsterHP
+{
+	char	type;
+	int		size;
+	int		monsterID;
+	int		damage;
+};
+
+struct CS_Packet_Inventory
+{
+	char	type;
+	int		size;
+	int		item;	// 1.검 / 2.지팡이 / 3.방패 / 4.전사 전직서 / 5.마법사 전직서 / 6.힐탱커 전직서 
+};
+
+struct CS_Packet_ItemState
+{
+	char	type;
+	int		size;
+	bool	enhanceTry;		// 강화 시도
+	int		enhanceStar;	// 강화 별 넘버(등급)
 };
 
 struct CS_Packet_Logout
@@ -142,6 +190,7 @@ struct SC_Packet_Update2Player
 	int		size;
 	int		client_id;
 	float	x, y, z;
+	float   angle;
 };
 
 struct SC_Packet_GameStart
@@ -156,6 +205,8 @@ struct SC_Packet_RepairTime
 	char	type;
 	UCHAR	size;
 	bool	startRT;			// 정비 시간
+	int		client_id;
+	float	x, y, z;
 };
 
 struct SC_Packet_ZenithStage
@@ -174,5 +225,60 @@ struct SC_Packet_InitMonster
 	float	x;
 	float	y;
 	float	z;
+};
+
+struct SC_Packet_MonsterHP
+{
+	char	type;
+	int		size;
+	int		monsterID;
+	int		monsterHP;
+};
+
+struct SC_Packet_DropItem
+{
+	char	type;
+	int		size;
+	int		item;
+	int		itemNum;
+	float	x;
+	float	y;
+	float	z;
+};
+
+struct SC_Packet_Gold
+{
+	char	type;
+	int		size;
+	int		gold;
+};
+
+struct SC_Packet_Inventory
+{
+	char	type;
+	int		size;
+	int		item;	// 1.검 / 2.지팡이 / 3.방패 / 4.전사 전직서 / 5.마법사 전직서 / 6.힐탱커 전직서 
+	int		num;
+};
+
+struct SC_Packet_SelectItem
+{
+	char	type;
+	int		size;
+	int		item;
+};
+
+struct SC_Packet_ItemState
+{
+	char	type;
+	int		size;
+	int		result;
+};
+
+struct SC_Packet_Chat
+{
+	char	type;
+	int		size;
+	char	msg[256];
 };
 #pragma pack(pop)

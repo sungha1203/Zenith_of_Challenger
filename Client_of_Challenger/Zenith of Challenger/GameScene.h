@@ -3,6 +3,8 @@
 #include "GameFramework.h"
 #include "FBXLoader.h"
 #include "Monsters.h"
+#include "ParticleEffect.h"
+#include "ParticleManager.h"
 
 class FBXLoader; // 전방 선언 추가
 
@@ -36,6 +38,13 @@ public:
 
     void AddCubeCollider(const XMFLOAT3& position, const XMFLOAT3& extents, const FLOAT& rotate = 0.f);
 
+    void RenderShadowPass(const ComPtr<ID3D12GraphicsCommandList>& commandList);
+
+    unordered_map<string, vector<shared_ptr<Monsters>>>& GetMonsterGroups() { return m_monsterGroups; }
+    shared_ptr<ParticleManager> GetParticleManager() const { return m_particleManager; }
+    void SetGoldScore(int score) { m_goldScore = score; }
+    void SetInventoryCount(int item , int num) { m_inventoryCounts[item] = num; }
+
 private:
     shared_ptr<FBXLoader> m_fbxLoader; // FBX 로더 추가
     shared_ptr<FBXLoader> m_playerLoader;
@@ -44,11 +53,39 @@ private:
 
 
     bool m_debugDrawEnabled = false;
+    bool m_ShadowMapEnabled = false;
 
 
     ////////////////몬스터 관련////////////////
     unordered_map<string, vector<shared_ptr<Monsters>>> m_monsterGroups;
     unordered_map<string, shared_ptr<MeshBase>> m_meshLibrary;
+
+
+    //그림자 관련
+    std::shared_ptr<DebugShadowShader> m_debugShadowShader;
+    XMMATRIX m_shadowViewMatrix;
+    XMMATRIX m_shadowProjMatrix;
+
+
+    //카메라 전환 관련
+    CameraMode m_currentCameraMode = CameraMode::QuarterView;
+    shared_ptr<QuarterViewCamera> m_quarterViewCamera;
+    shared_ptr<ThirdPersonCamera> m_thirdPersonCamera;
+
+    //골드 관련
+    int m_goldScore = 0; // Gold 점수
+    std::vector<std::shared_ptr<GameObject>> m_goldDigits; // 각 자릿수마다 UI 오브젝트를 저장
+
+    //파티클 관련
+    shared_ptr<ParticleManager> m_particleManager;
+
+    //인벤토리 숫자 관련
+    std::vector<std::shared_ptr<GameObject>> m_inventoryDigits;
+    int m_inventoryCounts[6] = { 0, 0, 0, 0, 0, 0 };
+
+
+    //툰 렌더링 외곽선 토글키
+    bool m_OutLine = false;
     unordered_map<string, unordered_map<string, AnimationClip>> m_animClipLibrary;
     unordered_map<string, unordered_map<int, XMMATRIX>> m_boneOffsetLibrary;
     unordered_map<string, unordered_map<string, int>> m_boneNameMap;

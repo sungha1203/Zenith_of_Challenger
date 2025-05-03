@@ -10,6 +10,7 @@ public:
 
     virtual void Render(const ComPtr<ID3D12GraphicsCommandList>& commandList, size_t count = 1) const;
     virtual void ReleaseUploadBuffer();
+    ID3D12Resource* GetVertexBuffer() const { return m_vertexBuffer.Get(); }
 
 protected:
     UINT                        m_vertices;

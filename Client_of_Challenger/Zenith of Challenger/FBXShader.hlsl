@@ -13,6 +13,7 @@ struct PSInput
     float3 Normal : NORMAL;
     float2 TexCoord : TEXCOORD;
     float3 WorldPos : WORLDPOS;
+    float4 shadowPos : TEXCOORD1;
 };
 
 PSInput VSMain(VSInput input)
@@ -26,6 +27,10 @@ PSInput VSMain(VSInput input)
     output.WorldPos = worldPosition.xyz;
     output.Normal = normalize(mul(input.Normal, (float3x3) g_worldMatrix));
     output.TexCoord = float2(input.TexCoord.x, 1.0f - input.TexCoord.y); // UV 뒤집기
+    
+    
+
+    output.shadowPos = mul(worldPosition, shadowMat);
 
     return output;
 }
@@ -45,5 +50,10 @@ float4 PSMain(PSInput input) : SV_TARGET
     float3 toEye = normalize(g_cameraPosition - input.WorldPos);
 
     // 기존 lighting 말고 toon lighting 사용
-    return ToonLighting(input.WorldPos, normal, toEye, texColor);
+    float shadow = ComputeShadowFactor(input.shadowPos.xyz);
+    
+    return ToonLighting(input.WorldPos, normal, toEye, texColor) * shadow;
+    //float4 debugShadow = ComputeShadowFactor(input.WorldPos);
+    //return debugShadow;
+    
 }

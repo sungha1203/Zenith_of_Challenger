@@ -14,4 +14,5 @@ void LoadAllMonsters(
     const unordered_map<string, unordered_map<string, int>>& boneMap,
     const unordered_map<string, unordered_map<string, string>>& boneHierarchy,
     const unordered_map<string, unordered_map<string, XMMATRIX>>& NodeNameToGlobalTransform,
-    unordered_map<string, vector<shared_ptr<Monsters>>>& outMonsterGroups);
+    unordered_map<string, vector<shared_ptr<Monsters>>>& outMonsterGroups,
+    const shared_ptr<Camera>& camera);

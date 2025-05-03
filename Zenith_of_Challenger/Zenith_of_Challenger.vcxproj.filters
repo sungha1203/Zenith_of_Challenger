@@ -39,9 +39,6 @@
     <ClCompile Include="monster.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="MonsterManager.cpp">
-      <Filter>소스 파일\Manager</Filter>
-    </ClCompile>
     <ClCompile Include="room.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
@@ -63,9 +60,6 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="ClientManager.h">
-      <Filter>헤더 파일\Manager.h</Filter>
-    </ClInclude>
-    <ClInclude Include="MonsterManager.h">
       <Filter>헤더 파일\Manager.h</Filter>
     </ClInclude>
     <ClInclude Include="RoomManager.h">

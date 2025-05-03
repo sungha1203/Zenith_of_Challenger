@@ -16,6 +16,39 @@ std::shared_ptr<Mesh<TextureVertex>> CreateScreenQuad(const ComPtr<ID3D12Device>
     return std::make_shared<Mesh<TextureVertex>>(device, commandList, vertices);
 }
 
+std::shared_ptr<Mesh<TextureVertex>> CreateScreenQuadWithCustomUV(
+    const ComPtr<ID3D12Device>& device,
+    const ComPtr<ID3D12GraphicsCommandList>& commandList,
+    float width, float height, float z,
+    float u0, float v0, float u1, float v1)
+{
+    std::vector<TextureVertex> vertices =
+    {
+        { XMFLOAT3{-width / 2,  height / 2, z}, XMFLOAT3{0, 0, -1}, XMFLOAT2{u0, v0} },
+        { XMFLOAT3{ width / 2,  height / 2, z}, XMFLOAT3{0, 0, -1}, XMFLOAT2{u1, v0} },
+        { XMFLOAT3{-width / 2, -height / 2, z}, XMFLOAT3{0, 0, -1}, XMFLOAT2{u0, v1} },
+        { XMFLOAT3{-width / 2, -height / 2, z}, XMFLOAT3{0, 0, -1}, XMFLOAT2{u0, v1} },
+        { XMFLOAT3{ width / 2,  height / 2, z}, XMFLOAT3{0, 0, -1}, XMFLOAT2{u1, v0} },
+        { XMFLOAT3{ width / 2, -height / 2, z}, XMFLOAT3{0, 0, -1}, XMFLOAT2{u1, v1} },
+    };
+
+    auto mesh = std::make_shared<Mesh<TextureVertex>>(device, commandList, vertices);
+
+    //여기 추가! 복사 완료 후 버텍스 버퍼용 상태로 전이
+    if (auto buffer = mesh->GetVertexBuffer())
+    {
+        D3D12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+            buffer,
+            D3D12_RESOURCE_STATE_COPY_DEST,
+            D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER
+        );
+        commandList->ResourceBarrier(1, &barrier);
+    }
+
+    return mesh;
+}
+
+
 const std::string correctUsername = "E";
 const std::string correctPassword = "1";
 
@@ -85,17 +118,19 @@ void StartScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) co
             if (m_startBtn->IsVisible()) {
                 m_startBtn->Render(commandList);
             }
-        }
-    }
 
-    if (m_isMouseOnStartBtn) {
-        if (m_shaders.contains("UI"))
-        {
-            m_shaders.at("UI")->UpdateShaderVariable(commandList);
-            for (const auto& obj : m_startBar)
-            {
-                obj->Render(commandList);
+            if (m_isMouseOnStartBtn) {
+                if (m_shaders.contains("UI"))
+                {
+                    m_shaders.at("UI")->UpdateShaderVariable(commandList);
+                    for (const auto& obj : m_startBar)
+                    {
+                        obj->Render(commandList);
+                    }
+                }
             }
+
+            m_loadingScreen->Render(commandList);
         }
     }
 }
@@ -126,11 +161,10 @@ void StartScene::MouseEvent(UINT message, LPARAM lParam)
     int mouseY = HIWORD(lParam);
 
     // ------------------------------------------------------------------
-    // START 버튼 클릭 감지 (정확한 World 기준)
+    // START 버튼 클릭 감지
     if (m_startBtn && m_startBtn->IsVisible())
     {
-        if (mouseX >= 1156 && mouseX <= 1385 &&
-            mouseY >= 641 && mouseY <= 675)
+        if (m_startBtn->IsPointInside(mouseX, mouseY))
         {
             m_isMouseOnStartBtn = true;
 
@@ -138,13 +172,16 @@ void StartScene::MouseEvent(UINT message, LPARAM lParam)
             {
                 std::cout << "START 버튼 클릭됨 → GameScene 전환 예정\n";
                 m_isStartButtonClicked = true;
-                // 서버 개발
-                {
-                    CS_Packet_GameStart pkt;
-                    pkt.type = CS_PACKET_GAMESTART;
-                    pkt.size = sizeof(pkt);
-                    gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
-                }
+
+                m_isLoading = true;
+                m_loadingElapsed = 0.0f;
+                m_loadingScreen->SetVisible(true);
+
+                // 서버 개발: GameStart 패킷 전송
+                CS_Packet_GameStart pkt;
+                pkt.type = CS_PACKET_GAMESTART;
+                pkt.size = sizeof(pkt);
+                gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
             }
         }
         else
@@ -158,38 +195,29 @@ void StartScene::MouseEvent(UINT message, LPARAM lParam)
     for (int i = 0; i < 3; ++i)
         m_joinButtons[i]->SetHovered(false);
 
-    // JOIN 버튼 Hover 감지
-    if (mouseX >= 570 && mouseX <= 760)
+    // JOIN 버튼 Hover 감지 및 클릭 처리
+    for (int i = 0; i < 3; ++i)
     {
-        for (int i = 0; i < 3; ++i)
+        if (m_joinButtons[i]->IsPointInside(mouseX, mouseY))
         {
-            int top = 0, bottom = 0;
-            if (i == 0) { top = 107; bottom = 167; }
-            if (i == 1) { top = 332; bottom = 393; }
-            if (i == 2) { top = 555; bottom = 618; }
+            m_joinButtons[i]->SetHovered(true);
 
-            if (mouseY >= top && mouseY <= bottom)
+            if (message == WM_LBUTTONDOWN)
             {
-                m_joinButtons[i]->SetHovered(true);
+                // 서버 개발: Room 선택 패킷 전송
+                CS_Packet_Room pkt;
+                pkt.room_id = i;
+                pkt.type = CS_PACKET_ROOM;
+                pkt.size = sizeof(pkt);
+                gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
 
-                if (message == WM_LBUTTONDOWN)
-                {
-                    // 서버 개발
-                    {
-                        CS_Packet_Room pkt;
-                        pkt.room_id = i;
-                        pkt.type = CS_PACKET_ROOM;
-                        pkt.size = sizeof(pkt);
-                        gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
-                    }
-                    for (int j = 0; j < 3; ++j)
-                        m_joinButtons[j]->SetVisible(false);
+                for (int j = 0; j < 3; ++j)
+                    m_joinButtons[j]->SetVisible(false);
 
-                    m_startBtn->SetVisible(true); // START 버튼 표시
-                }
-
-                break;
+                m_startBtn->SetVisible(true); // START 버튼 표시
             }
+
+            break; // 하나만 처리하고 탈출
         }
     }
 }
@@ -247,11 +275,6 @@ void StartScene::KeyboardEvent(UINT message, WPARAM wParam)
 }
 
 
-
-//void StartScene::KeyboardEvent(FLOAT timeElapsed)
-//{
-//}
-
 void StartScene::BuildShaders(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, const ComPtr<ID3D12RootSignature>& rootSignature)
 {
     auto skyboxShader = make_shared<SkyboxShader>(device, rootSignature);
@@ -278,8 +301,13 @@ void StartScene::BuildTextures(const ComPtr<ID3D12Device>& device, const ComPtr<
     startTex->CreateShaderVariable(device);
     m_textures.insert({ "START", startTex });
 
+    auto LoadTex = make_shared<Texture>(device);
+    LoadTex->LoadTexture(device, commandList, TEXT("Image/StartScene/Loading.dds"), RootParameter::Texture);
+    LoadTex->CreateShaderVariable(device);
+    m_textures.insert({ "LOAD", LoadTex });
+
     auto titleTex = make_shared<Texture>(device);
-    titleTex->LoadTexture(device, commandList, TEXT("Image/StartScene/Title_transparent.dds"), RootParameter::Texture);
+    titleTex->LoadTexture(device, commandList, TEXT("Image/StartScene/Title2.dds"), RootParameter::Texture); //Title_transparent
     titleTex->CreateShaderVariable(device);
     m_textures.insert({ "TITLE", titleTex });
 
@@ -377,7 +405,7 @@ void StartScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 
     // Title (로고 이미지): 앞에 출력, 살짝 위쪽
     auto title = make_shared<GameObject>(device);
-    title->SetMesh(CreateScreenQuad(device, gGameFramework->GetCommandList(), 1.8f, 1.6f, 0.98f));
+    title->SetMesh(CreateScreenQuad(device, gGameFramework->GetCommandList(), 2.0f, 2.0f, 0.98f));
     title->SetTexture(m_textures["TITLE"]);
     title->SetUseTexture(true);
     title->SetBaseColor(XMFLOAT4(1, 1, 1, 1));
@@ -407,19 +435,24 @@ void StartScene::BuildObjects(const ComPtr<ID3D12Device>& device)
         m_SelectSceneObjects.push_back(room);
     }
 
+    float aspect = (float)gGameFramework->GetWindowWidth() / gGameFramework->GetWindowHeight();
+    float btnWidth = 0.3f;
+    float btnHeight = btnWidth * (1.0f / aspect);
+
+
     m_startBtn = make_shared<GameObject>(device);
-    m_startBtn->SetMesh(CreateScreenQuad(device, gGameFramework->GetCommandList(), 0.5f, 0.15f, 0.98f));
+    m_startBtn->SetMesh(CreateScreenQuad(device, gGameFramework->GetCommandList(), btnWidth, btnHeight, 0.98f));
     m_startBtn->SetTexture(m_textures["STARTBTN"]);
-    m_startBtn->SetScale(XMFLOAT3(0.8f, 1.4f, 1.0f));
-    m_startBtn->SetPosition(XMFLOAT3(0.85f, -0.65f, 0.98f));
+    //m_startBtn->SetScale(XMFLOAT3(0.8f, 1.4f, 1.0f));
+    m_startBtn->SetPosition(XMFLOAT3(0.9f, -0.65f, 0.98f));
     m_startBtn->SetUseTexture(true);
     m_startBtn->SetVisible(false); // 처음엔 안 보이게
 
     auto StartBar = make_shared<GameObject>(device);
-    StartBar->SetMesh(CreateScreenQuad(device, gGameFramework->GetCommandList(), 0.5f, 0.15f, 0.98f));
+    StartBar->SetMesh(CreateScreenQuad(device, gGameFramework->GetCommandList(), 0.3f, 0.2f, 0.98f));
     StartBar->SetTexture(m_textures["BAR"]);
-    StartBar->SetScale(XMFLOAT3(0.8f, 1.1f, 1.0f));
-    StartBar->SetPosition(XMFLOAT3(0.85f, -0.75f, 0.98f));
+    //StartBar->SetScale(XMFLOAT3(0.8f, 1.1f, 1.0f));
+    StartBar->SetPosition(XMFLOAT3(0.9f, -0.75f, 0.98f));
     StartBar->SetUseTexture(true);
     m_startBar.push_back(StartBar);
 
@@ -442,15 +475,19 @@ void StartScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 
     for (int i = 0; i < 3; ++i)
     {
+        float joinWidth = 0.25f;
+        float joinHeight = joinWidth * (1.0f / aspect);
+        float y = 0.5f - 0.5f * i;
+
         // 참가 버튼
         auto joinBtn = make_shared<GameObject>(device);
-        joinBtn->SetMesh(CreateScreenQuad(device, gGameFramework->GetCommandList(), 0.3f, 0.15f, 0.98f));
+        joinBtn->SetMesh(CreateScreenQuad(device, gGameFramework->GetCommandList(), joinWidth, joinHeight, 0.98f));
         joinBtn->SetTexture(m_textures["JOIN"]);
         //joinBtn->SetScale(XMFLOAT3(0.7f, 0.7f, 0.7f));
         joinBtn->SetUseTexture(true);
 
         // ROOM 우측 위에 위치 (ROOM보다 오른쪽 + 살짝 위)
-        joinBtn->SetPosition(XMFLOAT3(-0.07f, 0.5f - 0.5f * i, 0.98f));
+        joinBtn->SetPosition({ -0.07f, y, 0.98f });
         m_joinButtons.push_back(joinBtn);
     }
 
@@ -477,6 +514,13 @@ void StartScene::BuildObjects(const ComPtr<ID3D12Device>& device)
     ThirdRoom->SetPosition(XMFLOAT3(-0.47f, -0.35f, 0.98f));
     ThirdRoom->SetUseTexture(true);
     m_SelectSceneObjects.push_back(ThirdRoom);
+
+    m_loadingScreen = make_shared<GameObject>(device);
+    m_loadingScreen->SetMesh(CreateScreenQuad(device, gGameFramework->GetCommandList(), 1.1f, 0.9f, 0.99f));
+    m_loadingScreen->SetTexture(m_textures["LOAD"]);
+    m_loadingScreen->SetUseTexture(true);
+    m_loadingScreen->SetVisible(false);
+    m_loadingScreen->SetBaseColor(XMFLOAT4(1.f, 1.f, 1.f, 1.f));
 }
 
 void StartScene::UpdateLoginObjects()

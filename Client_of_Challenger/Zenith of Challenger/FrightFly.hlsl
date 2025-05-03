@@ -16,8 +16,8 @@ struct PixelInput
 	float3 worldPos : POSITION1;
 	float3 normal : NORMAL;
 	float2 texcoord : TEXCOORD;
+    float4 shadowPos : TEXCOORD1;
     
-    float4 debugColor : COLOR0;
 };
 
 //float4x4 ScaleMatrix(float4x4 m, float s)
@@ -86,29 +86,32 @@ PixelInput VSMain(VertexInput input)
    //     input.boneIndices.z / 39.0f, // B: 세 번째 본 인덱스
    //     1.0f // A: 고정
    // );
-  
+    output.shadowPos = mul(worldPos, shadowMat);
+
 	return output;
 }
 
 float4 PSMain(PixelInput input) : SV_Target
 {
-    
-    //return input.debugColor;
-    
-	float4 texColor = g_texture[0].Sample(g_sampler, input.texcoord);
+    float4 texColor = g_texture[0].Sample(g_sampler, input.texcoord);
 
     // 너무 어두우면 fallback 색상
-	if (texColor.r + texColor.g + texColor.b < 0.01f)
-		texColor.rgb = float3(1, 0, 1); // 마젠타
+    if (texColor.r + texColor.g + texColor.b < 0.01f)
+        texColor.rgb = float3(1, 0, 1); // 마젠타
     
-	float3 normal = normalize(input.normal);
-	float3 toEye = normalize(g_cameraPosition - input.worldPos);
+    float3 normal = normalize(input.normal);
+    float3 toEye = normalize(g_cameraPosition - input.worldPos);
     
-	MaterialData matData;
-	matData.fresnelR0 = float3(0.01f, 0.01f, 0.01f);
-	matData.roughness = 0.5f;
-	matData.ambient = float3(0.8f, 0.8f, 0.8f);
+    MaterialData matData;
+    matData.fresnelR0 = float3(0.01f, 0.01f, 0.01f);
+    matData.roughness = 0.5f;
+    matData.ambient = float3(0.8f, 0.8f, 0.8f);
 
-	return Lighting(input.worldPos, normal, toEye, texColor, matData);
+    float shadow = ComputeShadowFactor(input.shadowPos.xyz);
+	
+	
+    return Lighting(input.worldPos, normal, toEye, texColor, matData) * shadow;
+    //float4 debugShadow = ComputeShadowFactor(input.worldPos);
+    //return debugShadow;
     
 }
