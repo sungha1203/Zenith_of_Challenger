@@ -76,7 +76,7 @@ void Monsters::Update(FLOAT timeElapsed)
 		// [4] 몬스터가 플레이어를 향하도록 Y축 회전
 
 		SetRotationY(degrees + 90.f);
-		SetRotationZ(90.0f);
+		SetRotationZ(90.f);
 		//PlusRotationY(90.0f);
 		//PlusRotationZ(90.0f);
 	}
@@ -132,7 +132,6 @@ void Monsters::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) cons
 			m_debugBoxMesh->Render(commandList);
 
 		}
-		m_debugBoxMesh->Render(commandList);
 	}
 
 	if (!isShadowPass && m_healthBar)
@@ -193,8 +192,6 @@ void Monsters::UploadBoneMatricesToShader(const std::vector<XMMATRIX>& boneTrans
 		finalMatrices[i] = XMMatrixTranspose(finalMatrices[i]);
 
 	// ===== GPU 복사 =====
-	PIXBeginEvent(0, "본 행렬 업로드");
-
 	void* mappedData = nullptr;
 	CD3DX12_RANGE readRange(0, 0);
 	m_boneMatrixUploadBuffer->Map(0, &readRange, &mappedData);
@@ -208,8 +205,6 @@ void Monsters::UploadBoneMatricesToShader(const std::vector<XMMATRIX>& boneTrans
 
 	commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(
 		m_boneMatrixBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_GENERIC_READ));
-
-	PIXEndEvent();
 }
 void Monsters::CreateBoneMatrixSRV(const ComPtr<ID3D12Device>& device, D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle, D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle)
 {
@@ -251,6 +246,22 @@ void Monsters::RenderOutline(const ComPtr<ID3D12GraphicsCommandList>& commandLis
 {
 	if (m_isDead) return;
 	if (!m_outlineShader) return;
+
+	// 애니메이션 본 행렬 업로드
+	if (m_animationClips.contains(m_currentAnim))
+	{
+		const auto& clip = m_animationClips.at(m_currentAnim);
+		float animTime = fmod(m_animTime, clip.duration);
+		auto boneTransforms = clip.GetBoneTransforms(animTime, m_boneNameToIndex, m_boneHierarchy, m_boneOffsets, m_nodeNameToGlobalTransform);
+
+		const_cast<Monsters*>(this)->UploadBoneMatricesToShader(boneTransforms, commandList);
+	}
+
+	// SRV 설정
+	if (m_boneMatrixSRV.ptr != 0)
+	{
+		commandList->SetGraphicsRootDescriptorTable(RootParameter::MonsterBoneMatrix, m_boneMatrixSRV);
+	}
 
 	for (const auto& mesh : m_meshes)
 	{

@@ -34,17 +34,6 @@ std::shared_ptr<Mesh<TextureVertex>> CreateScreenQuadWithCustomUV(
 
     auto mesh = std::make_shared<Mesh<TextureVertex>>(device, commandList, vertices);
 
-    //여기 추가! 복사 완료 후 버텍스 버퍼용 상태로 전이
-    if (auto buffer = mesh->GetVertexBuffer())
-    {
-        D3D12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-            buffer,
-            D3D12_RESOURCE_STATE_COPY_DEST,
-            D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER
-        );
-        commandList->ResourceBarrier(1, &barrier);
-    }
-
     return mesh;
 }
 

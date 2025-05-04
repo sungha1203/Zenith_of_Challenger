@@ -78,14 +78,6 @@ PixelInput VSMain(VertexInput input)
     output.normal = normalize(mul(skinnedNormal, (float3x3) g_worldMatrix));
     output.texcoord = input.texcoord;
     
-     // --- 추가: 디버그용 컬러 encode ---
-    // 디버깅할 정보: boneIndices (0~39 범위) 를 컬러로 뿌리기
-   // output.debugColor = float4(
-   //     input.boneIndices.x / 39.0f, // R: 첫 번째 본 인덱스
-   //     input.boneIndices.y / 39.0f, // G: 두 번째 본 인덱스
-   //     input.boneIndices.z / 39.0f, // B: 세 번째 본 인덱스
-   //     1.0f // A: 고정
-   // );
     output.shadowPos = mul(worldPos, shadowMat);
 
 	return output;
@@ -111,7 +103,5 @@ float4 PSMain(PixelInput input) : SV_Target
 	
 	
     return Lighting(input.worldPos, normal, toEye, texColor, matData) * shadow;
-    //float4 debugShadow = ComputeShadowFactor(input.worldPos);
-    //return debugShadow;
     
 }

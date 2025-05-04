@@ -600,12 +600,16 @@ HealthBarShader::HealthBarShader(const ComPtr<ID3D12Device>& device, const ComPt
 
 OutlineShader::OutlineShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSignature)
 {
-	vector<D3D12_INPUT_ELEMENT_DESC> inputLayout = {
-	   { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-	   { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-	   { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+	// [1] 스키닝용 정점 입력 레이아웃
+	std::vector<D3D12_INPUT_ELEMENT_DESC> inputLayout = {
+		{ "POSITION",     0, DXGI_FORMAT_R32G32B32_FLOAT,    0, 0,  D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },  // float3 position
+		{ "NORMAL",       0, DXGI_FORMAT_R32G32B32_FLOAT,    0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },  // float3 normal
+		{ "TEXCOORD",     0, DXGI_FORMAT_R32G32_FLOAT,       0, 24, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },  // float2 uv
+		{ "BLENDINDICES", 0, DXGI_FORMAT_R32G32B32A32_UINT,  0, 32, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },  // uint4 boneIndices
+		{ "BLENDWEIGHT",  0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 48, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },  // float4 boneWeights
 	};
 
+	// [2] 셰이더 컴파일
 #if defined(_DEBUG)
 	UINT compileFlags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
 #else
@@ -613,19 +617,35 @@ OutlineShader::OutlineShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID
 #endif
 
 	ComPtr<ID3DBlob> vs, ps, errors;
-	D3DCompileFromFile(TEXT("OutlineShader.hlsl"), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE,
+	HRESULT hr = D3DCompileFromFile(L"OutlineShader.hlsl", nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE,
 		"VSMain", "vs_5_1", compileFlags, 0, &vs, &errors);
-	D3DCompileFromFile(TEXT("OutlineShader.hlsl"), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE,
-		"PSMain", "ps_5_1", compileFlags, 0, &ps, &errors);
+	if (FAILED(hr) && errors) {
+		OutputDebugStringA((char*)errors->GetBufferPointer());
+	}
 
+	hr = D3DCompileFromFile(L"OutlineShader.hlsl", nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE,
+		"PSMain", "ps_5_1", compileFlags, 0, &ps, &errors);
+	if (FAILED(hr) && errors) {
+		OutputDebugStringA((char*)errors->GetBufferPointer());
+	}
+
+	// [3] PSO 설정
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC desc{};
-	desc.InputLayout = { inputLayout.data(), (UINT)inputLayout.size() };
+	desc.InputLayout = { inputLayout.data(), static_cast<UINT>(inputLayout.size()) };
 	desc.pRootSignature = rootSignature.Get();
 	desc.VS = { vs->GetBufferPointer(), vs->GetBufferSize() };
 	desc.PS = { ps->GetBufferPointer(), ps->GetBufferSize() };
+
+	// 외곽선은 뒷면만 렌더링
 	desc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
-	desc.RasterizerState.CullMode = D3D12_CULL_MODE_FRONT; // 외곽선용: 전면 컬링
+	desc.RasterizerState.CullMode = D3D12_CULL_MODE_FRONT;
+
+	// 깊이 테스트는 하되 깊이값은 쓰지 않음
 	desc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
+	desc.DepthStencilState.DepthEnable = TRUE;
+	desc.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
+	desc.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+
 	desc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
 	desc.SampleMask = UINT_MAX;
 	desc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
@@ -634,5 +654,7 @@ OutlineShader::OutlineShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID
 	desc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
 	desc.SampleDesc.Count = 1;
 
+	// 파이프라인 생성
 	device->CreateGraphicsPipelineState(&desc, IID_PPV_ARGS(&m_pipelineState));
 }
+

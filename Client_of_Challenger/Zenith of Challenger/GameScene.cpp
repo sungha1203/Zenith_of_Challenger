@@ -271,7 +271,7 @@ void GameScene::Update(FLOAT timeElapsed)
 
 				OutputDebugStringA(debugMsg);
 
-				monster->ApplyDamage(1.f);
+				//monster->ApplyDamage(1.f);
 
 				if (monster->IsDead() && !monster->IsParticleSpawned())
 				{
@@ -809,8 +809,8 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 		player->SetRotationY(0.f);                  // 정면을 보게 초기화
 
 		// [4] 위치 및 스케일 설정
-		player->SetPosition(XMFLOAT3{ 40.f, 0.3f, -50.f });
-		//player->SetPosition(gGameFramework->g_pos);
+		//player->SetPosition(XMFLOAT3{ 40.f, 0.3f, -50.f });
+		player->SetPosition(gGameFramework->g_pos);
 
 		// [5] FBX 메시 전부 등록
 		for (int i = 0; i < meshes.size(); ++i)
@@ -918,10 +918,10 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 		float radius = 15.0f;
 		float x = -170.f + radius * cos(angle);
 		float z = 15.f + radius * sin(angle);
-		float y = 0.f;
+		float y = 5.f;
 
-		frightflies[i]->SetPosition(XMFLOAT3{ x, y, z });
-		//frightflies[i]->SetPosition(gGameFramework->monstersCoord[i + 10]);
+		//frightflies[i]->SetPosition(XMFLOAT3{ x, y, z });
+		frightflies[i]->SetPosition(gGameFramework->monstersCoord[i + 10]);
 	}
 
 	// "Flower_Fairy" 타입 몬스터 배치
@@ -932,10 +932,10 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 		float radius = 20.0f;
 		float x = 190.f + radius * cos(angle);
 		float z = -190.f + radius * sin(angle);
-		float y = -5.f;
+		float y = 0.f;
 
-		fairies[i]->SetPosition(XMFLOAT3{ x, y, z });
-		//fairies[i]->SetPosition(gGameFramework->monstersCoord[i + 40]);
+		//fairies[i]->SetPosition(XMFLOAT3{ x, y, z });
+		fairies[i]->SetPosition(gGameFramework->monstersCoord[i + 40]);
 
 	}
 
@@ -949,8 +949,8 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 		float z = -165.f + radius * sin(angle);
 		float y = 0.f; // 지면 높이에 맞게 조절
 
-		mushrooms[i]->SetPosition(XMFLOAT3{ x, y, z });
-		//mushrooms[i]->SetPosition(gGameFramework->monstersCoord[i]);
+		//mushrooms[i]->SetPosition(XMFLOAT3{ x, y, z });
+		mushrooms[i]->SetPosition(gGameFramework->monstersCoord[i]);
 	}
 
 	// "Venus_Blue" 타입 몬스터 배치
@@ -961,10 +961,10 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 		float radius = 28.0f; // 위치 조정
 		float x = 40.f + radius * cos(angle);
 		float z = -50.f + radius * sin(angle);
-		float y = 0.f;
+		float y = 2.f;
 
-		venusGroup[i]->SetPosition(XMFLOAT3{ x, y, z });
-		//venusGroup[i]->SetPosition(gGameFramework->monstersCoord[i + 30]);
+		//venusGroup[i]->SetPosition(XMFLOAT3{ x, y, z });
+		venusGroup[i]->SetPosition(gGameFramework->monstersCoord[i + 30]);
 	}
 
 	// "Plant_Dionaea" 타입 몬스터 배치
@@ -977,8 +977,8 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 		float z = 30.f + radius * sin(angle);
 		float y = 0.f;
 
-		DionaeaGroup[i]->SetPosition(XMFLOAT3{ x, y, z });
-		//DionaeaGroup[i]->SetPosition(gGameFramework->monstersCoord[i + 20]);
+		//DionaeaGroup[i]->SetPosition(XMFLOAT3{ x, y, z });
+		DionaeaGroup[i]->SetPosition(gGameFramework->monstersCoord[i + 20]);
 	}
 
 	//스카이박스

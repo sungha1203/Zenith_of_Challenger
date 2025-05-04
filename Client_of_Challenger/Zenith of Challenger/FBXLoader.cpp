@@ -19,7 +19,7 @@ bool FBXLoader::LoadFBXModel(const std::string& filename, const XMMATRIX& rootTr
 		return false;
 	}
 
-	OutputDebugStringA("[FBXLoader] ===== LoadFBXModel ���� =====\n");
+	OutputDebugStringA("[FBXLoader] ===== LoadFBXModel =====\n");
 
 
 	ProcessNode(scene->mRootNode, scene, rootTransform);
@@ -59,7 +59,6 @@ bool FBXLoader::LoadFBXModel(const std::string& filename, const XMMATRIX& rootTr
 			{
 				std::string rawName = anim->mChannels[j]->mNodeName.C_Str();
 
-				// ���� ����: ���ӽ����̽�, ��� ����
 				std::string cleanName = rawName.substr(rawName.find_last_of('|') + 1);
 				std::replace(cleanName.begin(), cleanName.end(), ':', '_');
 
@@ -73,7 +72,6 @@ bool FBXLoader::LoadFBXModel(const std::string& filename, const XMMATRIX& rootTr
         OutputDebugStringA("[FBXLoader] 애니메이션 없음\n");
     }
 
-	// �ִϸ��̼� ������ �Ľ�
 	ProcessAnimations(scene);
 	return true;
 }
@@ -82,40 +80,24 @@ bool FBXLoader::LoadFBXModel(const std::string& filename, const XMMATRIX& rootTr
 
 shared_ptr<OtherPlayer> FBXLoader::LoadOtherPlayer(const ComPtr<ID3D12Device>& device, const unordered_map<string, shared_ptr<Texture>>& textures, const unordered_map<string, shared_ptr<Shader>>& shaders)
 {
-	// [1] �÷��̾� �𵨿� ������ ��� ���� (ũ�� ����)
 	XMMATRIX playerTransform = XMMatrixScaling(0.05f, 0.05f, 0.05);
 
-	// [2] FBX �δ� ���� �� �� �ε�
 	auto otherPlayer = make_shared<FBXLoader>();
-	cout << "ĳ���� �ε� ��!!!!" << endl;
 
 	if (otherPlayer->LoadFBXModel("Model/Player/Player2.fbx", playerTransform))
 	{
 		auto& meshes = otherPlayer->GetMeshes();
-		if (meshes.empty()) {
-			OutputDebugStringA("[ERROR] FBX���� �޽ø� ã�� �� �����ϴ�.\n");
-			return NULL;
-		}
 
-		// [3] Player ��ü ����
 		auto player = make_shared<OtherPlayer>(device);
 
+		player->SetScale(XMFLOAT3{ 1.f, 1.f, 1.f }); 
+		player->SetRotationY(0.f);                  
 
-		player->SetScale(XMFLOAT3{ 1.f, 1.f, 1.f }); // �⺻�� Ȯ��
-		player->SetRotationY(0.f);                  // ������ ���� �ʱ�ȭ
-
-		// [4] ��ġ �� ������ ����
-		//player->SetPosition(XMFLOAT3{ 40.f, 1.7f, -50.f });
-
-
-
-		// [5] FBX �޽� ���� ���
 		for (int i = 0; i < meshes.size(); ++i)
 		{
 			player->AddMesh(meshes[i]);
 		}
 
-		// [6] �ִϸ��̼� Ŭ�� �� �� ���� ����
 		player->SetAnimationClips(otherPlayer->GetAnimationClips());
 		player->SetCurrentAnimation("Idle");
 		player->SetBoneOffsets(otherPlayer->GetBoneOffsets());
@@ -123,45 +105,35 @@ shared_ptr<OtherPlayer> FBXLoader::LoadOtherPlayer(const ComPtr<ID3D12Device>& d
 		player->SetBoneHierarchy(otherPlayer->GetBoneHierarchy());
 		player->SetstaticNodeTransforms(otherPlayer->GetStaticNodeTransforms());
 
-		// [7] �ؽ�ó, ��Ƽ���� ����
 		player->SetTexture(textures.at("CHARACTER"));
 		player->SetTextureIndex(textures.at("CHARACTER")->GetTextureIndex());
-		//player->SetMaterial(materials.at("CHARACTER")); // ������ ���� �ʿ�
-		player->SetShader(shaders.at("CHARACTER")); // ������ ���� �ʿ�
+		player->SetShader(shaders.at("CHARACTER")); 
 		player->SetDebugLineShader(shaders.at("DebugLineShader"));
 
-		// m_player ���� ���� ��ġ
 		BoundingBox playerBox;
 		playerBox.Center = XMFLOAT3{ 0.f, 4.0f, 0.f };
-		playerBox.Extents = { 1.0f, 4.0f, 1.0f }; // �����ϸ��� ��
+		playerBox.Extents = { 1.0f, 4.0f, 1.0f }; 
 		player->SetBoundingBox(playerBox);
 
-		// [8] �� ��� StructuredBuffer�� SRV ����
 		auto [cpuHandle, gpuHandle] = gGameFramework->AllocateDescriptorHeapSlot();
 		player->CreateBoneMatrixSRV(device, cpuHandle, gpuHandle);
-
-		// [9] Player ��� �� GameScene ���ο� ����
-		//gGameFramework->SetPlayer(player);
-		//m_player = gGameFramework->GetPlayer();
 
 		return player;
 	}
 	else
 	{
-		OutputDebugStringA("[ERROR] �÷��̾� FBX �ε� ����!\n");
+		OutputDebugStringA("[ERROR]\n");
 	}
 
 }
 
 void FBXLoader::PrintBoneHierarchy(aiNode* node, int depth)
 {
-	// depth��ŭ �鿩����
 	for (int i = 0; i < depth; ++i)
 		OutputDebugStringA("  ");
 
 	OutputDebugStringA(("[Node] " + std::string(node->mName.C_Str()) + "\n").c_str());
 
-	// �ڽĵ� ��ȸ
 	for (UINT i = 0; i < node->mNumChildren; ++i)
 	{
 		PrintBoneHierarchy(node->mChildren[i], depth + 1);
@@ -181,15 +153,13 @@ void FBXLoader::DumpBoneHierarchy(const aiScene* scene)
 void FBXLoader::ProcessNode(aiNode* node, const aiScene* scene, const XMMATRIX& parentTransform)
 {
 
-	aiMatrix4x4 mat = node->mTransformation; // Assimp�� �⺻������ ���� SRT�� ����Ǿ� ����
+	aiMatrix4x4 mat = node->mTransformation; 
 	aiMatrix4x4 transpose = mat;
-	transpose.Transpose(); // DirectX�� column-major�ϱ� ��ġ �ʿ�
+	transpose.Transpose(); 
 
 	XMMATRIX nodeLocalTransform = XMLoadFloat4x4(reinterpret_cast<XMFLOAT4X4*>(&transpose));
-	// �޽� �����������δ� �۷ι� ��ȯ �ʿ�
 	XMMATRIX globalTransform = XMMatrixMultiply(nodeLocalTransform, parentTransform);
 
-	// �޽� ó��
 	for (UINT i = 0; i < node->mNumMeshes; ++i)
 	{
 		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
@@ -197,7 +167,6 @@ void FBXLoader::ProcessNode(aiNode* node, const aiScene* scene, const XMMATRIX& 
 		m_gameObjects.push_back(object);
 	}
 
-	// �ڽ� ��� ��ȸ
 	for (UINT i = 0; i < node->mNumChildren; ++i)
 	{
 		ProcessNode(node->mChildren[i], scene, globalTransform);
@@ -210,7 +179,6 @@ shared_ptr<GameObject> FBXLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene
 	auto device = gGameFramework->GetDevice();
 	auto commandList = gGameFramework->GetCommandList();
 
-	// [1] �ִϸ��̼� ���� �ִ� ���
 	if (mesh->HasBones())
 	{
 		std::vector<SkinnedVertex> vertices(mesh->mNumVertices);
@@ -218,9 +186,9 @@ shared_ptr<GameObject> FBXLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene
 		for (UINT i = 0; i < mesh->mNumVertices; ++i)
 		{
 			XMFLOAT3 pos = { mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z };
-			vertices[i].position = pos; // �׳� ���� pos
+			vertices[i].position = pos; 
 
-			vertices[i].normal = { mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z }; // �׳� ���� normal
+			vertices[i].normal = { mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z }; 
 			vertices[i].uv = mesh->HasTextureCoords(0) ?
 				XMFLOAT2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y) :
 				XMFLOAT2(0.0f, 0.0f);
@@ -230,7 +198,6 @@ shared_ptr<GameObject> FBXLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene
 
 		}
 
-		// Bone ���� ����
 		for (UINT i = 0; i < mesh->mNumBones; ++i)
 		{
 			aiBone* bone = mesh->mBones[i];
@@ -242,7 +209,6 @@ shared_ptr<GameObject> FBXLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene
 
 
 
-			// �߸��� �ε��� �� ���� �ε��� �ο� ������� ����
 			if (!m_boneNameToIndex.contains(boneName))
 			{
 				m_boneNameToIndex[boneName] = static_cast<int>(m_boneNameToIndex.size());
@@ -250,7 +216,6 @@ shared_ptr<GameObject> FBXLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene
 			}
 
 			int boneIndex = m_boneNameToIndex[boneName];
-			// �� ���� �ݿ�
 			for (UINT j = 0; j < bone->mNumWeights; ++j)
 			{
 				UINT vertexId = bone->mWeights[j].mVertexId;
@@ -283,10 +248,9 @@ shared_ptr<GameObject> FBXLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene
 		auto gameObject = std::make_shared<GameObject>(device);
 		gameObject->SetMesh(meshPtr);
 		gameObject->SetWorldMatrix(globalTransform);
-		DumpBoneHierarchy(scene);
+		//DumpBoneHierarchy(scene);
 		return gameObject;
 	}
-	// [2] �Ϲ� �޽� (�ؽ�ó ����)
 	else
 	{
 		std::vector<TextureVertex> vertices;
@@ -315,7 +279,6 @@ shared_ptr<GameObject> FBXLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene
 		gameObject->SetBaseColor(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
 		gameObject->SetWorldMatrix(globalTransform);
 
-		// �ؽ�ó�� GameScene���� �ϰ� �Ҵ�
 		return gameObject;
 	}
 }
@@ -387,63 +350,28 @@ void FBXLoader::ProcessAnimations(const aiScene* scene)
 	}
 }
 
-//void FBXLoader::BuildBoneHierarchy(aiNode* node, const std::string& parentName, const XMMATRIX& parentTransform)
-//{
-//	std::string nodeName = node->mName.C_Str();
-//
-//	// ���� ����� Local Transform ���
-//	aiMatrix4x4 localMat = node->mTransformation;
-//	localMat.Transpose(); // Assimp�� row-major�̹Ƿ�
-//
-//	XMMATRIX localTransform = XMLoadFloat4x4(reinterpret_cast<XMFLOAT4X4*>(&localMat));
-//
-//	// Assimp Dummy Node (_$AssimpFbx$)�� ����
-//	if (nodeName.find("_$AssimpFbx$") != std::string::npos)
-//	{
-//		// �ڽĵ鿡�� �θ��� Transform ���� ����
-//		for (UINT i = 0; i < node->mNumChildren; ++i)
-//			BuildBoneHierarchy(node->mChildren[i], parentName, XMMatrixMultiply( localTransform, parentTransform));
-//		return;
-//	}
-//
-//	// �θ� �̸� ���
-//	if (!parentName.empty())
-//		m_boneHierarchy[nodeName] = parentName;
-//
-//	// ���� ����� Global Transform ��� : parentTransform,localTransform�� ����
-//	m_nodeNameToGlobalTransform[nodeName] = XMMatrixMultiply(localTransform,parentTransform); 
-//
-//
-//	// �ڽĵ� ��� ȣ��
-//	for (UINT i = 0; i < node->mNumChildren; ++i)
-//		BuildBoneHierarchy(node->mChildren[i], nodeName, m_nodeNameToGlobalTransform[nodeName]);
-//}
 void FBXLoader::BuildBoneHierarchy(aiNode* node, const std::string& parentName, const XMMATRIX& accumulatedTransform)
 {
 	std::string nodeName = node->mName.C_Str();
 
-	// ���� ����� ���� ��� ����
 	aiMatrix4x4 localMat = node->mTransformation;
-	localMat.Transpose(); // Assimp�� row-major
+	localMat.Transpose(); 
 	XMMATRIX localTransform = XMLoadFloat4x4(reinterpret_cast<XMFLOAT4X4*>(&localMat));
 
-	// ������ Ʈ������
 	XMMATRIX combinedTransform = XMMatrixMultiply(localTransform, accumulatedTransform);
 
-	// $AssimpFbx$ ���� �̸� �����ϰ� Ʈ�������� ����
 	if (nodeName.find("_$AssimpFbx$") != std::string::npos)
 	{
 		for (UINT i = 0; i < node->mNumChildren; ++i)
-			BuildBoneHierarchy(node->mChildren[i], parentName, combinedTransform); // �̸��� ���� �״��, Ʈ������ ����
+			BuildBoneHierarchy(node->mChildren[i], parentName, combinedTransform);
 		return;
 	}
 
-	// ���� �� ��� �̸�: nodeName
 	m_nodeNameToGlobalTransform[nodeName] = combinedTransform;
 
 	if (!parentName.empty())
 		m_boneHierarchy[nodeName] = parentName;
 
 	for (UINT i = 0; i < node->mNumChildren; ++i)
-		BuildBoneHierarchy(node->mChildren[i], nodeName, XMMatrixIdentity()); // �� ������ ���� ����
+		BuildBoneHierarchy(node->mChildren[i], nodeName, XMMatrixIdentity()); 
 }
