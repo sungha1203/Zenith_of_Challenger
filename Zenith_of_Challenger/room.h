@@ -76,6 +76,7 @@ public:
 	Room() : m_room_id(-1), m_IsGaming(false), m_RoomState(Stage::LOBBY) {}
 
 	void    Init(int room_id);							// 방 초기화
+	void	ResetRoom();								// 방 클리어
 
 	void	AddClient(int client_id);					// 클라 접속
 	void    RemoveClient(int client_id);				// 클라 접속 해제
@@ -93,6 +94,7 @@ public:
 	void	StartZenithStage();							// 도전 스테이지 -> 정점스테이지
 	void	EndGame();									// 정점 스테이지 -> 로비
 	
+	void	SetStopTimer();
 	void	SetSkipTimer();
 	void	SetSkipButton(bool check);
 

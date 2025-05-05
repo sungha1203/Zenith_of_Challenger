@@ -6,6 +6,25 @@ void Room::Init(int room_id)
 	m_clients.clear();
 }
 
+void Room::ResetRoom()
+{
+	m_IsGaming = false;
+	m_RoomState = Stage::LOBBY;         // 초기 상태로
+	m_clients.clear();                  // 클라이언트 목록 제거
+	m_inventory = InventoryItem();
+
+	m_skipTimer = false;
+	m_skipButton = false;
+	m_playerNum = 0;
+	m_enterClientNum = 0;
+	m_enterZenithNum = 0;
+
+	for (auto& monster : m_monsters)
+		monster.Reset();
+	m_MonsterNum = 0;;
+	m_timer.join();
+}
+
 void Room::AddClient(int client_id)
 {
 	m_clients.push_back(client_id);
@@ -52,7 +71,7 @@ void Room::PushStartGameButton(int RoomMasterID)
 	std::this_thread::sleep_for(std::chrono::milliseconds(100));
 	g_network.SendInitialState(GetClients());					// 게임방 안에 본인 포함 모두한테 초기 좌표 패킷 보내기
 	std::this_thread::sleep_for(std::chrono::milliseconds(100));
-	g_network.SendInitMonster(GetClients(),m_monsters);		// 게임방 안의 모든 몬스터 초기화
+	g_network.SendInitMonster(GetClients(),m_monsters);			// 게임방 안의 모든 몬스터 초기화
 	std::this_thread::sleep_for(std::chrono::milliseconds(100));
 	g_network.SendGameStart(GetClients());						// 게임방 안에 본인 포함 모두한테 게임시작 패킷 보내기
 	
@@ -124,6 +143,11 @@ void Room::EndGame()
 
 	std::cout << "[INFO][" << m_room_id << "]방 게임을 종료하였습니다!\n";
 	// TODO
+}
+
+void Room::SetStopTimer()
+{
+	m_stopTimer = true;
 }
 
 void Room::SetSkipTimer()

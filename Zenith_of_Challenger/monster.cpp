@@ -5,6 +5,16 @@ Monster::~Monster()
 
 }
 
+void Monster::Reset()
+{
+	m_hp = 0;
+	m_attack = 0;
+	m_speed = 0;
+	m_attackspeed = 0;
+	m_x = m_y = m_z = 0.0f;
+	m_id = -1;
+}
+
 void Monster::SetMonster(int id, NormalMonsterType type, float x, float y, float z)
 {
 	m_id = id;
