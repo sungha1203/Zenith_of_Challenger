@@ -44,6 +44,26 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device,
 
 void GameScene::MouseEvent(HWND hWnd, FLOAT timeElapsed)
 {
+	if (GetAsyncKeyState(VK_LBUTTON) & 0x8000)
+	{
+		POINT pt;
+		GetCursorPos(&pt);
+		ScreenToClient(gGameFramework->GetHWND(), &pt);
+
+		HandleMouseClick(pt.x, pt.y);
+
+		if (pt.x >= 126 && pt.x <= 395 && pt.y >= 347 && pt.y <= 438)
+		{
+			if (m_goldScore >= 10 && m_upgradeScore < 9)
+			{
+				m_goldScore -= 10;
+				m_upgradeScore += 1; // 강화 수치 증가
+				UpdateEnhanceDigits(); // 강화 수치 UI 갱신
+			}
+			else
+				m_goldScore = 0;
+		}
+	}
 }
 
 void GameScene::KeyboardEvent(FLOAT timeElapsed)
@@ -177,6 +197,16 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
 			m_inventoryCounts[i] = std::min(m_inventoryCounts[i] + 1, 9);
 		}
 	}
+
+
+	if (GetAsyncKeyState('I') & 0x0001)
+	{
+		m_showReinforcedWindow = !m_showReinforcedWindow;
+		OutputDebugStringA(m_showReinforcedWindow ? "[UI] Reinforced ON\n" : "[UI] Reinforced OFF\n");
+		m_weaponSlotIcon->SetCustomUV(0.0f, 0.0f, 0.0f, 0.0f);
+		m_jobSlotIcon->SetCustomUV(0.0f, 0.0f, 0.0f, 0.0f);
+	}
+
 }
 
 void GameScene::Update(FLOAT timeElapsed)
@@ -271,7 +301,7 @@ void GameScene::Update(FLOAT timeElapsed)
 
 				OutputDebugStringA(debugMsg);
 
-				//monster->ApplyDamage(1.f);
+				monster->ApplyDamage(1.f);
 
 				if (monster->IsDead() && !monster->IsParticleSpawned())
 				{
@@ -379,6 +409,8 @@ void GameScene::Update(FLOAT timeElapsed)
 		m_inventoryDigits[i]->SetCustomUV(u0, 0.0f, u1, 1.0f);
 	}
 
+
+
 }
 
 void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
@@ -421,6 +453,7 @@ void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) con
 		m_player->SetShader(m_shaders.at("CHARACTER"));
 		m_player->Render(commandList);
 	}
+
 	for (auto op : m_Otherplayer)
 	{
 		if (op) {
@@ -480,10 +513,27 @@ void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) con
 		digit->Render(commandList);
 	}
 
+	//파티클 그려주기
 	if (m_particleManager)
 	{
 		m_particleManager->Render(commandList);
 	}
+
+	//장비창 그려주기
+	if (m_showReinforcedWindow && m_reinforcedWindowUI)
+	{
+		m_shaders.at("UI")->UpdateShaderVariable(commandList);
+		m_reinforcedWindowUI->Render(commandList);
+		m_weaponSlotIcon->Render(commandList);
+		m_jobSlotIcon->Render(commandList);
+		m_plusIcon->Render(commandList);
+
+		for (const auto& digit : m_forcedDigits)
+		{
+			digit->Render(commandList);
+		}
+	}
+
 
 	// 디버그용 그림자맵 시각화
 	if (m_debugShadowShader && m_ShadowMapEnabled)
@@ -759,6 +809,26 @@ void GameScene::BuildTextures(const ComPtr<ID3D12Device>& device,
 		TEXT("Image/InGameUI/Item_num.dds"), RootParameter::Texture);
 	Item_numTexture->CreateShaderVariable(device, true);
 	m_textures.insert({ "Item_num", Item_numTexture });
+
+	auto reinforcedTexture = make_shared<Texture>(device, commandList,
+		TEXT("Image/InGameUI/reinforced_window1.dds"), RootParameter::Texture);
+	reinforcedTexture->CreateShaderVariable(device, true);
+	m_textures.insert({ "reinforced", reinforcedTexture });
+
+	auto weaponTexture = make_shared<Texture>(device, commandList,
+		TEXT("Image/InGameUI/weapon.dds"), RootParameter::Texture);
+	weaponTexture->CreateShaderVariable(device, true);
+	m_textures.insert({ "weapon", weaponTexture });
+
+	auto jobTexture = make_shared<Texture>(device, commandList,
+		TEXT("Image/InGameUI/job.dds"), RootParameter::Texture);
+	jobTexture->CreateShaderVariable(device, true);
+	m_textures.insert({ "job", jobTexture });
+
+	auto plusTexture = make_shared<Texture>(device, commandList,
+		TEXT("Image/InGameUI/plus.dds"), RootParameter::Texture);
+	plusTexture->CreateShaderVariable(device, true);
+	m_textures.insert({ "plus", plusTexture });
 }
 
 void GameScene::BuildMaterials(const ComPtr<ID3D12Device>& device,
@@ -793,7 +863,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 	m_playerLoader = make_shared<FBXLoader>();
 	cout << "캐릭터 로드 중!!!!" << endl;
 
-	if (m_playerLoader->LoadFBXModel("Model/Player/M_C3FC_ModularMale_06.fbx", playerTransform))
+	if (m_playerLoader->LoadFBXModel("Model/Player/Player2.fbx", playerTransform))
 	{
 		auto& meshes = m_playerLoader->GetMeshes();
 		if (meshes.empty()) {
@@ -1134,6 +1204,90 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 		m_inventoryDigits.push_back(digitUI);
 	}
 
+	// 강화창 UI 오브젝트 생성
+	m_reinforcedWindowUI = make_shared<GameObject>(device);
+	m_reinforcedWindowUI->SetTexture(m_textures["reinforced"]);
+	m_reinforcedWindowUI->SetTextureIndex(m_textures["reinforced"]->GetTextureIndex());
+	m_reinforcedWindowUI->SetMesh(CreateScreenQuad(device, gGameFramework->GetCommandList(), 0.8f, 1.1f, 0.97f));
+	m_reinforcedWindowUI->SetPosition(XMFLOAT3(-0.73f, 0.28f, 0.97f));  // 정중앙
+	m_reinforcedWindowUI->SetUseTexture(true);
+	m_reinforcedWindowUI->SetBaseColor(XMFLOAT4(1, 1, 1, 1));
+
+
+	//무기 아이콘 슬롯
+	m_weaponSlotIcon = make_shared<GameObject>(device);
+	m_weaponSlotIcon->SetMesh(CreateScreenQuadWithCustomUV(
+		device,
+		gGameFramework->GetCommandList(),
+		0.14f, 0.13f, 0.97f,
+		0.0f, 0.0f, 1.0f, 1.0f  // 초기에는 보이지 않게
+	));
+	m_weaponSlotIcon->SetTexture(m_textures.at("weapon"));
+	m_weaponSlotIcon->SetPosition({ -0.335f, 0.06f, 0.0f });
+	m_weaponSlotIcon->SetuseCustomUV(1);
+	m_weaponSlotIcon->SetUseTexture(true);
+	m_weaponSlotIcon->SetCustomUV(0.0f, 0.0f, 0.0f, 0.0f);
+	m_weaponSlotIcon->SetVisible(true);
+	m_weaponSlotIcon->SetBaseColor(XMFLOAT4(1, 1, 1, 1));
+	m_weaponSlotIcon->SetShader(m_shaders.at("UI"));
+	m_weaponSlotIcon->SetTextureIndex(m_textures["weapon"]->GetTextureIndex());
+
+	// 직업 아이콘 슬롯
+	m_jobSlotIcon = make_shared<GameObject>(device);
+	m_jobSlotIcon->SetMesh(CreateScreenQuadWithCustomUV(
+		device,
+		gGameFramework->GetCommandList(),
+		0.14f, 0.13f, 0.97f,
+		0.0f, 0.0f, 1.0f, 1.0f
+	));
+	m_jobSlotIcon->SetTexture(m_textures.at("job"));
+	m_jobSlotIcon->SetPosition({ -0.335f, 0.23f, 0.0f });
+	m_jobSlotIcon->SetuseCustomUV(1);
+	m_jobSlotIcon->SetUseTexture(true);
+	m_jobSlotIcon->SetCustomUV(0.0f, 0.0f, 0.0f, 0.0f);
+	m_jobSlotIcon->SetVisible(true);
+	m_jobSlotIcon->SetBaseColor(XMFLOAT4(1, 1, 1, 1));
+	m_jobSlotIcon->SetShader(m_shaders.at("UI"));
+	m_jobSlotIcon->SetTextureIndex(m_textures["job"]->GetTextureIndex());
+
+	//'+'아이콘 이미지
+	m_plusIcon = make_shared<GameObject>(device);
+	m_plusIcon->SetMesh(CreateScreenQuad(device, gGameFramework->GetCommandList(), 0.1f, 0.1f, 0.97f));
+	m_plusIcon->SetTexture(m_textures["plus"]);
+	m_plusIcon->SetTextureIndex(m_textures["plus"]->GetTextureIndex());
+	m_plusIcon->SetPosition(XMFLOAT3(-0.6f, 0.05f, 0.97f));
+	m_plusIcon->SetUseTexture(true);
+
+
+	auto forcedDigit = std::make_shared<GameObject>(device);
+
+	forcedDigit->SetTexture(m_textures["Gold_Score"]); // Gold_Score 텍스처 적용
+	forcedDigit->SetTextureIndex(m_textures["Gold_Score"]->GetTextureIndex());
+	forcedDigit->SetShader(m_shaders["UI"]); // UI용 셰이더 사용
+	forcedDigit->SetUseTexture(true);
+	forcedDigit->SetuseCustomUV(1); // customUV 사용 설정
+
+	float u0 = 0.0f;
+	float u1 = 0.32f;
+	forcedDigit->SetCustomUV(u0, 0.0f, u1, 1.0f);
+
+	// 처음 메쉬 설정 (0 숫자용 UV 기준)
+	forcedDigit->SetMesh(CreateScreenQuadWithCustomUV(
+		device,
+		gGameFramework->GetCommandList(),
+		0.05f,   // 너비
+		0.1f,    // 높이
+		0.99f,   // 깊이
+		u0, 0.0f, u1, 1.0f // UV 좌표
+	));
+
+	// 오른쪽 상단에 배치 (NDC 좌표계 기준)
+	forcedDigit->SetPosition(XMFLOAT3(-0.55f, 0.05f, 0.99f));
+	//forcedDigit->SetScale(XMFLOAT3(0.1f, 0.1f, 0.1f));
+	forcedDigit->SetBaseColor(XMFLOAT4(1, 1, 1, 1));
+
+	m_forcedDigits.push_back(forcedDigit);
+
 }
 
 void GameScene::AddCubeCollider(const XMFLOAT3& position, const XMFLOAT3& extents, const FLOAT& rotate)
@@ -1212,4 +1366,80 @@ void GameScene::RenderShadowPass(const ComPtr<ID3D12GraphicsCommandList>& comman
 		}
 	}
 
+}
+
+void GameScene::HandleMouseClick(int mouseX, int mouseY)
+{
+	// 칼 (무기)
+	if (mouseX >= 1102 && mouseX <= 1178 && mouseY >= 527 && mouseY <= 598)
+	{
+		if (m_inventoryCounts[0] > 0) SetWeaponSlotUV(0); // 칼
+	}
+	// 지팡이 (무기)
+	else if (mouseX >= 1207 && mouseX <= 1278 && mouseY >= 527 && mouseY <= 598)
+	{
+		if (m_inventoryCounts[1] > 0) SetWeaponSlotUV(1); // 지팡이
+	}
+	// 방패 (무기)
+	else if (mouseX >= 1303 && mouseX <= 1373 && mouseY >= 527 && mouseY <= 598)
+	{
+		if (m_inventoryCounts[2] > 0) SetWeaponSlotUV(2); // 방패
+	}
+	// 전사 전직서 (직업)
+	else if (mouseX >= 1102 && mouseX <= 1180 && mouseY >= 622 && mouseY <= 688)
+	{
+		if (m_inventoryCounts[3] > 0) SetJobSlotUV(0); // 전사
+	}
+	// 마법사 전직서 (직업)
+	else if (mouseX >= 1207 && mouseX <= 1278 && mouseY >= 622 && mouseY <= 688)
+	{
+		if (m_inventoryCounts[4] > 0) SetJobSlotUV(1); // 마법사
+	}
+	// 탱커 전직서 (직업)
+	else if (mouseX >= 1303 && mouseX <= 1373 && mouseY >= 622 && mouseY <= 688)
+	{
+		if (m_inventoryCounts[5] > 0) SetJobSlotUV(2); // 탱커
+	}
+}
+
+void GameScene::SetWeaponSlotUV(int type)
+{
+	// type: 0 = 칼, 1 = 지팡이, 2 = 방패
+	float u0 = (type * 100.0f) / 300.0f;
+	float u1 = ((type + 1) * 100.0f) / 300.0f;
+
+	m_weaponSlotIcon->SetCustomUV(u0, 0.f, u1, 1.f);
+	m_weaponSlotIcon->SetVisible(true);
+}
+
+void GameScene::SetJobSlotUV(int type)
+{
+	// type: 0 = 전사, 1 = 마법사, 2 = 탱커
+	float u0 = (type * 100.0f) / 300.0f;
+	float u1 = ((type + 1) * 100.0f) / 300.0f;
+
+	m_jobSlotIcon->SetCustomUV(u0, 0.f, u1, 1.f);
+	m_jobSlotIcon->SetVisible(true);
+}
+
+void GameScene::UpdateEnhanceDigits()
+{
+	int level = m_upgradeScore; 
+	int digitCount = static_cast<int>(m_forcedDigits.size());
+
+	for (int i = digitCount - 1; i >= 0; --i)
+	{
+		int digit = level % 10;
+		level /= 10;
+
+		if (i < m_forcedDigits.size())
+		{
+			auto& digitUI = m_forcedDigits[i];
+			float digitWidth = 0.1f; // 숫자 하나당 100픽셀 기준, 전체 1000픽셀
+			float u0 = digit * digitWidth;
+			float u1 = (float)(digit + 3.0f) * digitWidth;
+
+			digitUI->SetCustomUV(u0, 0.0f, u1, 1.0f);
+		}
+	}
 }

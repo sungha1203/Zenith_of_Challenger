@@ -5,6 +5,13 @@
 #include "Instance.h"
 #include "GameFramework.h"
 
+XMFLOAT4X4 XMMatrixToFloat4x4(const XMMATRIX& mat)
+{
+    XMFLOAT4X4 result;
+    XMStoreFloat4x4(&result, mat);
+    return result;
+}
+
 Object::Object() :
     m_right{ 1.f, 0.f, 0.f }, m_up{ 0.f, 1.f, 0.f }, m_front{ 0.f, 0.f, 1.f },
     m_scale{ 1.f, 1.f, 1.f }, m_rotation{ 0.f, 0.f, 0.f }, m_position{ 0.f, 0.f, 0.f }
@@ -383,6 +390,25 @@ bool GameObject::IsPointInside(int mouseX, int mouseY) const
 //외곽선 전용
 void GameObject::RenderOutline(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
 {
+}
+
+void GameObject::RenderBoundingBoxWithoutScale(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
+{
+    if (!m_debugBoxMesh || !m_debugLineShader) return;
+
+    // 스케일이 제거된 월드행렬 생성
+    XMMATRIX scaleMat = XMMatrixScaling(1.f, 1.f, 1.f); // 스케일 제거
+    XMMATRIX rotMat = XMMatrixRotationRollPitchYaw(m_rotation.x, m_rotation.y, m_rotation.z);
+    XMMATRIX transMat = XMMatrixTranslation(m_position.x, m_position.y, m_position.z);
+    XMMATRIX worldMatrix = scaleMat * rotMat * transMat;
+
+    // 셰이더 설정
+    m_debugLineShader->UpdateShaderVariable(commandList);
+
+    // 이 월드행렬만 넘기기
+    UpdateShaderVariable(commandList, &XMMatrixToFloat4x4(worldMatrix));
+
+    m_debugBoxMesh->Render(commandList);
 }
 
 

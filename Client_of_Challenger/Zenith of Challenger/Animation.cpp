@@ -91,20 +91,6 @@ std::pair<std::vector<XMMATRIX>, std::unordered_map<std::string, int>> Animation
 		{
 			boneGlobalTransforms[boneName] = localTransform;
 		}
-		{
-			XMFLOAT4X4 mat;
-			XMStoreFloat4x4(&mat, boneGlobalTransforms[boneName]);
-			OutputDebugStringA(std::format(
-				"[BoneAccumulation] {} -> T({:.3f}, {:.3f}, {:.3f})\n",
-				boneName, mat._41, mat._42, mat._43
-			).c_str());
-		}
-		if (boneName == "RigSpine0")
-		{
-			XMFLOAT4X4 local;
-			XMStoreFloat4x4(&local, localTransform);
-			OutputDebugStringA(std::format("[RigSpine0 Local] T({:.3f}, {:.3f}, {:.3f})\n", local._41, local._42, local._43).c_str());
-		}
 	}
 
 	// 최종 BoneMatrices 만들기

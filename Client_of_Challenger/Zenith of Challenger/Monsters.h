@@ -87,6 +87,11 @@ private:
 	std::vector<std::shared_ptr<MeshBase>> m_meshes;
 	unordered_map<int, XMMATRIX> m_boneOffsets;
 
+	//애니메이션 최적화용
+	std::string m_prevAnimName = "";
+	float m_prevAnimTime = -1.0f;
+	std::pair<std::vector<XMMATRIX>, std::unordered_map<std::string, int>> m_cachedBoneTransforms;
+
 	//몬스터 체력바 관련
 	shared_ptr<HealthBarObject> m_healthBar;
 	float m_currentHP = 100.f;

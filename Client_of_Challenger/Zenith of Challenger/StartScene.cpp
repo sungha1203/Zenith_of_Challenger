@@ -291,7 +291,7 @@ void StartScene::BuildTextures(const ComPtr<ID3D12Device>& device, const ComPtr<
     m_textures.insert({ "START", startTex });
 
     auto LoadTex = make_shared<Texture>(device);
-    LoadTex->LoadTexture(device, commandList, TEXT("Image/StartScene/Loading.dds"), RootParameter::Texture);
+    LoadTex->LoadTexture(device, commandList, TEXT("Image/StartScene/Loading1.dds"), RootParameter::Texture);
     LoadTex->CreateShaderVariable(device);
     m_textures.insert({ "LOAD", LoadTex });
 
