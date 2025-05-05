@@ -2,6 +2,7 @@
 #include <WS2tcpip.h>
 #include <MSWSock.h>
 #include <iostream>
+#include <algorithm>
 #include <thread>
 #include <mutex>
 #include <unordered_map>		
