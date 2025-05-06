@@ -301,7 +301,7 @@ void GameScene::Update(FLOAT timeElapsed)
 
 				OutputDebugStringA(debugMsg);
 
-				monster->ApplyDamage(1.f);
+				//monster->ApplyDamage(1.f);
 
 				if (monster->IsDead() && !monster->IsParticleSpawned())
 				{
@@ -931,6 +931,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 		m_Otherplayer[0]->m_id = otherid[0];
 		m_Otherplayer[0]->m_position = otherpos[0];
 		m_Otherplayer[0]->SetPosition(m_Otherplayer[0]->m_position);
+		m_Otherplayer[0]->SetScale(XMFLOAT3{ 0.05,0.05,0.05 });
 	}
 	if (otherid[1] != -2)
 	{
@@ -938,6 +939,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 		m_Otherplayer[1]->m_id = otherid[1];
 		m_Otherplayer[1]->m_position = otherpos[1];
 		m_Otherplayer[1]->SetPosition(m_Otherplayer[1]->m_position);
+		m_Otherplayer[1]->SetScale(XMFLOAT3{ 0.05,0.05,0.05 });
 	}
 
 	//맵의 오브젝트들 바운딩 박스
