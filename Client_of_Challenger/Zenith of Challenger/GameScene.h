@@ -88,6 +88,10 @@ private:
     //인벤토리 숫자 관련
     std::vector<std::shared_ptr<GameObject>> m_inventoryDigits;
     int m_inventoryCounts[6] = { 0, 0, 0, 0, 0, 0 };
+    
+    //인벤토리 무기 및 전직서 관련
+    bool m_WeaponOnly = false;
+    bool m_JopOnly = false;
 
     //강화창 관련
     std::shared_ptr<GameObject> m_reinforcedWindowUI;

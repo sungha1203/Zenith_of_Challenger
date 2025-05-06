@@ -122,6 +122,7 @@ void StartScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) co
             m_loadingScreen->Render(commandList);
         }
     }
+    if (gGameFramework->IsSuccess) m_loadingScreen->Render(commandList);
 }
 
 void StartScene::PreRender(const ComPtr<ID3D12GraphicsCommandList>& commandList)

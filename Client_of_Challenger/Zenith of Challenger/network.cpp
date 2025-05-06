@@ -95,6 +95,12 @@ void ClientNetwork::Receive()
             case SC_PACKET_GOLD:
                 ProcessGold(buffer);
                 break;
+            case SC_PACKET_INVENTORY:
+                ProcessInventory(buffer);
+                break;
+            case SC_PACKET_SELECTITEM:
+                ProcessInventory2Equip(buffer);
+                break;
             default:
                 break;
             }
@@ -336,4 +342,25 @@ void ClientNetwork::ProcessGold(char* buffer)
         gameScene->SetGoldScore(pkt->gold);
     }
 
+}
+
+void ClientNetwork::ProcessInventory(char* buffer)
+{
+    shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
+    GameScene* gameScene = dynamic_cast<GameScene*>(currentScene.get());
+
+    SC_Packet_Inventory* pkt = reinterpret_cast<SC_Packet_Inventory*>(buffer);
+    int item = pkt->item - 1;
+    int itemNum = pkt->num;
+
+    if (gameScene)
+    {
+        gameScene->SetInventoryCount(item, itemNum);
+    }
+}
+
+void ClientNetwork::ProcessInventory2Equip(char* buffer)
+{
+    SC_Packet_SelectItem* pkt = reinterpret_cast<SC_Packet_SelectItem*>(buffer);
+    pkt->item;
 }

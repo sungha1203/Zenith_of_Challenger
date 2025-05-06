@@ -34,6 +34,8 @@ public:
 	void		ProcessMonsterHP(char* buffer);
 	void		ProcessItemDrop(char* buffer);
 	void		ProcessGold(char* buffer);
+	void		ProcessInventory(char* buffer);
+	void		ProcessInventory2Equip(char* buffer);
 
 public:
 	SOCKET			m_clientsocket = INVALID_SOCKET;

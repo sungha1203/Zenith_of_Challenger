@@ -18,6 +18,7 @@ constexpr int NAME_SIZE = 20;				// 이름 글자 수
 #define CS_PACKET_MONSTERHP			 8			// 몬스터 HP
 #define CS_PACKET_CHAT				 9			// 인게임 속 채팅
 #define CS_PACKET_ITEMSTATE			 10			// 장비창에서 강화
+#define CS_PACKET_INVENTORY			 11			// 인벤토리에서 아이템 선택
 
 #define CS_PACKET_SKIPCHALLENGE		 99			// 도전스테이지 스킵
 #define CS_PACKET_LOGOUT			 100		// 로그아웃
@@ -36,9 +37,10 @@ constexpr int NAME_SIZE = 20;				// 이름 글자 수
 #define SC_PACKET_MONSTERHP			 111		// 몬스터 HP
 #define SC_PACKET_DROPITEM			 112		// 몬스터 드랍 아이템
 #define SC_PACKET_GOLD				 113		// 골드 현 상황 갱신
-#define SC_PACKET_SELECTITEM		 114		// 인벤토리에서 무기 or 전직서 결정
-#define SC_PACKET_ITEMSTATE			 115		// 무기 강화 성공 여부
-#define SC_PACKET_CHAT				 116		// 인게임 속 채팅
+#define SC_PACKET_INVENTORY			 114		// 인벤토리 현재 상황
+#define SC_PACKET_SELECTITEM		 115		// 인벤토리에서 무기 or 전직서 결정
+#define SC_PACKET_ITEMSTATE			 116		// 무기 강화 성공 여부
+#define SC_PACKET_CHAT				 117		// 인게임 속 채팅
 
 #define SC_PACKET_SKIPCHALLENGE		 998		// 도전스테이지 스킵
 #define SC_PACKET_LOGOUT			 999		// 로그아웃
