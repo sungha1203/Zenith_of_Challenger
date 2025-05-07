@@ -44,7 +44,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device,
 
 void GameScene::MouseEvent(HWND hWnd, FLOAT timeElapsed)
 {
-    if (GetAsyncKeyState(VK_LBUTTON) & 0x8000)
+    if (GetAsyncKeyState(VK_LBUTTON) & 0x0001)
     {
         POINT pt;
         GetCursorPos(&pt);
@@ -54,14 +54,20 @@ void GameScene::MouseEvent(HWND hWnd, FLOAT timeElapsed)
 
         if (pt.x >= 126 && pt.x <= 395 && pt.y >= 347 && pt.y <= 438)
         {
-            if (m_goldScore >= 10 && m_upgradeScore < 9)
-            {
-                m_goldScore -= 10;
-                m_upgradeScore += 1; // 강화 수치 증가
-                UpdateEnhanceDigits(); // 강화 수치 UI 갱신
-            }
-            else
-                m_goldScore = 0;
+            CS_Packet_ItemState pkt;
+            pkt.type = CS_PACKET_ITEMSTATE;
+            pkt.enhanceTry = true;
+            pkt.size = sizeof(pkt);
+
+            gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
+            //if (m_goldScore >= 10 && m_upgradeScore < 9)
+            //{
+            //    m_goldScore -= 10;
+            //    m_upgradeScore += 1; // 강화 수치 증가
+            //    UpdateEnhanceDigits(); // 강화 수치 UI 갱신
+            //}
+            //else
+            //    m_goldScore = 0;
         }
     }
 }
@@ -155,7 +161,13 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
 
     if (GetAsyncKeyState(VK_UP) & 0x8000)
     {
-        m_goldScore = std::min(m_goldScore + 10, 999); // 최대 999까지
+        CS_Packet_DebugGold pkt;
+        pkt.type = CS_PACKET_DEBUGGOLD;
+        pkt.plusGold = true;
+        pkt.size = sizeof(pkt);
+
+        gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
+        //m_goldScore = std::min(m_goldScore + 10, 999); // 최대 999까지
     }
 
     if (GetAsyncKeyState(VK_SPACE) & 0x8000)
@@ -186,7 +198,7 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
 
     if (GetAsyncKeyState(VK_DOWN) & 0x8000)
     {
-        m_goldScore = std::max(m_goldScore - 10, 0);   // 최소 0까지
+        //m_goldScore = std::max(m_goldScore - 10, 0);   // 최소 0까지
     }
 
     // 1~6 키를 눌렀을 때 해당 인덱스의 숫자 증가
@@ -194,7 +206,13 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
     {
         if (GetAsyncKeyState('1' + i) & 0x0001)
         {
-            m_inventoryCounts[i] = std::min(m_inventoryCounts[i] + 1, 9);
+            CS_Packet_DebugItem pkt;
+            pkt.type = CS_PACKET_DEBUGITEM;
+            pkt.item = i + 1;
+            pkt.size = sizeof(pkt);
+
+            gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
+            //m_inventoryCounts[i] = std::min(m_inventoryCounts[i] + 1, 9);
         }
     }
 

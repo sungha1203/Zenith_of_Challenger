@@ -30,6 +30,8 @@ public:
 	void		ProcessMonsterHP(int client_id, char* buffer, int length);		// 몬스터 HP 업데이트
 	void		ProcessInventorySelcet(int client_id, char* buffer, int length);// 인벤토리 무기 및 전직서 선택
 	void		ProcessItemState(int client_id, char* buffer, int length);		// 강화 및 전직 설정(장비창)
+	void		ProcessDebugGold(int client_id, char* buffer, int length);		// 디버깅용 골드 추가
+	void		ProcessDebugItem(int client_id, char* buffer, int length);		// 디버깅용 무기 및 전직서 추가
 
 	// ---------패킷 뿌려주기---------
 	void		SendLoginResponse(int client_id, bool success);

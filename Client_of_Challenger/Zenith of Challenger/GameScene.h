@@ -44,6 +44,7 @@ public:
     shared_ptr<ParticleManager> GetParticleManager() const { return m_particleManager; }
     void SetGoldScore(int score) { m_goldScore = score; }
     void SetInventoryCount(int item , int num) { m_inventoryCounts[item] = num; }
+    void SetupgradeScore(int num) { m_upgradeScore = num; }
 
     //장비창 관련
     void HandleMouseClick(int mouseX, int mouseY);

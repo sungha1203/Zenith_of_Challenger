@@ -119,10 +119,10 @@ void ClientInfo::SetWeaponGrade()
 
 bool ClientInfo::SetEnhanceGradeUp(int weapongrade)
 {
-    int probabilities[] = { 100, 90, 80, 70, 60, 50, 40, 30, 20 };
-    // 0 -> 1 : 100%   |   3 -> 4 : 70%   |   6 -> 7 : 40%
-    // 1 -> 2 : 90%    |   4 -> 5 : 60%   |   7 -> 8 : 30%
-    // 2 -> 3 : 80%    |   5 -> 6 : 50%   |   8 -> 9 : 20%
+    int probabilities[] = { 100, 90, 81, 64, 50, 26, 15, 7, 5 };
+    // 0 -> 1 : 100%   |   3 -> 4 : 64%   |   6 -> 7 : 15%
+    // 1 -> 2 : 90%    |   4 -> 5 : 50%   |   7 -> 8 : 7%
+    // 2 -> 3 : 81%    |   5 -> 6 : 26%   |   8 -> 9 : 5%
 
     std::random_device rd;
     std::default_random_engine dre{ rd() };

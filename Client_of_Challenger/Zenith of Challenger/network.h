@@ -36,6 +36,8 @@ public:
 	void		ProcessGold(char* buffer);
 	void		ProcessInventory(char* buffer);
 	void		ProcessInventory2Equip(char* buffer);
+	void		ProcessDebugItem(char* buffer);
+	void		ProcessItemState(char* buffer);
 
 public:
 	SOCKET			m_clientsocket = INVALID_SOCKET;

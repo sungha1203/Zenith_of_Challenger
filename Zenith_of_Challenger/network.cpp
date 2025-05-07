@@ -319,6 +319,15 @@ void Network::HandlePacket(int client_id, char* buffer, int length)
 	case CS_PACKET_LOGOUT:
 		CloseClient(client_id);
 		break;
+	case CS_PACKET_DEBUGGOLD:
+		ProcessDebugGold(client_id, buffer, length);
+		break;
+	case CS_PACKET_DEBUGITEM:
+		ProcessDebugItem(client_id, buffer, length);
+		break;
+	case CS_PACKET_ITEMSTATE:
+		ProcessItemState(client_id, buffer, length);
+		break;
 	default:
 		std::cout << "[ERROR] 알 수 없는 패킷 수신함. 클라이언트 [" << client_id << "]" << std::endl;
 		break;
@@ -562,7 +571,7 @@ void Network::ProcessInventorySelcet(int client_id, char* buffer, int length)
 	{
 		g_client[client_id].SetJobType(pkt->item);
 		room.DecideJobDocument(pkt->item);
-		pkt2.item = pkt->item + 3;
+		pkt2.item = pkt->item;
 		pkt2.num = room.GetJobTypeNum(pkt->item);
 		clients[client_id].do_send(pkt3);				// 해당 클라 장비창에 전직서 추가
 	}
@@ -599,6 +608,53 @@ void Network::ProcessItemState(int client_id, char* buffer, int length)
 	pkt2.size = sizeof(pkt2);
 
 	clients[client_id].do_send(pkt2);
+
+	clients[client_id].do_recv();
+}
+
+// 디버깅용 골드 추가
+void Network::ProcessDebugGold(int client_id, char* buffer, int length)
+{
+	CS_Packet_DebugGold* pkt = reinterpret_cast<CS_Packet_DebugGold*>(buffer);
+
+	int room_id = g_room_manager.GetRoomID(client_id);
+	Room& room = g_room_manager.GetRoom(room_id);
+
+	if (pkt->plusGold = true) {
+		room.AddGold(10);
+	}
+
+	clients[client_id].do_recv();
+}
+
+// 디버깅용 무기 및 전직서 추가
+void Network::ProcessDebugItem(int client_id, char* buffer, int length)
+{
+	CS_Packet_DebugItem* pkt = reinterpret_cast<CS_Packet_DebugItem*>(buffer);
+
+	int room_id = g_room_manager.GetRoomID(client_id);
+	Room& room = g_room_manager.GetRoom(room_id);
+	const auto& client = room.GetClients();
+
+	int itemNum = pkt->item;
+
+	SC_Packet_DebugItem pkt2;
+	pkt2.type = SC_PACKET_DEBUGITEM;
+	pkt2.item = pkt->item - 1;
+	pkt2.size = sizeof(pkt2);
+
+	if (itemNum > 0 && itemNum <= 3) {		// 무기
+		room.ADDJobWeapon(itemNum);
+		pkt2.itemNum = room.GetWeaponTypeNum(itemNum);
+	}
+	else if (itemNum > 3 && itemNum <= 6) {	// 전직서
+		room.AddJobDocument(itemNum);
+		pkt2.itemNum = room.GetJobTypeNum(itemNum);
+	}
+
+	for (int other_id : client) {
+		clients[other_id].do_send(pkt2);
+	}
 
 	clients[client_id].do_recv();
 }
