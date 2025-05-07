@@ -54,13 +54,19 @@ public:
 
 private:
     shared_ptr<FBXLoader> m_fbxLoader; // FBX 로더 추가
+    shared_ptr<FBXLoader> m_ZenithLoader; // FBX 로더 추가
     shared_ptr<FBXLoader> m_playerLoader;
     vector<shared_ptr<MeshBase>> m_fbxMeshes; // FBX에서 로드한 메쉬 저장
+    vector<shared_ptr<MeshBase>> m_ZenithMeshes; // FBX에서 로드한 메쉬 저장
     vector<shared_ptr<GameObject>> m_fbxObjects; // FBX 모델용 GameObject 리스트 추가
+    vector<shared_ptr<GameObject>> m_ZenithObjects; // 정점맵 오브젝트 저장
 
 
     bool m_debugDrawEnabled = false;
     bool m_ShadowMapEnabled = false;
+    
+    //정점맵 토글키
+    bool m_ZenithEnabled = false;
 
 
     ////////////////몬스터 관련////////////////

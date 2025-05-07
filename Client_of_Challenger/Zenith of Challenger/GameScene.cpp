@@ -20,9 +20,8 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device,
     BuildMaterials(device, commandList);
 
     // FBX 파일 로드
-    cout << "도전 맵 로드 중!!!!" << endl;
     m_fbxLoader = make_shared<FBXLoader>();
-    if (m_fbxLoader->LoadFBXModel("Model/Challenge.fbx",
+    if (m_fbxLoader->LoadFBXModel("Model/Map/Challenge.fbx",
         XMMatrixScaling(5.0f, 5.0f, 5.0f) * XMMatrixRotationY(XMConvertToRadians(180.0f))))
     {
         m_fbxMeshes = m_fbxLoader->GetMeshes();
@@ -39,6 +38,27 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device,
         m_fbxObjects.push_back(gameObject);
     }
 
+    // 정점맵 파일 로드
+    m_ZenithLoader = make_shared<FBXLoader>();
+    if (m_ZenithLoader->LoadFBXModel("Model/Map/ZenithObject.fbx",
+        XMMatrixScaling(1.0f, 1.0f, 1.0f)))
+    {
+        m_ZenithMeshes = m_ZenithLoader->GetMeshes();
+    }
+
+    // FBX 모델을 GameObject로 변환 후 m_fbxObjects에 추가
+    for (const auto& ZenithMesh : m_ZenithMeshes)
+    {
+        auto gameObject = make_shared<GameObject>(device);
+        gameObject->SetMesh(ZenithMesh);
+        gameObject->SetScale(XMFLOAT3{ 0.1f, 0.1f, 0.1f }); // 원래 크기로 유지
+        gameObject->SetPosition(XMFLOAT3{ 0.0f, 0.0f, 0.0f }); // Y축 위치 조정
+
+        m_ZenithObjects.push_back(gameObject);
+    }
+
+
+
     BuildObjects(device);
 }
 
@@ -52,22 +72,29 @@ void GameScene::MouseEvent(HWND hWnd, FLOAT timeElapsed)
 
         HandleMouseClick(pt.x, pt.y);
 
-        if (pt.x >= 126 && pt.x <= 395 && pt.y >= 347 && pt.y <= 438)
+        bool isFull = gGameFramework->GetIsFullScreen(); // 전체화면 여부
+
+        // 강화 버튼 클릭 범위 분기
+        bool isEnhanceClicked = false;
+
+        if (isFull)
+        {
+            if (pt.x >= 166 && pt.x <= 466 && pt.y >= 563 && pt.y <= 629)
+                isEnhanceClicked = true;
+        }
+        else
+        {
+            if (pt.x >= 126 && pt.x <= 395 && pt.y >= 347 && pt.y <= 438)
+                isEnhanceClicked = true;
+        }
+
+        if (isEnhanceClicked)
         {
             CS_Packet_ItemState pkt;
             pkt.type = CS_PACKET_ITEMSTATE;
             pkt.enhanceTry = true;
             pkt.size = sizeof(pkt);
-
             gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
-            //if (m_goldScore >= 10 && m_upgradeScore < 9)
-            //{
-            //    m_goldScore -= 10;
-            //    m_upgradeScore += 1; // 강화 수치 증가
-            //    UpdateEnhanceDigits(); // 강화 수치 UI 갱신
-            //}
-            //else
-            //    m_goldScore = 0;
         }
     }
 }
@@ -223,6 +250,13 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
         OutputDebugStringA(m_showReinforcedWindow ? "[UI] Reinforced ON\n" : "[UI] Reinforced OFF\n");
         /*m_weaponSlotIcon->SetCustomUV(0.0f, 0.0f, 0.0f, 0.0f);
         m_jobSlotIcon->SetCustomUV(0.0f, 0.0f, 0.0f, 0.0f);*/
+    }
+
+    if (GetAsyncKeyState('P') & 0x0001)
+    {
+        m_ZenithEnabled = !m_ZenithEnabled;
+        //m_player->SetPosition(XMFLOAT3(-565.0f, 45.0f, -16.0f));
+        m_player->SetPosition(XMFLOAT3(-570.0f, 44.0f, -20.0f));
     }
 
 }
@@ -452,20 +486,48 @@ void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) con
     m_camera->UpdateShaderVariable(commandList);
     m_lightSystem->UpdateShaderVariable(commandList);
 
-
-    m_terrain->SetShader(m_shaders.at("DETAIL"));
-    m_terrain->Render(commandList);
+    if (m_ZenithEnabled) {
+        m_terrain->SetShader(m_shaders.at("DETAIL"));
+        m_terrain->Render(commandList);
+    }
 
     m_skybox->Render(commandList);
 
-    if (!m_fbxObjects.empty())
-    {
-        for (const auto& obj : m_fbxObjects) {
-            obj->SetShader(m_shaders.at("FBX"));
-            obj->Render(commandList);
+    if (m_ZenithEnabled == false) { //맵 토글키
+        if (!m_fbxObjects.empty()) //도전 맵 렌더링
+        {
+            for (const auto& obj : m_fbxObjects) {
+                obj->SetShader(m_shaders.at("FBX"));
+                obj->Render(commandList);
+            }
+        }
+
+        // 몬스터 렌더링 (map 기반으로 수정)
+        for (const auto& [type, group] : m_monsterGroups)
+        {
+            for (const auto& monster : group)
+            {
+                // 1. 외곽선 Pass
+                if (m_OutLine)
+                {
+                    monster->SetOutlineShader(m_shaders.at("OUTLINE"));
+                    monster->RenderOutline(commandList);
+                }
+
+                monster->SetShader(m_shaders.at("FrightFly"));
+                monster->Render(commandList);
+            }
+        }
+    }
+    else {
+        for (const auto& object : m_ZenithObjects) //정점 맵 렌더링
+        {
+            object->SetShader(m_shaders.at("FBX"));
+            object->Render(commandList);
         }
     }
 
+    //캐릭터
     if (m_player)
     {
         m_player->SetShader(m_shaders.at("CHARACTER"));
@@ -479,22 +541,7 @@ void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) con
             op->Render(commandList);
         }
     }
-    // 몬스터 렌더링 (map 기반으로 수정)
-    for (const auto& [type, group] : m_monsterGroups)
-    {
-        for (const auto& monster : group)
-        {
-            // 1. 외곽선 Pass
-            if (m_OutLine)
-            {
-                monster->SetOutlineShader(m_shaders.at("OUTLINE"));
-                monster->RenderOutline(commandList);
-            }
 
-            monster->SetShader(m_shaders.at("FrightFly"));
-            monster->Render(commandList);
-        }
-    }
 
     if (!m_uiObjects.empty())
     {
@@ -618,7 +665,7 @@ void GameScene::BuildMeshes(const ComPtr<ID3D12Device>& device,
         TEXT("Model/SkyboxMesh.binary"));
     m_meshes.insert({ "SKYBOX", skyboxMesh });
     auto terrainMesh = make_shared<TerrainMesh>(device, commandList,
-        TEXT("Model/HeightMap.raw"));
+        TEXT("Model/ZenithTerrain.raw"));
     m_meshes.insert({ "TERRAIN", terrainMesh });
     // Frightfly FBX 메쉬 저장
     auto frightflyLoader = make_shared<FBXLoader>();
@@ -751,14 +798,14 @@ void GameScene::BuildTextures(const ComPtr<ID3D12Device>& device,
 
     auto terrainTexture = make_shared<Texture>(device);
     terrainTexture->LoadTexture(device, commandList,
-        TEXT("Image/Base_Texture.dds"), RootParameter::Texture);
+        TEXT("Image/Base_Texture.dds"), RootParameter::Texture); //Terrain_01  Base_Texture
     terrainTexture->LoadTexture(device, commandList,
-        TEXT("Image/Detail_Texture_7.dds"), RootParameter::Texture);
+        TEXT("Image/Detail_Texture_7.dds"), RootParameter::Texture); //Detail_Texture_7
     terrainTexture->CreateShaderVariable(device, true);
     m_textures.insert({ "TERRAIN", terrainTexture });
 
     auto fbxTexture = make_shared<Texture>(device, commandList,
-        TEXT("Image/Base Map.dds"), RootParameter::Texture);
+        TEXT("Image/Map/Base Map.dds"), RootParameter::Texture);
     fbxTexture->CreateShaderVariable(device, true);
     m_textures.insert({ "FBX", fbxTexture });
 
@@ -847,6 +894,11 @@ void GameScene::BuildTextures(const ComPtr<ID3D12Device>& device,
         TEXT("Image/InGameUI/plus.dds"), RootParameter::Texture);
     plusTexture->CreateShaderVariable(device, true);
     m_textures.insert({ "plus", plusTexture });
+
+    auto ZenithTexture = make_shared<Texture>(device, commandList,
+        TEXT("Image/Map/ZenithTexture.dds"), RootParameter::Texture);
+    ZenithTexture->CreateShaderVariable(device, true);
+    m_textures.insert({ "Zenith", ZenithTexture });
 }
 
 void GameScene::BuildMaterials(const ComPtr<ID3D12Device>& device,
@@ -1084,9 +1136,9 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
     m_terrain->SetTextureIndex(m_textures["TERRAIN"]->GetTextureIndex());
     m_terrain->SetTexture(m_textures["TERRAIN"]);
     m_terrain->SetShader(m_shaders["DETAIL"]);
-    m_terrain->SetScale(XMFLOAT3{ 5.f, 0.25f, 5.f });
-    m_terrain->SetPosition(XMFLOAT3{ 0.f, -100.f, 0.f });
-
+    m_terrain->SetScale(XMFLOAT3{ 4.0f, 1.f, 4.0f });
+    m_terrain->SetPosition(XMFLOAT3{ 0.f, 29.0f, 0.f });
+    m_terrain->SetRotationY(180.0f);
 
     for (auto& obj : m_fbxObjects)
     {
@@ -1095,6 +1147,16 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
         obj->SetShader(m_shaders["FBX"]);
         obj->SetUseTexture(true); // UV 기반 텍스처 적용
     }
+
+    for (auto& obj : m_ZenithObjects)
+    {
+        obj->SetTexture(m_textures["Zenith"]);
+        obj->SetTextureIndex(m_textures["Zenith"]->GetTextureIndex());
+        obj->SetShader(m_shaders["FBX"]);
+        obj->SetUseTexture(true); // UV 기반 텍스처 적용
+    }
+
+
     auto healthBarZeroUI = make_shared<GameObject>(device);
 
     healthBarZeroUI->SetTexture(m_textures["HealthBarZero"]);  // 우리가 방금 로드한 텍스처 사용  
@@ -1308,6 +1370,10 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 
     m_forcedDigits.push_back(forcedDigit);
 
+
+
+
+
 }
 
 void GameScene::AddCubeCollider(const XMFLOAT3& position, const XMFLOAT3& extents, const FLOAT& rotate)
@@ -1355,11 +1421,24 @@ void GameScene::RenderShadowPass(const ComPtr<ID3D12GraphicsCommandList>& comman
     // [1] GPU에 Shadow 행렬 업로드 (b4)
     m_camera->UploadShadowMatrix(commandList, lightView, lightProj);
 
+    if (m_ZenithEnabled) {
+        m_terrain->SetShader(m_shaders.at("SHADOW"));
+        m_terrain->Render(commandList);
+    }
+
     // [2] FBX 오브젝트 그림자 렌더링
     for (auto& obj : m_fbxObjects)
     {
         obj->SetShader(m_shaders.at("SHADOW"));
         obj->Render(commandList);
+    }
+    
+    if (m_ZenithEnabled) { 
+        for (auto& obj : m_ZenithObjects)
+        {
+            obj->SetShader(m_shaders.at("SHADOW"));
+            obj->Render(commandList);
+        }
     }
 
     if (m_player)
@@ -1390,82 +1469,61 @@ void GameScene::RenderShadowPass(const ComPtr<ID3D12GraphicsCommandList>& comman
 
 void GameScene::HandleMouseClick(int mouseX, int mouseY)
 {
-    // 칼 (무기)
-    if (mouseX >= 1102 && mouseX <= 1178 && mouseY >= 527 && mouseY <= 598)
+    bool isFull = gGameFramework->GetIsFullScreen(); // m_isFullScreen 접근용 함수
+
+    // 좌표 범위 테이블 (무기/직업 순서: 칼, 지팡이, 방패, 전사, 마법사, 탱커)
+    struct ClickRegion { int left, top, right, bottom; };
+    std::vector<ClickRegion> regions;
+
+    if (isFull)
     {
-        if (m_inventoryCounts[0] > 0 && m_WeaponOnly == false) {
-            m_WeaponOnly = true;
-            SetWeaponSlotUV(0); // 칼
-            CS_Packet_Inventory pkt;
-            pkt.type = CS_PACKET_INVENTORY;
-            pkt.item = 1;
-            pkt.size = sizeof(pkt);
-            gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
-        }
+        regions = {
+            {1484, 755, 1587, 860},   // 칼
+            {1624, 755, 1719, 860},   // 지팡이
+            {1756, 755, 1850, 860},   // 방패
+            {1484, 900, 1587, 1000},  // 전사
+            {1624, 900, 1719, 1000},  // 마법사
+            {1756, 900, 1850, 1000}   // 탱커
+        };
     }
-    // 지팡이 (무기)
-    else if (mouseX >= 1207 && mouseX <= 1278 && mouseY >= 527 && mouseY <= 598)
+    else
     {
-        if (m_inventoryCounts[1] > 0 && m_WeaponOnly == false) {
-            m_WeaponOnly = true;
-            SetWeaponSlotUV(1); // 지팡이
-            CS_Packet_Inventory pkt;
-            pkt.type = CS_PACKET_INVENTORY;
-            pkt.item = 2;
-            pkt.size = sizeof(pkt);
-            gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
-        }
+        regions = {
+            {1102, 527, 1178, 598},   // 칼
+            {1207, 527, 1278, 598},   // 지팡이
+            {1303, 527, 1373, 598},   // 방패
+            {1102, 622, 1180, 688},   // 전사
+            {1207, 622, 1278, 688},   // 마법사
+            {1303, 622, 1373, 688}    // 탱커
+        };
     }
-    // 방패 (무기)
-    else if (mouseX >= 1303 && mouseX <= 1373 && mouseY >= 527 && mouseY <= 598)
+
+    // 공통 처리
+    for (int i = 0; i < 6; ++i)
     {
-        if (m_inventoryCounts[2] > 0 && m_WeaponOnly == false) {
-            m_WeaponOnly = true;
-            SetWeaponSlotUV(2); // 방패
-            CS_Packet_Inventory pkt;
-            pkt.type = CS_PACKET_INVENTORY;
-            pkt.item = 3;
-            pkt.size = sizeof(pkt);
-            gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
-        }
-    }
-    // 전사 전직서 (직업)
-    else if (mouseX >= 1102 && mouseX <= 1180 && mouseY >= 622 && mouseY <= 688)
-    {
-        if (m_inventoryCounts[3] > 0 && m_JopOnly == false) {
-            m_JopOnly = true;
-            SetJobSlotUV(0); // 전사
-            CS_Packet_Inventory pkt;
-            pkt.type = CS_PACKET_INVENTORY;
-            pkt.item = 4;
-            pkt.size = sizeof(pkt);
-            gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
-        }
-    }
-    // 마법사 전직서 (직업)
-    else if (mouseX >= 1207 && mouseX <= 1278 && mouseY >= 622 && mouseY <= 688)
-    {
-        if (m_inventoryCounts[4] > 0 && m_JopOnly == false) {
-            m_JopOnly = true;
-            SetJobSlotUV(1); // 마법사
-            CS_Packet_Inventory pkt;
-            pkt.type = CS_PACKET_INVENTORY;
-            pkt.item = 5;
-            pkt.size = sizeof(pkt);
-            gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
-        }
-    }
-    // 탱커 전직서 (직업)
-    else if (mouseX >= 1303 && mouseX <= 1373 && mouseY >= 622 && mouseY <= 688)
-    {
-        if (m_inventoryCounts[5] > 0 && m_JopOnly == false) {
-            m_JopOnly = true;
-            SetJobSlotUV(2); // 탱커
-            CS_Packet_Inventory pkt;
-            pkt.type = CS_PACKET_INVENTORY;
-            pkt.item = 6;
-            pkt.size = sizeof(pkt);
-            gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
+        if (mouseX >= regions[i].left && mouseX <= regions[i].right &&
+            mouseY >= regions[i].top && mouseY <= regions[i].bottom)
+        {
+            if (m_inventoryCounts[i] > 0)
+            {
+                CS_Packet_Inventory pkt;
+                pkt.type = CS_PACKET_INVENTORY;
+                pkt.item = i + 1;
+                pkt.size = sizeof(pkt);
+
+                gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
+
+                if (i < 3 && !m_WeaponOnly)
+                {
+                    m_WeaponOnly = true;
+                    SetWeaponSlotUV(i); // 칼, 지팡이, 방패
+                }
+                else if (i >= 3 && !m_JopOnly)
+                {
+                    m_JopOnly = true;
+                    SetJobSlotUV(i - 3); // 전사, 마법사, 탱커
+                }
+            }
         }
     }
 }
@@ -1479,7 +1537,6 @@ void GameScene::SetWeaponSlotUV(int type)
     m_weaponSlotIcon->SetCustomUV(u0, 0.f, u1, 1.f);
     m_weaponSlotIcon->SetVisible(true);
 }
-
 void GameScene::SetJobSlotUV(int type)
 {
     // type: 0 = 전사, 1 = 마법사, 2 = 탱커
@@ -1489,7 +1546,6 @@ void GameScene::SetJobSlotUV(int type)
     m_jobSlotIcon->SetCustomUV(u0, 0.f, u1, 1.f);
     m_jobSlotIcon->SetVisible(true);
 }
-
 void GameScene::UpdateEnhanceDigits()
 {
     int level = m_upgradeScore;
