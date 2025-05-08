@@ -15,14 +15,33 @@ Monsters::Monsters(const ComPtr<ID3D12Device>& device) : GameObject(device), m_s
 
 	std::vector<XMMATRIX> initBones(MAX_BONES, XMMatrixIdentity());
 
-	d3dUtil::CreateDefaultBuffer(
-		device.Get(),
-		gGameFramework->GetCommandList().Get(),
-		initBones.data(),
-		bufferSize,
-		m_boneMatrixBuffer,
-		m_boneMatrixUploadBuffer,
-		D3D12_RESOURCE_STATE_GENERIC_READ);
+	//d3dUtil::CreateDefaultBuffer(
+	//	device.Get(),
+	//	gGameFramework->GetCommandList().Get(),
+	//	initBones.data(),
+	//	bufferSize,
+	//	m_boneMatrixBuffer,
+	//	m_boneMatrixUploadBuffer,
+	//	D3D12_RESOURCE_STATE_GENERIC_READ);
+	// 본 버퍼 (GPU 상시 사용 대상)
+	ComPtr<ID3D12Resource> dummyUploadBuffer;
+	d3dUtil::CreateDefaultBuffer( 
+		device.Get(), 
+		gGameFramework->GetCommandList().Get(), 
+		initBones.data(), 
+		bufferSize, 
+		m_boneMatrixBuffer,  
+		/*업로드 버퍼*/ dummyUploadBuffer,
+		D3D12_RESOURCE_STATE_GENERIC_READ); 
+
+	// UploadBuffer만 2개 생성
+	for (int i = 0; i < 2; ++i)
+	{
+		d3dUtil::CreateUploadBuffer( 
+			device.Get(),
+			bufferSize,
+			m_boneMatrixUploadBuffer[i]); 
+	}
 
 	//체력바 생성
 	m_healthBar = make_shared<HealthBarObject>(device);
@@ -43,12 +62,52 @@ void Monsters::Update(FLOAT timeElapsed)
 	// 추후 AI나 타겟 추적 등으로 확장 가능
 
 	// 애니메이션 갱신
-	if (m_animationClips.contains(m_currentAnim))
+	if (m_isBlending)
 	{
-		const auto& clip = m_animationClips.at(m_currentAnim);
-		m_animTime += timeElapsed * clip.ticksPerSecond;
-		if (m_animTime > clip.duration)
-			m_animTime = fmod(m_animTime, clip.duration);
+		m_blendTime += timeElapsed;
+
+		if (m_blendTime >= m_blendDuration)
+		{
+			// 블렌드 완료
+			m_currentAnim = m_nextAnim;
+			m_animTime = 0.f;
+			m_nextAnim.clear();
+			m_isBlending = false;
+		}
+	
+	}
+	else
+	{
+		if (m_animationClips.contains(m_currentAnim))
+		{
+			const auto& clip = m_animationClips.at(m_currentAnim);
+			m_animTime += timeElapsed * clip.ticksPerSecond;
+			//if (m_animTime > clip.duration)
+			//{
+			//	m_animTime = fmod(m_animTime, clip.duration);
+			//	//m_animTime = 0.0f;
+			//}
+			while (m_animTime >= clip.duration)
+				m_animTime -= clip.duration;
+			//char buffer[128];
+			//sprintf_s(buffer, "AnimTime: %.4f\n", m_animTime);
+			//OutputDebugStringA(buffer);
+		}
+		//if (m_animationClips.contains(m_currentAnim))
+		//{
+		//	const auto& clip = m_animationClips.at(m_currentAnim);
+		//	float deltaTime = timeElapsed * clip.ticksPerSecond;
+		//	float dt = std::min(deltaTime, 0.033f); // 최대 30FPS까지 허용
+		//	m_animTime += dt;
+		//	if (m_animTime > clip.duration)
+		//	{
+		//		m_animTime = fmod(m_animTime, clip.duration);
+		//		//m_animTime = 0.0f;
+		//	}
+		//	char buffer[128];
+		//	sprintf_s(buffer, "AnimTime: %.4f\n", m_animTime);
+		//	OutputDebugStringA(buffer);
+		//}
 	}
 
 
@@ -95,18 +154,65 @@ void Monsters::Update(FLOAT timeElapsed)
 
 void Monsters::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
 {
+	//OutputDebugStringA("Render 시작\n");
 	if (m_isDead) return;
 	bool isShadowPass = m_shader && m_shader->IsShadowShader();
 
-	if (m_animationClips.contains(m_currentAnim))
-	{
-		const auto& clip = m_animationClips.at(m_currentAnim);
-		float animTime = fmod(m_animTime, clip.duration);
-
-		auto boneTransforms = clip.GetBoneTransforms(animTime, m_boneNameToIndex, m_boneHierarchy, m_boneOffsets, m_nodeNameToGlobalTransform);
-		const_cast<Monsters*>(this)->UploadBoneMatricesToShader(boneTransforms, commandList);
-	}
-
+	//if (m_animationClips.contains(m_currentAnim))
+	//{
+	//	const auto& clip = m_animationClips.at(m_currentAnim);
+	//	float animTime = fmod(m_animTime, clip.duration);
+	//
+	//	auto boneTransforms = clip.GetBoneTransforms(animTime, m_boneNameToIndex, m_boneHierarchy, m_boneOffsets, m_nodeNameToLocalTransform); 
+	//	const_cast<Monsters*>(this)->UploadBoneMatricesToShader(boneTransforms, commandList);
+	//}
+	//std::vector<XMMATRIX> boneTransforms;
+	//
+	//if (m_isBlending && m_animationClips.contains(m_currentAnim) && m_animationClips.contains(m_nextAnim))
+	//{
+	//	// 현재 & 다음 애니메이션 정보
+	//	const auto& fromClip = m_animationClips.at(m_currentAnim);
+	//	const auto& toClip = m_animationClips.at(m_nextAnim);
+	//
+	//	float fromTime = fmod(m_animTime, fromClip.duration);
+	//	float toTime = (m_blendTime / m_blendDuration) * toClip.duration;
+	//
+	//	// 각 본 행렬 계산
+	//	auto fromBones = fromClip.GetBoneTransforms(fromTime, m_boneNameToIndex, m_boneHierarchy, m_boneOffsets, m_nodeNameToLocalTransform);
+	//	auto toBones = toClip.GetBoneTransforms(toTime, m_boneNameToIndex, m_boneHierarchy, m_boneOffsets, m_nodeNameToLocalTransform);
+	//
+	//	boneTransforms.resize(fromBones.size());
+	//	float alpha = m_blendTime / m_blendDuration;
+	//
+	//	// Bone 행렬 블렌딩
+	//	for (size_t i = 0; i < boneTransforms.size(); ++i)
+	//	{
+	//		XMVECTOR scaleA, rotA, transA;
+	//		XMVECTOR scaleB, rotB, transB;
+	//
+	//		// 각 행렬 분해
+	//		XMMatrixDecompose(&scaleA, &rotA, &transA, fromBones[i]);
+	//		XMMatrixDecompose(&scaleB, &rotB, &transB, toBones[i]);
+	//
+	//		XMVECTOR blendedScale = XMVectorLerp(scaleA, scaleB, alpha);
+	//		XMVECTOR blendedRot = XMQuaternionSlerp(rotA, rotB, alpha);
+	//		XMVECTOR blendedTrans = XMVectorLerp(transA, transB, alpha);
+	//
+	//		boneTransforms[i] = XMMatrixAffineTransformation(blendedScale, XMVectorZero(), blendedRot, blendedTrans);
+	//	}
+	//}
+	//else if (m_animationClips.contains(m_currentAnim))
+	//{
+	//	const auto& clip = m_animationClips.at(m_currentAnim);
+	//	float time = fmod(m_animTime, clip.duration);
+	//	
+	//	boneTransforms = clip.GetBoneTransforms(time, m_boneNameToIndex, m_boneHierarchy, m_boneOffsets, m_nodeNameToLocalTransform);
+	//	
+	//}
+	//
+	//if (!boneTransforms.empty())
+	//	const_cast<Monsters*>(this)->UploadBoneMatricesToShader(boneTransforms, commandList);
+	
 	if (m_boneMatrixSRV.ptr != 0)
 	{
 		commandList->SetGraphicsRootDescriptorTable(RootParameter::MonsterBoneMatrix, m_boneMatrixSRV);
@@ -192,19 +298,62 @@ void Monsters::UploadBoneMatricesToShader(const std::vector<XMMATRIX>& boneTrans
 		finalMatrices[i] = XMMatrixTranspose(finalMatrices[i]);
 
 	// ===== GPU 복사 =====
+	//void* mappedData = nullptr;
+	//CD3DX12_RANGE readRange(0, 0);
+	//m_boneMatrixUploadBuffer->Map(0, &readRange, &mappedData);
+	//memcpy(mappedData, finalMatrices.data(), sizeof(XMMATRIX) * finalMatrices.size());
+	//m_boneMatrixUploadBuffer->Unmap(0, nullptr);
+	//
+	//commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(
+	//	m_boneMatrixBuffer.Get(), D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_STATE_COPY_DEST));
+	//
+	//commandList->CopyResource(m_boneMatrixBuffer.Get(), m_boneMatrixUploadBuffer.Get());
+	//
+	//commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(
+	//	m_boneMatrixBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_GENERIC_READ));
+
+	// === UploadBuffer만 더블버퍼링 ===
+	UINT frameIndex = gGameFramework->GetCurrentFrameIndex(); // 0 또는 1
 	void* mappedData = nullptr;
 	CD3DX12_RANGE readRange(0, 0);
-	m_boneMatrixUploadBuffer->Map(0, &readRange, &mappedData);
-	memcpy(mappedData, finalMatrices.data(), sizeof(XMMATRIX) * finalMatrices.size());
-	m_boneMatrixUploadBuffer->Unmap(0, nullptr);
+	m_boneMatrixUploadBuffer[frameIndex]->Map(0, &readRange, &mappedData);
+	memcpy(mappedData, finalMatrices.data(), sizeof(XMMATRIX) * MAX_BONES);
+	m_boneMatrixUploadBuffer[frameIndex]->Unmap(0, nullptr);
+	char debug[512];
+	//sprintf_s(debug, "\n[디버그] BoneMatrixFrame 시작 (몬스터 이름: %s)\n", m_name.c_str()); // m_name은 몬스터 이름이라고 가정
+	//OutputDebugStringA(debug);
 
+	//for (int i = 0; i < 5; ++i)
+	//{	
+	//
+	//	XMFLOAT4X4 mat;
+	//	XMStoreFloat4x4(&mat, finalMatrices[i]);
+	//
+	//	sprintf_s(debug,
+	//		"Bone[%02d]:\n"
+	//		"  %.3f %.3f %.3f %.3f\n"
+	//		"  %.3f %.3f %.3f %.3f\n"
+	//		"  %.3f %.3f %.3f %.3f\n"
+	//		"  %.3f %.3f %.3f %.3f\n",
+	//		i,
+	//		mat._11, mat._12, mat._13, mat._14,
+	//		mat._21, mat._22, mat._23, mat._24,
+	//		mat._31, mat._32, mat._33, mat._34,
+	//		mat._41, mat._42, mat._43, mat._44);
+	//	OutputDebugStringA(debug);
+	//}
+	// === 실제 m_boneMatrixBuffer에 복사 ===
 	commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(
 		m_boneMatrixBuffer.Get(), D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_STATE_COPY_DEST));
 
-	commandList->CopyResource(m_boneMatrixBuffer.Get(), m_boneMatrixUploadBuffer.Get());
+	commandList->CopyResource(
+		m_boneMatrixBuffer.Get(),
+		m_boneMatrixUploadBuffer[frameIndex].Get());
 
 	commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(
 		m_boneMatrixBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_GENERIC_READ));
+	//OutputDebugStringA("UploadBoneMatricesToShader 완료\n");
+
 }
 void Monsters::CreateBoneMatrixSRV(const ComPtr<ID3D12Device>& device, D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle, D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle)
 {
@@ -242,6 +391,55 @@ void Monsters::ApplyDamage(float damage)
 	}
 }
 
+void Monsters::UpdateBoneMatrices(const ComPtr<ID3D12GraphicsCommandList>& commandList)
+{
+	std::vector<XMMATRIX> boneTransforms;
+
+	if (m_isBlending && m_animationClips.contains(m_currentAnim) && m_animationClips.contains(m_nextAnim))
+	{
+		// 현재 & 다음 애니메이션 정보
+		const auto& fromClip = m_animationClips.at(m_currentAnim);
+		const auto& toClip = m_animationClips.at(m_nextAnim);
+
+		float fromTime = fmod(m_animTime, fromClip.duration);
+		float toTime = (m_blendTime / m_blendDuration) * toClip.duration;
+
+		// 각 본 행렬 계산
+		auto fromBones = fromClip.GetBoneTransforms(fromTime, m_boneNameToIndex, m_boneHierarchy, m_boneOffsets, m_nodeNameToLocalTransform);
+		auto toBones = toClip.GetBoneTransforms(toTime, m_boneNameToIndex, m_boneHierarchy, m_boneOffsets, m_nodeNameToLocalTransform);
+
+		boneTransforms.resize(fromBones.size());
+		float alpha = m_blendTime / m_blendDuration;
+
+		for (size_t i = 0; i < boneTransforms.size(); ++i)
+		{
+			XMVECTOR scaleA, rotA, transA;
+			XMVECTOR scaleB, rotB, transB;
+
+			XMMatrixDecompose(&scaleA, &rotA, &transA, fromBones[i]);
+			XMMatrixDecompose(&scaleB, &rotB, &transB, toBones[i]);
+
+			XMVECTOR blendedScale = XMVectorLerp(scaleA, scaleB, alpha);
+			XMVECTOR blendedRot = XMQuaternionSlerp(rotA, rotB, alpha);
+			XMVECTOR blendedTrans = XMVectorLerp(transA, transB, alpha);
+
+			boneTransforms[i] = XMMatrixAffineTransformation(blendedScale, XMVectorZero(), blendedRot, blendedTrans);
+		}
+	}
+	else if (m_animationClips.contains(m_currentAnim))
+	{
+		const auto& clip = m_animationClips.at(m_currentAnim);
+		float time = fmod(m_animTime, clip.duration);
+
+		boneTransforms = clip.GetBoneTransforms(time, m_boneNameToIndex, m_boneHierarchy, m_boneOffsets, m_nodeNameToLocalTransform);
+	}
+
+	if (!boneTransforms.empty())
+	{
+		UploadBoneMatricesToShader(boneTransforms, commandList);
+	}
+}
+
 void Monsters::RenderOutline(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
 {
 	if (m_isDead) return;
@@ -252,7 +450,7 @@ void Monsters::RenderOutline(const ComPtr<ID3D12GraphicsCommandList>& commandLis
 	{
 		const auto& clip = m_animationClips.at(m_currentAnim);
 		float animTime = fmod(m_animTime, clip.duration);
-		auto boneTransforms = clip.GetBoneTransforms(animTime, m_boneNameToIndex, m_boneHierarchy, m_boneOffsets, m_nodeNameToGlobalTransform);
+		auto boneTransforms = clip.GetBoneTransforms(animTime, m_boneNameToIndex, m_boneHierarchy, m_boneOffsets, m_nodeNameToLocalTransform);
 
 		const_cast<Monsters*>(this)->UploadBoneMatricesToShader(boneTransforms, commandList);
 	}
@@ -269,6 +467,16 @@ void Monsters::RenderOutline(const ComPtr<ID3D12GraphicsCommandList>& commandLis
 		UpdateShaderVariable(commandList); // 월드행렬 전송
 		mesh->Render(commandList);
 	}
+}
+
+void Monsters::PlayAnimationWithBlend(const std::string& newAnim, float blendDuration)
+{
+	if (m_currentAnim == newAnim || !m_animationClips.contains(newAnim)) return;
+
+	m_nextAnim = newAnim;
+	m_blendDuration = blendDuration;
+	m_blendTime = 0.f;
+	m_isBlending = true;
 }
 
 

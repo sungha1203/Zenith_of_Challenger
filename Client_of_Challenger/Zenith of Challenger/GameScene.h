@@ -91,5 +91,5 @@ private:
     unordered_map<string, unordered_map<string, int>> m_boneNameMap;
     unordered_map<string, unordered_map<string, string>> m_BoneHierarchy;
     unordered_map<string, unordered_map<string, XMMATRIX>> m_staticNodeTransforms;
-    unordered_map<string, unordered_map<string, XMMATRIX>> m_NodeNameToGlobalTransform;
+    unordered_map<string, unordered_map<string, XMMATRIX>> m_nodeNameToLocalTransform;
 };

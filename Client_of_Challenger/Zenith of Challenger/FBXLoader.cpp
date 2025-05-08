@@ -1,5 +1,6 @@
 ﻿#include "FBXLoader.h"
 #include"OtherPlayer.h"
+#include<set>
 #define DEG_TO_RAD (XM_PI / 180.0f)
 bool FBXLoader::LoadFBXModel(const std::string& filename, const XMMATRIX& rootTransform)
 {
@@ -84,7 +85,7 @@ shared_ptr<OtherPlayer> FBXLoader::LoadOtherPlayer(const ComPtr<ID3D12Device>& d
 
 	auto otherPlayer = make_shared<FBXLoader>();
 
-	if (otherPlayer->LoadFBXModel("Model/Player/Player2.fbx", playerTransform))
+	if (otherPlayer->LoadFBXModel("Model/Player/Ellen.fbx", playerTransform))
 	{
 		auto& meshes = otherPlayer->GetMeshes();
 
@@ -284,6 +285,100 @@ shared_ptr<GameObject> FBXLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene
 }
 
 
+//void FBXLoader::ProcessAnimations(const aiScene* scene)
+//{
+//	if (!scene->HasAnimations()) return;
+//
+//	for (UINT i = 0; i < scene->mNumAnimations; ++i)
+//	{
+//		aiAnimation* aiAnim = scene->mAnimations[i];
+//
+//		AnimationClip clip;
+//		clip.name = aiAnim->mName.C_Str();
+//		clip.duration = static_cast<float>(aiAnim->mDuration);
+//		clip.ticksPerSecond = static_cast<float>(aiAnim->mTicksPerSecond != 0 ? aiAnim->mTicksPerSecond : 30.0f);
+//
+//		for (UINT j = 0; j < aiAnim->mNumChannels; ++j)//j 4 k 42
+//		{
+//			aiNodeAnim* aiNodeAnim = aiAnim->mChannels[j];
+//			BoneAnimation boneAnim;
+//			boneAnim.boneName = aiNodeAnim->mNodeName.C_Str();
+//
+//			UINT keyCount = std::max({ aiNodeAnim->mNumPositionKeys, aiNodeAnim->mNumRotationKeys, aiNodeAnim->mNumScalingKeys });
+//
+//			for (UINT k = 0; k < keyCount; ++k)
+//			{
+//				Keyframe keyframe;
+//
+//				//keyframe.time = static_cast<float>(aiNodeAnim->mPositionKeys[k].mTime) / clip.ticksPerSecond;
+//				if (k < aiNodeAnim->mNumPositionKeys)
+//				{
+//					keyframe.time = (float)aiNodeAnim->mPositionKeys[k].mTime;
+//					keyframe.position = {
+//						aiNodeAnim->mPositionKeys[k].mValue.x,
+//						aiNodeAnim->mPositionKeys[k].mValue.y,
+//						aiNodeAnim->mPositionKeys[k].mValue.z
+//					};
+//				}
+//
+//				if (k < aiNodeAnim->mNumRotationKeys)
+//				{
+//					keyframe.time = (float)aiNodeAnim->mRotationKeys[k].mTime;
+//					keyframe.rotation = {
+//						aiNodeAnim->mRotationKeys[k].mValue.x,
+//						aiNodeAnim->mRotationKeys[k].mValue.y,
+//						aiNodeAnim->mRotationKeys[k].mValue.z,
+//						aiNodeAnim->mRotationKeys[k].mValue.w
+//					};
+//				}
+//
+//				if (k < aiNodeAnim->mNumScalingKeys)
+//				{
+//					keyframe.time = (float)aiNodeAnim->mScalingKeys[k].mTime;
+//					keyframe.scale = {
+//						aiNodeAnim->mScalingKeys[k].mValue.x,
+//						aiNodeAnim->mScalingKeys[k].mValue.y,
+//						aiNodeAnim->mScalingKeys[k].mValue.z
+//					};
+//
+//				}
+//
+//				boneAnim.keyframes.push_back(keyframe);
+//			}
+//
+//			clip.boneAnimations[boneAnim.boneName] = boneAnim;
+//		}
+//
+//		m_animationClips.push_back(clip);
+//	}
+//}
+void FixQuaternionSequenceSigns(std::vector<Keyframe>& keyframes)
+{
+	for (size_t i = 1; i < keyframes.size(); ++i)
+	{
+		const XMFLOAT4& prevQuat = keyframes[i - 1].rotation;
+		XMFLOAT4& currQuat = keyframes[i].rotation;
+
+		// Dot Product 계산
+		float dot =
+			prevQuat.x * currQuat.x +
+			prevQuat.y * currQuat.y +
+			prevQuat.z * currQuat.z +
+			prevQuat.w * currQuat.w;
+
+		// dot < 0 이면 부호 반전
+		if (dot < 0.0f)
+		{
+			char msg[256];
+			sprintf_s(msg, "[FixQuat] Flip at frame %zu → dot=%.4f\n", i, dot);
+			OutputDebugStringA(msg);
+			currQuat.x = -currQuat.x;
+			currQuat.y = -currQuat.y;
+			currQuat.z = -currQuat.z;
+			currQuat.w = -currQuat.w;
+		}
+	}
+}
 void FBXLoader::ProcessAnimations(const aiScene* scene)
 {
 	if (!scene->HasAnimations()) return;
@@ -295,7 +390,16 @@ void FBXLoader::ProcessAnimations(const aiScene* scene)
 		AnimationClip clip;
 		clip.name = aiAnim->mName.C_Str();
 		clip.duration = static_cast<float>(aiAnim->mDuration);
-		clip.ticksPerSecond = static_cast<float>(aiAnim->mTicksPerSecond != 0 ? aiAnim->mTicksPerSecond : 30.0f);
+		clip.ticksPerSecond = (aiAnim->mTicksPerSecond != 0.0) ? static_cast<float>(aiAnim->mTicksPerSecond) : 30.0f;
+		// 디버그 출력
+		char debugBuffer[256];
+		sprintf_s(debugBuffer,
+			"[FBXLoader] Animation %u Name: '%s' | Duration: %.4f | TicksPerSecond: %.4f\n",
+			i,
+			clip.name.c_str(),
+			clip.duration,
+			clip.ticksPerSecond);
+		OutputDebugStringA(debugBuffer);
 
 		for (UINT j = 0; j < aiAnim->mNumChannels; ++j)
 		{
@@ -303,53 +407,93 @@ void FBXLoader::ProcessAnimations(const aiScene* scene)
 			BoneAnimation boneAnim;
 			boneAnim.boneName = aiNodeAnim->mNodeName.C_Str();
 
-			UINT keyCount = std::max({ aiNodeAnim->mNumPositionKeys, aiNodeAnim->mNumRotationKeys, aiNodeAnim->mNumScalingKeys });
+			UINT numRotKeys = aiNodeAnim->mNumRotationKeys;
 
-			for (UINT k = 0; k < keyCount; ++k)
+			for (UINT k = 0; k < numRotKeys; ++k)
 			{
+				const aiQuatKey& key = aiNodeAnim->mRotationKeys[k];
+				if (isnan(key.mValue.w) || isnan(key.mValue.x) || isnan(key.mValue.y) || isnan(key.mValue.z)) {
+					OutputDebugStringA("[경고] NaN 쿼터니언 키 발견!\n");
+				}
+				aiQuaternion q = aiNodeAnim->mRotationKeys[k].mValue;
+				if (fabs(q.w) < 0.01f || isnan(q.w))
+				{
+					char msg[256];
+					sprintf_s(msg, "[의심 회전값] Bone: %s | time=%.4f | quat=(%.4f, %.4f, %.4f, %.4f)\n",
+						aiNodeAnim->mNodeName.C_Str(),
+						(float)aiNodeAnim->mRotationKeys[k].mTime,
+						q.x, q.y, q.z, q.w);
+					OutputDebugStringA(msg);
+				}
 				Keyframe keyframe;
 
-				keyframe.time = (float)aiNodeAnim->mPositionKeys[k].mTime;
-				//keyframe.time = static_cast<float>(aiNodeAnim->mPositionKeys[k].mTime) / clip.ticksPerSecond;
-				if (k < aiNodeAnim->mNumPositionKeys)
+				//1. Rotation 기준 시간
+				keyframe.time = static_cast<float>(aiNodeAnim->mRotationKeys[k].mTime);
+
+				//2. Rotation
+				//const auto& rot = aiNodeAnim->mRotationKeys[k].mValue;
+				//keyframe.rotation = XMFLOAT4(rot.x, rot.y, rot.z, rot.w);
+				// 추가: 정규화 및 보정
+				//aiQuaternion q = key.mValue;
+				q.Normalize();
+				
+				keyframe.rotation = XMFLOAT4(q.x, q.y, q.z, q.w);
+				//keyframe.rotation = XMFLOAT4((float)rot.x, (float)rot.y, (float)rot.z, (float)rot.w); // 만약 XMQuaternion 쪽이 (x,y,z,w) 기반이라면 OK				
+				//3. Position: 가장 가까운 시간 찾기
+				if (aiNodeAnim->mNumPositionKeys > 0)
 				{
-					keyframe.position = {
-						aiNodeAnim->mPositionKeys[k].mValue.x,
-						aiNodeAnim->mPositionKeys[k].mValue.y,
-						aiNodeAnim->mPositionKeys[k].mValue.z
-					};
+					
+
+					double minDiff = DBL_MAX;
+					UINT bestIndex = 0;
+					for (UINT p = 0; p < aiNodeAnim->mNumPositionKeys; ++p)
+					{
+						double diff = fabs(aiNodeAnim->mPositionKeys[p].mTime - keyframe.time);
+						if (diff < minDiff)
+						{
+							minDiff = diff;
+							bestIndex = p;
+						}
+					}
+					const auto& pos = aiNodeAnim->mPositionKeys[bestIndex].mValue;
+					keyframe.position = XMFLOAT3(pos.x, pos.y, pos.z);
+				}
+				else
+				{
+					keyframe.position = XMFLOAT3(0, 0, 0); // fallback
 				}
 
-				if (k < aiNodeAnim->mNumRotationKeys)
+				//4. Scale: 가장 가까운 시간 찾기
+				if (aiNodeAnim->mNumScalingKeys > 0)
 				{
-					keyframe.rotation = {
-						aiNodeAnim->mRotationKeys[k].mValue.x,
-						aiNodeAnim->mRotationKeys[k].mValue.y,
-						aiNodeAnim->mRotationKeys[k].mValue.z,
-						aiNodeAnim->mRotationKeys[k].mValue.w
-					};
+					double minDiff = DBL_MAX;
+					UINT bestIndex = 0;
+					for (UINT s = 0; s < aiNodeAnim->mNumScalingKeys; ++s)
+					{
+						double diff = fabs(aiNodeAnim->mScalingKeys[s].mTime - keyframe.time);
+						if (diff < minDiff)
+						{
+							minDiff = diff;
+							bestIndex = s;
+						}
+					}
+					const auto& scl = aiNodeAnim->mScalingKeys[bestIndex].mValue;
+					keyframe.scale = XMFLOAT3(scl.x, scl.y, scl.z);
 				}
-
-				if (k < aiNodeAnim->mNumScalingKeys)
+				else
 				{
-					keyframe.scale = {
-						aiNodeAnim->mScalingKeys[k].mValue.x,
-						aiNodeAnim->mScalingKeys[k].mValue.y,
-						aiNodeAnim->mScalingKeys[k].mValue.z
-					};
-
+					keyframe.scale = XMFLOAT3(1, 1, 1); // fallback
 				}
-
 				boneAnim.keyframes.push_back(keyframe);
 			}
 
+			FixQuaternionSequenceSigns(boneAnim.keyframes);
 			clip.boneAnimations[boneAnim.boneName] = boneAnim;
 		}
 
 		m_animationClips.push_back(clip);
 	}
 }
-
 void FBXLoader::BuildBoneHierarchy(aiNode* node, const std::string& parentName, const XMMATRIX& accumulatedTransform)
 {
 	std::string nodeName = node->mName.C_Str();
@@ -367,7 +511,7 @@ void FBXLoader::BuildBoneHierarchy(aiNode* node, const std::string& parentName, 
 		return;
 	}
 
-	m_nodeNameToGlobalTransform[nodeName] = combinedTransform;
+	m_nodeNameToLocalTransform[nodeName] = combinedTransform;
 
 	if (!parentName.empty())
 		m_boneHierarchy[nodeName] = parentName;

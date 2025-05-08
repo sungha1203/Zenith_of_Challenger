@@ -87,7 +87,7 @@ public:
     D3D12_GPU_DESCRIPTOR_HANDLE GetShadowMapSrv() const { return m_shadowSrv; }
     D3D12_CPU_DESCRIPTOR_HANDLE GetShadowMapDsv() const { return m_shadowDsv; }
     void RenderShadowMap();
-
+    UINT GetCurrentFrameIndex() { return m_frameIndex; }
 private:
     void InitDirect3D();
 
@@ -115,7 +115,8 @@ private:
     WINDOWPLACEMENT m_wpPrev = { sizeof(WINDOWPLACEMENT) };
 private:
     static const UINT m_nSwapChainBuffers = 2;
-
+    //UINT m_frameIndex = 0; // 현재 프레임 인덱스
+    static constexpr UINT FRAME_COUNT = 2; // or 3
     BOOL m_activate;
 
     HINSTANCE m_hInstance;

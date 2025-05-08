@@ -14,4 +14,9 @@ namespace d3dUtil
         ComPtr<ID3D12Resource>& defaultBuffer,
         ComPtr<ID3D12Resource>& uploadBuffer,
         D3D12_RESOURCE_STATES finalState); // 추가된 부분
+
+    void CreateUploadBuffer(
+        ID3D12Device* device,
+        UINT64 byteSize,
+        Microsoft::WRL::ComPtr<ID3D12Resource>& uploadBuffer);
 }

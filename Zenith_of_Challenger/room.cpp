@@ -191,81 +191,81 @@ void Room::InitChallengeMonsters()
 
 	// Mushroom
 	{
-		m_monsters[monsterID].SetMonster( monsterID, NormalMonsterType::Mushroom,-197.f, 0.f, -134.f);
-		m_monsters[++monsterID].SetMonster( monsterID, NormalMonsterType::Mushroom,-193.f, 0.f, -175.f);
-		m_monsters[++monsterID].SetMonster( monsterID, NormalMonsterType::Mushroom,-144.f, 0.f, -175.f);
-		m_monsters[++monsterID].SetMonster( monsterID, NormalMonsterType::Mushroom, 51.f, 0.f, -170.f);
-		m_monsters[++monsterID].SetMonster( monsterID, NormalMonsterType::Mushroom,-123.f, 0.f, -107.f);
-		m_monsters[++monsterID].SetMonster( monsterID, NormalMonsterType::Mushroom,-89.f, 0.f, -199.f);
-		m_monsters[++monsterID].SetMonster( monsterID, NormalMonsterType::Mushroom,-60.f, 0.f, -166.f);
-		m_monsters[++monsterID].SetMonster( monsterID, NormalMonsterType::Mushroom,-75.f, 0.f, -115.f);
-		m_monsters[++monsterID].SetMonster( monsterID, NormalMonsterType::Mushroom,-4.f, 0.f, -161.f);
-		m_monsters[++monsterID].SetMonster( monsterID, NormalMonsterType::Mushroom,-71.f, 0.f, -76.f);
+		m_monsters[monsterID].SetMonster( monsterID, NormalMonsterType::Mushroom,-197.f, 5.f, -134.f);
+		m_monsters[++monsterID].SetMonster( monsterID, NormalMonsterType::Mushroom,-193.f, 5.f, -175.f);
+		m_monsters[++monsterID].SetMonster( monsterID, NormalMonsterType::Mushroom,-144.f, 5.f, -175.f);
+		m_monsters[++monsterID].SetMonster( monsterID, NormalMonsterType::Mushroom, 51.f, 5.f, -170.f);
+		m_monsters[++monsterID].SetMonster( monsterID, NormalMonsterType::Mushroom,-123.f, 5.f, -107.f);
+		m_monsters[++monsterID].SetMonster( monsterID, NormalMonsterType::Mushroom,-89.f, 5.f, -199.f);
+		m_monsters[++monsterID].SetMonster( monsterID, NormalMonsterType::Mushroom,-60.f, 5.f, -166.f);
+		m_monsters[++monsterID].SetMonster( monsterID, NormalMonsterType::Mushroom,-75.f, 5.f, -115.f);
+		m_monsters[++monsterID].SetMonster( monsterID, NormalMonsterType::Mushroom,-4.f, 5.f, -161.f);
+		m_monsters[++monsterID].SetMonster( monsterID, NormalMonsterType::Mushroom,-71.f, 5.f, -76.f);
 	}
 	// Fight Fly
 	{
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FightFly,-210.f, 0.f, -0.f );
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FightFly,-165.f, 0.f, -3.f );
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FightFly,-128.f, 0.f, -38.f);
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FightFly,-78.f, 0.f, -37.f );
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FightFly,-190.f, 0.f, 28.f );
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FightFly,-92.f, 0.f, 47.f );
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FightFly,-177.f, 0.f, -34.f);
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FightFly,-212.f, 0.f, -42.f);
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FightFly,-166.f, 0.f, -74.f);
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FightFly,-198.f, 0.f, -82.f);
+		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FightFly,-210.f, 5.f, -0.f );
+		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FightFly,-165.f, 5.f, -3.f );
+		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FightFly,-128.f, 5.f, -38.f);
+		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FightFly,-78.f, 5.f, -37.f );
+		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FightFly,-190.f, 5.f, 28.f );
+		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FightFly,-92.f, 5.f, 47.f );
+		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FightFly,-177.f, 5.f, -34.f);
+		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FightFly,-212.f, 5.f, -42.f);
+		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FightFly,-166.f, 5.f, -74.f);
+		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FightFly,-198.f, 5.f, -82.f);
 	}
 	// Plant Dionaea
 	{
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantDionaea,11.f, 0.f, 92.f );
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantDionaea,44.f, 0.f, 105.f);
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantDionaea,91.f, 0.f, 108.f);
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantDionaea,68.f, 0.f, 186.f);
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantDionaea,133.f, 0.f, 169.f);
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantDionaea,147.f, 0.f, 110.f);
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantDionaea,186.f, 0.f, 150.f);
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantDionaea,185.f, 0.f, -9.f);
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantDionaea,94.f, 0.f, 24.f);
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantDionaea,136.f, 0.f, 61.f);
+		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantDionaea,11.f, 5.f, 92.f );
+		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantDionaea,44.f, 5.f, 105.f);
+		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantDionaea,91.f, 5.f, 108.f);
+		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantDionaea,68.f, 5.f, 186.f);
+		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantDionaea,133.f, 5.f, 169.f);
+		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantDionaea,147.f, 5.f, 110.f);
+		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantDionaea,186.f, 5.f, 150.f);
+		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantDionaea,185.f, 5.f, -9.f);
+		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantDionaea,94.f, 5.f, 24.f);
+		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantDionaea,136.f, 5.f, 61.f);
 	}
 	// Pea Shooter
 	/* {
-		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::PeaShooter,-60.f, 0.f, 60.f };
-		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::PeaShooter,-60.f, 0.f, 60.f };
-		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::PeaShooter,-60.f, 0.f, 60.f };
-		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::PeaShooter,-60.f, 0.f, 60.f };
-		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::PeaShooter,-60.f, 0.f, 60.f };
-		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::PeaShooter,-60.f, 0.f, 60.f };
-		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::PeaShooter,-60.f, 0.f, 60.f };
-		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::PeaShooter,-60.f, 0.f, 60.f };
-		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::PeaShooter,-60.f, 0.f, 60.f };
-		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::PeaShooter,-60.f, 0.f, 60.f };
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::PeaShooter,-60.f, 5.f, 60.f };
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::PeaShooter,-60.f, 5.f, 60.f };
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::PeaShooter,-60.f, 5.f, 60.f };
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::PeaShooter,-60.f, 5.f, 60.f };
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::PeaShooter,-60.f, 5.f, 60.f };
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::PeaShooter,-60.f, 5.f, 60.f };
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::PeaShooter,-60.f, 5.f, 60.f };
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::PeaShooter,-60.f, 5.f, 60.f };
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::PeaShooter,-60.f, 5.f, 60.f };
+		m_monsters[++monsterID] = Monster{ monsterID, NormalMonsterType::PeaShooter,-60.f, 5.f, 60.f };
 	}*/
 	// Plant Venus
 	{
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantVenus,3.f, 0.f, -97.f);
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantVenus,53.f, 0.f, -119.f);
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantVenus,95.f, 0.f, -138.f);
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantVenus,91.f, 0.f, -73.f );
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantVenus,105.f, 0.f, -27.f);
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantVenus,27.f, 0.f, -49.f);
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantVenus,-39.f, 0.f, 5.f);
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantVenus,0.f, 0.f, 40.f);
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantVenus,-56.f, 0.f, 71.f);
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantVenus, -44.f, 0.f, 135.f);
+		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantVenus,3.f, 5.f, -97.f);
+		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantVenus,53.f, 5.f, -119.f);
+		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantVenus,95.f, 5.f, -138.f);
+		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantVenus,91.f, 5.f, -73.f );
+		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantVenus,105.f, 5.f, -27.f);
+		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantVenus,27.f, 5.f, -49.f);
+		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantVenus,-39.f, 5.f, 5.f);
+		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantVenus,0.f, 5.f, 40.f);
+		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantVenus,-56.f, 5.f, 71.f);
+		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantVenus, -44.f, 5.f, 135.f);
 	}
 	// Flower Fairy
 	{
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FlowerFairy,143.f, -5.f, -158.f);
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FlowerFairy,153.f, -5.f, -209.f);
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FlowerFairy,187.f, -5.f, -212.f);
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FlowerFairy,218.f, -5.f, -197.f);
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FlowerFairy,220.f, -5.f, -153.f);
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FlowerFairy,154.f, -5.f, -85.f);
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FlowerFairy,179.f, -5.f, -57.f);
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FlowerFairy,159.f, -5.f, -135.f);
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FlowerFairy,186.f, -5.f, -182.f);
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FlowerFairy,189.f, -5.f, -149.f);
+		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FlowerFairy,143.f, 5.f, -158.f);
+		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FlowerFairy,153.f, 5.f, -209.f);
+		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FlowerFairy,187.f, 5.f, -212.f);
+		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FlowerFairy,218.f, 5.f, -197.f);
+		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FlowerFairy,220.f, 5.f, -153.f);
+		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FlowerFairy,154.f, 5.f, -85.f);
+		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FlowerFairy,179.f, 5.f, -57.f);
+		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FlowerFairy,159.f, 5.f, -135.f);
+		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FlowerFairy,186.f, 5.f, -182.f);
+		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FlowerFairy,189.f, 5.f, -149.f);
 	}
 	m_MonsterNum = monsterID;
 }

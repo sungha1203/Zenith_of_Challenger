@@ -55,7 +55,7 @@ public:
 	void SetBoneNameToIndex(const unordered_map<string, int>& map) { m_boneNameToIndex = map; }
 	void SetBoneHierarchy(const unordered_map<string, string>& boneHierarchy) { m_boneHierarchy = boneHierarchy; }
 	void SetstaticNodeTransforms(const unordered_map<string, XMMATRIX>& staticNodeTransforms) { m_staticNodeTransforms = staticNodeTransforms;}
-	void SetNodeNameToGlobalTransform(const unordered_map<string, XMMATRIX>& nodeNameToGlobalTransform) { m_nodeNameToGlobalTransform = nodeNameToGlobalTransform;}
+	void SetNodeNameToGlobalTransform(const unordered_map<string, XMMATRIX>& nodeNameToGlobalTransform) { m_nodeNameToLocalTransform = nodeNameToGlobalTransform;}
 	void AddMesh(const shared_ptr<MeshBase>& mesh) { m_meshes.push_back(mesh); }
 
 	void SetHP(int hp);
@@ -63,10 +63,10 @@ public:
 	void ApplyDamage(float damage);
 	bool IsParticleSpawned() const { return m_particleSpawned; }
 	void MarkParticleSpawned() { m_particleSpawned = true; }
-
+	void UpdateBoneMatrices(const ComPtr<ID3D12GraphicsCommandList>& commandList); // 몬스터 뼈 행렬 코드 분리
 	//몬스터 외곽선 호출
 	void RenderOutline(const ComPtr<ID3D12GraphicsCommandList>& commandList) const;
-
+	void PlayAnimationWithBlend(const std::string& newAnim, float blendDuration);
 private:
 	shared_ptr<Camera> m_camera;
 
@@ -77,13 +77,18 @@ private:
 	std::string m_currentAnim = "Idle";
 	float m_animTime = 0.f;
 
+	std::string m_nextAnim = "";       // 블렌딩할 애니메이션
+	float m_blendTime = 0.f;           // 블렌딩 경과 시간
+	float m_blendDuration = 0.2f;      // 블렌딩 지속 시간
+	bool m_isBlending = false;
+
 	std::unordered_map<std::string, int> m_boneNameToIndex;
 	ComPtr<ID3D12Resource> m_boneMatrixBuffer;             // GPU용 버퍼
-	ComPtr<ID3D12Resource> m_boneMatrixUploadBuffer;       // 업로드용 버퍼
+	ComPtr<ID3D12Resource> m_boneMatrixUploadBuffer[2];       // 업로드용 버퍼
 	D3D12_GPU_DESCRIPTOR_HANDLE m_boneMatrixSRV = {};      // 셰이더에서 접근할 핸들
 	unordered_map<string, string> m_boneHierarchy;			//뼈 계층구조
 	unordered_map<string, XMMATRIX> m_staticNodeTransforms; 
-	unordered_map<string, XMMATRIX> m_nodeNameToGlobalTransform;	
+	unordered_map<string, XMMATRIX> m_nodeNameToLocalTransform;	
 	std::vector<std::shared_ptr<MeshBase>> m_meshes;
 	unordered_map<int, XMMATRIX> m_boneOffsets;
 
