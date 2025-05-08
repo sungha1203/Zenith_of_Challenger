@@ -15,23 +15,55 @@
 OtherPlayer::OtherPlayer(const ComPtr<ID3D12Device>& device) :
     GameObject(device), m_speed{ Settings::PlayerSpeed }
 {
+   //const UINT MAX_BONES = 128;
+   //UINT64 bufferSize = sizeof(XMMATRIX) * MAX_BONES;
+   //
+   //std::vector<XMMATRIX> initBones(MAX_BONES, XMMatrixIdentity());
+   //
+   //d3dUtil::CreateDefaultBuffer(
+   //    device.Get(),
+   //    gGameFramework->GetCommandList().Get(),
+   //    initBones.data(),
+   //    bufferSize,
+   //    m_boneMatrixBuffer,
+   //    m_boneMatrixUploadBuffer,
+   //    D3D12_RESOURCE_STATE_GENERIC_READ); // ← 최종 상태 지정!
+   //
+   //char msg[128];
+   //sprintf_s(msg, "[Check] m_boneMatrixBuffer = %p\n", m_boneMatrixBuffer.Get());
+   //OutputDebugStringA(msg);
     const UINT MAX_BONES = 128;
     UINT64 bufferSize = sizeof(XMMATRIX) * MAX_BONES;
 
     std::vector<XMMATRIX> initBones(MAX_BONES, XMMatrixIdentity());
 
+    //d3dUtil::CreateDefaultBuffer(
+    //	device.Get(),
+    //	gGameFramework->GetCommandList().Get(),
+    //	initBones.data(),
+    //	bufferSize,
+    //	m_boneMatrixBuffer,
+    //	m_boneMatrixUploadBuffer,
+    //	D3D12_RESOURCE_STATE_GENERIC_READ);
+    // 본 버퍼 (GPU 상시 사용 대상)
+    ComPtr<ID3D12Resource> dummyUploadBuffer;
     d3dUtil::CreateDefaultBuffer(
         device.Get(),
         gGameFramework->GetCommandList().Get(),
         initBones.data(),
         bufferSize,
         m_boneMatrixBuffer,
-        m_boneMatrixUploadBuffer,
-        D3D12_RESOURCE_STATE_GENERIC_READ); // ← 최종 상태 지정!
+        /*업로드 버퍼*/ dummyUploadBuffer,
+        D3D12_RESOURCE_STATE_GENERIC_READ);
 
-    char msg[128];
-    sprintf_s(msg, "[Check] m_boneMatrixBuffer = %p\n", m_boneMatrixBuffer.Get());
-    OutputDebugStringA(msg);
+    // UploadBuffer만 2개 생성
+    for (int i = 0; i < 2; ++i)
+    {
+        d3dUtil::CreateUploadBuffer(
+            device.Get(),
+            bufferSize,
+            m_boneMatrixUploadBuffer[i]);
+    }
 }
 
 void OtherPlayer::Update(FLOAT timeElapsed)
@@ -52,13 +84,41 @@ void OtherPlayer::Update(FLOAT timeElapsed)
     //        SetCurrentAnimation("M_C3FC_ModularMale_03");
     //}
 
-    if (m_animationClips.contains(m_currentAnim))
+    if (m_isBlending)
     {
-        const auto& clip = m_animationClips.at(m_currentAnim);
-        m_animTime += timeElapsed * clip.ticksPerSecond;
-        if (m_animTime > clip.duration)
-            m_animTime = fmod(m_animTime, clip.duration);
+        m_blendTime += timeElapsed;
+
+        if (m_blendTime >= m_blendDuration)
+        {
+            // 블렌드 완료
+            m_currentAnim = m_nextAnim;
+            m_animTime = 0.f;
+            m_nextAnim.clear();
+            m_isBlending = false;
+        }
+
     }
+    else
+    {
+        if (m_animationClips.contains(m_currentAnim))
+        {
+            const auto& clip = m_animationClips.at(m_currentAnim);
+            m_animTime += timeElapsed * clip.ticksPerSecond;
+           
+            while (m_animTime >= clip.duration)
+                m_animTime -= clip.duration;
+            
+        }
+        
+    }
+
+    //if (m_animationClips.contains(m_currentAnim))
+    //{
+    //    const auto& clip = m_animationClips.at(m_currentAnim);
+    //    m_animTime += timeElapsed * clip.ticksPerSecond;
+    //    if (m_animTime > clip.duration)
+    //        m_animTime = fmod(m_animTime, clip.duration);
+    //}
 
     if (m_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[0]) {
         m_position = gGameFramework->GetSceneManager()->GetCurrentScene()->otherpos[0];
@@ -84,14 +144,14 @@ void OtherPlayer::Update(FLOAT timeElapsed)
 
 void OtherPlayer::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
 {
-    // 애니메이션 본 행렬 업로드
-    if (m_animationClips.contains(m_currentAnim))
-    {
-        const auto& clip = m_animationClips.at(m_currentAnim);
-        float animTime = fmod(m_animTime, clip.duration);
-        auto [boneTransforms, animBoneIndex] = clip.GetBoneTransforms(animTime, m_boneNameToIndex, m_boneHierarchy,m_staticNodeTransforms);
-        const_cast<OtherPlayer*>(this)->UploadBoneMatricesToShader(boneTransforms, animBoneIndex, commandList);
-    }
+    //// 애니메이션 본 행렬 업로드
+    //if (m_animationClips.contains(m_currentAnim))
+    //{
+    //    const auto& clip = m_animationClips.at(m_currentAnim);
+    //    float animTime = fmod(m_animTime, clip.duration);
+    //    auto [boneTransforms, animBoneIndex] = clip.GetBoneTransforms(animTime, m_boneNameToIndex, m_boneHierarchy,m_staticNodeTransforms);
+    //    const_cast<OtherPlayer*>(this)->UploadBoneMatricesToShader(boneTransforms, animBoneIndex, commandList);
+    //}
 
     // 본 행렬 StructuredBuffer 바인딩
     if (m_boneMatrixSRV.ptr != 0)
@@ -129,66 +189,66 @@ void OtherPlayer::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) c
 }
 
 
-void OtherPlayer::UploadBoneMatricesToShader(const std::vector<XMMATRIX>& boneTransforms, std::unordered_map<std::string, int>animBoneIndex, const ComPtr<ID3D12GraphicsCommandList>& commandList)
-{
-    //const UINT MAX_BONES = 128;
-    //vector<XMMATRIX> finalMatrices(MAX_BONES, XMMatrixIdentity());
-
-    //size_t count = std::min<size_t>(boneTransforms.size(), MAX_BONES);
-
-    //for (size_t i = 0; i < count; ++i)
-    //{
-    //    // 본 offset이 존재한다면 곱해줌
-    //    if (m_boneOffsets.contains(i))
-    //    {
-    //        finalMatrices[i] = XMMatrixMultiply(boneTransforms[i], m_boneOffsets.at(i));
-    //    }
-    //    else
-    //    {
-    //        finalMatrices[i] = boneTransforms[i]; // fallback
-    //    }
-    //}
-    const UINT MAX_BONES = boneTransforms.size();
-    vector<XMMATRIX> finalMatrices(MAX_BONES, XMMatrixIdentity());
-
-    size_t count = std::min<size_t>(boneTransforms.size(), MAX_BONES);
-
-    //for (size_t i = 0; i < count; ++i)
-    //{
-    //    // 본 offset이 존재한다면 곱해줌
-    //    if (m_boneOffsets.contains(i))
-    //    {
-    //        finalMatrices[i] = XMMatrixMultiply(boneTransforms[i], m_boneOffsets.at(i));
-    //        //finalMatrices[i] = XMMatrixMultiply(m_boneOffsets.at(i), boneTransforms[i]);
-    //    }
-    //    else
-    //    {
-    //        finalMatrices[i] = boneTransforms[i]; // fallback
-    //    }
-    //}
-    for (const auto& [boneName, vertexIndex] : m_boneNameToIndex)
-    {
-        // animBoneIndex: boneName → i (애니메이션 transform의 인덱스)
-        if (animBoneIndex.contains(boneName) && m_boneOffsets.contains(vertexIndex))
-        {
-            int animIndex = animBoneIndex.at(boneName);
-            finalMatrices[vertexIndex] = XMMatrixMultiply(boneTransforms[animIndex], m_boneOffsets.at(vertexIndex));
-        }
-    }
-    // GPU에 업로드 (UploadBuffer → DefaultBuffer)
-    D3D12_SUBRESOURCE_DATA subresourceData{};
-    subresourceData.pData = finalMatrices.data();
-    subresourceData.RowPitch = sizeof(XMMATRIX) * MAX_BONES;
-    subresourceData.SlicePitch = subresourceData.RowPitch;
-
-    commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(
-        m_boneMatrixBuffer.Get(), D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_STATE_COPY_DEST));
-
-    UpdateSubresources<1>(commandList.Get(), m_boneMatrixBuffer.Get(), m_boneMatrixUploadBuffer.Get(), 0, 0, 1, &subresourceData);
-
-    commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(
-        m_boneMatrixBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_GENERIC_READ));
-}
+//void OtherPlayer::UploadBoneMatricesToShader(const std::vector<XMMATRIX>& boneTransforms, std::unordered_map<std::string, int>animBoneIndex, const ComPtr<ID3D12GraphicsCommandList>& commandList)
+//{
+//    //const UINT MAX_BONES = 128;
+//    //vector<XMMATRIX> finalMatrices(MAX_BONES, XMMatrixIdentity());
+//
+//    //size_t count = std::min<size_t>(boneTransforms.size(), MAX_BONES);
+//
+//    //for (size_t i = 0; i < count; ++i)
+//    //{
+//    //    // 본 offset이 존재한다면 곱해줌
+//    //    if (m_boneOffsets.contains(i))
+//    //    {
+//    //        finalMatrices[i] = XMMatrixMultiply(boneTransforms[i], m_boneOffsets.at(i));
+//    //    }
+//    //    else
+//    //    {
+//    //        finalMatrices[i] = boneTransforms[i]; // fallback
+//    //    }
+//    //}
+//    const UINT MAX_BONES = boneTransforms.size();
+//    vector<XMMATRIX> finalMatrices(MAX_BONES, XMMatrixIdentity());
+//
+//    size_t count = std::min<size_t>(boneTransforms.size(), MAX_BONES);
+//
+//    //for (size_t i = 0; i < count; ++i)
+//    //{
+//    //    // 본 offset이 존재한다면 곱해줌
+//    //    if (m_boneOffsets.contains(i))
+//    //    {
+//    //        finalMatrices[i] = XMMatrixMultiply(boneTransforms[i], m_boneOffsets.at(i));
+//    //        //finalMatrices[i] = XMMatrixMultiply(m_boneOffsets.at(i), boneTransforms[i]);
+//    //    }
+//    //    else
+//    //    {
+//    //        finalMatrices[i] = boneTransforms[i]; // fallback
+//    //    }
+//    //}
+//    for (const auto& [boneName, vertexIndex] : m_boneNameToIndex)
+//    {
+//        // animBoneIndex: boneName → i (애니메이션 transform의 인덱스)
+//        if (animBoneIndex.contains(boneName) && m_boneOffsets.contains(vertexIndex))
+//        {
+//            int animIndex = animBoneIndex.at(boneName);
+//            finalMatrices[vertexIndex] = XMMatrixMultiply(boneTransforms[animIndex], m_boneOffsets.at(vertexIndex));
+//        }
+//    }
+//    // GPU에 업로드 (UploadBuffer → DefaultBuffer)
+//    D3D12_SUBRESOURCE_DATA subresourceData{};
+//    subresourceData.pData = finalMatrices.data();
+//    subresourceData.RowPitch = sizeof(XMMATRIX) * MAX_BONES;
+//    subresourceData.SlicePitch = subresourceData.RowPitch;
+//
+//    commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(
+//        m_boneMatrixBuffer.Get(), D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_STATE_COPY_DEST));
+//
+//    UpdateSubresources<1>(commandList.Get(), m_boneMatrixBuffer.Get(), m_boneMatrixUploadBuffer.Get(), 0, 0, 1, &subresourceData);
+//
+//    commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(
+//        m_boneMatrixBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_GENERIC_READ));
+//}
 
 
 
@@ -207,6 +267,55 @@ void OtherPlayer::CreateBoneMatrixSRV(const ComPtr<ID3D12Device>& device, D3D12_
 
     device->CreateShaderResourceView(m_boneMatrixBuffer.Get(), &srvDesc, cpuHandle);
     m_boneMatrixSRV = gpuHandle;
+}
+
+void OtherPlayer::UpdateBoneMatrices(const ComPtr<ID3D12GraphicsCommandList>& commandList)
+{
+    std::vector<XMMATRIX> boneTransforms;
+
+    //if (m_isBlending && m_animationClips.contains(m_currentAnim) && m_animationClips.contains(m_nextAnim))
+    //{
+    //    // 현재 & 다음 애니메이션 정보
+    //    const auto& fromClip = m_animationClips.at(m_currentAnim);
+    //    const auto& toClip = m_animationClips.at(m_nextAnim);
+    //
+    //    float fromTime = fmod(m_animTime, fromClip.duration);
+    //    float toTime = (m_blendTime / m_blendDuration) * toClip.duration;
+    //
+    //    // 각 본 행렬 계산
+    //    auto fromBones = fromClip.GetBoneTransforms(fromTime, m_boneNameToIndex, m_boneHierarchy, m_boneOffsets, m_nodeNameToLocalTransform);
+    //    auto toBones = toClip.GetBoneTransforms(toTime, m_boneNameToIndex, m_boneHierarchy, m_boneOffsets, m_nodeNameToLocalTransform);
+    //
+    //    boneTransforms.resize(fromBones.size());
+    //    float alpha = m_blendTime / m_blendDuration;
+    //
+    //    for (size_t i = 0; i < boneTransforms.size(); ++i)
+    //    {
+    //        XMVECTOR scaleA, rotA, transA;
+    //        XMVECTOR scaleB, rotB, transB;
+    //
+    //        XMMatrixDecompose(&scaleA, &rotA, &transA, fromBones[i]);
+    //        XMMatrixDecompose(&scaleB, &rotB, &transB, toBones[i]);
+    //
+    //        XMVECTOR blendedScale = XMVectorLerp(scaleA, scaleB, alpha);
+    //        XMVECTOR blendedRot = XMQuaternionSlerp(rotA, rotB, alpha);
+    //        XMVECTOR blendedTrans = XMVectorLerp(transA, transB, alpha);
+    //
+    //        boneTransforms[i] = XMMatrixAffineTransformation(blendedScale, XMVectorZero(), blendedRot, blendedTrans);
+    //    }
+    //}
+    if (m_animationClips.contains(m_currentAnim))
+    {
+        const auto& clip = m_animationClips.at(m_currentAnim);
+        float time = fmod(m_animTime, clip.duration);
+
+        boneTransforms = clip.GetBoneTransforms(time, m_boneNameToIndex, m_boneHierarchy, m_boneOffsets, m_nodeNameToLocalTransform);
+    }
+
+    if (!boneTransforms.empty())
+    {
+        UploadBoneMatricesToShader(boneTransforms, commandList);
+    }
 }
 
 void OtherPlayer::Move(XMFLOAT3 direction, FLOAT speed)
@@ -239,4 +348,73 @@ void OtherPlayer::SetCurrentAnimation(const std::string& name)
         m_currentAnim = name;
         m_animTime = 0.f;
     }
+}
+
+void OtherPlayer::UploadBoneMatricesToShader(const std::vector<XMMATRIX>& boneTransforms, const ComPtr<ID3D12GraphicsCommandList>& commandList)
+{
+    const UINT MAX_BONES = 128;
+    std::vector<XMMATRIX> finalMatrices(MAX_BONES, XMMatrixIdentity());
+
+    for (const auto& [boneName, vertexIndex] : m_boneNameToIndex)
+    {
+        finalMatrices[vertexIndex] = boneTransforms[vertexIndex];
+    }
+    for (int i = 0; i < finalMatrices.size(); ++i)
+        finalMatrices[i] = XMMatrixTranspose(finalMatrices[i]);
+
+    // ===== GPU 복사 =====
+    //void* mappedData = nullptr;
+    //CD3DX12_RANGE readRange(0, 0);
+    //m_boneMatrixUploadBuffer->Map(0, &readRange, &mappedData);
+    //memcpy(mappedData, finalMatrices.data(), sizeof(XMMATRIX) * finalMatrices.size());
+    //m_boneMatrixUploadBuffer->Unmap(0, nullptr);
+    //
+    //commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(
+    //	m_boneMatrixBuffer.Get(), D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_STATE_COPY_DEST));
+    //
+    //commandList->CopyResource(m_boneMatrixBuffer.Get(), m_boneMatrixUploadBuffer.Get());
+    //
+    //commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(
+    //	m_boneMatrixBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_GENERIC_READ));
+
+    // === UploadBuffer만 더블버퍼링 ===
+    UINT frameIndex = gGameFramework->GetCurrentFrameIndex(); // 0 또는 1
+    void* mappedData = nullptr;
+    CD3DX12_RANGE readRange(0, 0);
+    m_boneMatrixUploadBuffer[frameIndex]->Map(0, &readRange, &mappedData);
+    memcpy(mappedData, finalMatrices.data(), sizeof(XMMATRIX) * MAX_BONES);
+    m_boneMatrixUploadBuffer[frameIndex]->Unmap(0, nullptr);
+    char debug[512];
+    //sprintf_s(debug, "\n[디버그] BoneMatrixFrame 시작 (몬스터 이름: %s)\n", m_name.c_str()); // m_name은 몬스터 이름이라고 가정
+    //OutputDebugStringA(debug);
+
+    //for (int i = 0; i < 5; ++i)
+    //{	
+    //
+    //	XMFLOAT4X4 mat;
+    //	XMStoreFloat4x4(&mat, finalMatrices[i]);
+    //
+    //	sprintf_s(debug,
+    //		"Bone[%02d]:\n"
+    //		"  %.3f %.3f %.3f %.3f\n"
+    //		"  %.3f %.3f %.3f %.3f\n"
+    //		"  %.3f %.3f %.3f %.3f\n"
+    //		"  %.3f %.3f %.3f %.3f\n",
+    //		i,
+    //		mat._11, mat._12, mat._13, mat._14,
+    //		mat._21, mat._22, mat._23, mat._24,
+    //		mat._31, mat._32, mat._33, mat._34,
+    //		mat._41, mat._42, mat._43, mat._44);
+    //	OutputDebugStringA(debug);
+    //}
+    // === 실제 m_boneMatrixBuffer에 복사 ===
+    commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(
+        m_boneMatrixBuffer.Get(), D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_STATE_COPY_DEST));
+
+    commandList->CopyResource(
+        m_boneMatrixBuffer.Get(),
+        m_boneMatrixUploadBuffer[frameIndex].Get());
+
+    commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(
+        m_boneMatrixBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_GENERIC_READ));
 }

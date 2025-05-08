@@ -625,6 +625,12 @@ void GameScene::PreRender(const ComPtr<ID3D12GraphicsCommandList>& commandList)
 	}
 	if(m_player)
 	m_player->UpdateBoneMatrices(commandList);
+    for(int i=0;i<2;i++)
+    {
+        if (m_Otherplayer[i])
+            m_Otherplayer[i]->UpdateBoneMatrices(commandList);
+    }
+
 }
 
 void GameScene::BuildShaders(const ComPtr<ID3D12Device>& device,

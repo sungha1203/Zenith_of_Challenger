@@ -21,8 +21,8 @@ public:
 
 	void SetAnimationClips(const std::vector<AnimationClip>& clips);
 	void SetCurrentAnimation(const std::string& name);
-	void UploadBoneMatricesToShader(const std::vector<XMMATRIX>& boneTransforms, std::unordered_map<std::string, int>animBoneIndex, const ComPtr<ID3D12GraphicsCommandList>& commandList);
-
+	//void UploadBoneMatricesToShader(const std::vector<XMMATRIX>& boneTransforms, std::unordered_map<std::string, int>animBoneIndex, const ComPtr<ID3D12GraphicsCommandList>& commandList);
+	void UploadBoneMatricesToShader(const std::vector<XMMATRIX>& boneTransforms, const ComPtr<ID3D12GraphicsCommandList>& commandList);
 	// SRV 생성 함수
 	void CreateBoneMatrixSRV(const ComPtr<ID3D12Device>& device, D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle, D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle);
 
@@ -31,11 +31,17 @@ public:
 	void SetBoneHierarchy(const unordered_map<string, string>& boneHierarchy) { m_boneHierarchy = boneHierarchy; }
 	void SetstaticNodeTransforms(const unordered_map<string, XMMATRIX>& staticNodeTransforms) { m_staticNodeTransforms = staticNodeTransforms; }
 	unordered_map<string, XMMATRIX> m_staticNodeTransforms;
+	void SetNodeNameToGlobalTransform(const unordered_map<string, XMMATRIX>& nodeNameToGlobalTransform) { m_nodeNameToLocalTransform = nodeNameToGlobalTransform; }
+	unordered_map<string, XMMATRIX> m_nodeNameToLocalTransform;
+	void UpdateBoneMatrices(const ComPtr<ID3D12GraphicsCommandList>& commandList); // other플레이어 뼈 행렬 코드 분리
 	void AddMesh(const shared_ptr<MeshBase>& mesh) { m_meshes.push_back(mesh); }
 	int m_id = -1;
 	bool m_used = false;
 	XMFLOAT3 m_position;
-
+	std::string m_nextAnim = "";       // 블렌딩할 애니메이션
+	float m_blendTime = 0.f;           // 블렌딩 경과 시간
+	float m_blendDuration = 0.2f;      // 블렌딩 지속 시간
+	bool m_isBlending = false;
 	float m_angle; //방향각도 추가
 private:
 
@@ -48,7 +54,8 @@ private:
 
 	std::unordered_map<std::string, int> m_boneNameToIndex;
 	ComPtr<ID3D12Resource> m_boneMatrixBuffer;             // GPU용 버퍼
-	ComPtr<ID3D12Resource> m_boneMatrixUploadBuffer;       // 업로드용 버퍼
+	//ComPtr<ID3D12Resource> m_boneMatrixUploadBuffer;       // 업로드용 버퍼
+	ComPtr<ID3D12Resource> m_boneMatrixUploadBuffer[2];       // 업로드용 버퍼
 	D3D12_GPU_DESCRIPTOR_HANDLE m_boneMatrixSRV = {};      // 셰이더에서 접근할 핸들
 	unordered_map<string, string> m_boneHierarchy;			//뼈 계층구조
 	std::vector<std::shared_ptr<MeshBase>> m_meshes;
