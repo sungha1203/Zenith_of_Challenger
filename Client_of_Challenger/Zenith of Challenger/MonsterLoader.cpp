@@ -20,7 +20,7 @@ void LoadAllMonsters(
         return;
     }
 
-    for (int i = 0; i < 2; ++i)
+    for (int i = 0; i < 1; ++i)
     {
         auto frightfly = make_shared<Frightfly>(device);
 
@@ -32,7 +32,7 @@ void LoadAllMonsters(
         frightfly->SetShader(shaders.at("FrightFly"));
         frightfly->SetDebugLineShader(shaders.at("DebugLineShader"));
         frightfly->SetHealthBarShader(shaders.at("HealthBarShader"));
-        frightfly->SetScale(XMFLOAT3{ 0.05,0.05,0.05 }); 
+        frightfly->SetScale(XMFLOAT3{ 0.05, 0.05, 0.05 }); 
 
         // [2] 애니메이션 설정
         vector<AnimationClip> clips;

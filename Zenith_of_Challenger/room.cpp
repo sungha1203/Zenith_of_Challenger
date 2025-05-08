@@ -6,6 +6,25 @@ void Room::Init(int room_id)
 	m_clients.clear();
 }
 
+void Room::ResetRoom()
+{
+	m_IsGaming = false;
+	m_RoomState = Stage::LOBBY;         // 초기 상태로
+	m_clients.clear();                  // 클라이언트 목록 제거
+	m_inventory = InventoryItem();
+
+	m_skipTimer = false;
+	m_skipButton = false;
+	m_playerNum = 0;
+	m_enterClientNum = 0;
+	m_enterZenithNum = 0;
+
+	for (auto& monster : m_monsters)
+		monster.Reset();
+	m_MonsterNum = 0;;
+	m_timer.join();
+}
+
 void Room::AddClient(int client_id)
 {
 	m_clients.push_back(client_id);
@@ -49,11 +68,11 @@ void Room::PushStartGameButton(int RoomMasterID)
 	InitChallengeMonsters();									// 도전 스테이지 몬스터 초기화
 
 	g_network.SendWhoIsMyTeam(GetClients());					// 아이디 값 보내주기
-	std::this_thread::sleep_for(std::chrono::milliseconds(100));
+	std::this_thread::sleep_for(std::chrono::milliseconds(500));
 	g_network.SendInitialState(GetClients());					// 게임방 안에 본인 포함 모두한테 초기 좌표 패킷 보내기
-	std::this_thread::sleep_for(std::chrono::milliseconds(100));
-	g_network.SendInitMonster(GetClients(),m_monsters);		// 게임방 안의 모든 몬스터 초기화
-	std::this_thread::sleep_for(std::chrono::milliseconds(100));
+	std::this_thread::sleep_for(std::chrono::milliseconds(500));
+	g_network.SendInitMonster(GetClients(),m_monsters);			// 게임방 안의 모든 몬스터 초기화
+	std::this_thread::sleep_for(std::chrono::milliseconds(500));
 	g_network.SendGameStart(GetClients());						// 게임방 안에 본인 포함 모두한테 게임시작 패킷 보내기
 	
 	AllPlayerNum(m_clients.size());								// 게임에 입장한 플레이어가 몇명이야?
@@ -126,6 +145,11 @@ void Room::EndGame()
 	// TODO
 }
 
+void Room::SetStopTimer()
+{
+	m_stopTimer = true;
+}
+
 void Room::SetSkipTimer()
 {
 	m_skipTimer = true;
@@ -151,6 +175,7 @@ void Room::SpendGold(int minusgold)
 	std::lock_guard<std::mutex> lock(m_inventoryMx);
 	if (m_inventory.gold > 0)
 		m_inventory.gold -= minusgold;
+	g_network.SendUpdateGold(GetClients());
 	//else
 		// 돈 다 써서 강화 더 못해
 	// update packet

@@ -87,6 +87,8 @@ public:
     D3D12_GPU_DESCRIPTOR_HANDLE GetShadowMapSrv() const { return m_shadowSrv; }
     D3D12_CPU_DESCRIPTOR_HANDLE GetShadowMapDsv() const { return m_shadowDsv; }
     void RenderShadowMap();
+    bool GetIsFullScreen() const;
+
     UINT GetCurrentFrameIndex() { return m_frameIndex; }
 private:
     void InitDirect3D();

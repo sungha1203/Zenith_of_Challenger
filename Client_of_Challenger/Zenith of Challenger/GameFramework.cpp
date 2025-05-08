@@ -225,6 +225,11 @@ void CGameFramework::RenderShadowMap()
 	}
 }
 
+bool CGameFramework::GetIsFullScreen() const
+{
+	return m_isFullScreen;
+}
+
 
 void CGameFramework::InitDirect3D()
 {

@@ -44,16 +44,29 @@ public:
     shared_ptr<ParticleManager> GetParticleManager() const { return m_particleManager; }
     void SetGoldScore(int score) { m_goldScore = score; }
     void SetInventoryCount(int item , int num) { m_inventoryCounts[item] = num; }
+    void SetupgradeScore(int num) { m_upgradeScore = num; }
+
+    //장비창 관련
+    void HandleMouseClick(int mouseX, int mouseY);
+    void SetWeaponSlotUV(int type);
+    void SetJobSlotUV(int type);
+    void UpdateEnhanceDigits();
 
 private:
     shared_ptr<FBXLoader> m_fbxLoader; // FBX 로더 추가
+    shared_ptr<FBXLoader> m_ZenithLoader; // FBX 로더 추가
     shared_ptr<FBXLoader> m_playerLoader;
     vector<shared_ptr<MeshBase>> m_fbxMeshes; // FBX에서 로드한 메쉬 저장
+    vector<shared_ptr<MeshBase>> m_ZenithMeshes; // FBX에서 로드한 메쉬 저장
     vector<shared_ptr<GameObject>> m_fbxObjects; // FBX 모델용 GameObject 리스트 추가
+    vector<shared_ptr<GameObject>> m_ZenithObjects; // 정점맵 오브젝트 저장
 
 
     bool m_debugDrawEnabled = false;
     bool m_ShadowMapEnabled = false;
+    
+    //정점맵 토글키
+    bool m_ZenithEnabled = false;
 
 
     ////////////////몬스터 관련////////////////
@@ -82,7 +95,26 @@ private:
     //인벤토리 숫자 관련
     std::vector<std::shared_ptr<GameObject>> m_inventoryDigits;
     int m_inventoryCounts[6] = { 0, 0, 0, 0, 0, 0 };
+    
+    //인벤토리 무기 및 전직서 관련
+    bool m_WeaponOnly = false;
+    bool m_JopOnly = false;
 
+    //강화창 관련
+    std::shared_ptr<GameObject> m_reinforcedWindowUI;
+    bool m_showReinforcedWindow = false;
+
+    bool m_isReinforceWindowVisible = false; // 'I'키 토글
+    bool m_isReinforceSlotOccupied = false;
+
+    std::string m_selectedItemType = ""; // "weapon", "job"
+
+    std::shared_ptr<GameObject> m_weaponSlotIcon;
+    std::shared_ptr<GameObject> m_jobSlotIcon;
+    std::shared_ptr<GameObject> m_plusIcon;
+
+    int m_upgradeScore = 0;
+    std::vector<std::shared_ptr<GameObject>> m_forcedDigits;
 
     //툰 렌더링 외곽선 토글키
     bool m_OutLine = false;

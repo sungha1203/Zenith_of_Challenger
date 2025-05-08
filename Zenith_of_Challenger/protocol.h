@@ -3,7 +3,7 @@
 
 constexpr int SERVER_PORT = 4000;
 
-constexpr int BUF_SIZE = 1024;				
+constexpr int BUF_SIZE = 1024;
 constexpr int MAX_USER = 10;				// 접속 가능한 총 유저 수
 constexpr int NAME_SIZE = 20;				// 이름 글자 수
 
@@ -18,6 +18,9 @@ constexpr int NAME_SIZE = 20;				// 이름 글자 수
 #define CS_PACKET_MONSTERHP			 8			// 몬스터 HP
 #define CS_PACKET_CHAT				 9			// 인게임 속 채팅
 #define CS_PACKET_ITEMSTATE			 10			// 장비창에서 강화
+#define CS_PACKET_INVENTORY			 11			// 인벤토리에서 아이템 선택
+#define CS_PACKET_DEBUGGOLD			 12			// 디버깅용 골드 추가
+#define CS_PACKET_DEBUGITEM			 13			// 디버깅용 아이템 추가
 
 #define CS_PACKET_SKIPCHALLENGE		 99			// 도전스테이지 스킵
 #define CS_PACKET_LOGOUT			 100		// 로그아웃
@@ -36,9 +39,11 @@ constexpr int NAME_SIZE = 20;				// 이름 글자 수
 #define SC_PACKET_MONSTERHP			 111		// 몬스터 HP
 #define SC_PACKET_DROPITEM			 112		// 몬스터 드랍 아이템
 #define SC_PACKET_GOLD				 113		// 골드 현 상황 갱신
-#define SC_PACKET_SELECTITEM		 114		// 인벤토리에서 무기 or 전직서 결정
-#define SC_PACKET_ITEMSTATE			 115		// 무기 강화 성공 여부
-#define SC_PACKET_CHAT				 116		// 인게임 속 채팅
+#define SC_PACKET_INVENTORY			 114		// 인벤토리 현재 상황
+#define SC_PACKET_SELECTITEM		 115		// 인벤토리에서 무기 or 전직서 결정
+#define SC_PACKET_ITEMSTATE			 116		// 무기 강화 성공 여부
+#define SC_PACKET_CHAT				 117		// 인게임 속 채팅
+#define SC_PACKET_DEBUGITEM			 118		// 디버깅용 아이템 추가
 
 #define SC_PACKET_SKIPCHALLENGE		 998		// 도전스테이지 스킵
 #define SC_PACKET_LOGOUT			 999		// 로그아웃
@@ -127,7 +132,20 @@ struct CS_Packet_ItemState
 	char	type;
 	int		size;
 	bool	enhanceTry;		// 강화 시도
-	int		enhanceStar;	// 강화 별 넘버(등급)
+};
+
+struct CS_Packet_DebugGold
+{
+	char	type;
+	int		size;
+	bool	plusGold;
+};
+
+struct CS_Packet_DebugItem
+{
+	char	type;
+	int		size;
+	int		item;
 };
 
 struct CS_Packet_Logout
@@ -216,7 +234,7 @@ struct SC_Packet_ZenithStage
 	bool	startZS;			// 정점 스테이지
 };
 
-struct SC_Packet_InitMonster 
+struct SC_Packet_InitMonster
 {
 	char	type;
 	int		size;
@@ -273,6 +291,14 @@ struct SC_Packet_ItemState
 	char	type;
 	int		size;
 	int		result;
+};
+
+struct SC_Packet_DebugItem
+{
+	char	type;
+	int		size;
+	int		item;
+	int		itemNum;
 };
 
 struct SC_Packet_Chat

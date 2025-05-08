@@ -49,15 +49,18 @@ void TerrainMesh::LoadMesh(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D
         throw runtime_error("Failed to open heightmap file.");
     }
 
-    // Determine the dimensions of the heightmap
-    size_t size;
+    // Determine the dimensions of the heightmap (2 bytes per sample)
     in.seekg(0, ios::end);
-    size = static_cast<size_t>(in.tellg());
+    size_t size = static_cast<size_t>(in.tellg());
     in.seekg(0, ios::beg);
 
-    int length = static_cast<int>(sqrt(size)); // Assuming square dimensions
-    if (length * length != size) {
-        throw runtime_error("Heightmap file is not a perfect square.");
+    if (size % 2 != 0) {
+        throw runtime_error("Heightmap file size is not aligned to 2 bytes.");
+    }
+
+    int length = static_cast<int>(sqrt(size / 2)); // 2 bytes per sample
+    if (length * length * 2 != size) {
+        throw runtime_error("Heightmap file is not a perfect square (16bit).");
     }
 
     int middle = length / 2;
@@ -65,17 +68,23 @@ void TerrainMesh::LoadMesh(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D
     // Resize the height vector
     m_height.resize(length, vector<BYTE>(length));
 
-    // Read the heightmap data
+    // Read the heightmap data (2-byte ushort values)
     for (int z = 0; z < length; ++z) {
-        in.read(reinterpret_cast<char*>(m_height[z].data()), length * sizeof(BYTE));
+        for (int x = 0; x < length; ++x) {
+            uint16_t value;
+            in.read(reinterpret_cast<char*>(&value), sizeof(uint16_t));
+            // 정규화: 16bit → 0~255 BYTE로 줄임 (스케일 조정 가능)
+            m_height[z][x] = static_cast<BYTE>(value / 256);
+        }
     }
 
-    // Close the file
     in.close();
 
     // Vertex creation
     const float delta = 1.f / static_cast<float>(length);
     vector<DetailVertex> vertices;
+
+    const float heightScale = 15.f;
 
     for (int z = 0; z < length - 1; ++z) {
         for (int x = 0; x < length - 1; ++x) {
@@ -84,18 +93,23 @@ void TerrainMesh::LoadMesh(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D
             float dx = static_cast<float>(x) * delta;
             float dz = 1.f - static_cast<float>(z) * delta;
 
-            vertices.emplace_back(XMFLOAT3{ nx, static_cast<float>(m_height[z][x]), nz },
+            float h00 = static_cast<float>(m_height[z][x] * heightScale);
+            float h10 = static_cast<float>(m_height[z + 1][x] * heightScale);
+            float h11 = static_cast<float>(m_height[z + 1][x + 1] * heightScale);
+            float h01 = static_cast<float>(m_height[z][x + 1] * heightScale);
+
+            vertices.emplace_back(XMFLOAT3{ nx, h00, nz },
                 XMFLOAT2{ dx, dz }, XMFLOAT2{ 0.f, 1.f });
-            vertices.emplace_back(XMFLOAT3{ nx, static_cast<float>(m_height[z + 1][x]), nz + 1 },
+            vertices.emplace_back(XMFLOAT3{ nx, h10, nz + 1 },
                 XMFLOAT2{ dx, dz - delta }, XMFLOAT2{ 0.f, 0.f });
-            vertices.emplace_back(XMFLOAT3{ nx + 1, static_cast<float>(m_height[z + 1][x + 1]), nz + 1 },
+            vertices.emplace_back(XMFLOAT3{ nx + 1, h11, nz + 1 },
                 XMFLOAT2{ dx + delta, dz - delta }, XMFLOAT2{ 1.f, 0.f });
 
-            vertices.emplace_back(XMFLOAT3{ nx, static_cast<float>(m_height[z][x]), nz },
+            vertices.emplace_back(XMFLOAT3{ nx, h00, nz },
                 XMFLOAT2{ dx, dz }, XMFLOAT2{ 0.f, 1.f });
-            vertices.emplace_back(XMFLOAT3{ nx + 1, static_cast<float>(m_height[z + 1][x + 1]), nz + 1 },
+            vertices.emplace_back(XMFLOAT3{ nx + 1, h11, nz + 1 },
                 XMFLOAT2{ dx + delta, dz - delta }, XMFLOAT2{ 1.f, 0.f });
-            vertices.emplace_back(XMFLOAT3{ nx + 1, static_cast<float>(m_height[z][x + 1]), nz },
+            vertices.emplace_back(XMFLOAT3{ nx + 1, h01, nz },
                 XMFLOAT2{ dx + delta, dz }, XMFLOAT2{ 1.f, 1.f });
         }
     }
@@ -103,4 +117,3 @@ void TerrainMesh::LoadMesh(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D
     // Create the vertex buffer
     CreateVertexBuffer(device, commandList, vertices);
 }
-

@@ -139,6 +139,9 @@ public:
 	virtual void RenderOutline(const ComPtr<ID3D12GraphicsCommandList>& commandList) const;
 	void SetOutlineShader(const std::shared_ptr<Shader>& shader) { m_outlineShader = shader; }
 
+	//바운딩 박스 따로 스케일 정의
+	void RenderBoundingBoxWithoutScale(const ComPtr<ID3D12GraphicsCommandList>& commandList) const;
+
 protected:
 	shared_ptr<MeshBase> m_mesh;
 	shared_ptr<Texture> m_texture;

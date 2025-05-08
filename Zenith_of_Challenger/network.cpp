@@ -313,11 +313,20 @@ void Network::HandlePacket(int client_id, char* buffer, int length)
 	case CS_PACKET_MONSTERHP:
 		ProcessMonsterHP(client_id, buffer, length);
 		break;
-
-
-
+	case CS_PACKET_INVENTORY:
+		ProcessInventorySelcet(client_id, buffer, length);
+		break;
 	case CS_PACKET_LOGOUT:
 		CloseClient(client_id);
+		break;
+	case CS_PACKET_DEBUGGOLD:
+		ProcessDebugGold(client_id, buffer, length);
+		break;
+	case CS_PACKET_DEBUGITEM:
+		ProcessDebugItem(client_id, buffer, length);
+		break;
+	case CS_PACKET_ITEMSTATE:
+		ProcessItemState(client_id, buffer, length);
 		break;
 	default:
 		std::cout << "[ERROR] 알 수 없는 패킷 수신함. 클라이언트 [" << client_id << "]" << std::endl;
@@ -371,7 +380,7 @@ void Network::ProcessUpdatePlayer(int client_id, char* buffer, int length)
 	pkt2.y = pkt->y;
 	pkt2.z = pkt->z;
 	pkt2.angle = pkt->angle;
-	
+
 	for (int other_id : client) {
 		if (other_id == client_id) continue;
 		clients[other_id].do_send(pkt2);
@@ -476,7 +485,7 @@ void Network::ProcessChat(int client_id, char* buffer, int length)
 void Network::ProcessMonsterHP(int client_id, char* buffer, int length)
 {
 	CS_Packet_MonsterHP* pkt = reinterpret_cast<CS_Packet_MonsterHP*>(buffer);
-	
+
 	int room_id = g_room_manager.GetRoomID(client_id);
 	Room& room = g_room_manager.GetRoom(room_id);
 	const auto& client = room.GetClients();
@@ -510,13 +519,13 @@ void Network::ProcessMonsterHP(int client_id, char* buffer, int length)
 
 		if (dropItem > 0 && dropItem <= 3) {		// 무기
 			room.ADDJobWeapon(dropItem);
-			pkt3.itemNum = room.GetWeaponTypeNum(dropItem - 1);
+			pkt3.itemNum = room.GetWeaponTypeNum(dropItem);
 		}
 		else if (dropItem > 3 && dropItem <= 6) {	// 전직서
 			room.AddJobDocument(dropItem);
-			pkt3.itemNum = room.GetJobTypeNum(dropItem - 4);
+			pkt3.itemNum = room.GetJobTypeNum(dropItem);
 		}
-		
+
 		for (int other_id : client) {
 			clients[other_id].do_send(pkt3);
 		}
@@ -538,29 +547,32 @@ void Network::ProcessInventorySelcet(int client_id, char* buffer, int length)
 
 	CS_Packet_Inventory* pkt = reinterpret_cast<CS_Packet_Inventory*>(buffer);
 	SC_Packet_Inventory pkt2;		// 모든 클라의 인벤토리에서 해당 아이템을 하나 삭제하기 위한 패킷
-	pkt2.item = pkt->item;
+	pkt2.type = SC_PACKET_INVENTORY;
 
 	SC_Packet_SelectItem pkt3;		// 해당 클라의 장비창에 해당 아이템을 장착하기 위한 패킷
+	pkt3.type = SC_PACKET_SELECTITEM;
 	pkt3.item = pkt->item;
 
 	// 무기 선택했고, 선택한 무기가 없을 때(주먹), 선택한 무기가 1개이상일 때
-	if (pkt->item > 0 && pkt->item <= 3 
+	if (pkt->item > 0 && pkt->item <= 3
 		&& static_cast<int>(g_client[client_id].GetWeaponType()) == 0
-		&& room.GetWeaponTypeNum(pkt->item) > 0) 
+		&& room.GetWeaponTypeNum(pkt->item) > 0)
 	{
 		g_client[client_id].SetWeapon(pkt->item);
 		room.DecideJobWeapon(pkt->item);				// 방(인벤토리)에 있는 해당 무기 하나 지움
+		pkt2.item = pkt->item;
 		pkt2.num = room.GetWeaponTypeNum(pkt->item);
 		clients[client_id].do_send(pkt3);				// 해당 클라 장비창에 무기 추가
 	}
 	// 전직서 선택했고, 선택한 직업이 없을 때(도전자), 선택한 전직서가 1개 이상일때
-	else if (pkt->item > 3 && pkt->item <= 6 
+	else if (pkt->item > 3 && pkt->item <= 6
 		&& static_cast<int>(g_client[client_id].GetJobType()) == 0
 		&& room.GetJobTypeNum(pkt->item) > 0)			// 방(인벤토리)에 있는 해당 전직서 하나 지움
 	{
 		g_client[client_id].SetJobType(pkt->item);
 		room.DecideJobDocument(pkt->item);
-		pkt2.num = room.GetJobTypeNum(pkt->item);	
+		pkt2.item = pkt->item;
+		pkt2.num = room.GetJobTypeNum(pkt->item);
 		clients[client_id].do_send(pkt3);				// 해당 클라 장비창에 전직서 추가
 	}
 	else {
@@ -579,7 +591,7 @@ void Network::ProcessInventorySelcet(int client_id, char* buffer, int length)
 void Network::ProcessItemState(int client_id, char* buffer, int length)
 {
 	CS_Packet_ItemState* pkt = reinterpret_cast<CS_Packet_ItemState*>(buffer);
-	
+
 	int room_id = g_room_manager.GetRoomID(client_id);
 	Room& room = g_room_manager.GetRoom(room_id);
 	//const auto& client = room.GetClients();
@@ -600,8 +612,55 @@ void Network::ProcessItemState(int client_id, char* buffer, int length)
 	clients[client_id].do_recv();
 }
 
+// 디버깅용 골드 추가
+void Network::ProcessDebugGold(int client_id, char* buffer, int length)
+{
+	CS_Packet_DebugGold* pkt = reinterpret_cast<CS_Packet_DebugGold*>(buffer);
+
+	int room_id = g_room_manager.GetRoomID(client_id);
+	Room& room = g_room_manager.GetRoom(room_id);
+
+	if (pkt->plusGold = true) {
+		room.AddGold(10);
+	}
+
+	clients[client_id].do_recv();
+}
+
+// 디버깅용 무기 및 전직서 추가
+void Network::ProcessDebugItem(int client_id, char* buffer, int length)
+{
+	CS_Packet_DebugItem* pkt = reinterpret_cast<CS_Packet_DebugItem*>(buffer);
+
+	int room_id = g_room_manager.GetRoomID(client_id);
+	Room& room = g_room_manager.GetRoom(room_id);
+	const auto& client = room.GetClients();
+
+	int itemNum = pkt->item;
+
+	SC_Packet_DebugItem pkt2;
+	pkt2.type = SC_PACKET_DEBUGITEM;
+	pkt2.item = pkt->item - 1;
+	pkt2.size = sizeof(pkt2);
+
+	if (itemNum > 0 && itemNum <= 3) {		// 무기
+		room.ADDJobWeapon(itemNum);
+		pkt2.itemNum = room.GetWeaponTypeNum(itemNum);
+	}
+	else if (itemNum > 3 && itemNum <= 6) {	// 전직서
+		room.AddJobDocument(itemNum);
+		pkt2.itemNum = room.GetJobTypeNum(itemNum);
+	}
+
+	for (int other_id : client) {
+		clients[other_id].do_send(pkt2);
+	}
+
+	clients[client_id].do_recv();
+}
+
 //------------------------------------[Send Packet]------------------------------------
- 
+
 // 방 입장 성공 여부 응답
 void Network::SendRoomJoinResponse(int client_id, bool success, int room_id)
 {
@@ -639,7 +698,7 @@ void Network::SendGameStart(const std::vector<int>& client_id)
 	packet.startCS = true;
 
 	for (int id : client_id) {
-		if(clients[id].m_used)
+		if (clients[id].m_used)
 			clients[id].do_send(packet);
 	}
 }

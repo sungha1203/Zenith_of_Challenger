@@ -25,6 +25,7 @@ public:
 
 	std::mutex mx;
 
+	void			Reset();
 	void			SetMonster(int id, NormalMonsterType type, float x, float y, float z);
 	void			TakeDamage(int dmg);
 	DropItemType	DropWHAT();

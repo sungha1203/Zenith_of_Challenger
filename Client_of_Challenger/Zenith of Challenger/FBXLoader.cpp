@@ -81,11 +81,11 @@ bool FBXLoader::LoadFBXModel(const std::string& filename, const XMMATRIX& rootTr
 
 shared_ptr<OtherPlayer> FBXLoader::LoadOtherPlayer(const ComPtr<ID3D12Device>& device, const unordered_map<string, shared_ptr<Texture>>& textures, const unordered_map<string, shared_ptr<Shader>>& shaders)
 {
-	XMMATRIX playerTransform = XMMatrixScaling(0.05f, 0.05f, 0.05);
+	//XMMATRIX playerTransform = XMMatrixScaling(0.05f, 0.05f, 0.05);
 
 	auto otherPlayer = make_shared<FBXLoader>();
 
-	if (otherPlayer->LoadFBXModel("Model/Player/Ellen.fbx", playerTransform))
+	if (otherPlayer->LoadFBXModel("Model/Player/inbBong.fbx", XMMatrixIdentity()))
 	{
 		auto& meshes = otherPlayer->GetMeshes();
 
@@ -100,7 +100,8 @@ shared_ptr<OtherPlayer> FBXLoader::LoadOtherPlayer(const ComPtr<ID3D12Device>& d
 		}
 
 		player->SetAnimationClips(otherPlayer->GetAnimationClips());
-		player->SetCurrentAnimation("Idle");
+		//player->SetCurrentAnimation("Idle");
+		player->SetCurrentAnimation("Walking");
 		player->SetBoneOffsets(otherPlayer->GetBoneOffsets());
 		player->SetBoneNameToIndex(otherPlayer->GetBoneNameToIndex());
 		player->SetBoneHierarchy(otherPlayer->GetBoneHierarchy());

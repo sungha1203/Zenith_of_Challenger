@@ -10,7 +10,7 @@
 #pragma comment (lib, "ws2_32.lib")
 
 constexpr int PORT_NUM = 4000;
-constexpr const char* SERVER_IP = "127.0.0.1";
+constexpr const char* SERVER_IP = "127.0.0.1"; //121.139.87.88 / 127.0.0.1
 
 class ClientNetwork
 {
@@ -34,6 +34,10 @@ public:
 	void		ProcessMonsterHP(char* buffer);
 	void		ProcessItemDrop(char* buffer);
 	void		ProcessGold(char* buffer);
+	void		ProcessInventory(char* buffer);
+	void		ProcessInventory2Equip(char* buffer);
+	void		ProcessDebugItem(char* buffer);
+	void		ProcessItemState(char* buffer);
 
 public:
 	SOCKET			m_clientsocket = INVALID_SOCKET;

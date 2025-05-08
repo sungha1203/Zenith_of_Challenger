@@ -37,6 +37,10 @@ void RoomManager::LeaveRoom(int client_id) {
 
     int room_id = m_client_room[client_id];
     m_rooms[room_id].RemoveClient(client_id);
+    if (m_rooms[room_id].GetClientsNum() == 0) {
+        m_rooms[room_id].SetStopTimer();
+        m_rooms[room_id].ResetRoom();
+    }
     m_client_room.erase(client_id);
     g_client.erase(client_id);
     
