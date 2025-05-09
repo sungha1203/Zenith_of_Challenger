@@ -273,7 +273,7 @@ void ClientNetwork::ProcessMonsterHP(char* buffer)
 		type = "Mushroom_Dark"; index = monsterID;
 	}
 	else if (monsterID < 20) {
-		type = "Frightfly"; index = monsterID - 10;
+		type = "FrightFly"; index = monsterID - 10;
 	}
 	else if (monsterID < 30) {
 		type = "Plant_Dionaea"; index = monsterID - 20;

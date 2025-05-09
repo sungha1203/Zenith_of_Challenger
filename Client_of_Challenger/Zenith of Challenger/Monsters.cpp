@@ -171,8 +171,8 @@ void Monsters::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) cons
 			if (m_texture)  m_texture->UpdateShaderVariable(commandList, m_textureIndex);
 			if (m_material) m_material->UpdateShaderVariable(commandList);
 		}
-		if (m_texture)
-			UpdateShaderVariable(commandList);
+
+		UpdateShaderVariable(commandList);
 
 		mesh->Render(commandList);
 		//와이어 프레임 렌더링

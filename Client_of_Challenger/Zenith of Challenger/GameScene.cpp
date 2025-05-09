@@ -371,7 +371,7 @@ void GameScene::Update(FLOAT timeElapsed)
                 int offset = 0;
                 if (type == "Mushroom_Dark")
                     offset = 0;
-                else if (type == "Frightfly")
+                else if (type == "FrightFly")
                     offset = 10;
                 else if (type == "Plant_Dionaea")
                     offset = 20;
