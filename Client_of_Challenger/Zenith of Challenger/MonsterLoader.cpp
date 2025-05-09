@@ -66,7 +66,7 @@ void LoadAllMonsters(
     OutputDebugStringA("[MonsterLoader] FrightFly 몬스터 1마리 로드 완료\n");
 
       //Flower Fairy
-    for (int i = 0; i < 1; ++i)
+    for (int i = 0; i < 2; ++i)
     {
         auto monster = make_shared<FlowerFairy>(device);
         monster->SetCamera(camera);
@@ -109,7 +109,7 @@ void LoadAllMonsters(
     }
 
     //// [3] Mushroom Dark
-    for (int i = 0; i < 1; ++i)
+    for (int i = 0; i < 2; ++i)
     {
         auto monster = make_shared<MushroomDark>(device);
         monster->SetCamera(camera);
@@ -152,7 +152,7 @@ void LoadAllMonsters(
     }
 
     //// [4] Venus_Blue
-    for (int i = 0; i < 1; ++i)
+    for (int i = 0; i < 2; ++i)
     {
         auto monster = make_shared<VenusBlue>(device); // VenusBlue 클래스 필요
         monster->SetCamera(camera);
@@ -196,7 +196,7 @@ void LoadAllMonsters(
 
 
     //// [5] Plant_Dionaea
-    for (int i = 0; i < 1; ++i)
+    for (int i = 0; i < 2; ++i)
     {
         auto monster = make_shared<PlantDionaea>(device); // PlantDionaea 클래스 필요
         // [1] 메쉬, 텍스처, 셰이더 설정

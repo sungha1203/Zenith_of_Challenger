@@ -35,7 +35,7 @@ public:
     const auto& GetBoneNameToIndex() const { return m_boneNameToIndex; }
     const auto& GetBoneHierarchy() const { return m_boneHierarchy; }
     const auto& GetStaticNodeTransforms() const { return m_staticNodeTransforms; }
-    const auto& GetNodeNameToGlobalTransform() const { return m_nodeNameToGlobalTransform; }
+    const auto& GetNodeNameToGlobalTransform() const { return m_nodeNameToLocalTransform; }
     shared_ptr<OtherPlayer> LoadOtherPlayer(
         const ComPtr<ID3D12Device>& device,
         const unordered_map<string, shared_ptr<Texture>>& textures,
@@ -43,7 +43,7 @@ public:
     XMMATRIX m_rootTransform;
     void PrintBoneHierarchy(aiNode* node, int depth = 0);
     void DumpBoneHierarchy(const aiScene* scene);
-    std::unordered_map<std::string, XMMATRIX> m_nodeNameToGlobalTransform;
+    std::unordered_map<std::string, XMMATRIX> m_nodeNameToLocalTransform;
 private:
     void ProcessNode(aiNode* node, const aiScene* scene, const XMMATRIX& parentTransform); // FBX 畴靛 贸府
     shared_ptr<GameObject> ProcessMesh(aiMesh* mesh, const aiScene* scene, const XMMATRIX& transformMatrix); // FBX 皋矫 贸府

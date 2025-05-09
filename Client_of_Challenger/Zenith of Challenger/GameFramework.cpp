@@ -61,7 +61,8 @@ void CGameFramework::FrameAdvance()
 	// FPS 및 플레이어 위치를 윈도우 타이틀바에 표시
 	std::wstringstream titleStream;
 	titleStream << L"Zenith of Challenger - FPS: " << m_GameTimer.GetFPS();
-
+	//// 다음 프레임 인덱스로 갱신
+	//m_frameIndex = m_swapChain->GetCurrentBackBufferIndex(); // DXGI 기준
 	if (m_player)
 	{
 		XMFLOAT3 playerPos = m_player->GetPosition();

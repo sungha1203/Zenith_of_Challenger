@@ -89,6 +89,7 @@ public:
     void RenderShadowMap();
     bool GetIsFullScreen() const;
 
+    UINT GetCurrentFrameIndex() { return m_frameIndex; }
 private:
     void InitDirect3D();
 
@@ -116,7 +117,8 @@ private:
     WINDOWPLACEMENT m_wpPrev = { sizeof(WINDOWPLACEMENT) };
 private:
     static const UINT m_nSwapChainBuffers = 2;
-
+    //UINT m_frameIndex = 0; // 현재 프레임 인덱스
+    static constexpr UINT FRAME_COUNT = 2; // or 3
     BOOL m_activate;
 
     HINSTANCE m_hInstance;
