@@ -669,6 +669,11 @@ void GameScene::BuildShaders(const ComPtr<ID3D12Device>& device,
     //외곽선 전용 셰이더
     auto outlineShader = make_shared<OutlineShader>(device, rootSignature);
     m_shaders.insert({ "OUTLINE", outlineShader });
+
+
+    auto ShadowSkinnedshader = make_shared<ShadowSkinnedShader>(device, rootSignature);
+    m_shaders.insert({ "ShadowSkinned", ShadowSkinnedshader });
+
 }
 
 void GameScene::BuildMeshes(const ComPtr<ID3D12Device>& device,
@@ -830,23 +835,6 @@ void GameScene::BuildTextures(const ComPtr<ID3D12Device>& device,
 		TEXT("Image/Texture_Modular_Characters.dds"), RootParameter::Texture);
 	characterTexture->CreateShaderVariable(device, true);
 	m_textures.insert({ "CHARACTER", characterTexture });
-	 
-	//auto characterTexture = make_shared<Texture>(device);
-	//characterTexture->LoadTexture(device, commandList,
-	//	TEXT("Image/Ellen/Ellen_Head_Dirty_Albedo.dds"), RootParameter::Texture);
-	//characterTexture->LoadTexture(device, commandList,
-	//	TEXT("Image/Ellen/Ellen_Body_Albedo.dds"), RootParameter::Texture);
-	//characterTexture->LoadTexture(device, commandList,
-	//	TEXT("Image/Ellen/Ellen_Body_Dirty_Albedo.dds"), RootParameter::Texture);
-	//characterTexture->LoadTexture(device, commandList,
-	//	TEXT("Image/Ellen/Ellen_Eye_Albedo.dds"), RootParameter::Texture);
-	//characterTexture->LoadTexture(device, commandList,
-	//	TEXT("Image/Ellen/Ellen_Hair_Albedo.dds"), RootParameter::Texture);
-	//characterTexture->LoadTexture(device, commandList,
-	//	TEXT("Image/Ellen/Ellen_Head_Albedo.dds"), RootParameter::Texture);
-	//characterTexture->CreateShaderVariable(device, true);
-	//m_textures.insert({ "CHARACTER", characterTexture });
-
 
 	auto FrightFlyTexture = make_shared<Texture>(device, commandList,
 		TEXT("Image/Monsters/FrightFly_converted.dds"), RootParameter::Texture);
@@ -1481,14 +1469,14 @@ void GameScene::RenderShadowPass(const ComPtr<ID3D12GraphicsCommandList>& comman
 
     if (m_player)
     {
-        m_player->SetShader(m_shaders.at("SHADOW"));
+        m_player->SetShader(m_shaders.at("ShadowSkinned"));
         m_player->Render(commandList);
     }
 
     for (auto op : m_Otherplayer)
     {
         if (op) {
-            op->SetShader(m_shaders.at("SHADOW"));
+            op->SetShader(m_shaders.at("ShadowSkinned"));
             op->Render(commandList);
         }
     }
@@ -1498,7 +1486,7 @@ void GameScene::RenderShadowPass(const ComPtr<ID3D12GraphicsCommandList>& comman
     {
         for (const auto& monster : group)
         {
-            monster->SetShader(m_shaders.at("SHADOW"));
+            monster->SetShader(m_shaders.at("ShadowSkinned"));
             monster->Render(commandList);
         }
     }
@@ -1565,7 +1553,6 @@ void GameScene::HandleMouseClick(int mouseX, int mouseY)
         }
     }
 }
-
 void GameScene::SetWeaponSlotUV(int type)
 {
     // type: 0 = 칼, 1 = 지팡이, 2 = 방패

@@ -154,65 +154,9 @@ void Monsters::Update(FLOAT timeElapsed)
 
 void Monsters::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
 {
-	//OutputDebugStringA("Render 시작\n");
 	if (m_isDead) return;
 	bool isShadowPass = m_shader && m_shader->IsShadowShader();
 
-	//if (m_animationClips.contains(m_currentAnim))
-	//{
-	//	const auto& clip = m_animationClips.at(m_currentAnim);
-	//	float animTime = fmod(m_animTime, clip.duration);
-	//
-	//	auto boneTransforms = clip.GetBoneTransforms(animTime, m_boneNameToIndex, m_boneHierarchy, m_boneOffsets, m_nodeNameToLocalTransform); 
-	//	const_cast<Monsters*>(this)->UploadBoneMatricesToShader(boneTransforms, commandList);
-	//}
-	//std::vector<XMMATRIX> boneTransforms;
-	//
-	//if (m_isBlending && m_animationClips.contains(m_currentAnim) && m_animationClips.contains(m_nextAnim))
-	//{
-	//	// 현재 & 다음 애니메이션 정보
-	//	const auto& fromClip = m_animationClips.at(m_currentAnim);
-	//	const auto& toClip = m_animationClips.at(m_nextAnim);
-	//
-	//	float fromTime = fmod(m_animTime, fromClip.duration);
-	//	float toTime = (m_blendTime / m_blendDuration) * toClip.duration;
-	//
-	//	// 각 본 행렬 계산
-	//	auto fromBones = fromClip.GetBoneTransforms(fromTime, m_boneNameToIndex, m_boneHierarchy, m_boneOffsets, m_nodeNameToLocalTransform);
-	//	auto toBones = toClip.GetBoneTransforms(toTime, m_boneNameToIndex, m_boneHierarchy, m_boneOffsets, m_nodeNameToLocalTransform);
-	//
-	//	boneTransforms.resize(fromBones.size());
-	//	float alpha = m_blendTime / m_blendDuration;
-	//
-	//	// Bone 행렬 블렌딩
-	//	for (size_t i = 0; i < boneTransforms.size(); ++i)
-	//	{
-	//		XMVECTOR scaleA, rotA, transA;
-	//		XMVECTOR scaleB, rotB, transB;
-	//
-	//		// 각 행렬 분해
-	//		XMMatrixDecompose(&scaleA, &rotA, &transA, fromBones[i]);
-	//		XMMatrixDecompose(&scaleB, &rotB, &transB, toBones[i]);
-	//
-	//		XMVECTOR blendedScale = XMVectorLerp(scaleA, scaleB, alpha);
-	//		XMVECTOR blendedRot = XMQuaternionSlerp(rotA, rotB, alpha);
-	//		XMVECTOR blendedTrans = XMVectorLerp(transA, transB, alpha);
-	//
-	//		boneTransforms[i] = XMMatrixAffineTransformation(blendedScale, XMVectorZero(), blendedRot, blendedTrans);
-	//	}
-	//}
-	//else if (m_animationClips.contains(m_currentAnim))
-	//{
-	//	const auto& clip = m_animationClips.at(m_currentAnim);
-	//	float time = fmod(m_animTime, clip.duration);
-	//	
-	//	boneTransforms = clip.GetBoneTransforms(time, m_boneNameToIndex, m_boneHierarchy, m_boneOffsets, m_nodeNameToLocalTransform);
-	//	
-	//}
-	//
-	//if (!boneTransforms.empty())
-	//	const_cast<Monsters*>(this)->UploadBoneMatricesToShader(boneTransforms, commandList);
-	
 	if (m_boneMatrixSRV.ptr != 0)
 	{
 		commandList->SetGraphicsRootDescriptorTable(RootParameter::MonsterBoneMatrix, m_boneMatrixSRV);

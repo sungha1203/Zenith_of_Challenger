@@ -108,3 +108,10 @@ public:
 	OutlineShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSignature);
 	~OutlineShader() override = default;
 };
+
+class ShadowSkinnedShader : public Shader {
+public:
+	ShadowSkinnedShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSignature);
+	~ShadowSkinnedShader() override = default;
+	bool IsShadowShader() const override { return true; }
+};

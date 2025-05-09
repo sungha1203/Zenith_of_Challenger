@@ -294,7 +294,6 @@
     <FxCompile Include="GameSceneUI.hlsl">
       <Filter>셰이더 파일</Filter>
     </FxCompile>
-    <FxCompile Include="ShadowMap.hlsl" />
     <FxCompile Include="FullScreenQuadShader.hlsl">
       <Filter>셰이더 파일</Filter>
     </FxCompile>
@@ -302,6 +301,12 @@
       <Filter>셰이더 파일</Filter>
     </FxCompile>
     <FxCompile Include="OutlineShader.hlsl">
+      <Filter>셰이더 파일</Filter>
+    </FxCompile>
+    <FxCompile Include="ShadowMap.hlsl">
+      <Filter>셰이더 파일</Filter>
+    </FxCompile>
+    <FxCompile Include="ShadowMap_Skinned.hlsl">
       <Filter>셰이더 파일</Filter>
     </FxCompile>
   </ItemGroup>
