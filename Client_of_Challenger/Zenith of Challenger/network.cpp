@@ -225,6 +225,11 @@ void ClientNetwork::ProcessStartRepairTime(char* buffer)
 {
 	SC_Packet_RepairTime* pkt = reinterpret_cast<SC_Packet_RepairTime*>(buffer);
 	XMFLOAT3 pos(pkt->x, pkt->y, pkt->z);
+
+	// 현재 씬 가져오기 (GameScene으로 캐스팅 필요)
+	shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
+	GameScene* gameScene = dynamic_cast<GameScene*>(currentScene.get());
+
 	if (pkt->startRT == true) {
 		if (pkt->client_id == m_clientID) {
 			gGameFramework->g_pos = pos;
@@ -250,7 +255,8 @@ void ClientNetwork::ProcessStartRepairTime(char* buffer)
 			return;
 		}
 	}
-
+	//gameScene->m_ZenithEnabled = !m_ZenithEnabled;
+	gameScene->SetZenithEnabled();
 }
 
 void ClientNetwork::ProcessMonsterHP(char* buffer)

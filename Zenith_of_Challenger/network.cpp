@@ -431,6 +431,7 @@ void Network::ProcessSkipChallenge(int client_id, char* buffer, int length)
 			room.SetSkipButton(true);
 		}
 	}
+	clients[client_id].do_recv();
 }
 
 // 정점 스테이지 입장 준비 완료 버튼 누른 직후
@@ -763,6 +764,7 @@ void Network::SendStartRepairTime(const std::vector<int>& client_id)
 			packet.size = sizeof(packet);
 
 			clients[other_id].do_send(packet);
+
 		}
 	}
 }

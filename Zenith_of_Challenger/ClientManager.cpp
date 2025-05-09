@@ -63,19 +63,28 @@ void ClientInfo::SetRepairCoord(int idx)
 {
     switch (idx) {
     case 0:
-        m_ingameInfo.x = -168.f;
-        m_ingameInfo.y = 0.21f;
-        m_ingameInfo.z = 140.f;
+        //m_ingameInfo.x = -168.f;
+        //m_ingameInfo.y = 0.21f;
+        //m_ingameInfo.z = 140.f;
+        m_ingameInfo.x = -570.f;
+        m_ingameInfo.y = 44.f;
+        m_ingameInfo.z = -20.f;
         break;
     case 1:
-        m_ingameInfo.x = -151.f;
-        m_ingameInfo.y = 0.21f;
-        m_ingameInfo.z = 153.f;
+        //m_ingameInfo.x = -151.f;
+        //m_ingameInfo.y = 0.21f;
+        //m_ingameInfo.z = 153.f;
+        m_ingameInfo.x = -560.f;
+        m_ingameInfo.y = 44.f;
+        m_ingameInfo.z = -20.f;
         break;
     case 2:
-        m_ingameInfo.x = -158.f;
-        m_ingameInfo.y = 0.21f;
-        m_ingameInfo.z = 131.f;
+        //m_ingameInfo.x = -158.f;
+        //m_ingameInfo.y = 0.21f;
+        //m_ingameInfo.z = 131.f;
+        m_ingameInfo.x = -550.f;
+        m_ingameInfo.y = 44.f;
+        m_ingameInfo.z = -20.f;
         break;
     default:
         break;

@@ -244,7 +244,7 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
     }
 
 
-    if (GetAsyncKeyState('I') & 0x0001)
+    if ((m_ZenithEnabled == true) && GetAsyncKeyState('I') & 0x0001)
     {
         m_showReinforcedWindow = !m_showReinforcedWindow;
         OutputDebugStringA(m_showReinforcedWindow ? "[UI] Reinforced ON\n" : "[UI] Reinforced OFF\n");
@@ -252,12 +252,12 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
         m_jobSlotIcon->SetCustomUV(0.0f, 0.0f, 0.0f, 0.0f);*/
     }
 
-    if (GetAsyncKeyState('P') & 0x0001)
-    {
-        m_ZenithEnabled = !m_ZenithEnabled;
-        //m_player->SetPosition(XMFLOAT3(-565.0f, 45.0f, -16.0f));
-        m_player->SetPosition(XMFLOAT3(-570.0f, 44.0f, -20.0f));
-    }
+    //if (GetAsyncKeyState('P') & 0x0001)
+    //{
+    //    m_ZenithEnabled = !m_ZenithEnabled;
+    //    //m_player->SetPosition(XMFLOAT3(-565.0f, 45.0f, -16.0f));
+    //    m_player->SetPosition(XMFLOAT3(-570.0f, 44.0f, -20.0f));
+    //}
 
 }
 
@@ -1432,8 +1432,8 @@ void GameScene::RenderShadowPass(const ComPtr<ID3D12GraphicsCommandList>& comman
         obj->SetShader(m_shaders.at("SHADOW"));
         obj->Render(commandList);
     }
-    
-    if (m_ZenithEnabled) { 
+
+    if (m_ZenithEnabled) {
         for (auto& obj : m_ZenithObjects)
         {
             obj->SetShader(m_shaders.at("SHADOW"));
