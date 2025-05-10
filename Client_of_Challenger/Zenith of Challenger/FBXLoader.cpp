@@ -15,7 +15,7 @@ bool FBXLoader::LoadFBXModel(const std::string& filename, const XMMATRIX& rootTr
 	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
 	{
 		std::string errorMsg = "[Assimp] Load Failed: ";
-		errorMsg += importer.GetErrorString();
+		errorMsg += importer.GetErrorString();  
 		OutputDebugStringA(errorMsg.c_str());
 		return false;
 	}
@@ -85,13 +85,13 @@ shared_ptr<OtherPlayer> FBXLoader::LoadOtherPlayer(const ComPtr<ID3D12Device>& d
 
 	auto otherPlayer = make_shared<FBXLoader>();
 
-	if (otherPlayer->LoadFBXModel("Model/Player/inbBong.fbx", XMMatrixIdentity()))
+	if (otherPlayer->LoadFBXModel("Model/Player/ExportCharacter_AllLocal.fbx", XMMatrixIdentity()))
 	{
 		auto& meshes = otherPlayer->GetMeshes();
 
 		auto player = make_shared<OtherPlayer>(device);
 
-		player->SetScale(XMFLOAT3{ 1.f, 1.f, 1.f }); 
+		//player->SetScale(XMFLOAT3{ 0.0005,0.0005,0.0005 });
 		player->SetRotationY(0.f);                  
 
 		for (int i = 0; i < meshes.size(); ++i)
@@ -100,8 +100,8 @@ shared_ptr<OtherPlayer> FBXLoader::LoadOtherPlayer(const ComPtr<ID3D12Device>& d
 		}
 
 		player->SetAnimationClips(otherPlayer->GetAnimationClips());
-		//player->SetCurrentAnimation("Idle");
-		player->SetCurrentAnimation("Walking");
+		player->SetCurrentAnimation("Idle");
+		//player->SetCurrentAnimation("Walking");
 		player->SetBoneOffsets(otherPlayer->GetBoneOffsets());
 		player->SetBoneNameToIndex(otherPlayer->GetBoneNameToIndex());
 		player->SetBoneHierarchy(otherPlayer->GetBoneHierarchy());

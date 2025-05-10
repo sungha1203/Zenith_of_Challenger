@@ -223,6 +223,14 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
 		}
 	}
 
+    if (GetAsyncKeyState(VK_RETURN) & 0x8000)
+    {
+        m_player->SetCurrentAnimation("Punch.001");
+        m_player->isPunching=true;
+    }
+
+
+
     if (GetAsyncKeyState(VK_DOWN) & 0x8000)
     {
         //m_goldScore = std::max(m_goldScore - 10, 0);   // 최소 0까지
@@ -960,32 +968,25 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
     m_sun = make_unique<Sun>(sunLight);
     m_sun->SetStrength(XMFLOAT3{ 1.3f, 1.3f, 1.3f }); //디렉셔널 라이트 세기 줄이기
 
-    // [1] 플레이어 모델용 스케일 행렬 설정 (크기 조절)
-    XMMATRIX playerTransform = XMMatrixScaling(0.05f, 0.05f, 0.05);
-
     // [2] FBX 로더 생성 및 모델 로드
     m_playerLoader = make_shared<FBXLoader>();
     cout << "캐릭터 로드 중!!!!" << endl;
-
-	//if (m_playerLoader->LoadFBXModel("Model/Player/Ellen.fbx", playerTransform))
-	//if (m_playerLoader->LoadFBXModel("Model/Player/animation_ihhan_002.fbx", XMMatrixIdentity()))
-	if (m_playerLoader->LoadFBXModel("Model/Player/inbBong.fbx", XMMatrixIdentity()))
+	
+	if (m_playerLoader->LoadFBXModel("Model/Player/ExportCharacter_AllLocal.fbx", XMMatrixIdentity()))
 	{
 		auto& meshes = m_playerLoader->GetMeshes();
 		if (meshes.empty()) {
 			OutputDebugStringA("[ERROR] FBX에서 메시를 찾을 수 없습니다.\n");
 			return;
 		}
-
+         
         // [3] Player 객체 생성
         auto player = make_shared<Player>(device);
 
 
-        player->SetScale(XMFLOAT3{ 0.05,0.05,0.05 }); // 기본값 확정
+        player->SetScale(XMFLOAT3{ 0.0005,0.0005,0.0005}); // 기본값 확정
         player->SetRotationY(0.f);                  // 정면을 보게 초기화
 
-        // [4] 위치 및 스케일 설정
-        //player->SetPosition(XMFLOAT3{ 40.f, 0.3f, -50.f });
         player->SetPosition(gGameFramework->g_pos);
 
         // [5] FBX 메시 전부 등록
@@ -996,13 +997,12 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 
 		// [6] 애니메이션 클립 및 본 정보 설정
 		player->SetAnimationClips(m_playerLoader->GetAnimationClips());
-		//player->SetCurrentAnimation("Idle");
-		player->SetCurrentAnimation("Walking");
-		//player->SetCurrentAnimation("recorded_clip");
+		player->SetCurrentAnimation("Idle");		
 		player->SetBoneOffsets(m_playerLoader->GetBoneOffsets());
 		player->SetBoneNameToIndex(m_playerLoader->GetBoneNameToIndex());
 		player->SetBoneHierarchy(m_playerLoader->GetBoneHierarchy());
 		player->SetstaticNodeTransforms(m_playerLoader->GetStaticNodeTransforms());
+		player->SetNodeNameToGlobalTransform(m_playerLoader->GetNodeNameToGlobalTransform());
 
         // [7] 텍스처, 머티리얼 설정
         player->SetTexture(m_textures["CHARACTER"]);
@@ -1039,7 +1039,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
         m_Otherplayer[0]->m_id = otherid[0];
         m_Otherplayer[0]->m_position = otherpos[0];
         m_Otherplayer[0]->SetPosition(m_Otherplayer[0]->m_position);
-        m_Otherplayer[0]->SetScale(XMFLOAT3{ 0.05,0.05,0.05 });
+        m_Otherplayer[0]->SetScale(XMFLOAT3{ 0.0005,0.0005,0.0005 });
     }
     if (otherid[1] != -2)
     {
@@ -1047,7 +1047,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
         m_Otherplayer[1]->m_id = otherid[1];
         m_Otherplayer[1]->m_position = otherpos[1];
         m_Otherplayer[1]->SetPosition(m_Otherplayer[1]->m_position);
-        m_Otherplayer[1]->SetScale(XMFLOAT3{ 0.05,0.05,0.05 });
+        m_Otherplayer[1]->SetScale(XMFLOAT3{ 0.0005,0.0005,0.0005 });
     }
 
     //맵의 오브젝트들 바운딩 박스

@@ -178,32 +178,11 @@ void Player::Update(FLOAT timeElapsed)
         {
             const auto& clip = m_animationClips.at(m_currentAnim);
             m_animTime += timeElapsed * clip.ticksPerSecond;
-            //if (m_animTime > clip.duration)
-            //{
-            //	m_animTime = fmod(m_animTime, clip.duration);
-            //	//m_animTime = 0.0f;
-            //}
-            while (m_animTime >= clip.duration)
-                m_animTime -= clip.duration;
-            //char buffer[128];
-            //sprintf_s(buffer, "AnimTime: %.4f\n", m_animTime);
-            //OutputDebugStringA(buffer);
+            if (m_animTime > clip.duration)
+            {
+            	m_animTime = fmod(m_animTime, clip.duration);
+            }
         }
-        //if (m_animationClips.contains(m_currentAnim))
-        //{
-        //	const auto& clip = m_animationClips.at(m_currentAnim);
-        //	float deltaTime = timeElapsed * clip.ticksPerSecond;
-        //	float dt = std::min(deltaTime, 0.033f); // 최대 30FPS까지 허용
-        //	m_animTime += dt;
-        //	if (m_animTime > clip.duration)
-        //	{
-        //		m_animTime = fmod(m_animTime, clip.duration);
-        //		//m_animTime = 0.0f;
-        //	}
-        //	char buffer[128];
-        //	sprintf_s(buffer, "AnimTime: %.4f\n", m_animTime);
-        //	OutputDebugStringA(buffer);
-        //}
     }
 
     bool isMoving = keyStates['W'] || keyStates['A'] || keyStates['S'] || keyStates['D'];
@@ -213,21 +192,31 @@ void Player::Update(FLOAT timeElapsed)
         if (keyStates[VK_SHIFT] && m_animationClips.contains("Running"))
             SetCurrentAnimation("Running");
         else if (m_animationClips.contains("Walking"))
-            SetCurrentAnimation("Walking");
+        {
+            /*SetCurrentAnimation("Walking");*/
+            m_currentAnim = "Walking";
+        }        
+    }
+    else if(isPunching)
+    {
+        //m_currentAnim = "Walking";
+        if (m_animTime > m_animationClips.at(m_currentAnim).duration-1.0)
+        {
+            isPunching = false;
+            isMoving = false;
+            SetCurrentAnimation("Idle");
+            
+        }
     }
     else
     {
         if (m_animationClips.contains("Idle"))
-            SetCurrentAnimation("Idle");
+        {
+          //  SetCurrentAnimation("Idle");
+            m_currentAnim = "Idle";
+        }
     }
 
-    if (m_animationClips.contains(m_currentAnim))
-    {
-        const auto& clip = m_animationClips.at(m_currentAnim);
-        m_animTime += timeElapsed * clip.ticksPerSecond;
-        if (m_animTime > clip.duration)
-            m_animTime = fmod(m_animTime, clip.duration);
-    }
 
     {
         /////////////////////////여기다가 GetPosition()사용해서 float값 3개 가지고 오면 될거야
