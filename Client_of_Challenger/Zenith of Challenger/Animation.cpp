@@ -519,7 +519,7 @@ std::vector<XMMATRIX> AnimationClip::GetBoneTransforms(
 			// 부모가 없는 루트노드 (ex: RigPelvis)
 			boneGlobalTransforms[boneName] = localTransform;
 		}
-		if (boneName == "RigPelvis")
+		if (boneName == "RigPelvis"|| boneName == "mixamorig:Hips")
 			globalinverseTransform = XMMatrixInverse(nullptr, localTransform);
 	}
 	// (5) 최종 BoneMatrices 완성
