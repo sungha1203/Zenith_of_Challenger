@@ -43,6 +43,7 @@ public:
 	float m_blendDuration = 0.2f;      // 블렌딩 지속 시간
 	bool m_isBlending = false;
 	float m_angle; //방향각도 추가
+	XMFLOAT3 oldPos = {0,0,0};
 private:
 
 	FLOAT m_speed;

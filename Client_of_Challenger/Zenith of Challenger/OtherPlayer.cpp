@@ -119,7 +119,7 @@ void OtherPlayer::Update(FLOAT timeElapsed)
     //    if (m_animTime > clip.duration)
     //        m_animTime = fmod(m_animTime, clip.duration);
     //}
-
+    
     if (m_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[0]) {
         m_position = gGameFramework->GetSceneManager()->GetCurrentScene()->otherpos[0];
         SetRotationY(gGameFramework->GetSceneManager()->GetCurrentScene()->otherangle[0]);
@@ -128,7 +128,15 @@ void OtherPlayer::Update(FLOAT timeElapsed)
         m_position = gGameFramework->GetSceneManager()->GetCurrentScene()->otherpos[1];
         SetRotationY(gGameFramework->GetSceneManager()->GetCurrentScene()->otherangle[1]);
     }
-
+    if (oldPos.x == m_position.x && oldPos.y == m_position.y && oldPos.z == m_position.z)
+    {
+        m_currentAnim = "Idle";
+    }
+    else
+    {
+        oldPos = m_position;
+        m_currentAnim = "Walking";
+    }
     SetPosition(m_position);
 
     XMFLOAT3 pos = GetPosition();
