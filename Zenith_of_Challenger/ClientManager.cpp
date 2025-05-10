@@ -41,17 +41,17 @@ void ClientInfo::SetSpawnCoord(int idx)
     switch (idx) {
     case 0:
         m_ingameInfo.x = -172.79f;
-        m_ingameInfo.y = 0.21f;
+        m_ingameInfo.y = 5.21f;
         m_ingameInfo.z = 77.81f;
         break;
     case 1:
         m_ingameInfo.x = -164.28f;
-        m_ingameInfo.y = 0.21f;
+        m_ingameInfo.y = 5.21f;
         m_ingameInfo.z = 83.06f;
         break;
     case 2:
         m_ingameInfo.x = -155.07f;
-        m_ingameInfo.y = 0.21f;
+        m_ingameInfo.y = 5.21f;
         m_ingameInfo.z = 88.75f;
         break;
     default:
@@ -67,7 +67,7 @@ void ClientInfo::SetRepairCoord(int idx)
         //m_ingameInfo.y = 0.21f;
         //m_ingameInfo.z = 140.f;
         m_ingameInfo.x = -570.f;
-        m_ingameInfo.y = 44.f;
+        m_ingameInfo.y = 49.f;
         m_ingameInfo.z = -20.f;
         break;
     case 1:
@@ -75,7 +75,7 @@ void ClientInfo::SetRepairCoord(int idx)
         //m_ingameInfo.y = 0.21f;
         //m_ingameInfo.z = 153.f;
         m_ingameInfo.x = -560.f;
-        m_ingameInfo.y = 44.f;
+        m_ingameInfo.y = 49.f;
         m_ingameInfo.z = -20.f;
         break;
     case 2:
@@ -83,7 +83,7 @@ void ClientInfo::SetRepairCoord(int idx)
         //m_ingameInfo.y = 0.21f;
         //m_ingameInfo.z = 131.f;
         m_ingameInfo.x = -550.f;
-        m_ingameInfo.y = 44.f;
+        m_ingameInfo.y = 49.f;
         m_ingameInfo.z = -20.f;
         break;
     default:

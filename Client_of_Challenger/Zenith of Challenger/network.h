@@ -38,6 +38,7 @@ public:
 	void		ProcessInventory2Equip(char* buffer);
 	void		ProcessDebugItem(char* buffer);
 	void		ProcessItemState(char* buffer);
+	void		ProcessAnimation(char* buffer);
 
 public:
 	SOCKET			m_clientsocket = INVALID_SOCKET;

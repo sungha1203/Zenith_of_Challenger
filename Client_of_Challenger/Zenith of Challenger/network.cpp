@@ -107,6 +107,9 @@ void ClientNetwork::Receive()
 			case SC_PACKET_ITEMSTATE:
 				ProcessItemState(buffer);
 				break;
+			case SC_PACKET_ANIMATION:
+				ProcessAnimation(buffer);
+				break;
 			default:
 				break;
 			}
@@ -403,5 +406,14 @@ void ClientNetwork::ProcessItemState(char* buffer)
 	{
 		gameScene->SetupgradeScore(pkt->result);
 		gameScene->UpdateEnhanceDigits(); // 강화 수치 UI 갱신
+	}
+}
+
+void ClientNetwork::ProcessAnimation(char* buffer)
+{
+	SC_Packet_Animaition* pkt = reinterpret_cast<SC_Packet_Animaition*>(buffer);
+
+	if (pkt->animation == 0) {		// 0 == 펀치
+
 	}
 }

@@ -223,10 +223,17 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
 		}
 	}
 
-    if (GetAsyncKeyState(VK_RETURN) & 0x8000)
+    if (GetAsyncKeyState('F') & 0x8000)
     {
         m_player->SetCurrentAnimation("Punch.001");
         m_player->isPunching=true;
+        {
+            CS_Packet_Animaition pkt;
+            pkt.type = CS_PACKET_ANIMATION;
+            pkt.animation = 0;
+            pkt.size = sizeof(pkt);
+            gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
+        }
     }
 
 
