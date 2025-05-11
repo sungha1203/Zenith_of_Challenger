@@ -425,6 +425,19 @@ void ClientNetwork::ProcessAnimation(char* buffer)
 			currentScene->m_Otherplayer[1]->SetCurrentAnimation("Punch.001");
 		}
 	}
+	else if(pkt->animation==1)
+	{		// 1 == ´Þ¸®±â
+		if (pkt->client_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[0])
+		{
+			shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
+			currentScene->m_Otherplayer[0]->m_currentAnim = "Running";
+		}
+		else if (pkt->client_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[1])
+		{
+			shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
+			currentScene->m_Otherplayer[1]->m_currentAnim = "Running";
+		}
+	}
 
 
 

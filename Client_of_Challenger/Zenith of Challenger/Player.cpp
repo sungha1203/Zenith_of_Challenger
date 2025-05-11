@@ -132,13 +132,16 @@ void Player::KeyboardEvent(FLOAT timeElapsed)
     }
 
     // 속도 적용
-    if (!Vector3::IsZero(moveDirection))
-    {
-        XMFLOAT3 normalized = Vector3::Normalize(moveDirection);
-        velocity = Vector3::Mul(normalized, maxSpeed);
-    }
-    else
-    {
+	if (!Vector3::IsZero(moveDirection))
+	{
+		XMFLOAT3 normalized = Vector3::Normalize(moveDirection);
+		if (isRunning)
+			velocity = Vector3::Mul(normalized, maxSpeed+20.0);
+		else
+			velocity = Vector3::Mul(normalized, maxSpeed);
+	}
+	else
+	{
         velocity = { 0.f, 0.f, 0.f };
     }
 
@@ -197,11 +200,22 @@ void Player::Update(FLOAT timeElapsed)
 
     if (isMoving)
     {
-        if (keyStates[VK_SHIFT] && m_animationClips.contains("Running"))
-            SetCurrentAnimation("Running");
+        if (GetAsyncKeyState(VK_SHIFT) && m_animationClips.contains("Running"))
+        {
+            m_currentAnim = "Running";
+            isRunning = true;
+            {
+                CS_Packet_Animaition pkt;
+                pkt.type = CS_PACKET_ANIMATION;
+                pkt.animation = 1;
+                pkt.size = sizeof(pkt);
+                gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
+            }
+        }
         else if (m_animationClips.contains("Walking"))
         {
             /*SetCurrentAnimation("Walking");*/
+            isRunning = false;
             m_currentAnim = "Walking";
         }        
     }

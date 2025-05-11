@@ -85,7 +85,8 @@ shared_ptr<OtherPlayer> FBXLoader::LoadOtherPlayer(const ComPtr<ID3D12Device>& d
 
 	auto otherPlayer = make_shared<FBXLoader>();
 
-	if (otherPlayer->LoadFBXModel("Model/Player/ExportCharacter_AllLocal.fbx", XMMatrixIdentity()))
+	//if (otherPlayer->LoadFBXModel("Model/Player/ExportCharacter_AllLocal.fbx", XMMatrixIdentity()))
+	if (otherPlayer->LoadFBXModel("Model/Player/ExportCharacter_AddRunning.fbx", XMMatrixIdentity()))
 	{
 		auto& meshes = otherPlayer->GetMeshes();
 

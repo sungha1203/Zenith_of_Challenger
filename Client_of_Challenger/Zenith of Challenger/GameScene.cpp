@@ -967,7 +967,8 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
     m_playerLoader = make_shared<FBXLoader>();
     cout << "캐릭터 로드 중!!!!" << endl;
 	
-	if (m_playerLoader->LoadFBXModel("Model/Player/ExportCharacter_AllLocal.fbx", XMMatrixIdentity()))
+	//if (m_playerLoader->LoadFBXModel("Model/Player/ExportCharacter_AllLocal.fbx", XMMatrixIdentity()))
+	if (m_playerLoader->LoadFBXModel("Model/Player/ExportCharacter_AddRunning.fbx", XMMatrixIdentity()))
 	{
 		auto& meshes = m_playerLoader->GetMeshes();
 		if (meshes.empty()) {
