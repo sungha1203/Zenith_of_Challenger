@@ -99,10 +99,18 @@ void Player::KeyboardEvent(FLOAT timeElapsed)
     XMFLOAT3 faceDirection{ 0.f, 0.f, 0.f };
 
     // 키 입력 상태 업데이트
-    keyStates['W'] = (GetAsyncKeyState('W') & 0x8000);
-    keyStates['S'] = (GetAsyncKeyState('S') & 0x8000);
-    keyStates['A'] = (GetAsyncKeyState('A') & 0x8000);
-    keyStates['D'] = (GetAsyncKeyState('D') & 0x8000);
+    if (!isPunching) {
+        keyStates['W'] = (GetAsyncKeyState('W') & 0x8000);
+        keyStates['S'] = (GetAsyncKeyState('S') & 0x8000);
+        keyStates['A'] = (GetAsyncKeyState('A') & 0x8000);
+        keyStates['D'] = (GetAsyncKeyState('D') & 0x8000);
+    }
+    else {
+        keyStates['W'] = false;
+        keyStates['S'] = false;
+        keyStates['A'] = false;
+        keyStates['D'] = false;
+    }
     keyStates[VK_PRIOR] = (GetAsyncKeyState(VK_PRIOR) & 0x8000); // 위
     keyStates[VK_NEXT] = (GetAsyncKeyState(VK_NEXT) & 0x8000);   // 아래
 
