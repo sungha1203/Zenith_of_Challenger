@@ -414,6 +414,18 @@ void ClientNetwork::ProcessAnimation(char* buffer)
 	SC_Packet_Animaition* pkt = reinterpret_cast<SC_Packet_Animaition*>(buffer);
 
 	if (pkt->animation == 0) {		// 0 == ÆÝÄ¡
-
+		if (pkt->client_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[0])
+		{
+			shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
+			currentScene->m_Otherplayer[0]->SetCurrentAnimation("Punch.001");
+		}
+		else if (pkt->client_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[1])
+		{
+			shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
+			currentScene->m_Otherplayer[1]->SetCurrentAnimation("Punch.001");
+		}
 	}
+
+
+
 }

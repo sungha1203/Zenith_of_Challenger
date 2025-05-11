@@ -130,7 +130,15 @@ void OtherPlayer::Update(FLOAT timeElapsed)
     }
     if (oldPos.x == m_position.x && oldPos.y == m_position.y && oldPos.z == m_position.z)
     {
+        if(m_currentAnim!="Punch.001")
         m_currentAnim = "Idle";
+        else
+        {
+            if (m_animTime > m_animationClips.at(m_currentAnim).duration - 1.0)
+            {                
+                SetCurrentAnimation("Idle");
+            }
+        }
     }
     else
     {

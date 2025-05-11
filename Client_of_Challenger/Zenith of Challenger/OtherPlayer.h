@@ -44,13 +44,13 @@ public:
 	bool m_isBlending = false;
 	float m_angle; //방향각도 추가
 	XMFLOAT3 oldPos = {0,0,0};
+	std::string m_currentAnim = "Idle";
 private:
 
 	FLOAT m_speed;
 
 	// 애니메이션 상태 관리
 	std::unordered_map<std::string, AnimationClip> m_animationClips;
-	std::string m_currentAnim = "Idle";
 	float m_animTime = 0.f;
 
 	std::unordered_map<std::string, int> m_boneNameToIndex;
