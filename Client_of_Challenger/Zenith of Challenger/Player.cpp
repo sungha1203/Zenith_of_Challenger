@@ -99,12 +99,20 @@ void Player::KeyboardEvent(FLOAT timeElapsed)
     XMFLOAT3 faceDirection{ 0.f, 0.f, 0.f };
 
     // 키 입력 상태 업데이트
-    keyStates['W'] = (GetAsyncKeyState('W') & 0x8000);
-    keyStates['S'] = (GetAsyncKeyState('S') & 0x8000);
-    keyStates['A'] = (GetAsyncKeyState('A') & 0x8000);
-    keyStates['D'] = (GetAsyncKeyState('D') & 0x8000);
-    keyStates[VK_PRIOR] = (GetAsyncKeyState(VK_PRIOR) & 0x8000); // Page Up
-    keyStates[VK_NEXT] = (GetAsyncKeyState(VK_NEXT) & 0x8000);  // Page Down
+    if (!isPunching) {
+        keyStates['W'] = (GetAsyncKeyState('W') & 0x8000);
+        keyStates['S'] = (GetAsyncKeyState('S') & 0x8000);
+        keyStates['A'] = (GetAsyncKeyState('A') & 0x8000);
+        keyStates['D'] = (GetAsyncKeyState('D') & 0x8000);
+    }
+    else {
+        keyStates['W'] = false;
+        keyStates['S'] = false;
+        keyStates['A'] = false;
+        keyStates['D'] = false;
+    }
+    keyStates[VK_PRIOR] = (GetAsyncKeyState(VK_PRIOR) & 0x8000); // 위
+    keyStates[VK_NEXT] = (GetAsyncKeyState(VK_NEXT) & 0x8000);   // 아래
 
     // 방향 계산
     if (keyStates['W']) moveDirection = Vector3::Add(moveDirection, front);
@@ -124,13 +132,16 @@ void Player::KeyboardEvent(FLOAT timeElapsed)
     }
 
     // 속도 적용
-    if (!Vector3::IsZero(moveDirection))
-    {
-        XMFLOAT3 normalized = Vector3::Normalize(moveDirection);
-        velocity = Vector3::Mul(normalized, Settings::PlayerSpeed);  // 전역 속도 사용
-    }
-    else
-    {
+	if (!Vector3::IsZero(moveDirection))
+	{
+		XMFLOAT3 normalized = Vector3::Normalize(moveDirection);
+		if (isRunning)
+			velocity = Vector3::Mul(normalized, maxSpeed+20.0);
+		else
+			velocity = Vector3::Mul(normalized, maxSpeed);
+	}
+	else
+	{
         velocity = { 0.f, 0.f, 0.f };
     }
 
@@ -190,11 +201,22 @@ void Player::Update(FLOAT timeElapsed)
 
     if (isMoving)
     {
-        if (keyStates[VK_SHIFT] && m_animationClips.contains("Running"))
-            SetCurrentAnimation("Running");
+        if (GetAsyncKeyState(VK_SHIFT) && m_animationClips.contains("Running"))
+        {
+            m_currentAnim = "Running";
+            isRunning = true;
+            {
+                CS_Packet_Animaition pkt;
+                pkt.type = CS_PACKET_ANIMATION;
+                pkt.animation = 1;
+                pkt.size = sizeof(pkt);
+                gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
+            }
+        }
         else if (m_animationClips.contains("Walking"))
         {
             /*SetCurrentAnimation("Walking");*/
+            isRunning = false;
             m_currentAnim = "Walking";
         }        
     }

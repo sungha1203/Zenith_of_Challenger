@@ -18,7 +18,7 @@ public:
 	virtual void Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const override; // 추가
 
 	void Move(XMFLOAT3 direction, FLOAT speed);  // 이동 로직 추가
-
+	bool isRunning = false;
 	void SetCamera(const shared_ptr<Camera>& camera);
 	shared_ptr<Camera> GetCamera() const { return m_camera; }  // 추가
 

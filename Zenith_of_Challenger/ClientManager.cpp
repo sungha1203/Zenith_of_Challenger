@@ -36,7 +36,7 @@ ClientInfo::~ClientInfo()
 //    m_roomidx = room_idx;
 //}
 
-void ClientInfo::SetSpawnCoord(int idx)
+void ClientInfo::SetSpawnCoord(int idx)                         
 {
     switch (idx) {
     case 0:

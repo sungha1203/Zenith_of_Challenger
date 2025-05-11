@@ -107,6 +107,9 @@ void ClientNetwork::Receive()
 			case SC_PACKET_ITEMSTATE:
 				ProcessItemState(buffer);
 				break;
+			case SC_PACKET_ANIMATION:
+				ProcessAnimation(buffer);
+				break;
 			default:
 				break;
 			}
@@ -404,4 +407,38 @@ void ClientNetwork::ProcessItemState(char* buffer)
 		gameScene->SetupgradeScore(pkt->result);
 		gameScene->UpdateEnhanceDigits(); // 강화 수치 UI 갱신
 	}
+}
+
+void ClientNetwork::ProcessAnimation(char* buffer)
+{
+	SC_Packet_Animaition* pkt = reinterpret_cast<SC_Packet_Animaition*>(buffer);
+
+	if (pkt->animation == 0) {		// 0 == 펀치
+		if (pkt->client_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[0])
+		{
+			shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
+			currentScene->m_Otherplayer[0]->SetCurrentAnimation("Punch.001");
+		}
+		else if (pkt->client_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[1])
+		{
+			shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
+			currentScene->m_Otherplayer[1]->SetCurrentAnimation("Punch.001");
+		}
+	}
+	else if(pkt->animation==1)
+	{		// 1 == 달리기
+		if (pkt->client_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[0])
+		{
+			shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
+			currentScene->m_Otherplayer[0]->m_currentAnim = "Running";
+		}
+		else if (pkt->client_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[1])
+		{
+			shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
+			currentScene->m_Otherplayer[1]->m_currentAnim = "Running";
+		}
+	}
+
+
+
 }

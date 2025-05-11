@@ -93,7 +93,7 @@ namespace Settings
 
 	constexpr FLOAT SunRadius = 80.f;
 
-	constexpr FLOAT PlayerSpeed =  20.f;
+	constexpr FLOAT PlayerSpeed =  30.f;
 
 	namespace Light
 	{

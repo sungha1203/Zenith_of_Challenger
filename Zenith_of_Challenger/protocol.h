@@ -21,6 +21,7 @@ constexpr int NAME_SIZE = 20;				// 이름 글자 수
 #define CS_PACKET_INVENTORY			 11			// 인벤토리에서 아이템 선택
 #define CS_PACKET_DEBUGGOLD			 12			// 디버깅용 골드 추가
 #define CS_PACKET_DEBUGITEM			 13			// 디버깅용 아이템 추가
+#define CS_PACKET_ANIMATION			 14			// 애니메이션
 
 #define CS_PACKET_SKIPCHALLENGE		 99			// 도전스테이지 스킵
 #define CS_PACKET_LOGOUT			 100		// 로그아웃
@@ -44,6 +45,7 @@ constexpr int NAME_SIZE = 20;				// 이름 글자 수
 #define SC_PACKET_ITEMSTATE			 116		// 무기 강화 성공 여부
 #define SC_PACKET_CHAT				 117		// 인게임 속 채팅
 #define SC_PACKET_DEBUGITEM			 118		// 디버깅용 아이템 추가
+#define SC_PACKET_ANIMATION			 119		// 애니메이션
 
 #define SC_PACKET_SKIPCHALLENGE		 998		// 도전스테이지 스킵
 #define SC_PACKET_LOGOUT			 999		// 로그아웃
@@ -146,6 +148,13 @@ struct CS_Packet_DebugItem
 	char	type;
 	int		size;
 	int		item;
+};
+
+struct CS_Packet_Animaition
+{
+	char	type;
+	int		size;
+	int		animation;
 };
 
 struct CS_Packet_Logout
@@ -299,6 +308,14 @@ struct SC_Packet_DebugItem
 	int		size;
 	int		item;
 	int		itemNum;
+};
+
+struct SC_Packet_Animaition
+{
+	char	type;
+	int		size;
+	int		client_id;
+	int		animation;
 };
 
 struct SC_Packet_Chat

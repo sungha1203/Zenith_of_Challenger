@@ -32,6 +32,7 @@ public:
 	void		ProcessItemState(int client_id, char* buffer, int length);		// 강화 및 전직 설정(장비창)
 	void		ProcessDebugGold(int client_id, char* buffer, int length);		// 디버깅용 골드 추가
 	void		ProcessDebugItem(int client_id, char* buffer, int length);		// 디버깅용 무기 및 전직서 추가
+	void		ProcessAnimation(int client_id, char* buffer, int length);		// 애니메이션
 
 	// ---------패킷 뿌려주기---------
 	void		SendLoginResponse(int client_id, bool success);

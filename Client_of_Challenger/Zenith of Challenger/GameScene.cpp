@@ -223,10 +223,17 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
 		}
 	}
 
-    if (GetAsyncKeyState('F') & 0x0001)
+    if (GetAsyncKeyState('F') & 0x8000)
     {
         m_player->SetCurrentAnimation("Punch.001");
         m_player->isPunching=true;
+        {
+            CS_Packet_Animaition pkt;
+            pkt.type = CS_PACKET_ANIMATION;
+            pkt.animation = 0;
+            pkt.size = sizeof(pkt);
+            gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
+        }
     }
 
 
@@ -964,7 +971,8 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
     m_playerLoader = make_shared<FBXLoader>();
     cout << "캐릭터 로드 중!!!!" << endl;
 	
-	if (m_playerLoader->LoadFBXModel("Model/Player/ExportCharacter_AllLocal.fbx", XMMatrixIdentity()))
+	//if (m_playerLoader->LoadFBXModel("Model/Player/ExportCharacter_AllLocal.fbx", XMMatrixIdentity()))
+	if (m_playerLoader->LoadFBXModel("Model/Player/ExportCharacter_AddRunning.fbx", XMMatrixIdentity()))
 	{
 		auto& meshes = m_playerLoader->GetMeshes();
 		if (meshes.empty()) {

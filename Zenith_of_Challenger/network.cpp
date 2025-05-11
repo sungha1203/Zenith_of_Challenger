@@ -328,6 +328,9 @@ void Network::HandlePacket(int client_id, char* buffer, int length)
 	case CS_PACKET_ITEMSTATE:
 		ProcessItemState(client_id, buffer, length);
 		break;
+	case CS_PACKET_ANIMATION:
+		ProcessAnimation(client_id, buffer, length);
+		break;
 	default:
 		std::cout << "[ERROR] 알 수 없는 패킷 수신함. 클라이언트 [" << client_id << "]" << std::endl;
 		break;
@@ -657,6 +660,27 @@ void Network::ProcessDebugItem(int client_id, char* buffer, int length)
 		clients[other_id].do_send(pkt2);
 	}
 
+	clients[client_id].do_recv();
+}
+
+// 애니메이션
+void Network::ProcessAnimation(int client_id, char* buffer, int length)
+{
+	CS_Packet_Animaition* pkt = reinterpret_cast<CS_Packet_Animaition*>(buffer);
+
+	int room_id = g_room_manager.GetRoomID(client_id);
+	Room& room = g_room_manager.GetRoom(room_id);
+	const auto& client = room.GetClients();
+
+	SC_Packet_Animaition pkt2;
+	pkt2.type = SC_PACKET_ANIMATION;
+	pkt2.client_id = client_id;
+	pkt2.animation = pkt->animation;
+	pkt2.size = sizeof(pkt2);
+
+	for (int other_id : client) {
+		clients[other_id].do_send(pkt2);
+	}
 	clients[client_id].do_recv();
 }
 
