@@ -115,3 +115,10 @@ public:
 	~ShadowSkinnedShader() override = default;
 	bool IsShadowShader() const override { return true; }
 };
+
+class ShadowCharSkinnedShader : public Shader {
+public:
+	ShadowCharSkinnedShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSignature);
+	~ShadowCharSkinnedShader() override = default;
+	bool IsShadowShader() const override { return true; }
+};

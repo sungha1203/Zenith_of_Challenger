@@ -223,7 +223,7 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
 		}
 	}
 
-    if (GetAsyncKeyState(VK_RETURN) & 0x8000)
+    if (GetAsyncKeyState('F') & 0x0001)
     {
         m_player->SetCurrentAnimation("Punch.001");
         m_player->isPunching=true;
@@ -681,6 +681,10 @@ void GameScene::BuildShaders(const ComPtr<ID3D12Device>& device,
 
     auto ShadowSkinnedshader = make_shared<ShadowSkinnedShader>(device, rootSignature);
     m_shaders.insert({ "ShadowSkinned", ShadowSkinnedshader });
+
+
+    auto Shadowshader = make_shared<ShadowCharSkinnedShader>(device, rootSignature);
+    m_shaders.insert({ "SHADOWCHARSKINNED", Shadowshader });
 
 }
 
@@ -1469,14 +1473,14 @@ void GameScene::RenderShadowPass(const ComPtr<ID3D12GraphicsCommandList>& comman
 
     if (m_player)
     {
-        m_player->SetShader(m_shaders.at("ShadowSkinned"));
+        m_player->SetShader(m_shaders.at("SHADOWCHARSKINNED"));
         m_player->Render(commandList);
     }
 
     for (auto op : m_Otherplayer)
     {
         if (op) {
-            op->SetShader(m_shaders.at("ShadowSkinned"));
+            op->SetShader(m_shaders.at("SHADOWCHARSKINNED"));
             op->Render(commandList);
         }
     }

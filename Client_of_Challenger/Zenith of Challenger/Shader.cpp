@@ -710,3 +710,54 @@ ShadowSkinnedShader::ShadowSkinnedShader(const ComPtr<ID3D12Device>& device, con
 
 	ThrowIfFailed(device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_pipelineState)));
 }
+
+ShadowCharSkinnedShader::ShadowCharSkinnedShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSignature)
+{
+	std::vector<D3D12_INPUT_ELEMENT_DESC> inputLayout = {
+   { "POSITION",     0, DXGI_FORMAT_R32G32B32_FLOAT,    0, 0,  D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+   { "NORMAL",       0, DXGI_FORMAT_R32G32B32_FLOAT,    0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+   { "BLENDWEIGHT",  0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 24, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+   { "BLENDINDICES", 0, DXGI_FORMAT_R32G32B32A32_UINT,  0, 40, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+	};
+
+#if defined(_DEBUG)
+	UINT compileFlags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
+#else
+	UINT compileFlags = 0;
+#endif
+
+	ComPtr<ID3DBlob> vsByteCode, psByteCode, errors;
+
+	// [1] 셰이더 컴파일
+	HRESULT hr = D3DCompileFromFile(TEXT("ShadowMap_Char_Skinned.hlsl"), nullptr,
+		D3D_COMPILE_STANDARD_FILE_INCLUDE, "VSMain", "vs_5_1", compileFlags, 0, &vsByteCode, &errors);
+	if (FAILED(hr) && errors) OutputDebugStringA((char*)errors->GetBufferPointer());
+
+	hr = D3DCompileFromFile(TEXT("ShadowMap_Char_Skinned.hlsl"), nullptr,
+		D3D_COMPILE_STANDARD_FILE_INCLUDE, "PSMain", "ps_5_1", compileFlags, 0, &psByteCode, &errors);
+	if (FAILED(hr) && errors) OutputDebugStringA((char*)errors->GetBufferPointer());
+
+	// [2] PSO 생성
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc{};
+	psoDesc.InputLayout = { inputLayout.data(), (UINT)inputLayout.size() };
+	psoDesc.pRootSignature = rootSignature.Get();
+	psoDesc.VS = { vsByteCode->GetBufferPointer(), vsByteCode->GetBufferSize() };
+	psoDesc.PS = { psByteCode->GetBufferPointer(), psByteCode->GetBufferSize() };
+	psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+	psoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_BACK;
+	psoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
+	psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+	psoDesc.SampleMask = UINT_MAX;
+	psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+	psoDesc.NumRenderTargets = 1;
+	psoDesc.RTVFormats[0] = DXGI_FORMAT_R32_FLOAT; // 깊이값을 출력
+	psoDesc.DSVFormat = DXGI_FORMAT_UNKNOWN;
+	psoDesc.SampleDesc.Count = 1;
+
+	// 그림자 아티팩트 방지를 위한 바이어스 설정 (필요시 조정)
+	psoDesc.RasterizerState.DepthBias = 10000.f;
+	psoDesc.RasterizerState.SlopeScaledDepthBias = 1.0f;
+	psoDesc.RasterizerState.DepthBiasClamp = 0.f;
+
+	ThrowIfFailed(device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_pipelineState)));
+}

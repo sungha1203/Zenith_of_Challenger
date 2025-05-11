@@ -80,7 +80,7 @@ void Player::KeyboardEvent(FLOAT timeElapsed)
 
     XMFLOAT3 front, right;
 
-    // TPS와 쿼터뷰 둘 다 카메라 기준 방향으로 움직임
+    // 카메라 기준 방향
     if (isTPS || isQuarter)
     {
         front = m_camera->GetN(); front.y = 0.f;
@@ -103,18 +103,18 @@ void Player::KeyboardEvent(FLOAT timeElapsed)
     keyStates['S'] = (GetAsyncKeyState('S') & 0x8000);
     keyStates['A'] = (GetAsyncKeyState('A') & 0x8000);
     keyStates['D'] = (GetAsyncKeyState('D') & 0x8000);
-    keyStates[VK_PRIOR] = (GetAsyncKeyState(VK_PRIOR) & 0x8000); // 위
-    keyStates[VK_NEXT] = (GetAsyncKeyState(VK_NEXT) & 0x8000);   // 아래
+    keyStates[VK_PRIOR] = (GetAsyncKeyState(VK_PRIOR) & 0x8000); // Page Up
+    keyStates[VK_NEXT] = (GetAsyncKeyState(VK_NEXT) & 0x8000);  // Page Down
 
-    // 이동 방향 계산
+    // 방향 계산
     if (keyStates['W']) moveDirection = Vector3::Add(moveDirection, front);
     if (keyStates['S']) moveDirection = Vector3::Add(moveDirection, Vector3::Negate(front));
     if (keyStates['A']) moveDirection = Vector3::Add(moveDirection, Vector3::Negate(right));
     if (keyStates['D']) moveDirection = Vector3::Add(moveDirection, right);
     if (keyStates[VK_PRIOR]) moveDirection = Vector3::Add(moveDirection, { 0.f, 1.f, 0.f });
-    if (keyStates[VK_NEXT]) moveDirection = Vector3::Add(moveDirection, { 0.f, -1.f, 0.f });
+    if (keyStates[VK_NEXT])  moveDirection = Vector3::Add(moveDirection, { 0.f, -1.f, 0.f });
 
-    // 쿼터뷰는 회전도 같이 처리
+    // 쿼터뷰 회전 방향 계산
     if (isQuarter)
     {
         if (keyStates['W']) faceDirection = Vector3::Add(faceDirection, front);
@@ -127,7 +127,7 @@ void Player::KeyboardEvent(FLOAT timeElapsed)
     if (!Vector3::IsZero(moveDirection))
     {
         XMFLOAT3 normalized = Vector3::Normalize(moveDirection);
-        velocity = Vector3::Mul(normalized, maxSpeed);
+        velocity = Vector3::Mul(normalized, Settings::PlayerSpeed);  // 전역 속도 사용
     }
     else
     {
@@ -141,15 +141,16 @@ void Player::KeyboardEvent(FLOAT timeElapsed)
         Transform(movement);
     }
 
-    // 쿼터뷰 회전
+    // 쿼터뷰 회전 적용
     if (isQuarter && !Vector3::IsZero(faceDirection))
     {
         faceDirection = Vector3::Normalize(faceDirection);
         float angle = atan2f(faceDirection.x, faceDirection.z);
         float degrees = XMConvertToDegrees(angle);
-        SetRotationY(degrees + 180.f); // Z-가 앞일 경우 +180도
+        SetRotationY(degrees + 180.f);
     }
 }
+
 
 
 
@@ -238,17 +239,8 @@ void Player::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
 {
     bool isShadowPass = m_shader && m_shader->IsShadowShader();
 
-   //// 애니메이션 본 행렬 업로드
-   //if (!isShadowPass && m_animationClips.contains(m_currentAnim))
-   //{
-   //    const auto& clip = m_animationClips.at(m_currentAnim);
-   //    float animTime = fmod(m_animTime, clip.duration);
-   //    auto [boneTransforms, animBoneIndex] = clip.GetBoneTransforms(animTime, m_boneNameToIndex, m_boneHierarchy,m_staticNodeTransforms);
-   //    const_cast<Player*>(this)->UploadBoneMatricesToShader(boneTransforms, animBoneIndex, commandList);
-   //}
-
     // 본 행렬 StructuredBuffer 바인딩
-    if (!isShadowPass && m_boneMatrixSRV.ptr != 0)
+    if (m_boneMatrixSRV.ptr != 0)
     {
         commandList->SetGraphicsRootDescriptorTable(RootParameter::BoneMatrix, m_boneMatrixSRV);
     }

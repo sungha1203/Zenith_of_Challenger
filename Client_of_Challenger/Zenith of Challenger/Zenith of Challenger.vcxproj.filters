@@ -309,6 +309,9 @@
     <FxCompile Include="ShadowMap_Skinned.hlsl">
       <Filter>셰이더 파일</Filter>
     </FxCompile>
+    <FxCompile Include="ShadowMap_Char_Skinned.hlsl">
+      <Filter>셰이더 파일</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
