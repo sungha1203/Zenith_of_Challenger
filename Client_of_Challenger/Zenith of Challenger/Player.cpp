@@ -199,7 +199,7 @@ void Player::Update(FLOAT timeElapsed)
 
     bool isMoving = keyStates['W'] || keyStates['A'] || keyStates['S'] || keyStates['D'];
 
-    if (isMoving)
+    if (isMoving&&!isPunching)
     {
         if (GetAsyncKeyState(VK_SHIFT) && m_animationClips.contains("Running"))
         {
@@ -223,12 +223,14 @@ void Player::Update(FLOAT timeElapsed)
     else if(isPunching)
     {
         //m_currentAnim = "Walking";
+        XMFLOAT3 AttBoundingExtents = {3.0f,4.0f,3.0f};
+        m_boundingBox.Extents = AttBoundingExtents;
         if (m_animTime > m_animationClips.at(m_currentAnim).duration-1.0)
         {
             isPunching = false;
             isMoving = false;
             SetCurrentAnimation("Idle");
-            
+            m_boundingBox.Extents = { 1.0f,4.0f,1.0f };
         }
     }
     else
@@ -252,7 +254,11 @@ void Player::Update(FLOAT timeElapsed)
         pos.y,  // 중심이 피봇(발)보다 위로 가도록 보정
         pos.z
     };
-
+    m_AttboundingBox.Center= XMFLOAT3{
+        pos.x,
+        pos.y,  // 중심이 피봇(발)보다 위로 가도록 보정
+        pos.z
+    };
     GameObject::Update(timeElapsed);
 }
 
@@ -475,6 +481,59 @@ void Player::UpdateBoneMatrices(const ComPtr<ID3D12GraphicsCommandList>& command
     {
         UploadBoneMatricesToShader(boneTransforms, commandList);
     }
+}
+
+void Player::SetAttBoundingBox(const BoundingBox& box)
+{
+    m_AttboundingBox = box;
+
+    XMFLOAT3 c = box.Center;
+    XMFLOAT3 e = box.Extents;
+
+    XMFLOAT3 corners[8] = {
+    {c.x - e.x, c.y - e.y, c.z - e.z},
+    {c.x - e.x, c.y + e.y, c.z - e.z},
+    {c.x + e.x, c.y + e.y, c.z - e.z},
+    {c.x + e.x, c.y - e.y, c.z - e.z},
+    {c.x - e.x, c.y - e.y, c.z + e.z},
+    {c.x - e.x, c.y + e.y, c.z + e.z},
+    {c.x + e.x, c.y + e.y, c.z + e.z},
+    {c.x + e.x, c.y - e.y, c.z + e.z}
+    };
+
+    std::vector<UINT> indices = {
+        // 앞면 (-z)
+        0, 1, 2,
+        0, 2, 3,
+
+        // 뒷면 (+z)
+        4, 6, 5,
+        4, 7, 6,
+
+        // 왼쪽면 (-x)
+        0, 4, 5,
+        0, 5, 1,
+
+        // 오른쪽면 (+x)
+        3, 2, 6,
+        3, 6, 7,
+
+        // 윗면 (+y)
+        1, 5, 6,
+        1, 6, 2,
+
+        // 아랫면 (-y)
+        0, 3, 7,
+        0, 7, 4
+    };
+
+    vector<DebugVertex> lines;
+    for (int i = 0; i < indices.size(); ++i)
+        lines.emplace_back(corners[indices[i]]);
+
+    m_AttdebugBoxMesh = make_shared<Mesh<DebugVertex>>(
+        gGameFramework->GetDevice(), gGameFramework->GetCommandList(),
+        lines, D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 }
 
 void Player::PlayAnimationWithBlend(const std::string& newAnim, float blendDuration)

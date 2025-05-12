@@ -53,6 +53,9 @@ public:
     void SetJobSlotUV(int type);
     void UpdateEnhanceDigits();
 
+    void SetAttackCollision(bool SAC) { m_AttackCollision = SAC; }
+    bool getAttackCollision() { return m_AttackCollision; }
+
 private:
     shared_ptr<FBXLoader> m_fbxLoader; // FBX 로더 추가
     shared_ptr<FBXLoader> m_ZenithLoader; // FBX 로더 추가
@@ -125,4 +128,7 @@ private:
     unordered_map<string, unordered_map<string, string>> m_BoneHierarchy;
     unordered_map<string, unordered_map<string, XMMATRIX>> m_staticNodeTransforms;
     unordered_map<string, unordered_map<string, XMMATRIX>> m_nodeNameToLocalTransform;
+
+    //펀치 충돌
+    bool m_AttackCollision = false;
 };
