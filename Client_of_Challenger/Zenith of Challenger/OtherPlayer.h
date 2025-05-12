@@ -45,6 +45,9 @@ public:
 	float m_angle; //방향각도 추가
 	XMFLOAT3 oldPos = {0,0,0};
 	std::string m_currentAnim = "Idle";
+
+	int m_CurrentAnim = 0;
+
 private:
 
 	FLOAT m_speed;

@@ -147,32 +147,25 @@ void OtherPlayer::Update(FLOAT timeElapsed)
     //    oldPos = m_position;
     //    m_currentAnim = "Walking";
     //}
-    float dx = m_position.x - oldPos.x;
-    float dy = m_position.y - oldPos.y;
-    float dz = m_position.z - oldPos.z;
 
-    float distSq = dx * dx + dy * dy + dz * dz;
-    const float moveThresholdSq = 0.0001f; // 너무 작으면 안 됨
 
-    if (distSq < moveThresholdSq)
-    {
-        if (m_currentAnim != "Punch.001")
-        {
-            m_currentAnim = "Idle";
-        }
-        else
-        {
-            if (m_animTime > m_animationClips.at(m_currentAnim).duration - 1.0f)
-            {
-                SetCurrentAnimation("Idle");
-            }
-        }
-    }
-    else
-    {
-        oldPos = m_position;
+    switch (m_CurrentAnim) {
+    case 0:
+        m_currentAnim = "Idle";
+        break;
+    case 1:
         m_currentAnim = "Walking";
+        break;
+    case 2:
+        m_currentAnim = "Running";
+        break;
+    case 3:
+        m_currentAnim = "Punch.001";
+        break;
     }
+
+
+
     SetPosition(m_position);
 
     XMFLOAT3 pos = GetPosition();

@@ -499,6 +499,7 @@ void FBXLoader::ProcessAnimations(const aiScene* scene)
 		m_animationClips.push_back(clip);
 	}
 }
+
 void FBXLoader::BuildBoneHierarchy(aiNode* node, const std::string& parentName, const XMMATRIX& accumulatedTransform)
 {
 	std::string nodeName = node->mName.C_Str();

@@ -50,7 +50,7 @@ public:
 	void AddMesh(const shared_ptr<MeshBase>& mesh) { m_meshes.push_back(mesh); }
 	int m_id;
 	void PlayAnimationWithBlend(const std::string& newAnim, float blendDuration);
-	bool isPunching=false;
+	bool isPunching = false;
 
 private:
 	shared_ptr<Camera> m_camera;

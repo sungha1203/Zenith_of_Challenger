@@ -136,10 +136,10 @@ struct CS_Packet_DebugItem{
 	int		item;
 };
 
-struct CS_Packet_Animaition{
-	char	type;
-	int		size;
-	int		animation;
+struct CS_Packet_Animaition {
+	char type;
+	int size;
+	int animation;
 };
 
 struct CS_Packet_Logout{

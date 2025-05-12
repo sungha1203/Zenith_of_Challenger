@@ -20,6 +20,7 @@ public:
 
 	void		Connect();
 	void		Disconnect();
+	__declspec(noinline)
 	bool		SendPacket(const char* data, int length);
 
 	void		ProcessLogin(char* buffer);
