@@ -224,9 +224,12 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
 		}
 	}
 
-    if (GetAsyncKeyState('F') & 0x8000)
+    if (!m_player->isPunching&& GetAsyncKeyState('F') & 0x8000)
     {
+        m_AttackCollision = true;
         m_player->SetCurrentAnimation("Punch.001");
+        //m_player->SetCurrentAnimation("Hook");
+        //m_player->SetCurrentAnimation("Kick");
         m_player->isPunching=true;
         {
             CS_Packet_Animaition pkt;
@@ -351,7 +354,7 @@ void GameScene::Update(FLOAT timeElapsed)
             bool intersectX = dx <= (playerExtent.x + monsterExtent.x);
             bool intersectY = dy <= (playerExtent.y + monsterExtent.y);
             bool intersectZ = dz <= (playerExtent.z + monsterExtent.z);
-
+            
             if (intersectX && intersectY && intersectZ)
             {
                 char debugMsg[256];
@@ -387,14 +390,16 @@ void GameScene::Update(FLOAT timeElapsed)
                     offset = 30;
                 else if (type == "Flower_Fairy")
                     offset = 40;
-
-                CS_Packet_MonsterHP pkt;
-                pkt.type = CS_PACKET_MONSTERHP;
-                pkt.monsterID = offset + static_cast<int>(i);
-                pkt.damage = 1;
-                pkt.size = sizeof(pkt);
-                gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
-
+                if(getAttackCollision())
+                {
+                    CS_Packet_MonsterHP pkt;
+                    pkt.type = CS_PACKET_MONSTERHP;
+                    pkt.monsterID = offset + static_cast<int>(i);
+                    pkt.damage = 20;
+                    pkt.size = sizeof(pkt);
+                    gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
+                    m_AttackCollision = false;
+                }
             }
             else
             {
@@ -1010,8 +1015,8 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
     m_playerLoader = make_shared<FBXLoader>();
     cout << "캐릭터 로드 중!!!!" << endl;
 	
-	//if (m_playerLoader->LoadFBXModel("Model/Player/ExportCharacter_AllLocal.fbx", XMMatrixIdentity()))
-	if (m_playerLoader->LoadFBXModel("Model/Player/ExportCharacter_AddRunning.fbx", XMMatrixIdentity()))
+	//if (m_playerLoader->LoadFBXModel("Model/Player/ExportCharacter_AddJab.fbx", XMMatrixIdentity()))
+	if (m_playerLoader->LoadFBXModel("Model/Player/ExportCharacter_AddHook.fbx", XMMatrixIdentity()))
 	{
 		auto& meshes = m_playerLoader->GetMeshes();
 		if (meshes.empty()) {
@@ -1057,6 +1062,11 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
         playerBox.Extents = { 1.0f, 4.0f, 1.0f }; // 스케일링된 값
         player->SetPlayerBoundingBox(playerBox);
 
+        BoundingBox playerAttBox;
+        playerAttBox.Center = XMFLOAT3{ 0.f, 0.0f, 0.f };
+        playerAttBox.Extents = { 2.0f, 4.0f, 2.0f };
+        player->SetAttBoundingBox(playerAttBox);
+
         // [8] 본 행렬 StructuredBuffer용 SRV 생성
         auto [cpuHandle, gpuHandle] = gGameFramework->AllocateDescriptorHeapSlot();
         player->CreateBoneMatrixSRV(device, cpuHandle, gpuHandle);
@@ -1075,7 +1085,11 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 
     if (otherid[0] != -2)
     {
-        m_Otherplayer[0] = m_playerLoader->LoadOtherPlayer(device, m_textures, m_shaders);
+        auto ptr = m_playerLoader->LoadOtherPlayer(device, m_textures, m_shaders);
+        if(ptr==nullptr)
+            OutputDebugStringA("[ERROR] LoadOtherPlayer 실패\n");
+        else
+        m_Otherplayer[0] = ptr;
         m_Otherplayer[0]->m_id = otherid[0];
         m_Otherplayer[0]->m_position = otherpos[0];
         m_Otherplayer[0]->SetPosition(m_Otherplayer[0]->m_position);

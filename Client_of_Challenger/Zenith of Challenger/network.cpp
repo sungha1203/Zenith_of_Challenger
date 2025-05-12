@@ -1,8 +1,6 @@
 #include "network.h"
 
-ClientNetwork::ClientNetwork()
-{
-}
+ClientNetwork::ClientNetwork() :m_prevRemain(0) {}
 
 ClientNetwork::~ClientNetwork()
 {
@@ -55,67 +53,79 @@ bool ClientNetwork::SendPacket(const char* data, int length)
 	return true;
 }
 
-void ClientNetwork::Receive()
-{
-	char buffer[1024] = { 0 };
+void ClientNetwork::Receive() {
+	char buffer[2000] = { 0 };
 	while (m_running) {
-		int received = recv(m_clientsocket, buffer, sizeof(buffer), 0);
-		if (received > 0) {
-			switch (buffer[0]) {
+		int received = recv(m_clientsocket, buffer + m_prevRemain, sizeof(buffer) - m_prevRemain, 0);
+		char* currentBuffer = buffer;
+		int remainSize = received + m_prevRemain;
+		if (received == 0) {
+			continue;
+		}
+		while (remainSize >= 5) {
+			unsigned int size = 0;
+			memcpy_s(&size, 4, &currentBuffer[1], 4);
+			if (remainSize < size) {
+				break;
+			}
+			switch (currentBuffer[0]) {
 			case SC_PACKET_LOGIN_RESPONSE:
-				ProcessLogin(buffer);
+				ProcessLogin(currentBuffer);
 				break;
 			case SC_PACKET_ROOM_RESPONSE:
-				ProcessRoomjoin(buffer);
+				ProcessRoomjoin(currentBuffer);
 				break;
 			case SC_PACKET_WHOISMYTEAM:
-				ProcessWhoismyteam(buffer);
+				ProcessWhoismyteam(currentBuffer);
 				break;
 			case SC_PACKET_GAMESTART:
-				ProcessGamestart(buffer);
+				ProcessGamestart(currentBuffer);
 				break;
 			case SC_PACKET_INITIALSTATE:
-				ProcessInitialstate(buffer);
+				ProcessInitialstate(currentBuffer);
 				break;
 			case SC_PACKET_INITMONSTER:
-				ProcessInitMonster(buffer);
+				ProcessInitMonster(currentBuffer);
 				break;
 			case SC_PACKET_UPDATE2PLAYER:
-				ProcessUpdateCoord2Player(buffer);
+				ProcessUpdateCoord2Player(currentBuffer);
 				break;
 			case SC_PACKET_REPAIRTIME:
-				ProcessStartRepairTime(buffer);
+				ProcessStartRepairTime(currentBuffer);
 				break;
 			case SC_PACKET_MONSTERHP:
-				ProcessMonsterHP(buffer);
+				ProcessMonsterHP(currentBuffer);
 				break;
 			case SC_PACKET_DROPITEM:
-				ProcessItemDrop(buffer);
+				ProcessItemDrop(currentBuffer);
 				break;
 			case SC_PACKET_GOLD:
-				ProcessGold(buffer);
+				ProcessGold(currentBuffer);
 				break;
 			case SC_PACKET_INVENTORY:
-				ProcessInventory(buffer);
+				ProcessInventory(currentBuffer);
 				break;
 			case SC_PACKET_SELECTITEM:
-				ProcessInventory2Equip(buffer);
+				ProcessInventory2Equip(currentBuffer);
 				break;
 			case SC_PACKET_DEBUGITEM:
-				ProcessDebugItem(buffer);
+				ProcessDebugItem(currentBuffer);
 				break;
 			case SC_PACKET_ITEMSTATE:
-				ProcessItemState(buffer);
+				ProcessItemState(currentBuffer);
 				break;
 			case SC_PACKET_ANIMATION:
-				ProcessAnimation(buffer);
+				ProcessAnimation(currentBuffer);
 				break;
 			default:
 				break;
 			}
+			remainSize -= size;
+			currentBuffer = currentBuffer + size;
 		}
-		else if (received == 0) {
-
+		m_prevRemain = static_cast<uint32_t>(remainSize);
+		if (remainSize > 0) {
+			std::memcpy(buffer, currentBuffer, remainSize);
 		}
 	}
 	Disconnect();
@@ -187,11 +197,12 @@ void ClientNetwork::ProcessInitialstate(char* buffer)
 
 }
 
-void ClientNetwork::ProcessInitMonster(char* buffer)
-{
+void ClientNetwork::ProcessInitMonster(char* buffer) {
 	SC_Packet_InitMonster* pkt = reinterpret_cast<SC_Packet_InitMonster*>(buffer);
-	XMFLOAT3 pos(pkt->x, pkt->y, pkt->z);
-	gGameFramework->monstersCoord[pkt->monsterid] = pos;
+	for (auto i = 0; i < 50; ++i) {
+		XMFLOAT3 pos(pkt->monsters[i].x, pkt->monsters[i].y, pkt->monsters[i].z);
+		gGameFramework->monstersCoord[pkt->monsters[i].monsterid] = pos;
+	}
 }
 
 void ClientNetwork::ProcessUpdateCoord2Player(char* buffer)

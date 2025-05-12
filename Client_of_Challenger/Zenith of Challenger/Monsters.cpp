@@ -81,7 +81,7 @@ void Monsters::Update(FLOAT timeElapsed)
 		if (m_animationClips.contains(m_currentAnim))
 		{
 			const auto& clip = m_animationClips.at(m_currentAnim);
-			m_animTime += timeElapsed * clip.ticksPerSecond;
+			m_animTime += timeElapsed * clip.ticksPerSecond*0.2;
 			//if (m_animTime > clip.duration)
 			//{
 			//	m_animTime = fmod(m_animTime, clip.duration);

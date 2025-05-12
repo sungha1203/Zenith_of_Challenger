@@ -85,8 +85,9 @@ shared_ptr<OtherPlayer> FBXLoader::LoadOtherPlayer(const ComPtr<ID3D12Device>& d
 
 	auto otherPlayer = make_shared<FBXLoader>();
 
-	//if (otherPlayer->LoadFBXModel("Model/Player/ExportCharacter_AllLocal.fbx", XMMatrixIdentity()))
-	if (otherPlayer->LoadFBXModel("Model/Player/ExportCharacter_AddRunning.fbx", XMMatrixIdentity()))
+	//if (otherPlayer->LoadFBXModel("Model/Player/ExportCharacter_AddRunning.fbx", XMMatrixIdentity()))
+	//if (otherPlayer->LoadFBXModel("Model/Player/ExportCharacter_AddKick.fbx", XMMatrixIdentity()))
+	if (otherPlayer->LoadFBXModel("Model/Player/ExportCharacter_AddHook.fbx", XMMatrixIdentity()))
 	{
 		auto& meshes = otherPlayer->GetMeshes();
 
@@ -117,6 +118,7 @@ shared_ptr<OtherPlayer> FBXLoader::LoadOtherPlayer(const ComPtr<ID3D12Device>& d
 		playerBox.Center = XMFLOAT3{ 0.f, 4.0f, 0.f };
 		playerBox.Extents = { 1.0f, 4.0f, 1.0f }; 
 		player->SetBoundingBox(playerBox);
+		
 
 		auto [cpuHandle, gpuHandle] = gGameFramework->AllocateDescriptorHeapSlot();
 		player->CreateBoneMatrixSRV(device, cpuHandle, gpuHandle);

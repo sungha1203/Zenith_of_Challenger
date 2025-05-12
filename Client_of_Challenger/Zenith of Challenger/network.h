@@ -10,7 +10,7 @@
 #pragma comment (lib, "ws2_32.lib")
 
 constexpr int PORT_NUM = 4000;
-constexpr const char* SERVER_IP = "127.0.0.1"; //121.139.87.88 / 127.0.0.1
+constexpr const char* SERVER_IP = "127.0.0.1";//"172.30.1.53"; //121.139.87.88 / 127.0.0.1
 
 class ClientNetwork
 {
@@ -46,7 +46,7 @@ public:
 	bool			m_running = false;
 
 	int				m_clientID = 0;
-
+	unsigned int	m_prevRemain;
 
 private:
 	void		Receive();

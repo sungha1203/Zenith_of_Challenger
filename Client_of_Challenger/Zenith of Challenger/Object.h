@@ -164,6 +164,7 @@ protected:
 	//충돌체크 용
 	BoundingBox m_boundingBox;
 	shared_ptr<Mesh<DebugVertex>> m_debugBoxMesh;
+	shared_ptr<Mesh<DebugVertex>> m_AttdebugBoxMesh;
 	bool m_drawBoundingBox = false;
 	shared_ptr<Shader> m_debugLineShader; //와이어프레임 전용 셰이더
 

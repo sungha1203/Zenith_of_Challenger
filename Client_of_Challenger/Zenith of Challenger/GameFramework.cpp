@@ -621,7 +621,7 @@ void CGameFramework::WaitForGpuComplete()
 	m_frameIndex = m_swapChain->GetCurrentBackBufferIndex();
 }
 
-void CGameFramework::Update()
+void CGameFramework::Update() 
 {
 	if (m_activate) {
 		MouseEvent(m_hWnd, m_GameTimer.GetElapsedTime());

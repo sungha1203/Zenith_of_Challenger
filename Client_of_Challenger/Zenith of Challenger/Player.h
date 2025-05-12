@@ -27,6 +27,7 @@ public:
 
 	void SetAnimationClips(const std::vector<AnimationClip>& clips);
 	void SetCurrentAnimation(const std::string& name);
+	std::string& GetCurrentAnimation() { return m_currentAnim;}
 	void UploadBoneMatricesToShader(const std::vector<XMMATRIX>& boneTransforms, const ComPtr<ID3D12GraphicsCommandList>& commandList);
 
 	// SRV 생성 함수
@@ -45,13 +46,16 @@ public:
 	float m_blendDuration = 0.2f;      // 블렌딩 지속 시간
 	bool m_isBlending = false;
 
+	void SetAttBoundingBox(const BoundingBox& box);
 	void AddMesh(const shared_ptr<MeshBase>& mesh) { m_meshes.push_back(mesh); }
 	int m_id;
 	void PlayAnimationWithBlend(const std::string& newAnim, float blendDuration);
 	bool isPunching=false;
+
 private:
 	shared_ptr<Camera> m_camera;
-
+	//공격충돌체크 용
+	BoundingBox m_AttboundingBox;
 	FLOAT m_speed;
 
 	// 애니메이션 상태 관리

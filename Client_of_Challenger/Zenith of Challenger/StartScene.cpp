@@ -243,11 +243,13 @@ void StartScene::KeyboardEvent(UINT message, WPARAM wParam)
     //------------------------------------------------------// 서버 개발
     {
         std::string idpw = username + " " + password;
-        char sendBuffer[256] = { 0 };
-        sendBuffer[0] = CS_PACKET_LOGIN;
-        memcpy(sendBuffer + 1, idpw.c_str(), idpw.length());
+        CS_Packet_Login sendPacket{
+.type = CS_PACKET_LOGIN,
+.size = static_cast<int>(idpw.size() + 5)
+        };
+        memcpy(sendPacket.loginData, idpw.c_str(), idpw.length());
         if (gGameFramework && gGameFramework->GetClientNetwork()) {
-            gGameFramework->GetClientNetwork()->SendPacket(sendBuffer, 1 + static_cast<int>(idpw.length()));
+            gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<char*>(&sendPacket), sendPacket.size);
         }
         username.clear();
         password.clear();
