@@ -42,3 +42,12 @@ public:
         SetScale(XMFLOAT3(1.0f, 1.0f, 1.0f));
     }
 };
+
+class Boss : public Monsters
+{
+public:
+    Boss(const ComPtr<ID3D12Device>& device) : Monsters(device)
+    {
+        SetScale(XMFLOAT3(1.0f, 1.0f, 1.0f));
+    }
+};

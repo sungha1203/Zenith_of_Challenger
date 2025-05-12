@@ -74,6 +74,7 @@ private:
     unordered_map<string, vector<shared_ptr<Monsters>>> m_monsterGroups;
     unordered_map<string, shared_ptr<MeshBase>> m_meshLibrary;
 
+    std::vector<std::shared_ptr<Monsters>> m_bossMonsters; //보스 몬스터
 
     //그림자 관련
     std::shared_ptr<DebugShadowShader> m_debugShadowShader;
@@ -125,4 +126,6 @@ private:
     unordered_map<string, unordered_map<string, string>> m_BoneHierarchy;
     unordered_map<string, unordered_map<string, XMMATRIX>> m_staticNodeTransforms;
     unordered_map<string, unordered_map<string, XMMATRIX>> m_nodeNameToLocalTransform;
+
+
 };

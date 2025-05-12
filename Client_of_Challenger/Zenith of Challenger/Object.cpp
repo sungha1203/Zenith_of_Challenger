@@ -344,6 +344,174 @@ void GameObject::SetBoundingBox(const BoundingBox& box)
         lines, D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 }
 
+void GameObject::SetPlayerBoundingBox(const BoundingBox& box)
+{
+    m_boundingBox = box;
+
+    XMFLOAT3 c = box.Center;
+    XMFLOAT3 e = box.Extents;
+
+    // 현재 스케일이 0.0005 이므로 그에 맞게 와이어프레임 메쉬는 스케일 역보정
+    float inverseScale = 1.0f / 0.0005f;
+
+    XMFLOAT3 scaledExtents = {
+        e.x * inverseScale,
+        e.y * inverseScale,
+        e.z * inverseScale
+    };
+
+    XMFLOAT3 corners[8] = {
+        {c.x - scaledExtents.x, c.y - scaledExtents.y, c.z - scaledExtents.z},
+        {c.x - scaledExtents.x, c.y + scaledExtents.y, c.z - scaledExtents.z},
+        {c.x + scaledExtents.x, c.y + scaledExtents.y, c.z - scaledExtents.z},
+        {c.x + scaledExtents.x, c.y - scaledExtents.y, c.z - scaledExtents.z},
+        {c.x - scaledExtents.x, c.y - scaledExtents.y, c.z + scaledExtents.z},
+        {c.x - scaledExtents.x, c.y + scaledExtents.y, c.z + scaledExtents.z},
+        {c.x + scaledExtents.x, c.y + scaledExtents.y, c.z + scaledExtents.z},
+        {c.x + scaledExtents.x, c.y - scaledExtents.y, c.z + scaledExtents.z}
+    };
+
+    std::vector<UINT> indices = {
+        // 앞면 (-z)
+        0, 1, 2, 0, 2, 3,
+        // 뒷면 (+z)
+        4, 6, 5, 4, 7, 6,
+        // 왼쪽면 (-x)
+        0, 4, 5, 0, 5, 1,
+        // 오른쪽면 (+x)
+        3, 2, 6, 3, 6, 7,
+        // 윗면 (+y)
+        1, 5, 6, 1, 6, 2,
+        // 아랫면 (-y)
+        0, 3, 7, 0, 7, 4
+    };
+
+    vector<DebugVertex> lines;
+    for (int i = 0; i < indices.size(); ++i)
+        lines.emplace_back(corners[indices[i]]);
+
+    m_debugBoxMesh = make_shared<Mesh<DebugVertex>>(
+        gGameFramework->GetDevice(), gGameFramework->GetCommandList(),
+        lines, D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+}
+
+void GameObject::SetMonstersBoundingBox(const BoundingBox& box)
+{
+    m_boundingBox = box;
+
+    XMFLOAT3 c = box.Center;
+    XMFLOAT3 e = box.Extents;
+
+    // 현재 스케일이 0.1로 적용되어 있다면 inverse 적용
+    float inverseScale = 1.0f / 0.1f;
+
+    XMFLOAT3 scaledExtents = {
+        e.x * inverseScale,
+        e.y * inverseScale,
+        e.z * inverseScale
+    };
+
+    // 회전 행렬 구성 (Y 90도  Z 90도)
+    XMMATRIX rotY = XMMatrixRotationY(XMConvertToRadians(90.f));
+    XMMATRIX rotZ = XMMatrixRotationZ(XMConvertToRadians(90.f));
+    XMMATRIX rotation = rotY * rotZ;
+
+    // 코너 생성  회전 적용
+    XMFLOAT3 corners[8] = {
+        {c.x - scaledExtents.x, c.y - scaledExtents.y, c.z - scaledExtents.z},
+        {c.x - scaledExtents.x, c.y + scaledExtents.y, c.z - scaledExtents.z},
+        {c.x + scaledExtents.x, c.y + scaledExtents.y, c.z - scaledExtents.z},
+        {c.x + scaledExtents.x, c.y - scaledExtents.y, c.z - scaledExtents.z},
+        {c.x - scaledExtents.x, c.y - scaledExtents.y, c.z + scaledExtents.z},
+        {c.x - scaledExtents.x, c.y + scaledExtents.y, c.z + scaledExtents.z},
+        {c.x + scaledExtents.x, c.y + scaledExtents.y, c.z + scaledExtents.z},
+        {c.x + scaledExtents.x, c.y - scaledExtents.y, c.z + scaledExtents.z}
+    };
+
+    // 회전 적용
+    for (int i = 0; i < 8; ++i)
+    {
+        XMVECTOR p = XMLoadFloat3(&corners[i]);
+        p = XMVector3TransformCoord(p, rotation);
+        XMStoreFloat3(&corners[i], p);
+    }
+
+    std::vector<UINT> indices = {
+        // 앞면 (-z)
+        0, 1, 2, 0, 2, 3,
+        // 뒷면 (+z)
+        4, 6, 5, 4, 7, 6,
+        // 왼쪽면 (-x)
+        0, 4, 5, 0, 5, 1,
+        // 오른쪽면 (+x)
+        3, 2, 6, 3, 6, 7,
+        // 윗면 (+y)
+        1, 5, 6, 1, 6, 2,
+        // 아랫면 (-y)
+        0, 3, 7, 0, 7, 4
+    };
+
+    std::vector<DebugVertex> lines;
+    for (int i = 0; i < indices.size(); ++i)
+        lines.emplace_back(corners[indices[i]]);
+
+    m_debugBoxMesh = make_shared<Mesh<DebugVertex>>(
+        gGameFramework->GetDevice(), gGameFramework->GetCommandList(),
+        lines, D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+}
+
+
+void GameObject::SetFlyFrightBoundingBox(const BoundingBox& box)
+{
+    m_boundingBox = box;
+
+    XMFLOAT3 c = box.Center;
+    XMFLOAT3 e = box.Extents;
+
+    // 현재 스케일이 0.0005 이므로 그에 맞게 와이어프레임 메쉬는 스케일 역보정
+    float inverseScale = 1.0f / 0.05f;
+
+    XMFLOAT3 scaledExtents = {
+        e.x * inverseScale,
+        e.y * inverseScale,
+        e.z * inverseScale
+    };
+
+    XMFLOAT3 corners[8] = {
+        {c.x - scaledExtents.x, c.y - scaledExtents.y, c.z - scaledExtents.z},
+        {c.x - scaledExtents.x, c.y + scaledExtents.y, c.z - scaledExtents.z},
+        {c.x + scaledExtents.x, c.y + scaledExtents.y, c.z - scaledExtents.z},
+        {c.x + scaledExtents.x, c.y - scaledExtents.y, c.z - scaledExtents.z},
+        {c.x - scaledExtents.x, c.y - scaledExtents.y, c.z + scaledExtents.z},
+        {c.x - scaledExtents.x, c.y + scaledExtents.y, c.z + scaledExtents.z},
+        {c.x + scaledExtents.x, c.y + scaledExtents.y, c.z + scaledExtents.z},
+        {c.x + scaledExtents.x, c.y - scaledExtents.y, c.z + scaledExtents.z}
+    };
+
+    std::vector<UINT> indices = {
+        // 앞면 (-z)
+        0, 1, 2, 0, 2, 3,
+        // 뒷면 (+z)
+        4, 6, 5, 4, 7, 6,
+        // 왼쪽면 (-x)
+        0, 4, 5, 0, 5, 1,
+        // 오른쪽면 (+x)
+        3, 2, 6, 3, 6, 7,
+        // 윗면 (+y)
+        1, 5, 6, 1, 6, 2,
+        // 아랫면 (-y)
+        0, 3, 7, 0, 7, 4
+    };
+
+    vector<DebugVertex> lines;
+    for (int i = 0; i < indices.size(); ++i)
+        lines.emplace_back(corners[indices[i]]);
+
+    m_debugBoxMesh = make_shared<Mesh<DebugVertex>>(
+        gGameFramework->GetDevice(), gGameFramework->GetCommandList(),
+        lines, D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+}
+
 void GameObject::SetCustomUV(float u0, float v0, float u1, float v1)
 {
     m_customUV = { u0, v0, u1, v1 };

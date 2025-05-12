@@ -21,7 +21,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device,
 
     // FBX 파일 로드
     m_fbxLoader = make_shared<FBXLoader>();
-    if (m_fbxLoader->LoadFBXModel("Model/Map/Challenge.fbx",
+    if (m_fbxLoader->LoadFBXModel("Model/Map/Challenge5.fbx",
         XMMatrixScaling(5.0f, 5.0f, 5.0f) * XMMatrixRotationY(XMConvertToRadians(180.0f))))
     {
         m_fbxMeshes = m_fbxLoader->GetMeshes();
@@ -171,6 +171,7 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
 
     if (GetAsyncKeyState(VK_OEM_PLUS) & 0x0001) // = 키
     {
+        // 패킷 전송
         CS_Packet_SkipChallenge pkt;
         pkt.type = CS_PACKET_SKIPCHALLENGE;
         pkt.skip = true;
@@ -263,17 +264,7 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
     {
         m_showReinforcedWindow = !m_showReinforcedWindow;
         OutputDebugStringA(m_showReinforcedWindow ? "[UI] Reinforced ON\n" : "[UI] Reinforced OFF\n");
-        /*m_weaponSlotIcon->SetCustomUV(0.0f, 0.0f, 0.0f, 0.0f);
-        m_jobSlotIcon->SetCustomUV(0.0f, 0.0f, 0.0f, 0.0f);*/
     }
-
-    //if (GetAsyncKeyState('P') & 0x0001)
-    //{
-    //    m_ZenithEnabled = !m_ZenithEnabled;
-    //    //m_player->SetPosition(XMFLOAT3(-565.0f, 45.0f, -16.0f));
-    //    m_player->SetPosition(XMFLOAT3(-570.0f, 44.0f, -20.0f));
-    //}
-
 }
 
 void GameScene::Update(FLOAT timeElapsed)
@@ -315,6 +306,8 @@ void GameScene::Update(FLOAT timeElapsed)
         for (auto& monster : group)
             monster->Update(timeElapsed);
     }
+
+    m_bossMonsters[0]->SetRotationZ(80.f);
 
     // [2] 충돌 테스트
     auto playerBox = m_player->GetBoundingBox();
@@ -476,7 +469,7 @@ void GameScene::Update(FLOAT timeElapsed)
         m_inventoryDigits[i]->SetCustomUV(u0, 0.0f, u1, 1.0f);
     }
 
-
+  
 
 }
 
@@ -520,6 +513,8 @@ void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) con
         // 몬스터 렌더링 (map 기반으로 수정)
         for (const auto& [type, group] : m_monsterGroups)
         {
+            if (type == "Metalon") continue;
+
             for (const auto& monster : group)
             {
                 // 1. 외곽선 Pass
@@ -534,11 +529,24 @@ void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) con
             }
         }
     }
-    else {
+    else { //정점 몬스터
         for (const auto& object : m_ZenithObjects) //정점 맵 렌더링
         {
             object->SetShader(m_shaders.at("FBX"));
             object->Render(commandList);
+        }
+
+        // 보스 몬스터 출력
+        for (const auto& boss : m_bossMonsters)
+        {
+            if (m_OutLine)
+            {
+                boss->SetOutlineShader(m_shaders.at("OUTLINE"));
+                boss->RenderOutline(commandList);
+            }
+
+            boss->SetShader(m_shaders.at("FrightFly")); // 셰이더 필요시 따로 지정 가능
+            boss->Render(commandList);
         }
     }
 
@@ -827,6 +835,31 @@ void GameScene::BuildMeshes(const ComPtr<ID3D12Device>& device,
 		}
 	}
 
+    // Metalon FBX 메쉬 저장
+    auto Metalon = make_shared<FBXLoader>();
+    if (Metalon->LoadFBXModel("Model/Monsters/Metalon/Metalon.fbx", XMMatrixIdentity()))//scale 0.1     
+    {
+        auto meshes = Metalon->GetMeshes();
+        if (!meshes.empty())
+        {
+            m_meshLibrary["Metalon"] = meshes[0];
+
+            const auto& clips = Metalon->GetAnimationClips();
+            for (auto& clip : clips)
+                m_animClipLibrary["Metalon"][clip.name] = clip;
+
+            m_boneOffsetLibrary["Metalon"] = Metalon->GetBoneOffsets();
+            m_boneNameMap["Metalon"] = Metalon->GetBoneNameToIndex();
+            m_BoneHierarchy["Metalon"] = Metalon->GetBoneHierarchy();
+            m_staticNodeTransforms["Metalon"] = Metalon->GetStaticNodeTransforms();
+            m_nodeNameToLocalTransform["Metalon"] = Metalon->GetNodeNameToGlobalTransform();
+        }
+        else
+        {
+            OutputDebugStringA("[FBXLoader] Metalon 메쉬 없음\n");
+        }
+    }
+
 }
 
 void GameScene::BuildTextures(const ComPtr<ID3D12Device>& device,
@@ -940,6 +973,12 @@ void GameScene::BuildTextures(const ComPtr<ID3D12Device>& device,
         TEXT("Image/Map/ZenithTexture.dds"), RootParameter::Texture);
     ZenithTexture->CreateShaderVariable(device, true);
     m_textures.insert({ "Zenith", ZenithTexture });
+
+
+    auto MetalonTexture = make_shared<Texture>(device, commandList,
+        TEXT("Image/Monsters/Polygonal_Metalon_Purple.dds"), RootParameter::Texture);
+    MetalonTexture->CreateShaderVariable(device, true);
+    m_textures.insert({ "Metalon", MetalonTexture });
 }
 
 void GameScene::BuildMaterials(const ComPtr<ID3D12Device>& device,
@@ -988,6 +1027,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
         player->SetRotationY(0.f);                  // 정면을 보게 초기화
 
         player->SetPosition(gGameFramework->g_pos);
+        //player->SetPosition(XMFLOAT3{ 0.0, 5.0, 0.0 });
 
         // [5] FBX 메시 전부 등록
         for (int i = 0; i < meshes.size(); ++i)
@@ -1013,9 +1053,9 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 
         // m_player 생성 이후 위치
         BoundingBox playerBox;
-        playerBox.Center = XMFLOAT3{ 0.f, 4.0f, 0.f };
+        playerBox.Center = XMFLOAT3{ 0.f, 0.0f, 0.f };
         playerBox.Extents = { 1.0f, 4.0f, 1.0f }; // 스케일링된 값
-        player->SetBoundingBox(playerBox);
+        player->SetPlayerBoundingBox(playerBox);
 
         // [8] 본 행렬 StructuredBuffer용 SRV 생성
         auto [cpuHandle, gpuHandle] = gGameFramework->AllocateDescriptorHeapSlot();
@@ -1112,7 +1152,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
         float radius = 20.0f;
         float x = 190.f + radius * cos(angle);
         float z = -190.f + radius * sin(angle);
-        float y = 0.f;
+        float y = 5.f;
 
         //fairies[i]->SetPosition(XMFLOAT3{ x, y, z });
         fairies[i]->SetPosition(gGameFramework->monstersCoord[i + 40]);
@@ -1127,7 +1167,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
         float radius = 25.0f; // 조금 더 넓게 배치
         float x = -100.f + radius * cos(angle);
         float z = -165.f + radius * sin(angle);
-        float y = 0.f; // 지면 높이에 맞게 조절
+        float y = 5.f; // 지면 높이에 맞게 조절
 
         //mushrooms[i]->SetPosition(XMFLOAT3{ x, y, z });
         mushrooms[i]->SetPosition(gGameFramework->monstersCoord[i]);
@@ -1141,7 +1181,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
         float radius = 28.0f; // 위치 조정
         float x = 40.f + radius * cos(angle);
         float z = -50.f + radius * sin(angle);
-        float y = 2.f;
+        float y = 5.f;
 
         //venusGroup[i]->SetPosition(XMFLOAT3{ x, y, z });
         venusGroup[i]->SetPosition(gGameFramework->monstersCoord[i + 30]);
@@ -1155,10 +1195,22 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
         float radius = 28.0f; // 위치 조정
         float x = 160.f + radius * cos(angle);
         float z = 30.f + radius * sin(angle);
-        float y = 0.f;
+        float y = 5.f;
 
         //DionaeaGroup[i]->SetPosition(XMFLOAT3{ x, y, z });
         DionaeaGroup[i]->SetPosition(gGameFramework->monstersCoord[i + 20]);
+    }
+
+    // "Metalon" 타입 보스 몬스터 배치
+    auto& MetalonGroup = m_monsterGroups["Metalon"];
+    for (int i = 0; i < MetalonGroup.size(); ++i)
+    {
+        float x = 0.f;
+        float z = 0.f;
+        float y = 40.f;
+
+        MetalonGroup[i]->SetPosition(XMFLOAT3{ x, y, z });
+        //MetalonGroup[i]->SetPosition(gGameFramework->monstersCoord[i + 20]);
     }
 
     //스카이박스
@@ -1408,10 +1460,11 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 
     m_forcedDigits.push_back(forcedDigit);
 
-
-
-
-
+    auto& metalonGroup = m_monsterGroups["Metalon"];
+    if (!metalonGroup.empty())
+    {
+        m_bossMonsters.push_back(metalonGroup[0]); // 첫 번째 보스만 따로 저장
+    }
 }
 
 void GameScene::AddCubeCollider(const XMFLOAT3& position, const XMFLOAT3& extents, const FLOAT& rotate)
@@ -1462,20 +1515,30 @@ void GameScene::RenderShadowPass(const ComPtr<ID3D12GraphicsCommandList>& comman
     if (m_ZenithEnabled) {
         m_terrain->SetShader(m_shaders.at("SHADOW"));
         m_terrain->Render(commandList);
-    }
 
-    // [2] FBX 오브젝트 그림자 렌더링
-    for (auto& obj : m_fbxObjects)
-    {
-        obj->SetShader(m_shaders.at("SHADOW"));
-        obj->Render(commandList);
-    }
-
-    if (m_ZenithEnabled) {
         for (auto& obj : m_ZenithObjects)
         {
             obj->SetShader(m_shaders.at("SHADOW"));
             obj->Render(commandList);
+        }
+    }
+    else {
+        // [2] FBX 오브젝트 그림자 렌더링
+        for (auto& obj : m_fbxObjects)
+        {
+            obj->SetShader(m_shaders.at("SHADOW"));
+            obj->Render(commandList);
+        }
+
+        for (const auto& [type, group] : m_monsterGroups)
+        {
+            if (type == "Metalon") continue;
+
+            for (const auto& monster : group)
+            {
+                monster->SetShader(m_shaders.at("ShadowSkinned"));
+                monster->Render(commandList);
+            }
         }
     }
 
@@ -1492,17 +1555,6 @@ void GameScene::RenderShadowPass(const ComPtr<ID3D12GraphicsCommandList>& comman
             op->Render(commandList);
         }
     }
-
-
-    for (const auto& [type, group] : m_monsterGroups)
-    {
-        for (const auto& monster : group)
-        {
-            monster->SetShader(m_shaders.at("ShadowSkinned"));
-            monster->Render(commandList);
-        }
-    }
-
 }
 
 void GameScene::HandleMouseClick(int mouseX, int mouseY)

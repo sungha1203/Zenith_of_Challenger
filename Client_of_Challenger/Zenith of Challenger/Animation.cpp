@@ -219,7 +219,7 @@ XMMATRIX InterpolateKeyframes(const Keyframe& a, const Keyframe& b, float t, con
 	if (fabs(dot) < 0.05f) {
 		char debug[256];
 		sprintf_s(debug, "[Interpolate] TUM? bone=%s t=%.3f dot=%.4f\n", currentBoneName.c_str(), currentTime, dot);
-		OutputDebugStringA(debug);
+		//OutputDebugStringA(debug);
 	}
 
 	// º¸°£

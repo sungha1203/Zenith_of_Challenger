@@ -51,7 +51,7 @@ void LoadAllMonsters(
         BoundingBox box;
         box.Center = XMFLOAT3{ 0.f, 5.5f, 0.f };
         box.Extents = XMFLOAT3{ 1.5f, 1.5f, 1.5f };
-        frightfly->SetBoundingBox(box);
+        frightfly->SetFlyFrightBoundingBox(box);
 
         // [4] 본 버퍼 SRV 생성
         auto [cpuHandle, gpuHandle] = gGameFramework->AllocateDescriptorHeapSlot();
@@ -77,7 +77,7 @@ void LoadAllMonsters(
         monster->SetShader(shaders.at("FrightFly"));
         monster->SetDebugLineShader(shaders.at("DebugLineShader"));
         monster->SetHealthBarShader(shaders.at("HealthBarShader"));
-        monster->SetScale(XMFLOAT3{ 0.1,0.1,0.1 });
+        monster->SetScale(XMFLOAT3{ 0.1, 0.1, 0.1 });
 
         // [2] 애니메이션 설정
         vector<AnimationClip> clips;
@@ -95,8 +95,8 @@ void LoadAllMonsters(
         // [3] 바운딩 박스
         BoundingBox box;
         box.Center = XMFLOAT3{ 0.f, 5.5f, 0.f };
-        box.Extents = XMFLOAT3{ 1.5f, 1.5f, 1.5f };
-        monster->SetBoundingBox(box);
+        box.Extents = XMFLOAT3{ 1.5f, 4.0f, 1.5f };
+        monster->SetMonstersBoundingBox(box);
 
         // [4] 본 버퍼 SRV 생성
         auto [cpuHandle, gpuHandle] = gGameFramework->AllocateDescriptorHeapSlot();
@@ -137,9 +137,9 @@ void LoadAllMonsters(
 
         // [3] 바운딩 박스
         BoundingBox box;
-        box.Center = XMFLOAT3{ 0.f, 5.5f, 0.f };
-        box.Extents = XMFLOAT3{ 1.5f, 1.5f, 1.5f };
-        monster->SetBoundingBox(box);
+        box.Center = XMFLOAT3{ 0.f, 0.0f, 0.f };
+        box.Extents = XMFLOAT3{ 4.0f, 10.0f, 4.0f };
+        monster->SetMonstersBoundingBox(box);
 
         // [4] 본 버퍼 SRV 생성
         auto [cpuHandle, gpuHandle] = gGameFramework->AllocateDescriptorHeapSlot();
@@ -181,8 +181,8 @@ void LoadAllMonsters(
         // [3] 바운딩 박스
         BoundingBox box;
         box.Center = XMFLOAT3{ 0.f, 5.5f, 0.f };
-        box.Extents = XMFLOAT3{ 1.5f, 1.5f, 1.5f };
-        monster->SetBoundingBox(box);
+        box.Extents = XMFLOAT3{ 4.5f, 9.5f, 5.5f };
+        monster->SetMonstersBoundingBox(box);
 
         // [4] 본 버퍼 SRV 생성
         auto [cpuHandle, gpuHandle] = gGameFramework->AllocateDescriptorHeapSlot();
@@ -225,8 +225,8 @@ void LoadAllMonsters(
         // [3] 바운딩 박스
         BoundingBox box;
         box.Center = XMFLOAT3{ 0.f, 5.5f, 0.f };
-        box.Extents = XMFLOAT3{ 1.5f, 1.5f, 1.5f };
-        monster->SetBoundingBox(box);
+        box.Extents = XMFLOAT3{ 5.5f, 9.5f, 5.5f };
+        monster->SetMonstersBoundingBox(box);
 
         // [4] 본 버퍼 SRV 생성
         auto [cpuHandle, gpuHandle] = gGameFramework->AllocateDescriptorHeapSlot();
@@ -238,6 +238,49 @@ void LoadAllMonsters(
         outMonsterGroups["Plant_Dionaea"].push_back(monster);
     }
 
+
+    //// [6] Metalon 보스
+    for (int i = 0; i < 1; ++i)
+    {
+        auto monster = make_shared<Boss>(device); // PlantDionaea 클래스 필요
+        // [1] 메쉬, 텍스처, 셰이더 설정
+        monster->SetMesh(meshLibrary.at("Metalon"));
+        monster->SetCamera(camera);
+        monster->SetTexture(textures.at("Metalon"));
+        monster->SetTextureIndex(textures.at("Metalon")->GetTextureIndex());
+        monster->SetShader(shaders.at("FrightFly"));
+        monster->SetDebugLineShader(shaders.at("DebugLineShader"));
+        monster->SetScale(XMFLOAT3{ 0.2, 0.2, 0.2 });
+
+        // [2] 애니메이션 설정
+        vector<AnimationClip> clips;
+        for (const auto& [name, clip] : animClipLibrary.at("Metalon"))
+            clips.push_back(clip);
+        monster->SetHealthBarShader(shaders.at("HealthBarShader"));
+
+        monster->SetAnimationClips(clips);
+        monster->SetCurrentAnimation("Idle");
+        //monster->SetCurrentAnimation("Die");
+        monster->SetBoneOffsets(boneOffsetLibrary.at("Metalon"));
+        monster->SetBoneNameToIndex(boneMap.at("Metalon"));
+        monster->SetBoneHierarchy(boneHierarchy.at("Metalon"));
+        monster->SetNodeNameToGlobalTransform(NodeNameToGlobalTransform.at("Metalon"));
+
+        // [3] 바운딩 박스
+        BoundingBox box;
+        box.Center = XMFLOAT3{ 0.f, 5.5f, 0.f };
+        box.Extents = XMFLOAT3{ 5.5f, 9.5f, 5.5f };
+        monster->SetMonstersBoundingBox(box);
+
+        // [4] 본 버퍼 SRV 생성
+        auto [cpuHandle, gpuHandle] = gGameFramework->AllocateDescriptorHeapSlot();
+        int k = 0;
+        k = gGameFramework->GetCurrentSRVOffset();
+        monster->CreateBoneMatrixSRV(device, cpuHandle, gpuHandle);
+
+        // [5] 그룹에 추가
+        outMonsterGroups["Metalon"].push_back(monster);
+    }
 
 }
 

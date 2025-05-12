@@ -120,6 +120,9 @@ public:
 	//충돌체크 용
 	BoundingBox GetBoundingBox() const { return m_boundingBox; }
 	void SetBoundingBox(const BoundingBox& box);
+	void SetPlayerBoundingBox(const BoundingBox& box);
+	void SetMonstersBoundingBox(const BoundingBox& box);
+	void SetFlyFrightBoundingBox(const BoundingBox& box);
 	void SetDebugLineShader(const shared_ptr<Shader>& shader) { m_debugLineShader = shader; }
 	void SetDrawBoundingBox(bool draw) { m_drawBoundingBox = draw; }
 	bool IsDrawBoundingBox() const { return m_drawBoundingBox; }

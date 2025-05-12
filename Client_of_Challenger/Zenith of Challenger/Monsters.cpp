@@ -178,7 +178,8 @@ void Monsters::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) cons
 		//와이어 프레임 렌더링
 		if (!isShadowPass && m_drawBoundingBox && m_debugBoxMesh && m_debugLineShader)
 		{
-			RenderBoundingBoxWithoutScale(commandList);
+			m_debugLineShader->UpdateShaderVariable(commandList);
+			m_debugBoxMesh->Render(commandList);
 		}
 	}
 
