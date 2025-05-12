@@ -393,14 +393,17 @@ std::pair<std::vector<XMMATRIX>, std::unordered_map<std::string, int>> Animation
 	{
 		XMMATRIX localTransform = XMMatrixIdentity();
 		if (boneAnimations.contains(boneName))
+		{
 			localTransform = GetBoneTransform(boneAnimations.at(boneName), time);
+
+			// 특정 본 회전 강제 고정
+			if (boneName == "RigSpine0")
+			{
+				localTransform = XMMatrixIdentity(); 
+			}
+		}
 		else if (staticNodeTransforms.contains(boneName))
 			localTransform = staticNodeTransforms.at(boneName);
-
-		if (boneName == "RigSpine0")
-		{
-			localTransform = XMMatrixIdentity();
-		}
 
 		if (boneHierarchy.contains(boneName))
 		{

@@ -164,7 +164,7 @@ void Player::KeyboardEvent(FLOAT timeElapsed)
 
 
 
-
+#pragma optimize( "", off )
 void Player::Update(FLOAT timeElapsed)
 {
     if (m_camera) m_camera->UpdateEye(GetPosition());
@@ -199,7 +199,7 @@ void Player::Update(FLOAT timeElapsed)
 
     bool isMoving = keyStates['W'] || keyStates['A'] || keyStates['S'] || keyStates['D'];
 
-    if (isMoving&&!isPunching)
+    if (isMoving && !isPunching)
     {
         if (GetAsyncKeyState(VK_SHIFT) && m_animationClips.contains("Running"))
         {
@@ -208,7 +208,7 @@ void Player::Update(FLOAT timeElapsed)
             {
                 CS_Packet_Animaition pkt;
                 pkt.type = CS_PACKET_ANIMATION;
-                pkt.animation = 1;
+                pkt.animation = 2;
                 pkt.size = sizeof(pkt);
                 gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
             }
@@ -217,6 +217,13 @@ void Player::Update(FLOAT timeElapsed)
         {
             /*SetCurrentAnimation("Walking");*/
             isRunning = false;
+            {
+                CS_Packet_Animaition pkt;
+                pkt.type = CS_PACKET_ANIMATION;
+                pkt.animation = 1;
+                pkt.size = sizeof(pkt);
+                gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
+            }
             m_currentAnim = "Walking";
         }        
     }
@@ -231,16 +238,30 @@ void Player::Update(FLOAT timeElapsed)
             isMoving = false;
             SetCurrentAnimation("Idle");
             m_boundingBox.Extents = { 1.0f,4.0f,1.0f };
-        }
-    }
-    else
-    {
-        if (m_animationClips.contains("Idle"))
-        {
-          //  SetCurrentAnimation("Idle");
-            m_currentAnim = "Idle";
-        }
-    }
+            {
+                CS_Packet_Animaition pkt;
+                pkt.type = CS_PACKET_ANIMATION;
+                pkt.animation = 0;
+				pkt.size = sizeof(pkt);
+				gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
+			}
+		}
+	}
+	else
+	{
+		if (m_animationClips.contains("Idle"))
+		{
+			//  SetCurrentAnimation("Idle");
+			m_currentAnim = "Idle";
+
+			CS_Packet_Animaition pkt;
+			pkt.type = CS_PACKET_ANIMATION;
+			pkt.animation = 0;
+			pkt.size = sizeof(pkt);
+			gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
+
+		}
+	}
 
 
     {
@@ -261,6 +282,9 @@ void Player::Update(FLOAT timeElapsed)
     };
     GameObject::Update(timeElapsed);
 }
+#pragma optimize( "", on )
+
+
 
 
 void Player::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const

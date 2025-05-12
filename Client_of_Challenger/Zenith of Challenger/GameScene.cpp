@@ -234,7 +234,7 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
         {
             CS_Packet_Animaition pkt;
             pkt.type = CS_PACKET_ANIMATION;
-            pkt.animation = 0;
+            pkt.animation = 3;
             pkt.size = sizeof(pkt);
             gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
         }
@@ -842,7 +842,7 @@ void GameScene::BuildMeshes(const ComPtr<ID3D12Device>& device,
 
     // Metalon FBX 메쉬 저장
     auto Metalon = make_shared<FBXLoader>();
-    if (Metalon->LoadFBXModel("Model/Monsters/Metalon/Metalon.fbx", XMMatrixIdentity()))//scale 0.1     
+    if (Metalon->LoadFBXModel("Model/Monsters/Metalon/Metalon1.fbx", XMMatrixIdentity()))//scale 0.1     
     {
         auto meshes = Metalon->GetMeshes();
         if (!meshes.empty())
@@ -1556,19 +1556,19 @@ void GameScene::RenderShadowPass(const ComPtr<ID3D12GraphicsCommandList>& comman
         }
     }
 
-    if (m_player)
-    {
-        m_player->SetShader(m_shaders.at("SHADOWCHARSKINNED"));
-        m_player->Render(commandList);
-    }
+    //if (m_player)
+    //{
+    //    m_player->SetShader(m_shaders.at("SHADOWCHARSKINNED"));
+    //    m_player->Render(commandList);
+    //}
 
-    for (auto op : m_Otherplayer)
-    {
-        if (op) {
-            op->SetShader(m_shaders.at("SHADOWCHARSKINNED"));
-            op->Render(commandList);
-        }
-    }
+    //for (auto op : m_Otherplayer)
+    //{
+    //    if (op) {
+    //        op->SetShader(m_shaders.at("SHADOWCHARSKINNED"));
+    //        op->Render(commandList);
+    //    }
+    //}
 }
 
 void GameScene::HandleMouseClick(int mouseX, int mouseY)

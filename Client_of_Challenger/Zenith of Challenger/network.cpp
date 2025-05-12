@@ -49,6 +49,11 @@ void ClientNetwork::Disconnect()
 bool ClientNetwork::SendPacket(const char* data, int length)
 {
 	int sent = send(m_clientsocket, data, length, 0);
+
+	char debug[128];
+	sprintf_s(debug, "[SendPacket] length=%d, sent=%d, error=%d\n", length, sent, WSAGetLastError());
+	OutputDebugStringA(debug);
+
 	if (sent == SOCKET_ERROR) return false;
 	return true;
 }
@@ -424,31 +429,84 @@ void ClientNetwork::ProcessAnimation(char* buffer)
 {
 	SC_Packet_Animaition* pkt = reinterpret_cast<SC_Packet_Animaition*>(buffer);
 
-	if (pkt->animation == 0) {		// 0 == ÆÝÄ¡
+	//if (pkt->animation == 3) {		// 0 == ÆÝÄ¡
+	//	if (pkt->client_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[0])
+	//	{
+	//		shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
+	//		currentScene->m_Otherplayer[0]->SetCurrentAnimation("Punch.001");
+	//	}
+	//	else if (pkt->client_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[1])
+	//	{
+	//		shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
+	//		currentScene->m_Otherplayer[1]->SetCurrentAnimation("Punch.001");
+	//	}
+	//}
+	//else if(pkt->animation == 2)
+	//{		// 1 == ´Þ¸®±â
+	//	if (pkt->client_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[0])
+	//	{
+	//		shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
+	//		currentScene->m_Otherplayer[0]->m_currentAnim = "Running";
+	//	}
+	//	else if (pkt->client_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[1])
+	//	{
+	//		shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
+	//		currentScene->m_Otherplayer[1]->m_currentAnim = "Running";
+	//	}
+	//}
+
+
+	switch (pkt->animation) {
+	case 0:
 		if (pkt->client_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[0])
 		{
 			shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
-			currentScene->m_Otherplayer[0]->SetCurrentAnimation("Punch.001");
+			currentScene->m_Otherplayer[0]->m_CurrentAnim = pkt->animation;
 		}
 		else if (pkt->client_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[1])
 		{
 			shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
-			currentScene->m_Otherplayer[1]->SetCurrentAnimation("Punch.001");
+			currentScene->m_Otherplayer[1]->m_CurrentAnim = pkt->animation;
 		}
-	}
-	else if(pkt->animation==1)
-	{		// 1 == ´Þ¸®±â
+		break;
+	case 1:
 		if (pkt->client_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[0])
 		{
 			shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
-			currentScene->m_Otherplayer[0]->m_currentAnim = "Running";
+			currentScene->m_Otherplayer[0]->m_CurrentAnim = pkt->animation;
 		}
 		else if (pkt->client_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[1])
 		{
 			shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
-			currentScene->m_Otherplayer[1]->m_currentAnim = "Running";
+			currentScene->m_Otherplayer[1]->m_CurrentAnim = pkt->animation;
 		}
+		break;
+	case 2:
+		if (pkt->client_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[0])
+		{
+			shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
+			currentScene->m_Otherplayer[0]->m_CurrentAnim = pkt->animation;
+		}
+		else if (pkt->client_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[1])
+		{
+			shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
+			currentScene->m_Otherplayer[1]->m_CurrentAnim = pkt->animation;
+		}
+		break;
+	case 3:
+		if (pkt->client_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[0])
+		{
+			shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
+			currentScene->m_Otherplayer[0]->m_CurrentAnim = pkt->animation;
+		}
+		else if (pkt->client_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[1])
+		{
+			shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
+			currentScene->m_Otherplayer[1]->m_CurrentAnim = pkt->animation;
+		}
+		break;
 	}
+
 
 
 

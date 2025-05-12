@@ -128,23 +128,44 @@ void OtherPlayer::Update(FLOAT timeElapsed)
         m_position = gGameFramework->GetSceneManager()->GetCurrentScene()->otherpos[1];
         SetRotationY(gGameFramework->GetSceneManager()->GetCurrentScene()->otherangle[1]);
     }
-    if (oldPos.x == m_position.x && oldPos.y == m_position.y && oldPos.z == m_position.z)
-    {
-        if(m_currentAnim!="Punch.001")
+
+
+    //if (oldPos.x == m_position.x && oldPos.y == m_position.y && oldPos.z == m_position.z)
+    //{
+    //    if(m_currentAnim!="Punch.001")
+    //    m_currentAnim = "Idle";
+    //    else
+    //    {
+    //        if (m_animTime > m_animationClips.at(m_currentAnim).duration - 1.0)
+    //        {                
+    //            SetCurrentAnimation("Idle");
+    //        }
+    //    }
+    //}
+    //else
+    //{
+    //    oldPos = m_position;
+    //    m_currentAnim = "Walking";
+    //}
+
+
+    switch (m_CurrentAnim) {
+    case 0:
         m_currentAnim = "Idle";
-        else
-        {
-            if (m_animTime > m_animationClips.at(m_currentAnim).duration - 1.0)
-            {                
-                SetCurrentAnimation("Idle");
-            }
-        }
-    }
-    else
-    {
-        oldPos = m_position;
+        break;
+    case 1:
         m_currentAnim = "Walking";
+        break;
+    case 2:
+        m_currentAnim = "Running";
+        break;
+    case 3:
+        m_currentAnim = "Punch.001";
+        break;
     }
+
+
+
     SetPosition(m_position);
 
     XMFLOAT3 pos = GetPosition();
