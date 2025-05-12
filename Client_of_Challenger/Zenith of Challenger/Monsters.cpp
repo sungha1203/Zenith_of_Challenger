@@ -57,7 +57,7 @@ void Monsters::KeyboardEvent(FLOAT timeElapsed)
 	// AI 몬스터는 직접 입력받지 않음
 }
 
-void Monsters::Update(FLOAT timeElapsed)
+void Monsters::Update(FLOAT timeElapsed,bool aniOff)
 {
 	// 추후 AI나 타겟 추적 등으로 확장 가능
 
@@ -81,7 +81,9 @@ void Monsters::Update(FLOAT timeElapsed)
 		if (m_animationClips.contains(m_currentAnim))
 		{
 			const auto& clip = m_animationClips.at(m_currentAnim);
-			m_animTime += timeElapsed * clip.ticksPerSecond*0.2;
+			m_animTime += timeElapsed * clip.ticksPerSecond;
+			if (aniOff)
+				m_animTime = 0;
 			//if (m_animTime > clip.duration)
 			//{
 			//	m_animTime = fmod(m_animTime, clip.duration);

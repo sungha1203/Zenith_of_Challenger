@@ -383,6 +383,7 @@ void FixQuaternionSequenceSigns(std::vector<Keyframe>& keyframes)
 		}
 	}
 }
+
 void FBXLoader::ProcessAnimations(const aiScene* scene)
 {
 	if (!scene->HasAnimations()) return;

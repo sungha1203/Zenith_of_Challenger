@@ -26,7 +26,7 @@ public:
 	void MouseEvent(FLOAT timeElapsed);
 	void KeyboardEvent(FLOAT timeElapsed);
 
-	virtual void Update(FLOAT timeElapsed) override;
+	virtual void Update(FLOAT timeElapsed, bool aniOff);
 	virtual void Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const override; 
 
 	void Move(XMFLOAT3 direction, FLOAT speed);  // 이동 로직 추가

@@ -306,8 +306,13 @@ void GameScene::Update(FLOAT timeElapsed)
     // [1] 몬스터 업데이트 (map 기반)
     for (auto& [type, group] : m_monsterGroups)
     {
+        bool anioff = false;
+        if (type == "Flower_Fairy" || type == "Plant_Dionaea" || type == "Venus_Blue")
+            anioff = true;
         for (auto& monster : group)
-            monster->Update(timeElapsed);
+        {
+            monster->Update(timeElapsed,anioff);
+        }
     }
 
     m_bossMonsters[0]->SetRotationZ(80.f);

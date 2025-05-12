@@ -128,14 +128,42 @@ void OtherPlayer::Update(FLOAT timeElapsed)
         m_position = gGameFramework->GetSceneManager()->GetCurrentScene()->otherpos[1];
         SetRotationY(gGameFramework->GetSceneManager()->GetCurrentScene()->otherangle[1]);
     }
-    if (oldPos.x == m_position.x && oldPos.y == m_position.y && oldPos.z == m_position.z)
+
+
+    //if (oldPos.x == m_position.x && oldPos.y == m_position.y && oldPos.z == m_position.z)
+    //{
+    //    if(m_currentAnim!="Punch.001")
+    //    m_currentAnim = "Idle";
+    //    else
+    //    {
+    //        if (m_animTime > m_animationClips.at(m_currentAnim).duration - 1.0)
+    //        {                
+    //            SetCurrentAnimation("Idle");
+    //        }
+    //    }
+    //}
+    //else
+    //{
+    //    oldPos = m_position;
+    //    m_currentAnim = "Walking";
+    //}
+    float dx = m_position.x - oldPos.x;
+    float dy = m_position.y - oldPos.y;
+    float dz = m_position.z - oldPos.z;
+
+    float distSq = dx * dx + dy * dy + dz * dz;
+    const float moveThresholdSq = 0.0001f; // 너무 작으면 안 됨
+
+    if (distSq < moveThresholdSq)
     {
-        if(m_currentAnim!="Punch.001")
-        m_currentAnim = "Idle";
+        if (m_currentAnim != "Punch.001")
+        {
+            m_currentAnim = "Idle";
+        }
         else
         {
-            if (m_animTime > m_animationClips.at(m_currentAnim).duration - 1.0)
-            {                
+            if (m_animTime > m_animationClips.at(m_currentAnim).duration - 1.0f)
+            {
                 SetCurrentAnimation("Idle");
             }
         }
