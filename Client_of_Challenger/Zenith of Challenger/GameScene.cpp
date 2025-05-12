@@ -1045,7 +1045,11 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 
     if (otherid[0] != -2)
     {
-        m_Otherplayer[0] = m_playerLoader->LoadOtherPlayer(device, m_textures, m_shaders);
+        auto ptr = m_playerLoader->LoadOtherPlayer(device, m_textures, m_shaders);
+        if(ptr==nullptr)
+            OutputDebugStringA("[ERROR] LoadOtherPlayer 실패\n");
+        else
+        m_Otherplayer[0] = ptr;
         m_Otherplayer[0]->m_id = otherid[0];
         m_Otherplayer[0]->m_position = otherpos[0];
         m_Otherplayer[0]->SetPosition(m_Otherplayer[0]->m_position);
