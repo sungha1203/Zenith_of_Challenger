@@ -7,188 +7,84 @@
 
 using namespace DirectX;
 
-XMMATRIX InterpolateKeyframes(const Keyframe& a, const Keyframe& b, float t)
-{
-	
-	XMVECTOR posA = XMLoadFloat3(&a.position);
-	XMVECTOR posB = XMLoadFloat3(&b.position);
-	XMVECTOR scaleA = XMLoadFloat3(&a.scale);
-	XMVECTOR scaleB = XMLoadFloat3(&b.scale);
-
-	XMVECTOR rotA = XMQuaternionNormalize(XMLoadFloat4(&a.rotation));
-	XMVECTOR rotB = XMQuaternionNormalize(XMLoadFloat4(&b.rotation));
-	// 보간 전 dot 확인
-	float dot = XMVectorGetX(XMVector4Dot(rotA, rotB));
-	if (dot < 0.0f) {
-		rotB = XMVectorNegate(rotB);
-		dot = -dot;
-	}
-		char dbg[256];
-		XMFLOAT4 ra, rb;
-		XMStoreFloat4(&ra, rotA);
-		XMStoreFloat4(&rb, rotB);
-		sprintf_s(dbg, "dot=%.4f | A(%.3f,%.3f,%.3f,%.3f) → B(%.3f,%.3f,%.3f,%.3f)\n",
-			dot, ra.x, ra.y, ra.z, ra.w, rb.x, rb.y, rb.z, rb.w);
-		OutputDebugStringA(dbg);
-	//if (dot < -0.98f) // 유사 180도 회전
-	//{
-	//}
-	//if (XMVectorGetX(XMVector4Dot(rotA, rotB)) < 0.0f)
-	//{
-	//	// rotB의 부호 반전 (같은 회전을 더 짧은 경로로)
-	//	rotB = XMVectorNegate(rotB);
-	//
-	//}
-	XMVECTOR rot;
-	if (dot < -0.9999f)
-	{
-		// 완벽한 반대 방향이므로 SLERP 불가 → arbitrary한 직선 보간 or 고정
-		// 보통은 LERP 후 normalize, 또는 rotA 고정
-		/*rot = XMVectorLerp(rotA, rotB, t);
-		rot = XMQuaternionNormalize(rot);*/
-		rot = rotA;
-	}
-	else if (dot > 0.9995f)
-	{
-		rot = XMVectorLerp(rotA, rotB, t);
-		rot = XMQuaternionNormalize(rot);
-	}
-	else
-	{
-		rot = XMQuaternionSlerp(rotA, rotB, t);
-	}
-	// 보간 전 dot 확인 및 보정
-	//if (dot < 0.0f)
-	//{
-	//	rotB = XMVectorNegate(rotB);
-	//	dot = -dot;
-	//}
-	//
-	//// dot == 1.0 → same rotation, dot == 0 → orthogonal, dot == -1.0 → opposite
-	//if (dot > 0.9995f)
-	//{
-	//	// 거의 같은 회전이므로 LERP로 보간 후 normalize
-	//	rot = XMVectorLerp(rotA, rotB, t);
-	//	rot = XMQuaternionNormalize(rot);
-	//}
-	//else if (dot < 0.0001f)
-	//{
-	//	// 거의 반대 방향 → LERP fallback
-	//	rot = XMVectorLerp(rotA, rotB, t);
-	//	rot = XMQuaternionNormalize(rot);
-	//}
-	//else
-	//{
-	//	rot = XMQuaternionSlerp(rotA, rotB, t);
-	//}
-	if (
-		isnan(XMVectorGetX(rot)) || isnan(XMVectorGetY(rot)) ||
-		isnan(XMVectorGetZ(rot)) || isnan(XMVectorGetW(rot)) ||
-		XMVectorGetX(XMVector4LengthSq(rot)) < 0.0001f
-		)
-	{
-		rot = rotA; // 방어: slerp가 터졌으면 이전 회전 유지
-	}
-	XMVECTOR pos = XMVectorLerp(posA, posB, t);
-	XMVECTOR scale = XMVectorLerp(scaleA, scaleB, t);
-	//XMVECTOR rot = XMQuaternionSlerp(rotA, rotB, t);
-
-	XMMATRIX T = XMMatrixTranslationFromVector(pos);
-	XMMATRIX R = XMMatrixRotationQuaternion(rot);
-	XMMATRIX S = XMMatrixScalingFromVector(scale);
-
-	return S * R * T;
-
-}
-
+//XMFLOAT3 QuaternionToYawPitchRoll(const XMVECTOR& q)
+//{
+//	XMFLOAT4 quat;
+//	XMStoreFloat4(&quat, q);
+//
+//	float ysqr = quat.y * quat.y;
+//
+//	// roll (x-axis rotation)
+//	float t0 = +2.0f * (quat.w * quat.x + quat.y * quat.z);
+//	float t1 = +1.0f - 2.0f * (quat.x * quat.x + ysqr);
+//	float roll = std::atan2(t0, t1);
+//
+//	// pitch (y-axis rotation)
+//	float t2 = +2.0f * (quat.w * quat.y - quat.z * quat.x);
+//	t2 = t2 > 1.0f ? 1.0f : t2;
+//	t2 = t2 < -1.0f ? -1.0f : t2;
+//	float pitch = std::asin(t2);
+//
+//	// yaw (z-axis rotation)
+//	float t3 = +2.0f * (quat.w * quat.z + quat.x * quat.y);
+//	float t4 = +1.0f - 2.0f * (ysqr + quat.z * quat.z);
+//	float yaw = std::atan2(t3, t4);
+//
+//	return XMFLOAT3(pitch, yaw, roll); // Y, Z, X 회전 순
+//}
+//
 //XMMATRIX InterpolateKeyframes(const Keyframe& a, const Keyframe& b, float t, const std::string& currentBoneName, float currentTime)
 //{
-//	float timeGap = b.time - a.time;
-//	if (fabsf(timeGap) < 0.0001f) {
-//		char dbg[256];
-//		sprintf_s(dbg, "[경고] %.4f 초에서 '%s'의 keyframe 시간 차이 매우 작음 → a=%.4f, b=%.4f\n",
-//			currentTime, currentBoneName.c_str(), a.time, b.time);
-//		OutputDebugStringA(dbg);
-//	}
 //	XMVECTOR posA = XMLoadFloat3(&a.position);
 //	XMVECTOR posB = XMLoadFloat3(&b.position);
 //	XMVECTOR scaleA = XMLoadFloat3(&a.scale);
 //	XMVECTOR scaleB = XMLoadFloat3(&b.scale);
-//
 //	XMVECTOR rotA = XMQuaternionNormalize(XMLoadFloat4(&a.rotation));
 //	XMVECTOR rotB = XMQuaternionNormalize(XMLoadFloat4(&b.rotation));
-//	// 혹시 잘못된 회전값이 처음부터 들어오는 건 아닌지?
-//	if (XMQuaternionIsNaN(rotA) || XMQuaternionIsNaN(rotB))
-//	{
-//		OutputDebugStringA("[오류] NaN Quaternion 발견\n");
-//	}
-//	// 보간 전 dot 확인
-//	float dot = XMVectorGetX(XMVector4Dot(rotA, rotB));
-//	if (fabs(dot) < 0.1f)
-//	{
-//		char debug[256];
-//		sprintf_s(debug, "[Intpolate] TUM? bone=%s t=%.3f dot=%.4f\n", currentBoneName.c_str(), t, dot);
-//		OutputDebugStringA(debug);
-//	}
-//	//XMVECTOR rot;
-//	// dot이 -1이면 완전히 반대 방향 → 절대 보간하지 말고 rotA로 고정
-//	//if (dot < -0.9999f) {
-//	//	char debug[128];
-//	//	// SLERP 위험 구간 - Debug 출력
-//	//	XMFLOAT4 tempRotA, tempRotB;
-//	//	XMStoreFloat4(&tempRotA, rotA);
-//	//	XMStoreFloat4(&tempRotB, rotB);
-//	//	sprintf_s(debug, "[보간 Skip] dot=%.4f A=(%.3f,%.3f,%.3f,%.3f) B=(%.3f,%.3f,%.3f,%.3f)\n", dot,
-//	//		tempRotA.x, tempRotA.y, tempRotA.z, tempRotA.w,
-//	//		tempRotB.x, tempRotB.y, tempRotB.z, tempRotB.w);
-//	//	OutputDebugStringA(debug);
-//	//	rot = rotA;
-//	//}
-//	//else if (dot > 0.9995f) {
-//	//	rot = XMQuaternionNormalize(XMVectorLerp(rotA, rotB, t));
-//	//}
-//	//else if (dot < 0.1f) {
-//	//	char dbg[128];
-//	//	sprintf_s(dbg, "[dot < 0.1f → LERP 대체] time=%.4f | bone=%s | dot=%.4f\n", currentTime, currentBoneName.c_str(), dot);
-//	//	OutputDebugStringA(dbg);
-//	//	rot = XMQuaternionNormalize(XMVectorLerp(rotA, rotB, t)); 
-//	//}
-//	//else {
-//	//	// SLERP with sign correction
-//	//	//if (dot < 0.0f)
-//	//	//{
-//	//	//	rotB = XMVectorNegate(rotB);
-//	//	//	dot = -dot;
-//	//	//}
-//	//	rot = XMQuaternionSlerp(rotA, rotB, t);
-//	//}
-//	//if (
-//	//	isnan(XMVectorGetX(rot)) || isnan(XMVectorGetY(rot)) ||
-//	//	isnan(XMVectorGetZ(rot)) || isnan(XMVectorGetW(rot)) ||
-//	//	XMVectorGetX(XMVector4LengthSq(rot)) < 0.0001f
-//	//	) {
-//	//	rot = rotA; // fallback
-//	//}
-//	//XMFLOAT4 dbgRotA, dbgRotB;
-//	//XMStoreFloat4(&dbgRotA, rotA);
-//	//XMStoreFloat4(&dbgRotB, rotB);
-//	//
-//	//if (fabs(dot) < 0.1f || currentBoneName == "RigMouth" || currentBoneName == "RigRHeadDownJaw")
-//	//{
-//	//	char debug[256];
-//	//	sprintf_s(debug,
-//	//		"[SLERP 점검] time=%.4f | bone=%-25s | t=%.4f | dot=%.4f\n",
-//	//		currentTime, currentBoneName.c_str(), t, dot);
-//	//	OutputDebugStringA(debug);
-//	//}
+//
+//	XMFLOAT3 eulerA = QuaternionToYawPitchRoll(rotA);
+//	XMFLOAT3 eulerB = QuaternionToYawPitchRoll(rotB);
+//
+//	// 라디안 → 도 단위
+//	float pitchA = XMConvertToDegrees(eulerA.x);
+//	float yawA = XMConvertToDegrees(eulerA.y);
+//	float rollA = XMConvertToDegrees(eulerA.z);
+//
+//	float pitchB = XMConvertToDegrees(eulerB.x);
+//	float yawB = XMConvertToDegrees(eulerB.y);
+//	float rollB = XMConvertToDegrees(eulerB.z);
+//
+//	// 방향 보정 (±360 보정)
+//	auto FixAngle = [](float a, float b) -> float {
+//		float delta = b - a;
+//		if (delta > 180.0f)  b -= 360.0f;
+//		else if (delta < -180.0f) b += 360.0f;
+//		return b;
+//		};
+//
+//	pitchB = FixAngle(pitchA, pitchB);
+//	yawB = FixAngle(yawA, yawB);
+//	rollB = FixAngle(rollA, rollB);
+//
+//	//보간
+//	float finalPitch = pitchA + (pitchB - pitchA) * t;
+//	float finalYaw = yawA + (yawB - yawA) * t;
+//	float finalRoll = rollA + (rollB - rollA) * t;
+//
+//	// 다시 Quaternion으로
+//	XMVECTOR rot = XMQuaternionRotationRollPitchYaw(
+//		XMConvertToRadians(finalPitch),
+//		XMConvertToRadians(finalYaw),
+//		XMConvertToRadians(finalRoll));
+//
+//	// 위치, 스케일 보간
 //	XMVECTOR pos = XMVectorLerp(posA, posB, t);
 //	XMVECTOR scale = XMVectorLerp(scaleA, scaleB, t);
-//	XMVECTOR rot = XMQuaternionSlerp(rotA, rotB, t);
 //
+//	// 최종 변환 조합
 //	XMMATRIX T = XMMatrixTranslationFromVector(pos);
 //	XMMATRIX R = XMMatrixRotationQuaternion(rot);
 //	XMMATRIX S = XMMatrixScalingFromVector(scale);
-//
 //	return S * R * T;
 //}
 XMMATRIX InterpolateKeyframes(const Keyframe& a, const Keyframe& b, float t, const std::string& currentBoneName, float currentTime)
@@ -216,11 +112,7 @@ XMMATRIX InterpolateKeyframes(const Keyframe& a, const Keyframe& b, float t, con
 
 	// Dot product 계산 (보간 방식 결정용)
 	float dot = XMVectorGetX(XMVector4Dot(rotA, rotB));
-	if (fabs(dot) < 0.05f) {
-		char debug[256];
-		sprintf_s(debug, "[Interpolate] TUM? bone=%s t=%.3f dot=%.4f\n", currentBoneName.c_str(), currentTime, dot);
-		//OutputDebugStringA(debug);
-	}
+	
 
 	// 보간
 	XMVECTOR pos = XMVectorLerp(posA, posB, t);
@@ -248,7 +140,7 @@ XMMATRIX AnimationClip::GetBoneTransform(const BoneAnimation& boneAnim, float ti
 	if (keys.size() == 1) return InterpolateKeyframes(keys[0], keys[0], 0, boneAnim.boneName, time);
 
 	float clipEndTime = keys.back().time;
-	if (time >= clipEndTime)
+	if (time >= clipEndTime - 0.001f)
 		time = fmod(time, clipEndTime);
 
 	Keyframe a = keys[0], b = keys[0];
@@ -289,149 +181,7 @@ XMMATRIX AnimationClip::GetBoneTransform(const BoneAnimation& boneAnim, float ti
 
 	return InterpolateKeyframes(a, b, t, boneAnim.boneName, time);
 }
-//XMMATRIX AnimationClip::GetBoneTransform(const BoneAnimation& boneAnim, float time) const
-//{
-//	const auto& keys = boneAnim.keyframes;
-//	if (keys.empty()) return XMMatrixIdentity();
-//	if (keys.size() == 1) return InterpolateKeyframes(keys[0], keys[0], 0, boneAnim.boneName, time);
-//
-//	float clipEndTime = keys.back().time;
-//
-//	// 루프 애니메이션을 위한 시간 보정
-//	if (time >= clipEndTime)
-//	{
-//		//time = fmod(time, clipEndTime);
-//		const Keyframe& last = keys.back();
-//		return InterpolateKeyframes(last, last, 0, boneAnim.boneName, time);
-//	}
-//
-//	// 구간 탐색
-//	Keyframe a = keys[0];
-//	Keyframe b = keys[0];
-//
-//	for (size_t i = 0; i < keys.size() - 1; ++i)
-//	{
-//		if (time < keys[i + 1].time)
-//		{
-//			a = keys[i];
-//			b = keys[i + 1];
-//			char dbg[256];
-//			//sprintf_s(dbg, "[보간 탐지] bone='%s' time=%.4f, a=%.4f, b=%.4f, b-a=%.6f\n",
-//			//	boneAnim.boneName.c_str(), time, a.time, b.time, b.time - a.time);
-//			//OutputDebugStringA(dbg);
-//			break;
-//		}
-//	}
-//
-//	float duration = b.time - a.time;
-//	float lerpFactor = 0.0f;
-//
-//	if (duration > FLT_EPSILON)
-//		lerpFactor = (time - a.time) / duration;
-//
-//	return InterpolateKeyframes(a, b, lerpFactor, boneAnim.boneName, time);
-//}
-//XMMATRIX AnimationClip::GetBoneTransform(const BoneAnimation& boneAnim, float time) const
-//{
-//	const auto& keys = boneAnim.keyframes;
-//	if (keys.empty()) return XMMatrixIdentity();
-//	if (keys.size() == 1) return InterpolateKeyframes(keys[0], keys[0], 0);
-//
-//	Keyframe a = keys[0];
-//	Keyframe b = keys[0];
-//	
-//	// 기본은 마지막 두 키프레임을 a, b로 해두자 (fallback)
-//	a = keys[keys.size() - 2];
-//	b = keys[keys.size() - 1];
-//
-//	for (size_t i = 0; i < keys.size() - 1; ++i)
-//	{
-//		if (time < keys[i + 1].time)
-//		{
-//			a = keys[i];
-//			b = keys[i + 1];
-//			break;
-//		}
-//	}
-//
-//	//float lerpFactor = (time - a.time) / (b.time - a.time);
-//	float duration = b.time - a.time;
-//	float lerpFactor = 0.0f;
-//
-//	if (duration > FLT_EPSILON)
-//		lerpFactor = (time - a.time) / duration;
-//	else
-//		lerpFactor = 0.0f; // 방어: 동일한 키프레임 시간일 경우
-//
-//	//{
-//	//	char dbg[128];
-//	//	sprintf_s(dbg, "[%s] time: %.3f | a: %.3f, b: %.3f, lerp: %.3f\n", boneAnim.boneName.c_str(), time, a.time, b.time, lerpFactor);
-//	//	OutputDebugStringA(dbg);
-//	//}
-//
-//	XMMATRIX localTransform = InterpolateKeyframes(a, b, lerpFactor,boneAnim.boneName,time);
-//	return localTransform;
-//}
 
-std::pair<std::vector<XMMATRIX>, std::unordered_map<std::string, int>> AnimationClip::GetBoneTransforms(float time, unordered_map<std::string, int>boneNametoIndex, unordered_map<std::string, string>boneHierarchy, unordered_map<std::string, XMMATRIX>staticNodeTransforms) const
-{
-	std::pair<std::vector<XMMATRIX>, std::unordered_map<std::string, int>> p;
-	std::unordered_map<std::string, int> animBoneIndex;
-	int nextIndex = 0;
-
-	for (const auto& [boneName, _] : boneAnimations)
-	{
-		animBoneIndex[boneName] = nextIndex++;
-	}
-	// Topological sort
-	vector<string> sortedBones = TopologicalSort(boneHierarchy);
-
-	// boneName -> globalTransform
-	unordered_map<string, XMMATRIX> boneGlobalTransforms;
-
-	for (const auto& boneName : sortedBones)
-	{
-		XMMATRIX localTransform = XMMatrixIdentity();
-		if (boneAnimations.contains(boneName))
-		{
-			localTransform = GetBoneTransform(boneAnimations.at(boneName), time);
-
-			// 특정 본 회전 강제 고정
-			if (boneName == "RigSpine0")
-			{
-				localTransform = XMMatrixIdentity(); 
-			}
-		}
-		else if (staticNodeTransforms.contains(boneName))
-			localTransform = staticNodeTransforms.at(boneName);
-
-		if (boneHierarchy.contains(boneName))
-		{
-			const string& parent = boneHierarchy.at(boneName);
-			boneGlobalTransforms[boneName] = XMMatrixMultiply(localTransform, boneGlobalTransforms[parent]);
-		}
-		else
-		{
-			boneGlobalTransforms[boneName] = localTransform;
-		}
-	}
-
-	// 최종 BoneMatrices 만들기
-	vector<XMMATRIX> result(boneNametoIndex.size(), XMMatrixIdentity());
-
-	for (const auto& [boneName, vertexIndex] : boneNametoIndex)
-	{
-		if (boneGlobalTransforms.contains(boneName))
-		{
-			//result[vertexIndex] = XMMatrixMultiply(boneGlobalTransforms[boneName], boneoffset.at(vertexIndex));
-			result[vertexIndex] = boneGlobalTransforms[boneName];
-		}
-	}
-
-	p.first = result;
-	p.second = animBoneIndex;
-	return p;
-}
 // 1. 부모-자식 관계 기반으로 Topological Sort
 vector<string> TopologicalSort(const unordered_map<string, string>& boneHierarchy)
 {

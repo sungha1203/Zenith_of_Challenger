@@ -82,8 +82,8 @@ void Monsters::Update(FLOAT timeElapsed,bool aniOff)
 		{
 			const auto& clip = m_animationClips.at(m_currentAnim);
 			m_animTime += timeElapsed * clip.ticksPerSecond;
-			if (aniOff)
-				m_animTime = 0;
+			//if (aniOff)
+			//	m_animTime = 0;
 			//if (m_animTime > clip.duration)
 			//{
 			//	m_animTime = fmod(m_animTime, clip.duration);
@@ -135,9 +135,22 @@ void Monsters::Update(FLOAT timeElapsed,bool aniOff)
 		float degrees = XMConvertToDegrees(angle);
 
 		// [4] 몬스터가 플레이어를 향하도록 Y축 회전
+		if(m_monNum==2|| m_monNum == 3)
+		{
+			SetRotationY(degrees);
+			SetRotationZ(90.f);
+		}
+		else if (m_monNum==0)
+		{
+			SetRotationY(degrees + 90.f);
+			SetRotationZ(180.f);
+		}
+		else
+		{
+			SetRotationY(degrees - 90.f);
+		}
 
-		SetRotationY(degrees + 90.f);
-		SetRotationZ(90.f);
+
 		//PlusRotationY(90.0f);
 		//PlusRotationZ(90.0f);
 	}

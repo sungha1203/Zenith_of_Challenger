@@ -67,6 +67,7 @@ public:
 	//몬스터 외곽선 호출
 	void RenderOutline(const ComPtr<ID3D12GraphicsCommandList>& commandList) const;
 	void PlayAnimationWithBlend(const std::string& newAnim, float blendDuration);
+	int m_monNum;
 private:
 	shared_ptr<Camera> m_camera;
 

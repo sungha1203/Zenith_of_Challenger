@@ -33,6 +33,7 @@ void LoadAllMonsters(
         frightfly->SetDebugLineShader(shaders.at("DebugLineShader"));
         frightfly->SetHealthBarShader(shaders.at("HealthBarShader"));
         frightfly->SetScale(XMFLOAT3{ 0.05, 0.05, 0.05 }); 
+        frightfly->m_monNum = 0;
 
         // [2] 애니메이션 설정
         vector<AnimationClip> clips;
@@ -40,7 +41,7 @@ void LoadAllMonsters(
             clips.push_back(clip);
 
         frightfly->SetAnimationClips(clips);
-        frightfly->SetCurrentAnimation("Idle");
+        frightfly->SetCurrentAnimation("Polygonal_Frightfly_01|Polygonal_Frightfly_01|Idle|Animation Base Layer");
         //frightfly->SetCurrentAnimation("Die");
         frightfly->SetBoneOffsets(boneOffsetLibrary.at("FrightFly"));
         frightfly->SetBoneNameToIndex(boneMap.at("FrightFly"));
@@ -78,14 +79,14 @@ void LoadAllMonsters(
         monster->SetDebugLineShader(shaders.at("DebugLineShader"));
         monster->SetHealthBarShader(shaders.at("HealthBarShader"));
         monster->SetScale(XMFLOAT3{ 0.1, 0.1, 0.1 });
-
+        monster->m_monNum = 1;
         // [2] 애니메이션 설정
         vector<AnimationClip> clips;
         for (const auto& [name, clip] : animClipLibrary.at("Flower_Fairy"))
             clips.push_back(clip);
 
         monster->SetAnimationClips(clips);
-        monster->SetCurrentAnimation("Idle");
+        monster->SetCurrentAnimation("Polygonal_Flower_Fairy_Yellow|Polygonal_Flower_Fairy_Yellow|Idle|Animation Base Layer");
         //monster->SetCurrentAnimation("Die");
         monster->SetBoneOffsets(boneOffsetLibrary.at("Flower_Fairy"));
         monster->SetBoneNameToIndex(boneMap.at("Flower_Fairy"));
@@ -121,14 +122,14 @@ void LoadAllMonsters(
         monster->SetDebugLineShader(shaders.at("DebugLineShader"));
         monster->SetScale(XMFLOAT3{ 0.1,0.1,0.1 });
         monster->SetHealthBarShader(shaders.at("HealthBarShader"));
-
+        monster->m_monNum = 2; 
         // [2] 애니메이션 설정
         vector<AnimationClip> clips;
         for (const auto& [name, clip] : animClipLibrary.at("Mushroom_Dark"))
             clips.push_back(clip);
 
         monster->SetAnimationClips(clips);
-        monster->SetCurrentAnimation("Idle");
+        monster->SetCurrentAnimation("Polygonal_Mushroom_Dark__1_|Polygonal_Mushroom_Dark__1_|Idle|Animation Base Layer");
         //monster->SetCurrentAnimation("Die");
         monster->SetBoneOffsets(boneOffsetLibrary.at("Mushroom_Dark"));
         monster->SetBoneNameToIndex(boneMap.at("Mushroom_Dark"));
@@ -164,14 +165,14 @@ void LoadAllMonsters(
         monster->SetDebugLineShader(shaders.at("DebugLineShader"));
         monster->SetHealthBarShader(shaders.at("HealthBarShader"));
         monster->SetScale(XMFLOAT3{ 0.1,0.1,0.1 });
-
+        monster->m_monNum = 3;
         // [2] 애니메이션 설정
         vector<AnimationClip> clips;
         for (const auto& [name, clip] : animClipLibrary.at("Venus_Blue"))
             clips.push_back(clip);
 
         monster->SetAnimationClips(clips);
-        monster->SetCurrentAnimation("Idle");
+        monster->SetCurrentAnimation("Polygonal_Plant_Venus_Blue|Polygonal_Plant_Venus_Blue|Idle|Animation Base Layer");
         //monster->SetCurrentAnimation("Die");
         monster->SetBoneOffsets(boneOffsetLibrary.at("Venus_Blue"));
         monster->SetBoneNameToIndex(boneMap.at("Venus_Blue"));
@@ -207,7 +208,7 @@ void LoadAllMonsters(
         monster->SetShader(shaders.at("FrightFly"));
         monster->SetDebugLineShader(shaders.at("DebugLineShader"));
         monster->SetScale(XMFLOAT3{ 0.1,0.1,0.1 });
-
+        monster->m_monNum = 4;
         // [2] 애니메이션 설정
         vector<AnimationClip> clips;
         for (const auto& [name, clip] : animClipLibrary.at("Plant_Dionaea"))
@@ -215,7 +216,7 @@ void LoadAllMonsters(
         monster->SetHealthBarShader(shaders.at("HealthBarShader"));
 
         monster->SetAnimationClips(clips);
-        monster->SetCurrentAnimation("Idle");
+        monster->SetCurrentAnimation("Polygonal_Plant_Dionaea_Green|Polygonal_Plant_Dionaea_Green|Idle|Animation Base Layer");
         //monster->SetCurrentAnimation("Die");
         monster->SetBoneOffsets(boneOffsetLibrary.at("Plant_Dionaea"));
         monster->SetBoneNameToIndex(boneMap.at("Plant_Dionaea"));
@@ -251,7 +252,7 @@ void LoadAllMonsters(
         monster->SetShader(shaders.at("FrightFly"));
         monster->SetDebugLineShader(shaders.at("DebugLineShader"));
         monster->SetScale(XMFLOAT3{ 0.2, 0.2, 0.2 });
-
+        monster->m_monNum = 5;
         // [2] 애니메이션 설정
         vector<AnimationClip> clips;
         for (const auto& [name, clip] : animClipLibrary.at("Metalon"))

@@ -316,6 +316,7 @@ void GameScene::Update(FLOAT timeElapsed)
     }
 
     m_bossMonsters[0]->SetRotationZ(80.f);
+    m_bossMonsters[0]->SetRotationX(5.f);
 
     // [2] 충돌 테스트
     auto playerBox = m_player->GetBoundingBox();
@@ -728,7 +729,8 @@ void GameScene::BuildMeshes(const ComPtr<ID3D12Device>& device,
     // Frightfly FBX 메쉬 저장
     auto frightflyLoader = make_shared<FBXLoader>();
     //if (frightflyLoader->LoadFBXModel("Model/Monsters/Frightfly/Frightfly_01.fbx", XMMatrixIdentity()))
-    if (frightflyLoader->LoadFBXModel("Model/Monsters/Frightfly/Polygonal Frightfly 08.fbx", XMMatrixIdentity()))
+    //if (frightflyLoader->LoadFBXModel("Model/Monsters/Frightfly/Polygonal Frightfly 09.fbx", XMMatrixIdentity()))
+    if (frightflyLoader->LoadFBXModel("Model/Monsters/Frightfly/FrightFlyBlend.fbx", XMMatrixIdentity()))
     {
         auto meshes = frightflyLoader->GetMeshes();
         if (!meshes.empty())
@@ -749,7 +751,7 @@ void GameScene::BuildMeshes(const ComPtr<ID3D12Device>& device,
 	}
 	// Flower_Fairy FBX 메쉬 저장
 	auto flowerFairyLoader = make_shared<FBXLoader>();
-	if (flowerFairyLoader->LoadFBXModel("Model/Monsters/Flower_Fairy/Flower_Fairy.fbx", XMMatrixIdentity()))//scale 0.1 
+	if (flowerFairyLoader->LoadFBXModel("Model/Monsters/Flower_Fairy/FlowerFairyBlender.fbx", XMMatrixIdentity()))//scale 0.1 
 	{
 		auto meshes = flowerFairyLoader->GetMeshes();
 		if (!meshes.empty())
@@ -773,7 +775,7 @@ void GameScene::BuildMeshes(const ComPtr<ID3D12Device>& device,
 	}
 	// Mushroom_Dark FBX 메쉬 저장
 	auto mushroomDarkLoader = make_shared<FBXLoader>();
-	if (mushroomDarkLoader->LoadFBXModel("Model/Monsters/Mushroom_Dark/Mushroom_Dark.fbx", XMMatrixIdentity()))//scale 0.1 
+	if (mushroomDarkLoader->LoadFBXModel("Model/Monsters/Mushroom_Dark/MushroomBlender.fbx", XMMatrixIdentity()))//scale 0.1 
 	//if (mushroomDarkLoader->LoadFBXModel("Model/Monsters/Mushroom_Dark/Polygonal Mushroom Dark2.fbx", XMMatrixIdentity()))//scale 0.1 
 	{
 		auto meshes = mushroomDarkLoader->GetMeshes();
@@ -798,7 +800,7 @@ void GameScene::BuildMeshes(const ComPtr<ID3D12Device>& device,
 	}
 	// Venus_Blue FBX 메쉬 저장
 	auto venusBlueLoader = make_shared<FBXLoader>();
-	if (venusBlueLoader->LoadFBXModel("Model/Monsters/Venus_Blue/Venus_Blue1.fbx", XMMatrixIdentity()))//scale 0.1 
+	if (venusBlueLoader->LoadFBXModel("Model/Monsters/Venus_Blue/Venus_BlueBlender.fbx", XMMatrixIdentity()))//scale 0.1 
 	{
 		auto meshes = venusBlueLoader->GetMeshes();
 		if (!meshes.empty())
@@ -822,7 +824,7 @@ void GameScene::BuildMeshes(const ComPtr<ID3D12Device>& device,
 	}
 	// Plant_Dionaea FBX 메쉬 저장
 	auto Plant_DionaeaLoader = make_shared<FBXLoader>();
-	if (Plant_DionaeaLoader->LoadFBXModel("Model/Monsters/Plant_Dionaea/Plant_Dionaea.fbx", XMMatrixIdentity()))//scale 0.1     
+	if (Plant_DionaeaLoader->LoadFBXModel("Model/Monsters/Plant_Dionaea/Plant_DionaeaBlender.fbx", XMMatrixIdentity()))//scale 0.1     
 	{
 		auto meshes = Plant_DionaeaLoader->GetMeshes();
 		if (!meshes.empty())
