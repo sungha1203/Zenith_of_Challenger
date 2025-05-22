@@ -97,4 +97,23 @@ float ComputeShadowFactor(float3 worldPos)
     //return float4(abs(currentDepth - shadowDepth).xxx, 1.0f);
 }
 
+//float ComputeShadowFactor(float4 shadowCoord)
+//{
+//    float3 projCoord = shadowCoord.xyz / shadowCoord.w;
+
+//    // NDC (-1~1) → UV (0~1)
+//    float2 uv = projCoord.xy * 0.5f + 0.5f;
+
+//    // UV 범위 벗어나면 그림자 없음
+//    if (uv.x < 0.0f || uv.x > 1.0f || uv.y < 0.0f || uv.y > 1.0f)
+//        return 1.0f;
+
+//    float shadowDepth = g_shadowMap.SampleLevel(shadowSampler, uv, 0.0f).r;
+//    float currentDepth = projCoord.z;
+
+//    float bias = 0.005f;
+
+//    return (currentDepth - bias > shadowDepth) ? 0.3f : 1.0f;
+//}
+
 #endif // __SHADERS_HLSL__

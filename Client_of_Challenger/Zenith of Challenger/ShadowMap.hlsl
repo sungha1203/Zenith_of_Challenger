@@ -28,5 +28,5 @@ VSOutput VSMain(VSInput input)
 float PSMain(VSOutput input) : SV_Target
 {
     float ndcDepth = input.pos.z / input.pos.w;
-    return ndcDepth; 
+    return ndcDepth;
 }

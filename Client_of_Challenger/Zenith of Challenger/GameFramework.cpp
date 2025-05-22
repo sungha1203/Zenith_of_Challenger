@@ -83,10 +83,16 @@ void CGameFramework::FrameAdvance()
 	ThrowIfFailed(m_commandAllocator->Reset());
 	ThrowIfFailed(m_commandList->Reset(m_commandAllocator.Get(), nullptr));
 
+	m_commandList->SetGraphicsRootSignature(m_rootSignature.Get());
 
+	ID3D12DescriptorHeap* heaps[] = {
+		gGameFramework->GetDescriptorHeap().Get()
+	};
+	m_commandList->SetDescriptorHeaps(_countof(heaps), heaps);
+
+
+	if (m_sceneManager->GetCurrentScene()) m_sceneManager->GetCurrentScene()->PreRender(m_commandList); // 기존 Render() 내부에 있던 것
 	RenderShadowMap(); // GameScene에서만, 전환 중에는 스킵
-	
-
 	Render();
 
 	HandleSceneTransition();  // 안전한 시점에 씬 전환
@@ -210,6 +216,11 @@ void CGameFramework::RenderShadowMap()
 	ID3D12DescriptorHeap* heaps[] = { m_cbvSrvUavHeap.Get() };
 	m_commandList->SetDescriptorHeaps(1, heaps);
 
+	m_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(
+		m_shadowMapTexture.Get(),
+		D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+		D3D12_RESOURCE_STATE_RENDER_TARGET));
+
 	m_commandList->RSSetViewports(1, &m_shadowViewport);
 	m_commandList->RSSetScissorRects(1, &m_shadowScissorRect);
 
@@ -223,6 +234,12 @@ void CGameFramework::RenderShadowMap()
 	{
 		scene->RenderShadowPass(m_commandList);
 	}
+
+	m_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(
+		m_shadowMapTexture.Get(),
+		D3D12_RESOURCE_STATE_RENDER_TARGET,
+		D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
+
 }
 
 bool CGameFramework::GetIsFullScreen() const
@@ -500,7 +517,7 @@ void CGameFramework::CreateShadowMapResources()
 	// 1. ShadowMap 텍스처 생성 (선형 Depth 저장용)
 	D3D12_RESOURCE_DESC texDesc = {};
 	texDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-	float resolution = 2048 * 4;
+	float resolution = 2048.0f * 4;
 
 	texDesc.Width = resolution;
 	texDesc.Height = resolution;
@@ -662,10 +679,11 @@ void CGameFramework::Render()
 		D3D12_RESOURCE_STATE_RENDER_TARGET));
 
 	if (m_sceneManager->GetCurrentScene())
-		m_sceneManager->GetCurrentScene()->PreRender(m_commandList);
+		//m_sceneManager->GetCurrentScene()->PreRender(m_commandList);
 
 	m_commandList->RSSetViewports(1, &m_viewport);
 	m_commandList->RSSetScissorRects(1, &m_scissorRect);
+
 
 	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle{
 		m_rtvHeap->GetCPUDescriptorHandleForHeapStart(),

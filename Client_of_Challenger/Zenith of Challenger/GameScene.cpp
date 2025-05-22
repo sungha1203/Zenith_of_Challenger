@@ -648,6 +648,9 @@ void GameScene::PreRender(const ComPtr<ID3D12GraphicsCommandList>& commandList)
 	 gGameFramework->GetDescriptorHeap().Get(), //텍스처 리소스
 	};
 	commandList->SetDescriptorHeaps(_countof(heaps), heaps);
+
+    if (!m_player && m_monsterGroups.empty()) return;
+
 	// 몬스터 본 매트릭스 업로드
 	for (const auto& [type, group] : m_monsterGroups)
 	{
@@ -656,8 +659,9 @@ void GameScene::PreRender(const ComPtr<ID3D12GraphicsCommandList>& commandList)
 			monster->UpdateBoneMatrices(commandList); // 여기서 본 행렬 계산 및 GPU 업로드
 		}
 	}
-	if(m_player)
-	m_player->UpdateBoneMatrices(commandList);
+
+	if(m_player) m_player->UpdateBoneMatrices(commandList);
+
     for(int i=0;i<2;i++)
     {
         if (m_Otherplayer[i])
@@ -1526,7 +1530,8 @@ void GameScene::RenderShadowPass(const ComPtr<ID3D12GraphicsCommandList>& comman
     XMVECTOR lightUp = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 
     XMMATRIX lightView = XMMatrixLookAtLH(lightPos, lightTarget, lightUp);
-    XMMATRIX lightProj = XMMatrixOrthographicLH(1000.0f, 1000.0f, 1.0f, 1500.0f);
+    //XMMATRIX lightProj = XMMatrixOrthographicLH(1000.0f, 1000.0f, 1.0f, 1500.0f);
+    XMMATRIX lightProj = XMMatrixOrthographicLH(100.0f, 100.0f, 1.0f, 500.0f);
 
     // [1] GPU에 Shadow 행렬 업로드 (b4)
     m_camera->UploadShadowMatrix(commandList, lightView, lightProj);
@@ -1561,19 +1566,19 @@ void GameScene::RenderShadowPass(const ComPtr<ID3D12GraphicsCommandList>& comman
         }
     }
 
-    //if (m_player)
-    //{
-    //    m_player->SetShader(m_shaders.at("SHADOWCHARSKINNED"));
-    //    m_player->Render(commandList);
-    //}
+    if (m_player)
+    {
+        m_player->SetShader(m_shaders.at("SHADOWCHARSKINNED"));
+        m_player->Render(commandList);
+    }
 
-    //for (auto op : m_Otherplayer)
-    //{
-    //    if (op) {
-    //        op->SetShader(m_shaders.at("SHADOWCHARSKINNED"));
-    //        op->Render(commandList);
-    //    }
-    //}
+    for (auto op : m_Otherplayer)
+    {
+        if (op) {
+            op->SetShader(m_shaders.at("SHADOWCHARSKINNED"));
+            op->Render(commandList);
+        }
+    }
 }
 
 void GameScene::HandleMouseClick(int mouseX, int mouseY)

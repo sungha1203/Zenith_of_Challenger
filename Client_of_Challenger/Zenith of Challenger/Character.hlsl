@@ -34,10 +34,10 @@ PixelInput VSMain(VertexInput input)
 
     // 스키닝 행렬 계산
     float4x4 skinMatrix =
-    ScaleMatrix(g_boneMatrices[input.boneIndices.x], input.boneWeights.x) +
-    ScaleMatrix(g_boneMatrices[input.boneIndices.y], input.boneWeights.y) +
-    ScaleMatrix(g_boneMatrices[input.boneIndices.z], input.boneWeights.z) +
-    ScaleMatrix(g_boneMatrices[input.boneIndices.w], input.boneWeights.w);
+        ScaleMatrix(g_boneMatrices[input.boneIndices.x], input.boneWeights.x) +
+        ScaleMatrix(g_boneMatrices[input.boneIndices.y], input.boneWeights.y) +
+        ScaleMatrix(g_boneMatrices[input.boneIndices.z], input.boneWeights.z) +
+        ScaleMatrix(g_boneMatrices[input.boneIndices.w], input.boneWeights.w);
 
     // 위치 변환
     float4 localPos = mul(float4(input.position, 1.0f), skinMatrix);
@@ -46,16 +46,15 @@ PixelInput VSMain(VertexInput input)
 
     output.position = viewProjPos;
     output.worldPos = worldPos.xyz;
-    output.normal = input.normal; // 스키닝 없이 원래 노멀 사용
-    
-    //// 노멀 변환
-    float3 localNormal =
-    g_boneMatrices[input.boneIndices.x][0].xyz * input.boneWeights.x +
-    g_boneMatrices[input.boneIndices.y][0].xyz * input.boneWeights.y +
-    g_boneMatrices[input.boneIndices.z][0].xyz * input.boneWeights.z +
-    g_boneMatrices[input.boneIndices.w][0].xyz * input.boneWeights.w;
 
-    float3 worldNormal = mul(localNormal, (float3x3) g_worldMatrix);
+    // 노멀 스키닝 (정확한 방식)
+    float3 skinnedNormal =
+        mul((float3x3) g_boneMatrices[input.boneIndices.x], input.normal) * input.boneWeights.x +
+        mul((float3x3) g_boneMatrices[input.boneIndices.y], input.normal) * input.boneWeights.y +
+        mul((float3x3) g_boneMatrices[input.boneIndices.z], input.normal) * input.boneWeights.z +
+        mul((float3x3) g_boneMatrices[input.boneIndices.w], input.normal) * input.boneWeights.w;
+
+    float3 worldNormal = mul(skinnedNormal, (float3x3) g_worldMatrix);
     output.normal = normalize(worldNormal);
 
     output.texcoord = input.texcoord;
@@ -68,7 +67,7 @@ float4 PSMain(PixelInput input) : SV_Target
 {
     // 텍스처 샘플링
     float4 texColor = g_texture[0].Sample(g_sampler, input.texcoord);
-    
+
     // 너무 어두우면 fallback (마젠타)
     if (texColor.r + texColor.g + texColor.b < 0.01f)
         texColor.rgb = float3(1, 0, 1);
@@ -81,15 +80,14 @@ float4 PSMain(PixelInput input) : SV_Target
     MaterialData matData;
     matData.fresnelR0 = float3(0.01f, 0.01f, 0.01f);
     matData.roughness = 0.5f;
-    matData.ambient = float3(0.8f, 0.8f, 0.8f);
+    matData.ambient = float3(0.5f, 0.5f, 0.5f);
 
     // 그림자 계수 계산
     float shadow = ComputeShadowFactor(input.shadowPos.xyz);
 
     // 조명 연산 후 그림자 적용
-    return Lighting(input.worldPos, normal, toEye, texColor, matData) * shadow;
-    
-    //float4 debugShadow = ComputeShadowFactor(input.worldPos);
-    //return debugShadow;
-    
+    return Lighting(input.worldPos, normal, toEye, texColor, matData) * shadow * 0.7f;
+
+    // 디버그용 그림자 확인
+    // return ComputeShadowFactor(input.worldPos);
 }
