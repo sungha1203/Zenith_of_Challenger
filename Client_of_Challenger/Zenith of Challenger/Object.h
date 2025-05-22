@@ -27,6 +27,7 @@ public:
 	void UpdateWorldMatrix();
 	void SetRotationY(float yaw);
 	void SetRotationZ(float pitch);
+	void SetRotationX(float Roll);
 
 	void PlusRotationY(float yaw);
 	void PlusRotationZ(float pitch);

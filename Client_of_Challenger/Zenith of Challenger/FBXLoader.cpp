@@ -392,23 +392,14 @@ void FBXLoader::ProcessAnimations(const aiScene* scene)
 	{
 		aiAnimation* aiAnim = scene->mAnimations[i];
 
-		AnimationClip clip;
+		AnimationClip clip; //애니메이션 클립 생성
 		clip.name = aiAnim->mName.C_Str();
 		clip.duration = static_cast<float>(aiAnim->mDuration);
-		clip.ticksPerSecond = (aiAnim->mTicksPerSecond != 0.0) ? static_cast<float>(aiAnim->mTicksPerSecond) : 30.0f;
-		// 디버그 출력
-		char debugBuffer[256];
-		sprintf_s(debugBuffer,
-			"[FBXLoader] Animation %u Name: '%s' | Duration: %.4f | TicksPerSecond: %.4f\n",
-			i,
-			clip.name.c_str(),
-			clip.duration,
-			clip.ticksPerSecond);
-		OutputDebugStringA(debugBuffer);
+		clip.ticksPerSecond = (aiAnim->mTicksPerSecond != 0.0) ? static_cast<float>(aiAnim->mTicksPerSecond) : 30.0f;	
 
 		for (UINT j = 0; j < aiAnim->mNumChannels; ++j)
 		{
-			aiNodeAnim* aiNodeAnim = aiAnim->mChannels[j];
+			aiNodeAnim* aiNodeAnim = aiAnim->mChannels[j]; // Bone 단위로 키프레임 채워넣기
 			BoneAnimation boneAnim;
 			boneAnim.boneName = aiNodeAnim->mNodeName.C_Str();
 

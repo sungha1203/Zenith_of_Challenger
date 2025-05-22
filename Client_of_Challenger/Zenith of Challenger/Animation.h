@@ -35,6 +35,5 @@ struct AnimationClip
         const std::unordered_map<std::string, XMMATRIX>& initialGlobalTransforms) const;
 };
 
-DirectX::XMMATRIX InterpolateKeyframes(const Keyframe& a, const Keyframe& b, float t);
 XMMATRIX InterpolateKeyframes(const Keyframe& a, const Keyframe& b, float t, const std::string& currentBoneName, float currentTime);
 vector<string> TopologicalSort(const unordered_map<string, string>& boneHierarchy);

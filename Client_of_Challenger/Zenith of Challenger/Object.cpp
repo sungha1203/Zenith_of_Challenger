@@ -84,6 +84,11 @@ void Object::SetRotationZ(float pitch)
     m_rotation.z = pitch;
     UpdateWorldMatrix(); // 회전 반영해서 월드행렬 다시 계산
 }
+void Object::SetRotationX(float Roll)
+{
+    m_rotation.x = Roll;
+    UpdateWorldMatrix(); // 회전 반영해서 월드행렬 다시 계산
+}
 void Object::PlusRotationY(float yaw)
 {
     m_rotation.y += yaw;
