@@ -665,7 +665,7 @@ void Network::SendGameStart(const std::vector<int> & client_id){
 	packet.type = SC_PACKET_GAMESTART;
 	packet.size = sizeof(packet);
 	packet.startCS = true;
-	std::cout << "게임 시작" << std::endl;
+
 	for(int id : client_id){
 		if(g_network.clients[id].m_used){
 			g_network.clients[id].do_send(packet);
@@ -690,7 +690,7 @@ void Network::SendWhoIsMyTeam(const std::vector<int> & client_id){
 	}
 }
 
-// 스폰 시 위치 설정
+// 도전 스테이지 스폰 시 위치 설정
 void Network::SendInitialState(const std::vector<int> & client_id){
 	for(int target_id : client_id){
 		if(!g_network.clients[target_id].m_used) continue;
@@ -699,6 +699,27 @@ void Network::SendInitialState(const std::vector<int> & client_id){
 			if(!g_network.clients[other_id].m_used) continue;
 			SC_Packet_initialstate packet;
 			packet.type = SC_PACKET_INITIALSTATE;
+			packet.client_id = target_id;
+			packet.x = g_client[target_id].GetX();
+			packet.y = g_client[target_id].GetY();
+			packet.z = g_client[target_id].GetZ();
+			packet.size = sizeof(packet);
+
+			g_network.clients[other_id].do_send(packet);
+		}
+	}
+}
+
+// 정점 스테이지 스폰 시 위치 설정
+void Network::SendZenithState(const std::vector<int>& client_id)
+{
+	for (int target_id : client_id) {
+		if (!g_network.clients[target_id].m_used) continue;
+
+		for (int other_id : client_id) {
+			if (!g_network.clients[other_id].m_used) continue;
+			SC_Packet_Zenithstate packet;
+			packet.type = SC_PACKET_ZENITHSTATE;
 			packet.client_id = target_id;
 			packet.x = g_client[target_id].GetX();
 			packet.y = g_client[target_id].GetY();
@@ -761,7 +782,7 @@ void Network::SendUpdateGold(const std::vector<int> & client_id){
 	}
 }
 
-// 몬스터 좌표 초기 설정
+// 도전 몬스터 좌표 초기 설정
 void Network::SendInitMonster(const std::vector<int> & client_id, const std::array<Monster, 50> & monsters){
 	SC_Packet_InitMonster packet;
 	packet.type = SC_PACKET_INITMONSTER;
@@ -778,13 +799,34 @@ void Network::SendInitMonster(const std::vector<int> & client_id, const std::arr
 	for(int id : client_id){
 		if(g_network.clients[id].m_used){
 			g_network.clients[id].do_send(packet);
-			//std::this_thread::sleep_for(std::chrono::milliseconds(1));
 		}
 	}
-	for(int monster_id = 0; monster_id < monsters.size(); ++monster_id){
-		std::cout << monster_id << ": " <<
-			packet.monsters[monster_id].x << ", " <<
-			packet.monsters[monster_id].y << ", " <<
-			packet.monsters[monster_id].z << std::endl;
+	//for(int monster_id = 0; monster_id < monsters.size(); ++monster_id){
+	//	std::cout << monster_id << ": " <<
+	//		packet.monsters[monster_id].x << ", " <<
+	//		packet.monsters[monster_id].y << ", " <<
+	//		packet.monsters[monster_id].z << std::endl;
+	//}
+}
+
+// 정점 몬스터 좌표 초기 설정
+void Network::SendZenithMonster(const std::vector<int>& client_id, const std::array<Monster, 50>& monsters)
+{
+	SC_Packet_ZenithMonster packet;
+	packet.type = SC_PACKET_ZENITHMONSTER;
+	packet.size = sizeof(packet);
+	for (int monster_id = 0; monster_id < monsters.size(); ++monster_id) {
+		const Monster& monster = monsters[monster_id];
+		packet.monsters[monster_id].monsterid = monster_id;
+		packet.monsters[monster_id].monstertype = static_cast<int>(monster.GetType());
+		packet.monsters[monster_id].x = monster.GetX();
+		packet.monsters[monster_id].y = monster.GetY();
+		packet.monsters[monster_id].z = monster.GetZ();
+
+	}
+	for (int id : client_id) {
+		if (g_network.clients[id].m_used) {
+			g_network.clients[id].do_send(packet);
+		}
 	}
 }

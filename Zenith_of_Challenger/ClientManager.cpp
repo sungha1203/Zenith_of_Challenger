@@ -91,6 +91,29 @@ void ClientInfo::SetRepairCoord(int idx)
     }
 }
 
+void ClientInfo::SetZenithCoord(int idx)
+{
+    switch (idx) {
+    case 0:
+        m_ingameInfo.x = 556.f;
+        m_ingameInfo.y = 49.f;
+        m_ingameInfo.z = 0.f;
+        break;
+    case 1:
+        m_ingameInfo.x = 556.f;
+        m_ingameInfo.y = 49.f;
+        m_ingameInfo.z = -13.f;
+        break;
+    case 2:
+        m_ingameInfo.x = 556.f;
+        m_ingameInfo.y = 49.f;
+        m_ingameInfo.z = 13.f;
+        break;
+    default:
+        break;
+    }
+}
+
 void ClientInfo::SetCoord(float x, float y, float z)
 {
     m_ingameInfo.x = x;

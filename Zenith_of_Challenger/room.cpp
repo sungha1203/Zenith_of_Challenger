@@ -19,9 +19,9 @@ void Room::ResetRoom()
 	m_enterClientNum = 0;
 	m_enterZenithNum = 0;
 
-	for (auto& monster : m_monsters)
+	for (auto& monster : m_Cmonsters)
 		monster.Reset();
-	m_MonsterNum = 0;;
+	m_CMonsterNum = 0;
 	m_timer.join();
 }
 
@@ -68,11 +68,8 @@ void Room::PushStartGameButton(int RoomMasterID)
 	InitChallengeMonsters();									// 도전 스테이지 몬스터 초기화
 
 	g_network.SendWhoIsMyTeam(GetClients());					// 아이디 값 보내주기
-	//std::this_thread::sleep_for(std::chrono::milliseconds(500));
 	g_network.SendInitialState(GetClients());					// 게임방 안에 본인 포함 모두한테 초기 좌표 패킷 보내기
-	//std::this_thread::sleep_for(std::chrono::milliseconds(500));
-	g_network.SendInitMonster(GetClients(),m_monsters);			// 게임방 안의 모든 몬스터 초기화
-	//std::this_thread::sleep_for(std::chrono::milliseconds(500));
+	g_network.SendInitMonster(GetClients(),m_Cmonsters);		// 게임방 안의 모든 몬스터 초기화
 	g_network.SendGameStart(GetClients());						// 게임방 안에 본인 포함 모두한테 게임시작 패킷 보내기
 	
 	AllPlayerNum(m_clients.size());								// 게임에 입장한 플레이어가 몇명이야?
@@ -88,7 +85,14 @@ void Room::PushStartZenithButton(int RoomMasterID)
 		// TODO : 클라한테 너 방장 아니여서 시작 못한다는 거 말해줘야 할듯.(나중에)
 		return;
 	}
+
+	InitZenithMonsters();									// 정점 스테이지 몬스터 초기화 (보스 몬스터 포함)
+
+	g_network.SendZenithState(GetClients());				// 정점 스테이지 초기 좌표 패킷 보내기
+	g_network.SendZenithMonster(GetClients(),m_Zmonsters);	// 정점 스테이지 모든 몬스터 초기화
 	g_network.SendStartZenithStage(GetClients());			// 게임방 안에 본인 포함 모두한테 게임시작 패킷 보내기
+
+	std::cout << "[INFO] 방[" << m_room_id << "] 정점 스테이지에 진입하였습니다!\n";
 }
 
 void Room::StartGame()
@@ -117,7 +121,8 @@ void Room::StartZenithStage()
 	m_timer = std::thread(&Room::ZenithTimerThread, this);
 }
 
-void Room::ZenithTimerThread() {
+void Room::ZenithTimerThread() 
+{
 	// 정점 스테이지 5분
 	std::this_thread::sleep_for(std::chrono::seconds(ZENITH_TIME));
 	if (m_stopTimer) return;
@@ -216,42 +221,42 @@ void Room::InitChallengeMonsters()
 
 	// Mushroom
 	{
-		m_monsters[monsterID].SetMonster( monsterID, NormalMonsterType::Mushroom,-197.f, 2.f, -134.f);
-		m_monsters[++monsterID].SetMonster( monsterID, NormalMonsterType::Mushroom,-193.f, 2.f, -175.f);
-		m_monsters[++monsterID].SetMonster( monsterID, NormalMonsterType::Mushroom,-144.f, 2.f, -175.f);
-		m_monsters[++monsterID].SetMonster( monsterID, NormalMonsterType::Mushroom, 51.f, 2.f, -170.f);
-		m_monsters[++monsterID].SetMonster( monsterID, NormalMonsterType::Mushroom,-123.f, 2.f, -107.f);
-		m_monsters[++monsterID].SetMonster( monsterID, NormalMonsterType::Mushroom,-89.f, 2.f, -199.f);
-		m_monsters[++monsterID].SetMonster( monsterID, NormalMonsterType::Mushroom,-60.f, 2.f, -166.f);
-		m_monsters[++monsterID].SetMonster( monsterID, NormalMonsterType::Mushroom,-75.f, 2.f, -115.f);
-		m_monsters[++monsterID].SetMonster( monsterID, NormalMonsterType::Mushroom,-4.f, 2.f, -161.f);
-		m_monsters[++monsterID].SetMonster( monsterID, NormalMonsterType::Mushroom,-71.f, 2.f, -76.f);
+		m_Cmonsters[monsterID].SetMonster( monsterID, NormalMonsterType::Mushroom,-197.f, 2.f, -134.f);
+		m_Cmonsters[++monsterID].SetMonster( monsterID, NormalMonsterType::Mushroom,-193.f, 2.f, -175.f);
+		m_Cmonsters[++monsterID].SetMonster( monsterID, NormalMonsterType::Mushroom,-144.f, 2.f, -175.f);
+		m_Cmonsters[++monsterID].SetMonster( monsterID, NormalMonsterType::Mushroom, 51.f, 2.f, -170.f);
+		m_Cmonsters[++monsterID].SetMonster( monsterID, NormalMonsterType::Mushroom,-123.f, 2.f, -107.f);
+		m_Cmonsters[++monsterID].SetMonster( monsterID, NormalMonsterType::Mushroom,-89.f, 2.f, -199.f);
+		m_Cmonsters[++monsterID].SetMonster( monsterID, NormalMonsterType::Mushroom,-60.f, 2.f, -166.f);
+		m_Cmonsters[++monsterID].SetMonster( monsterID, NormalMonsterType::Mushroom,-75.f, 2.f, -115.f);
+		m_Cmonsters[++monsterID].SetMonster( monsterID, NormalMonsterType::Mushroom,-4.f, 2.f, -161.f);
+		m_Cmonsters[++monsterID].SetMonster( monsterID, NormalMonsterType::Mushroom,-71.f, 2.f, -76.f);
 	}
 	// Fight Fly
 	{
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FightFly,-210.f, 5.f, -0.f );
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FightFly,-165.f, 5.f, -3.f );
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FightFly,-128.f, 5.f, -38.f);
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FightFly,-78.f, 5.f, -37.f );
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FightFly,-190.f, 5.f, 28.f );
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FightFly,-92.f, 5.f, 47.f );
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FightFly,-177.f, 5.f, -34.f);
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FightFly,-212.f, 5.f, -42.f);
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FightFly,-166.f, 5.f, -74.f);
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FightFly,-198.f, 5.f, -82.f);
+		m_Cmonsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FightFly,-210.f, 5.f, -0.f );
+		m_Cmonsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FightFly,-165.f, 5.f, -3.f );
+		m_Cmonsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FightFly,-128.f, 5.f, -38.f);
+		m_Cmonsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FightFly,-78.f, 5.f, -37.f );
+		m_Cmonsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FightFly,-190.f, 5.f, 28.f );
+		m_Cmonsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FightFly,-92.f, 5.f, 47.f );
+		m_Cmonsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FightFly,-177.f, 5.f, -34.f);
+		m_Cmonsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FightFly,-212.f, 5.f, -42.f);
+		m_Cmonsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FightFly,-166.f, 5.f, -74.f);
+		m_Cmonsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FightFly,-198.f, 5.f, -82.f);
 	}
 	// Plant Dionaea
 	{
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantDionaea,11.f, 2.f, 92.f );
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantDionaea,44.f, 2.f, 105.f);
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantDionaea,91.f, 2.f, 108.f);
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantDionaea,68.f, 2.f, 186.f);
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantDionaea,133.f, 2.f, 169.f);
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantDionaea,147.f, 2.f, 110.f);
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantDionaea,186.f, 2.f, 150.f);
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantDionaea,185.f, 2.f, -9.f);
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantDionaea,94.f, 2.f, 24.f);
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantDionaea,136.f, 2.f, 61.f);
+		m_Cmonsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantDionaea,11.f, 2.f, 92.f );
+		m_Cmonsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantDionaea,44.f, 2.f, 105.f);
+		m_Cmonsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantDionaea,91.f, 2.f, 108.f);
+		m_Cmonsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantDionaea,68.f, 2.f, 186.f);
+		m_Cmonsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantDionaea,133.f, 2.f, 169.f);
+		m_Cmonsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantDionaea,147.f, 2.f, 110.f);
+		m_Cmonsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantDionaea,186.f, 2.f, 150.f);
+		m_Cmonsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantDionaea,185.f, 2.f, -9.f);
+		m_Cmonsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantDionaea,94.f, 2.f, 24.f);
+		m_Cmonsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantDionaea,136.f, 2.f, 61.f);
 	}
 	// Pea Shooter
 	/* {
@@ -268,29 +273,34 @@ void Room::InitChallengeMonsters()
 	}*/
 	// Plant Venus
 	{
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantVenus,3.f, 2.f, -97.f);
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantVenus,53.f, 2.f, -119.f);
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantVenus,95.f, 2.f, -138.f);
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantVenus,91.f, 2.f, -73.f );
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantVenus,105.f, 2.f, -27.f);
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantVenus,27.f, 2.f, -49.f);
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantVenus,-39.f, 2.f, 5.f);
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantVenus,0.f, 2.f, 40.f);
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantVenus,-56.f, 2.f, 71.f);
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantVenus, -44.f, 2.f, 135.f);
+		m_Cmonsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantVenus,3.f, 2.f, -97.f);
+		m_Cmonsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantVenus,53.f, 2.f, -119.f);
+		m_Cmonsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantVenus,95.f, 2.f, -138.f);
+		m_Cmonsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantVenus,91.f, 2.f, -73.f );
+		m_Cmonsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantVenus,105.f, 2.f, -27.f);
+		m_Cmonsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantVenus,27.f, 2.f, -49.f);
+		m_Cmonsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantVenus,-39.f, 2.f, 5.f);
+		m_Cmonsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantVenus,0.f, 2.f, 40.f);
+		m_Cmonsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantVenus,-56.f, 2.f, 71.f);
+		m_Cmonsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantVenus, -44.f, 2.f, 135.f);
 	}
 	// Flower Fairy
 	{
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FlowerFairy,143.f, 5.f, -158.f);
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FlowerFairy,153.f, 5.f, -209.f);
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FlowerFairy,187.f, 5.f, -212.f);
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FlowerFairy,218.f, 5.f, -197.f);
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FlowerFairy,220.f, 5.f, -153.f);
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FlowerFairy,154.f, 5.f, -85.f);
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FlowerFairy,179.f, 5.f, -57.f);
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FlowerFairy,159.f, 5.f, -135.f); 
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FlowerFairy,186.f, 5.f, -182.f);
-		m_monsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FlowerFairy,189.f, 5.f, -149.f);
+		m_Cmonsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FlowerFairy,143.f, 5.f, -158.f);
+		m_Cmonsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FlowerFairy,153.f, 5.f, -209.f);
+		m_Cmonsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FlowerFairy,187.f, 5.f, -212.f);
+		m_Cmonsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FlowerFairy,218.f, 5.f, -197.f);
+		m_Cmonsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FlowerFairy,220.f, 5.f, -153.f);
+		m_Cmonsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FlowerFairy,154.f, 5.f, -85.f);
+		m_Cmonsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FlowerFairy,179.f, 5.f, -57.f);
+		m_Cmonsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FlowerFairy,159.f, 5.f, -135.f); 
+		m_Cmonsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FlowerFairy,186.f, 5.f, -182.f);
+		m_Cmonsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FlowerFairy,189.f, 5.f, -149.f);
 	}
-	m_MonsterNum = monsterID;
+	m_CMonsterNum = monsterID;
+}
+
+void Room::InitZenithMonsters()
+{
+
 }

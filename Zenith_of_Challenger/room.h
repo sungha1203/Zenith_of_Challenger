@@ -66,11 +66,11 @@ private:
 	std::mutex			m_inventoryMx;
 
 	static constexpr int CHALLENGE_TIME = 480;		// 8분
-	//static constexpr int REPAIR_TIME	= 120;		// 2분
 	static constexpr int ZENITH_TIME	= 300;		// 5분
 	
-	std::array<Monster,50>	m_monsters;				// 방에서 관리하는 몬스터(도전)
-	int						m_MonsterNum;			// 몬스터 수(도전)
+	std::array<Monster,50>	m_Cmonsters;			// 방에서 관리하는 몬스터(도전)
+	std::array<Monster,50>	m_Zmonsters;			// 방에서 관리하는 몬스터(도전)
+	int						m_CMonsterNum;			// 몬스터 수(도전)
 
 public:
 	Room() : m_room_id(-1), m_IsGaming(false), m_RoomState(Stage::LOBBY) {}
@@ -109,8 +109,8 @@ public:
 	int		GetJobTypeNum(int num) const { return m_inventory.JobDocuments.at(static_cast<JobDocument>(num-4));}		// 해당 전직서 몇개 있어?
 
 	const std::vector<int>& GetClients() const { return m_clients; }						// 게임 중인 모든 클라이언트
-	const Monster&	GetMonsters(int monsterID) const { return m_monsters[monsterID]; }		// 몬스터
-	Monster& GetMonster(int monsterID) { return m_monsters[monsterID]; }
+	const Monster&	GetMonsters(int monsterID) const { return m_Cmonsters[monsterID]; }		// 도전 스테이지 몬스터
+	Monster& GetMonster(int monsterID) { return m_Cmonsters[monsterID]; }
 
 	// 인벤토리
 	void	AddGold(int plusgold);					// +골드
@@ -122,4 +122,5 @@ public:
 
 	// 몬스터
 	void	InitChallengeMonsters();				// 도전 스테이지 몬스터 초기화
+	void	InitZenithMonsters();					// 정점 스테이지 몬스터 초기화(보스 몬스터 포함)
 };

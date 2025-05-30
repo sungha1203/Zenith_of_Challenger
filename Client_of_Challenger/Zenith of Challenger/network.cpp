@@ -455,9 +455,8 @@ void ClientNetwork::ProcessAnimation(char* buffer)
 	//	}
 	//}
 
-
 	switch (pkt->animation) {
-	case 0:
+	case 0:  // idle
 		if (pkt->client_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[0])
 		{
 			shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
@@ -469,7 +468,7 @@ void ClientNetwork::ProcessAnimation(char* buffer)
 			currentScene->m_Otherplayer[1]->m_CurrentAnim = pkt->animation;
 		}
 		break;
-	case 1:
+	case 1:  // walking
 		if (pkt->client_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[0])
 		{
 			shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
@@ -481,7 +480,7 @@ void ClientNetwork::ProcessAnimation(char* buffer)
 			currentScene->m_Otherplayer[1]->m_CurrentAnim = pkt->animation;
 		}
 		break;
-	case 2:
+	case 2:  // running
 		if (pkt->client_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[0])
 		{
 			shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
@@ -493,7 +492,7 @@ void ClientNetwork::ProcessAnimation(char* buffer)
 			currentScene->m_Otherplayer[1]->m_CurrentAnim = pkt->animation;
 		}
 		break;
-	case 3:
+	case 3:  // punching
 		if (pkt->client_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[0])
 		{
 			shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
@@ -506,8 +505,4 @@ void ClientNetwork::ProcessAnimation(char* buffer)
 		}
 		break;
 	}
-
-
-
-
 }

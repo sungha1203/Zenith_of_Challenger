@@ -45,6 +45,7 @@ public:
 	bool	SetEnhanceGradeUp(int weapongrade);								// 무기 강화 로직(성공 여부 반환)
 	void	SetSpawnCoord(int idx);											// 초기 스폰 좌표
 	void	SetRepairCoord(int idx);										// 시작의 땅 스폰 좌표
+	void	SetZenithCoord(int idx);										// 정점 스테이지 스폰 좌표
 	void	SetCoord(float x, float y, float z);							// 좌표 갱신
 	void	SetAngle(float angle);											// 방향 갱신
 	
