@@ -66,25 +66,25 @@ void ClientInfo::SetRepairCoord(int idx)
         //m_ingameInfo.x = -168.f;
         //m_ingameInfo.y = 0.21f;
         //m_ingameInfo.z = 140.f;
-        m_ingameInfo.x = -570.f;
+        m_ingameInfo.x = -580.f;
         m_ingameInfo.y = 49.f;
-        m_ingameInfo.z = -20.f;
+        m_ingameInfo.z = -13.f;
         break;
     case 1:
         //m_ingameInfo.x = -151.f;
         //m_ingameInfo.y = 0.21f;
         //m_ingameInfo.z = 153.f;
-        m_ingameInfo.x = -560.f;
+        m_ingameInfo.x = -568.f;
         m_ingameInfo.y = 49.f;
-        m_ingameInfo.z = -20.f;
+        m_ingameInfo.z = 4.f;
         break;
     case 2:
         //m_ingameInfo.x = -158.f;
         //m_ingameInfo.y = 0.21f;
         //m_ingameInfo.z = 131.f;
-        m_ingameInfo.x = -550.f;
+        m_ingameInfo.x = -559.f;
         m_ingameInfo.y = 49.f;
-        m_ingameInfo.z = -20.f;
+        m_ingameInfo.z = -12.f;
         break;
     default:
         break;
@@ -95,19 +95,19 @@ void ClientInfo::SetZenithCoord(int idx)
 {
     switch (idx) {
     case 0:
-        m_ingameInfo.x = 556.f;
+        m_ingameInfo.x = 557.f;
         m_ingameInfo.y = 49.f;
-        m_ingameInfo.z = 0.f;
+        m_ingameInfo.z = -11.f;
         break;
     case 1:
-        m_ingameInfo.x = 556.f;
+        m_ingameInfo.x = 562.f;
         m_ingameInfo.y = 49.f;
-        m_ingameInfo.z = -13.f;
+        m_ingameInfo.z = 9.f;
         break;
     case 2:
-        m_ingameInfo.x = 556.f;
+        m_ingameInfo.x = 573.f;
         m_ingameInfo.y = 49.f;
-        m_ingameInfo.z = 13.f;
+        m_ingameInfo.z = -7.f;
         break;
     default:
         break;

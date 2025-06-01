@@ -14,14 +14,15 @@ constexpr int NAME_SIZE = 20;				// 이름 글자 수
 #define CS_PACKET_UPDATECOORD		 4			// 좌표 상태 업데이트
 #define CS_PACKET_GAMESTART			 5			// 게임 시작 버튼
 #define CS_PACKET_INGAMEREADY		 6			// 게임 시작 후 입장 완료
-#define CS_PACKET_STARTZENITH		 7			// 정점 스테이지 입장 완료
-#define CS_PACKET_MONSTERHP			 8			// 몬스터 HP
-#define CS_PACKET_CHAT				 9			// 인게임 속 채팅
-#define CS_PACKET_ITEMSTATE			 10			// 장비창에서 강화
-#define CS_PACKET_INVENTORY			 11			// 인벤토리에서 아이템 선택
-#define CS_PACKET_DEBUGGOLD			 12			// 디버깅용 골드 추가
-#define CS_PACKET_DEBUGITEM			 13			// 디버깅용 아이템 추가
-#define CS_PACKET_ANIMATION			 14			// 애니메이션
+#define CS_PACKET_STARTZENITH		 7			// 정점 스테이지 입장 버튼
+#define CS_PACKET_ZENITHREADY		 8			// 정점 스테이지 입장 완료
+#define CS_PACKET_MONSTERHP			 9			// 몬스터 HP
+#define CS_PACKET_CHAT				 10			// 인게임 속 채팅
+#define CS_PACKET_ITEMSTATE			 11			// 장비창에서 강화
+#define CS_PACKET_INVENTORY			 12			// 인벤토리에서 아이템 선택
+#define CS_PACKET_DEBUGGOLD			 13			// 디버깅용 골드 추가
+#define CS_PACKET_DEBUGITEM			 14			// 디버깅용 아이템 추가
+#define CS_PACKET_ANIMATION			 15			// 애니메이션
 
 #define CS_PACKET_SKIPCHALLENGE		 99			// 도전스테이지 스킵
 #define CS_PACKET_LOGOUT			 100		// 로그아웃
@@ -93,6 +94,12 @@ struct CS_Packet_GameReady
 	char	type;
 	int		size;
 	bool	ReadySuccess;
+};
+
+struct CS_Packet_StartZenith
+{
+	char	type;
+	int		size;
 };
 
 struct CS_Packet_ZenithReady

@@ -288,6 +288,9 @@ void Network::HandlePacket(int client_id, char * buffer, int length){
 		ProcessIngameReady(client_id, buffer, length);
 		break;
 	case CS_PACKET_STARTZENITH:
+		ProcessZenithStartButton(client_id);
+		break;
+	case CS_PACKET_ZENITHREADY:
 		ProcessZenithReady(client_id, buffer, length);
 		break;
 	case CS_PACKET_SKIPCHALLENGE:

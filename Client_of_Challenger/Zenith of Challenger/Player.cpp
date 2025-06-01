@@ -291,7 +291,7 @@ void Player::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
 {
     bool isShadowPass = m_shader && m_shader->IsShadowShader();
 
-    if (m_shader && m_shader->IsShadowShader())
+    //if (m_shader && m_shader->IsShadowShader())
         //OutputDebugStringA("[Player::Render] Shadow Pass Render\n");
 
     // 본 행렬 StructuredBuffer 바인딩

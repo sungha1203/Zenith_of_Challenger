@@ -31,6 +31,7 @@ public:
     ClientNetwork* GetClientNetwork() const { return m_clientNetwork.get(); }
     ClientState* GetClientState() const { return m_clientstate.get(); }
     bool IsSuccess = false;                                 // 게임시작 성공했음?
+    bool IsSuccess2 = false;                                // 정점 스테이지에 들어왔음?
     XMFLOAT3 g_pos;
     XMFLOAT3 g_pos2;
     XMFLOAT3 g_pos3;

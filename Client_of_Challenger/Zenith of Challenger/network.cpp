@@ -122,6 +122,12 @@ void ClientNetwork::Receive() {
 			case SC_PACKET_ANIMATION:
 				ProcessAnimation(currentBuffer);
 				break;
+			case SC_PACKET_ZENITHSTAGE:
+				ProcessZenithStage(currentBuffer);
+				break;
+			case SC_PACKET_ZENITHSTATE:
+				ProcessZenithState(currentBuffer);
+				break;
 			default:
 				break;
 			}
@@ -504,5 +510,54 @@ void ClientNetwork::ProcessAnimation(char* buffer)
 			currentScene->m_Otherplayer[1]->m_CurrentAnim = pkt->animation;
 		}
 		break;
+	}
+}
+
+void ClientNetwork::ProcessZenithState(char* buffer)
+{
+	SC_Packet_Zenithstate* pkt = reinterpret_cast<SC_Packet_Zenithstate*>(buffer);
+	XMFLOAT3 pos(pkt->x, pkt->y, pkt->z);
+
+	// 현재 씬 가져오기 (GameScene으로 캐스팅 필요)
+	shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
+	GameScene* gameScene = dynamic_cast<GameScene*>(currentScene.get());
+
+	if (pkt->client_id == m_clientID) {
+		gGameFramework->g_pos = pos;
+		gGameFramework->GetSceneManager()->GetCurrentScene()->m_player->SetPosition(pos);
+
+		//auto player = gGameFramework->GetPlayer();
+		//if (player)
+		//   player->SetPosition(pos);
+	}
+	else if (pkt->client_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[0])
+	{
+		gGameFramework->GetSceneManager()->GetCurrentScene()->otherpos[0] = pos;
+		gGameFramework->GetSceneManager()->GetCurrentScene()->m_Otherplayer[0]->m_position = pos;
+
+	}
+	else if (pkt->client_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[1])
+	{
+		gGameFramework->GetSceneManager()->GetCurrentScene()->otherpos[1] = pos;
+		gGameFramework->GetSceneManager()->GetCurrentScene()->m_Otherplayer[1]->m_position = pos;
+	}
+	else
+	{
+		return;
+	}
+}
+
+void ClientNetwork::ProcessZenithStage(char* buffer)
+{
+	SC_Packet_ZenithStage* pkt = reinterpret_cast<SC_Packet_ZenithStage*>(buffer);
+	if (pkt->startZS = true) {
+		gGameFramework->IsSuccess2 = true;
+
+		CS_Packet_ZenithReady pkt;
+		pkt.type = CS_PACKET_ZENITHREADY;
+		pkt.ReadySuccess = true;
+		pkt.size = sizeof(pkt);
+
+		gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
 	}
 }

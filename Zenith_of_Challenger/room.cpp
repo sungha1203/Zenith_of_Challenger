@@ -80,16 +80,20 @@ void Room::PushStartGameButton(int RoomMasterID)
 
 void Room::PushStartZenithButton(int RoomMasterID)
 {
-	if (RoomMasterID != GetRoomMasterID()) {
+	if (RoomMasterID != GetRoomMasterID() || m_RoomState != Stage::REPAIR_TIME) {
 		std::cout << "[ERROR] 클라이언트 [" << RoomMasterID << "] 는 방장이 아니여서 시작할 수 없습니다.\n";
 		// TODO : 클라한테 너 방장 아니여서 시작 못한다는 거 말해줘야 할듯.(나중에)
 		return;
 	}
 
-	InitZenithMonsters();									// 정점 스테이지 몬스터 초기화 (보스 몬스터 포함)
+	for (int i = 0; i < GetClientsNum(); ++i) {		// 정점 스테이지 스폰 위치가 어딘데
+		g_client[m_clients[i]].SetZenithCoord(i);
+	}
 
-	g_network.SendZenithState(GetClients());				// 정점 스테이지 초기 좌표 패킷 보내기
-	g_network.SendZenithMonster(GetClients(),m_Zmonsters);	// 정점 스테이지 모든 몬스터 초기화
+	//InitZenithMonsters();									// 정점 스테이지 몬스터 초기화 (보스 몬스터 포함)
+
+	//g_network.SendZenithMonster(GetClients(),m_Zmonsters);// 정점 스테이지 모든 몬스터 초기화
+	g_network.SendZenithState(GetClients());				// 정점 스테이지 클라이언트 초기 좌표 패킷 보내기
 	g_network.SendStartZenithStage(GetClients());			// 게임방 안에 본인 포함 모두한테 게임시작 패킷 보내기
 
 	std::cout << "[INFO] 방[" << m_room_id << "] 정점 스테이지에 진입하였습니다!\n";
