@@ -324,8 +324,8 @@ void GameScene::Update(FLOAT timeElapsed)
         }
     }
 
-    m_bossMonsters[0]->SetRotationZ(80.f);
-    m_bossMonsters[0]->SetRotationX(5.f);
+    //m_bossMonsters[0]->SetRotationZ(80.f);
+    //m_bossMonsters[0]->SetRotationX(5.f);
 
     // [2] 충돌 테스트
     auto playerBox = m_player->GetBoundingBox();
@@ -862,7 +862,7 @@ void GameScene::BuildMeshes(const ComPtr<ID3D12Device>& device,
 
     // Metalon FBX 메쉬 저장
     auto Metalon = make_shared<FBXLoader>();
-    if (Metalon->LoadFBXModel("Model/Monsters/Metalon/Metalon1.fbx", XMMatrixIdentity()))//scale 0.1     
+    if (Metalon->LoadFBXModel("Model/Monsters/Metalon/BossBlender.fbx", XMMatrixIdentity()))//scale 0.1     
     {
         auto meshes = Metalon->GetMeshes();
         if (!meshes.empty())
@@ -1241,7 +1241,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
     {
         float x = 0.f;
         float z = 0.f;
-        float y = 40.f;
+        float y = 65.f;
 
         MetalonGroup[i]->SetPosition(XMFLOAT3{ x, y, z });
         //MetalonGroup[i]->SetPosition(gGameFramework->monstersCoord[i + 20]);
