@@ -103,7 +103,7 @@ void OtherPlayer::Update(FLOAT timeElapsed)
         if (m_animationClips.contains(m_currentAnim))
         {
             const auto& clip = m_animationClips.at(m_currentAnim);
-            m_animTime += timeElapsed * clip.ticksPerSecond;
+            m_animTime += timeElapsed * clip.ticksPerSecond * 2.0f;
            
             while (m_animTime >= clip.duration)
                 m_animTime -= clip.duration;
@@ -179,7 +179,7 @@ void OtherPlayer::Update(FLOAT timeElapsed)
 }
 
 
-void OtherPlayer::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
+void OtherPlayer::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList)
 {
     //// 애니메이션 본 행렬 업로드
     //if (m_animationClips.contains(m_currentAnim))

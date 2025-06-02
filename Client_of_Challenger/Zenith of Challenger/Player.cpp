@@ -189,7 +189,7 @@ void Player::Update(FLOAT timeElapsed)
         if (m_animationClips.contains(m_currentAnim))
         {
             const auto& clip = m_animationClips.at(m_currentAnim);
-            m_animTime += timeElapsed * clip.ticksPerSecond;
+            m_animTime += timeElapsed * clip.ticksPerSecond * 2.0f;
             if (m_animTime > clip.duration)
             {
             	m_animTime = fmod(m_animTime, clip.duration);
@@ -287,12 +287,11 @@ void Player::Update(FLOAT timeElapsed)
 
 
 
-void Player::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
+void Player::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList)
 {
     bool isShadowPass = m_shader && m_shader->IsShadowShader();
 
-    //if (m_shader && m_shader->IsShadowShader())
-        //OutputDebugStringA("[Player::Render] Shadow Pass Render\n");
+    UpdateBoneMatrices(commandList);
 
     // 본 행렬 StructuredBuffer 바인딩
     if (m_boneMatrixSRV.ptr != 0)
@@ -333,36 +332,51 @@ void Player::UploadBoneMatricesToShader(const std::vector<XMMATRIX>& boneTransfo
     const UINT MAX_BONES = 128;
     std::vector<XMMATRIX> finalMatrices(MAX_BONES, XMMatrixIdentity());
 
+    // 모든 본 인덱스를 안전하게 채움 (혹시 boneTransforms가 부족해도 T포즈 fallback)
     for (const auto& [boneName, vertexIndex] : m_boneNameToIndex)
     {
-        finalMatrices[vertexIndex] = boneTransforms[vertexIndex];
+        if (vertexIndex < boneTransforms.size())
+            finalMatrices[vertexIndex] = boneTransforms[vertexIndex];
+        else {
+            finalMatrices[vertexIndex] = XMMatrixIdentity();
+            char dbg[256];
+            sprintf_s(dbg, "[WARNING] Missing Bone[%d] (%s), fallback to Identity (T-pose)\n", vertexIndex, boneName.c_str());
+            OutputDebugStringA(dbg);
+        }
     }
-    for (int i = 0; i < finalMatrices.size(); ++i)
-        finalMatrices[i] = XMMatrixTranspose(finalMatrices[i]);
-    // === UploadBuffer만 더블버퍼링 ===
-    UINT frameIndex = gGameFramework->GetCurrentFrameIndex(); // 0 또는 1
+
+    // HLSL column-major 방식으로 넘기기 위해 transpose
+    for (auto& mat : finalMatrices)
+        mat = XMMatrixTranspose(mat);
+
+    // 프레임 인덱스에 따른 업로드 버퍼 선택
+    UINT frameIndex = gGameFramework->GetCurrentFrameIndex();
     void* mappedData = nullptr;
     CD3DX12_RANGE readRange(0, 0);
     m_boneMatrixUploadBuffer[frameIndex]->Map(0, &readRange, &mappedData);
     memcpy(mappedData, finalMatrices.data(), sizeof(XMMATRIX) * MAX_BONES);
     m_boneMatrixUploadBuffer[frameIndex]->Unmap(0, nullptr);
-    char debug[512];
-    // === 실제 m_boneMatrixBuffer에 복사 ===
+
+    // GPU 리소스로 복사
     commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(
         m_boneMatrixBuffer.Get(), D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_STATE_COPY_DEST));
-
-    commandList->CopyResource(
-        m_boneMatrixBuffer.Get(),
-        m_boneMatrixUploadBuffer[frameIndex].Get());
-
+    commandList->CopyResource(m_boneMatrixBuffer.Get(), m_boneMatrixUploadBuffer[frameIndex].Get());
     commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(
         m_boneMatrixBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_GENERIC_READ));
 
-    char dbg[128];
-    sprintf_s(dbg, "[UploadBoneMatrices] time=%.4f currentAnim=%s\n", m_animTime, m_currentAnim.c_str());
+    // 디버그 로그
+    char dbg[256];
+    sprintf_s(dbg, "[Frame %d] AnimTime = %.4f, Anim = %s\n", frameIndex, m_animTime, m_currentAnim.c_str());
     OutputDebugStringA(dbg);
 
+    for (int i = 0; i < 5 && i < finalMatrices.size(); ++i) {
+        const XMMATRIX& m = finalMatrices[i];
+        sprintf_s(dbg, "Bone[%d]: %.2f %.2f %.2f %.2f\n", i,
+            m.r[0].m128_f32[0], m.r[3].m128_f32[0], m.r[3].m128_f32[1], m.r[3].m128_f32[2]);
+        OutputDebugStringA(dbg);
+    }
 }
+
 
 
 

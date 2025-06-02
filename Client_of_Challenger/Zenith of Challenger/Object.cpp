@@ -197,7 +197,7 @@ void GameObject::Update(FLOAT timeElapsed)
 {
 }
 
-void GameObject::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
+void GameObject::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList)
 {
     if (!m_isVisible) return; //visible¿Ã false∏È ∑ª¥ı∏µ skip
 

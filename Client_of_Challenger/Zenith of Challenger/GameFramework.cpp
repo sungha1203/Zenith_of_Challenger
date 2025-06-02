@@ -651,8 +651,8 @@ void CGameFramework::Update()
 	{
 		m_sceneManager->Update(m_GameTimer.GetElapsedTime());
 
-		if (m_player)
-			m_player->Update(m_GameTimer.GetElapsedTime());
+		//if (m_player)
+		//	m_player->Update(m_GameTimer.GetElapsedTime());
 		if (GetSceneManager()->GetCurrentScene()->m_Otherplayer[0])
 			GetSceneManager()->GetCurrentScene()->m_Otherplayer[0]->Update(m_GameTimer.GetElapsedTime());
 		if (GetSceneManager()->GetCurrentScene()->m_Otherplayer[1])

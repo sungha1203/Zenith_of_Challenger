@@ -229,62 +229,70 @@ std::vector<XMMATRIX> AnimationClip::GetBoneTransforms(
 	float time,
 	const std::unordered_map<std::string, int>& boneNameToIndex,
 	const std::unordered_map<std::string, std::string>& boneHierarchy,
-	unordered_map<int, XMMATRIX> boneOffsets,
+	std::unordered_map<int, XMMATRIX> boneOffsets,
 	const std::unordered_map<std::string, XMMATRIX>& initialGlobalTransforms) const
 {
 	std::vector<XMMATRIX> result;
 
-	// (2) bone 이름 정렬 (topological sort)
+	// (1) 본 이름 정렬
 	std::vector<std::string> sortedBones = TopologicalSort(boneHierarchy);
-	// (3) 이름 → 글로벌 변환 매트릭스
+
+	// (2) boneName → GlobalTransform
 	std::unordered_map<std::string, XMMATRIX> boneGlobalTransforms;
+	XMMATRIX globalInverseTransform = XMMatrixIdentity();
+	bool inverseSet = false;
 
-	XMMATRIX globalinverseTransform = XMMatrixIdentity();
-
-
-	// (4) 본별 글로벌 변환 계산
+	// (3) 글로벌 트랜스폼 계산
 	for (const auto& boneName : sortedBones)
 	{
 		XMMATRIX localTransform = XMMatrixIdentity();
+
+		// 애니메이션 여부 확인
 		if (boneAnimations.contains(boneName))
 		{
 			localTransform = GetBoneTransform(boneAnimations.at(boneName), time);
 		}
 		else
 		{
-			// 애니메이션 없으면 최초 글로벌 트랜스폼 기준으로
 			auto iter = initialGlobalTransforms.find(boneName);
 			if (iter != initialGlobalTransforms.end())
-			{
-				localTransform = iter->second;				
-			}
-			else
-				localTransform = XMMatrixIdentity();
+				localTransform = iter->second;
 		}
 
+		// 부모 본 있으면 계층적 곱
 		if (boneHierarchy.contains(boneName))
 		{
-			const std::string& parent = boneHierarchy.at(boneName);			
+			const std::string& parent = boneHierarchy.at(boneName);
 			boneGlobalTransforms[boneName] = XMMatrixMultiply(localTransform, boneGlobalTransforms[parent]);
 		}
 		else
 		{
-			// 부모가 없는 루트노드 (ex: RigPelvis)
 			boneGlobalTransforms[boneName] = localTransform;
 		}
-		if (boneName == "RigPelvis"|| boneName == "mixamorig:Hips")
-			globalinverseTransform = XMMatrixInverse(nullptr, localTransform);
-	}
-	// (5) 최종 BoneMatrices 완성
-	result.resize(boneNameToIndex.size(), XMMatrixIdentity());
 
+		// inverse 기준 본 설정
+		if ((boneName == "RigPelvis" || boneName == "mixamorig:Hips") && !inverseSet)
+		{
+			globalInverseTransform = XMMatrixInverse(nullptr, boneGlobalTransforms[boneName]);
+			inverseSet = true;
+		}
+	}
+
+	// (4) fallback inverse 설정 (위 루프에서 못 잡았을 경우)
+	if (!inverseSet && !sortedBones.empty())
+	{
+		const std::string& rootBone = sortedBones[0];
+		globalInverseTransform = XMMatrixInverse(nullptr, boneGlobalTransforms[rootBone]);
+	}
+
+	// (5) 최종 본 행렬 계산
+	result.resize(boneNameToIndex.size(), XMMatrixIdentity());
 	for (const auto& [boneName, vertexIndex] : boneNameToIndex)
 	{
 		if (boneGlobalTransforms.contains(boneName))
-		{         
-			result[vertexIndex] = boneOffsets[vertexIndex] * boneGlobalTransforms[boneName] * globalinverseTransform;//확정            
-		}	
-
+		{
+			result[vertexIndex] = boneOffsets[vertexIndex] * boneGlobalTransforms[boneName] * globalInverseTransform;
+		}
 	}
 
 	return result;

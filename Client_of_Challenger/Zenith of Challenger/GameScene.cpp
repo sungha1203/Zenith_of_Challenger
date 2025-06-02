@@ -509,7 +509,7 @@ void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) con
     XMMATRIX lightView = XMMatrixLookAtLH(lightPos, lightTarget, lightUp);
     XMMATRIX lightProj = XMMatrixOrthographicLH(1000.0f, 1000.0f, 1.0f, 1000.0f);
 
-    m_camera->UploadShadowMatrix(commandList, lightView, lightProj);
+    //m_camera->UploadShadowMatrix(commandList, lightView, lightProj);
 
     m_camera->UpdateShaderVariable(commandList);
     m_lightSystem->UpdateShaderVariable(commandList);
@@ -670,7 +670,7 @@ void GameScene::PreRender(const ComPtr<ID3D12GraphicsCommandList>& commandList)
 		}
 	}
 
-	if(m_player) m_player->UpdateBoneMatrices(commandList);
+	//if(m_player) m_player->UpdateBoneMatrices(commandList);
 
     for(int i=0;i<2;i++)
     {
@@ -1532,21 +1532,32 @@ void GameScene::AddCubeCollider(const XMFLOAT3& position, const XMFLOAT3& extent
 //그림자 렌더링
 void GameScene::RenderShadowPass(const ComPtr<ID3D12GraphicsCommandList>& commandList)
 {
+    if (!m_player) return;
+
+    // 플레이어 위치 기준
+    XMFLOAT3 playerPos = m_player->GetPosition();  // 반드시 이 함수가 존재해야 함
+    XMVECTOR playerPosition = XMLoadFloat3(&playerPos);
+
+    // 빛 방향 설정
     XMFLOAT3 lightDir = { -1.0f, -1.0f, -1.0f };
     XMVECTOR lightDirection = XMVector3Normalize(XMLoadFloat3(&lightDir));
-    XMFLOAT3 center = { 0.0f, 0.0f, 0.0f }; // 전체 씬 중앙 좌표
 
-    XMVECTOR lightPos = XMVectorScale(lightDirection, -300.0f);
-    XMVECTOR lightTarget = XMLoadFloat3(&center);
+    // lightTarget = 플레이어 위치
+    XMVECTOR lightTarget = playerPosition;
+
+    // lightPos = 플레이어 위치에서 빛 방향 반대쪽으로 떨어진 위치
+    float lightDistance = 150.0f;
+    XMVECTOR lightPos = XMVectorAdd(lightTarget, XMVectorScale(lightDirection, -lightDistance));
+
     XMVECTOR lightUp = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 
     XMMATRIX lightView = XMMatrixLookAtLH(lightPos, lightTarget, lightUp);
-    //XMMATRIX lightProj = XMMatrixOrthographicLH(1000.0f, 1000.0f, 1.0f, 1500.0f);
-    XMMATRIX lightProj = XMMatrixOrthographicLH(100.0f, 100.0f, 1.0f, 500.0f);
+    XMMATRIX lightProj = XMMatrixOrthographicLH(500.0f, 500.0f, 1.0f, 1000.0f);
 
-    // [1] GPU에 Shadow 행렬 업로드 (b4)
+    // GPU에 Shadow 행렬 업로드 (b4)
     m_camera->UploadShadowMatrix(commandList, lightView, lightProj);
 
+    // ===== 기존 그림자 렌더링 흐름 유지 =====
     if (m_ZenithEnabled) {
         m_terrain->SetShader(m_shaders.at("SHADOW"));
         m_terrain->Render(commandList);
@@ -1558,9 +1569,9 @@ void GameScene::RenderShadowPass(const ComPtr<ID3D12GraphicsCommandList>& comman
         }
     }
     else {
-        // [2] FBX 오브젝트 그림자 렌더링
         for (auto& obj : m_fbxObjects)
         {
+            if (obj.get() == m_player.get()) continue;
             obj->SetShader(m_shaders.at("SHADOW"));
             obj->Render(commandList);
         }
@@ -1568,7 +1579,6 @@ void GameScene::RenderShadowPass(const ComPtr<ID3D12GraphicsCommandList>& comman
         for (const auto& [type, group] : m_monsterGroups)
         {
             if (type == "Metalon") continue;
-
             for (const auto& monster : group)
             {
                 monster->SetShader(m_shaders.at("ShadowSkinned"));
@@ -1579,6 +1589,10 @@ void GameScene::RenderShadowPass(const ComPtr<ID3D12GraphicsCommandList>& comman
 
     if (m_player)
     {
+        char buf[256];
+        sprintf_s(buf, "[ShadowPass] PlayerAnim = %s, Time = %.4f\n", m_player->GetCurrentAnim().c_str(), m_player->GetAnimTime());
+        OutputDebugStringA(buf);
+
         m_player->SetShader(m_shaders.at("SHADOWCHARSKINNED"));
         m_player->Render(commandList);
     }
@@ -1591,6 +1605,7 @@ void GameScene::RenderShadowPass(const ComPtr<ID3D12GraphicsCommandList>& comman
         }
     }
 }
+
 
 void GameScene::HandleMouseClick(int mouseX, int mouseY)
 {

@@ -12,7 +12,7 @@ public:
 	~OtherPlayer() override = default;
 
 	virtual void Update(FLOAT timeElapsed) override;
-	virtual void Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const override; // 추가
+	virtual void Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) override; // 추가
 
 	void Move(XMFLOAT3 direction, FLOAT speed);  // 이동 로직 추가
 

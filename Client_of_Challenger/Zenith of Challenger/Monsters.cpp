@@ -167,7 +167,7 @@ void Monsters::Update(FLOAT timeElapsed,bool aniOff)
 
 }
 
-void Monsters::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
+void Monsters::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList)
 {
 	if (m_isDead) return;
 	bool isShadowPass = m_shader && m_shader->IsShadowShader();
