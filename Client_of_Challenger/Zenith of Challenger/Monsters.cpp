@@ -145,9 +145,14 @@ void Monsters::Update(FLOAT timeElapsed,bool aniOff)
 			SetRotationY(degrees + 90.f);
 			SetRotationZ(180.f);
 		}
-		else
+		else if(m_monNum==1 ||m_monNum==4)
 		{
 			SetRotationY(degrees - 90.f);
+		}
+		else
+		{
+			//SetRotationY(degrees + 90.f);
+			SetRotationZ(160.f);
 		}
 
 
