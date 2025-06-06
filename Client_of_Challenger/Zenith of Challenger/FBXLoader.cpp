@@ -243,8 +243,6 @@ shared_ptr<GameObject> FBXLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene
 					vertex.boneIndices.w = boneIndex;
 					vertex.boneWeights.w = weight;
 				}
-
-
 			}
 		}
 		auto meshPtr = std::make_shared<Mesh<SkinnedVertex>>(device, commandList, vertices);

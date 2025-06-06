@@ -10,7 +10,7 @@
 #pragma comment (lib, "ws2_32.lib")
 
 constexpr int PORT_NUM = 4000;
-constexpr const char* SERVER_IP = "127.0.0.1";//"172.30.1.53"; //121.139.87.88 / 127.0.0.1
+constexpr const char* SERVER_IP = "127.0.0.1";//"172.30.1.53"; //121.139.87.88 / 127.0.0.1 / 10.40.13.101
 
 class ClientNetwork
 {

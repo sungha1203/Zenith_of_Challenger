@@ -4,8 +4,8 @@ struct VSInput
 {
     float3 position : POSITION;
     float3 normal : NORMAL;
-    float4 weights : BLENDWEIGHT;
     uint4 indices : BLENDINDICES;
+    float4 weights : BLENDWEIGHT;
 };
 
 struct VSOutput
