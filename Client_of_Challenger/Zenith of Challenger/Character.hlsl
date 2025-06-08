@@ -31,7 +31,6 @@ float4x4 ScaleMatrix(float4x4 m, float s)
 PixelInput VSMain(VertexInput input)
 {
     PixelInput output;
-
     // 스키닝 행렬 계산
     float4x4 skinMatrix =
         ScaleMatrix(g_boneMatrices[input.boneIndices.x], input.boneWeights.x) +

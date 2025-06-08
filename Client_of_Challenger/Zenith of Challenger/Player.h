@@ -54,7 +54,6 @@ public:
 
 	std::string GetCurrentAnim() const { return m_currentAnim; }
 	float GetAnimTime() const { return m_animTime; }
-
 private:
 	shared_ptr<Camera> m_camera;
 	//공격충돌체크 용

@@ -249,7 +249,7 @@ void Player::Update(FLOAT timeElapsed)
 	}
 	else
 	{
-		if (m_animationClips.contains("Idle"))
+		if (m_animationClips.contains("Idle") && m_currentAnim != "Idle")
 		{
 			//  SetCurrentAnimation("Idle");
 			m_currentAnim = "Idle";
