@@ -1240,8 +1240,8 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
     for (int i = 0; i < MetalonGroup.size(); ++i)
     {
         float x = 0.f;
-        float z = 0.f;
         float y = 65.f;
+        float z = 0.f;
 
         MetalonGroup[i]->SetPosition(XMFLOAT3{ x, y, z });
         //MetalonGroup[i]->SetPosition(gGameFramework->monstersCoord[i + 20]);
