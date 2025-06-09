@@ -165,7 +165,7 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
         m_camera->SetLens(0.25f * XM_PI, gGameFramework->GetAspectRatio(), 0.1f, 1000.f);
         m_player->SetCamera(m_camera); // 카메라 바뀐 후 플레이어에도 재등록
     }
-    if (GetAsyncKeyState(VK_F4) & 0x0001) { // F3 키 단일 입력
+    if (GetAsyncKeyState(VK_F4) & 0x0001) { // F4 키 단일 입력
         m_OutLine = !m_OutLine;
     }
 
@@ -312,184 +312,210 @@ void GameScene::Update(FLOAT timeElapsed)
         const XMFLOAT3& playerPos = gGameFramework->GetPlayer()->GetPosition();
     }
 
-    // [1] 몬스터 업데이트 (map 기반)
-    for (auto& [type, group] : m_monsterGroups)
-    {
-        bool anioff = false;
-        if (type == "Flower_Fairy" || type == "Plant_Dionaea" || type == "Venus_Blue")
-            anioff = true;
-        for (auto& monster : group)
+    if (!m_ZenithEnabled) { //도전 스테이지
+        // [1] 몬스터 업데이트 (map 기반)
+        for (auto& [type, group] : m_monsterGroups)
         {
-            monster->Update(timeElapsed,anioff);
+            bool anioff = false;
+            if (type == "Flower_Fairy" || type == "Plant_Dionaea" || type == "Venus_Blue")
+                anioff = true;
+            for (auto& monster : group)
+            {
+                monster->Update(timeElapsed, anioff);
+            }
         }
-    }
 
-    //m_bossMonsters[0]->SetRotationZ(80.f);
-    //m_bossMonsters[0]->SetRotationX(5.f);
+        // [2] 충돌 테스트
+        auto playerBox = m_player->GetBoundingBox();
 
-    // [2] 충돌 테스트
-    auto playerBox = m_player->GetBoundingBox();
+        if (playerBox.Extents.x == 0.f && playerBox.Extents.y == 0.f && playerBox.Extents.z == 0.f)
+            return;
 
-    if (playerBox.Extents.x == 0.f && playerBox.Extents.y == 0.f && playerBox.Extents.z == 0.f)
-        return;
-
-    for (auto& [type, group] : m_monsterGroups)
-    {
-        for (size_t i = 0; i < group.size(); ++i)
+        //도전스테이지 일반몬스터와 충돌처리
+        for (auto& [type, group] : m_monsterGroups)
         {
-            auto& monster = group[i];
+            for (size_t i = 0; i < group.size(); ++i)
+            {
+                auto& monster = group[i];
 
-            if (monster->IsDead()) continue;
+                if (monster->IsDead()) continue;
 
-            auto monsterBox = monster->GetBoundingBox();
-            auto monsterCenter = monsterBox.Center;
+                auto monsterBox = monster->GetBoundingBox();
+                auto monsterCenter = monsterBox.Center;
 
-            XMFLOAT3 playerWorldPos = m_player->GetPosition();
-            XMFLOAT3 monsterWorldPos = monster->GetPosition();
+                XMFLOAT3 playerWorldPos = m_player->GetPosition();
+                XMFLOAT3 monsterWorldPos = monster->GetPosition();
 
+                XMFLOAT3 playerCenterWorld = {
+                   playerWorldPos.x,
+                   playerWorldPos.y + 5.0f,
+                   playerWorldPos.z
+                };
+
+                XMFLOAT3 monsterCenterWorld = {
+                   monsterWorldPos.x + monsterCenter.x,
+                   monsterWorldPos.y + monsterCenter.y,
+                   monsterWorldPos.z + monsterCenter.z
+                };
+
+                float dx = abs(playerCenterWorld.x - monsterCenterWorld.x);
+                float dy = abs(playerCenterWorld.y - monsterCenterWorld.y);
+                float dz = abs(playerCenterWorld.z - monsterCenterWorld.z);
+
+                const XMFLOAT3& playerExtent = playerBox.Extents;
+                const XMFLOAT3& monsterExtent = monsterBox.Extents;
+
+                bool intersectX = dx <= (playerExtent.x + monsterExtent.x);
+                bool intersectY = dy <= (playerExtent.y + monsterExtent.y);
+                bool intersectZ = dz <= (playerExtent.z + monsterExtent.z);
+
+                if (intersectX && intersectY && intersectZ)
+                {
+                    char debugMsg[256];
+                    sprintf_s(debugMsg,
+                        "[Collision Detection] Player collides with monster! Type: %s, Index: %llu\n",
+                        type.c_str(), static_cast<unsigned long long>(i));
+
+                    OutputDebugStringA(debugMsg);
+
+                    //monster->ApplyDamage(1.f);
+
+                    if (monster->IsDead() && !monster->IsParticleSpawned())
+                    {
+                        for (int i = 0; i < 100; ++i)
+                        {
+                            m_particleManager->SpawnParticle(monster->GetPosition());
+                        }
+                        monster->MarkParticleSpawned();
+                        continue;
+                    }
+
+                    m_player->SetPosition(m_player->m_prevPosition); // 이동 되돌리기
+                    monster->SetBaseColor(XMFLOAT4(1.f, 0.f, 0.f, 1.f)); // 충돌 시 빨강
+
+                    int offset = 0;
+                    if (type == "Mushroom_Dark")
+                        offset = 0;
+                    else if (type == "FrightFly")
+                        offset = 10;
+                    else if (type == "Plant_Dionaea")
+                        offset = 20;
+                    else if (type == "Venus_Blue")
+                        offset = 30;
+                    else if (type == "Flower_Fairy")
+                        offset = 40;
+                    if (getAttackCollision())
+                    {
+                        CS_Packet_MonsterHP pkt;
+                        pkt.type = CS_PACKET_MONSTERHP;
+                        pkt.monsterID = offset + static_cast<int>(i);
+                        pkt.damage = 20;
+                        pkt.size = sizeof(pkt);
+                        gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
+                        m_AttackCollision = false;
+                    }
+                }
+                else
+                {
+                    monster->SetBaseColor(XMFLOAT4(1.f, 1.f, 1.f, 1.f)); // 기본 흰색
+                }
+            }
+        }
+
+        for (auto& obj : m_objects)
+        {
+            const BoundingBox& objBox = obj->GetBoundingBox();
+            const XMFLOAT3& objCenter = objBox.Center;
+
+            XMFLOAT3 objPos = obj->GetPosition();
+            XMFLOAT3 objCenterWorld = {
+               objPos.x + objCenter.x,
+               objPos.y + objCenter.y,
+               objPos.z + objCenter.z
+            };
+
+            XMFLOAT3 playerPos = m_player->GetPosition();
             XMFLOAT3 playerCenterWorld = {
-               playerWorldPos.x,
-               playerWorldPos.y + 5.0f,
-               playerWorldPos.z
+               playerPos.x,
+               playerPos.y + 5.0f,
+               playerPos.z
             };
 
-            XMFLOAT3 monsterCenterWorld = {
-               monsterWorldPos.x + monsterCenter.x,
-               monsterWorldPos.y + monsterCenter.y,
-               monsterWorldPos.z + monsterCenter.z
-            };
+            const XMFLOAT3& objExtent = objBox.Extents;
 
-            float dx = abs(playerCenterWorld.x - monsterCenterWorld.x);
-            float dy = abs(playerCenterWorld.y - monsterCenterWorld.y);
-            float dz = abs(playerCenterWorld.z - monsterCenterWorld.z);
+            bool intersectX = abs(playerCenterWorld.x - objCenterWorld.x) <= (playerBox.Extents.x + objExtent.x);
+            bool intersectY = abs(playerCenterWorld.y - objCenterWorld.y) <= (playerBox.Extents.y + objExtent.y);
+            bool intersectZ = abs(playerCenterWorld.z - objCenterWorld.z) <= (playerBox.Extents.z + objExtent.z);
 
-            const XMFLOAT3& playerExtent = playerBox.Extents;
-            const XMFLOAT3& monsterExtent = monsterBox.Extents;
-
-            bool intersectX = dx <= (playerExtent.x + monsterExtent.x);
-            bool intersectY = dy <= (playerExtent.y + monsterExtent.y);
-            bool intersectZ = dz <= (playerExtent.z + monsterExtent.z);
-            
             if (intersectX && intersectY && intersectZ)
             {
-                char debugMsg[256];
-                sprintf_s(debugMsg,
-                    "[Collision Detection] Player collides with monster! Type: %s, Index: %llu\n",
-                    type.c_str(), static_cast<unsigned long long>(i));
-
-                OutputDebugStringA(debugMsg);
-
-                //monster->ApplyDamage(1.f);
-
-                if (monster->IsDead() && !monster->IsParticleSpawned())
-                {
-                    for (int i = 0; i < 100; ++i)
-                    {
-                        m_particleManager->SpawnParticle(monster->GetPosition());
-                    }
-                    monster->MarkParticleSpawned();
-                    continue;
-                }
-
-                m_player->SetPosition(m_player->m_prevPosition); // 이동 되돌리기
-                monster->SetBaseColor(XMFLOAT4(1.f, 0.f, 0.f, 1.f)); // 충돌 시 빨강
-
-                int offset = 0;
-                if (type == "Mushroom_Dark")
-                    offset = 0;
-                else if (type == "FrightFly")
-                    offset = 10;
-                else if (type == "Plant_Dionaea")
-                    offset = 20;
-                else if (type == "Venus_Blue")
-                    offset = 30;
-                else if (type == "Flower_Fairy")
-                    offset = 40;
-                if(getAttackCollision())
-                {
-                    CS_Packet_MonsterHP pkt;
-                    pkt.type = CS_PACKET_MONSTERHP;
-                    pkt.monsterID = offset + static_cast<int>(i);
-                    pkt.damage = 20;
-                    pkt.size = sizeof(pkt);
-                    gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
-                    m_AttackCollision = false;
-                }
+                OutputDebugStringA("[Collision Detection] Player <-> Object\n");
+                m_player->SetPosition(m_player->m_prevPosition);
             }
-            else
+        }
+
+
+        int score = m_goldScore;
+        for (int i = 2; i >= 0; --i)
+        {
+            int digit = score % 10;
+            score /= 10;
+
+            if (i < m_goldDigits.size())
             {
-                monster->SetBaseColor(XMFLOAT4(1.f, 1.f, 1.f, 1.f)); // 기본 흰색
+                auto& digitUI = m_goldDigits[i];
+
+                float u0 = (digit * 100.0f) / 1000.0f;  // 픽셀 기준으로 계산
+                float u1 = ((digit + 1) * 100.0f) / 1000.0f;
+
+                digitUI->SetCustomUV(u0, 0.0f, u1, 1.0f);
             }
         }
-    }
 
-    for (auto& obj : m_objects)
-    {
-        const BoundingBox& objBox = obj->GetBoundingBox();
-        const XMFLOAT3& objCenter = objBox.Center;
-
-        XMFLOAT3 objPos = obj->GetPosition();
-        XMFLOAT3 objCenterWorld = {
-           objPos.x + objCenter.x,
-           objPos.y + objCenter.y,
-           objPos.z + objCenter.z
-        };
-
-        XMFLOAT3 playerPos = m_player->GetPosition();
-        XMFLOAT3 playerCenterWorld = {
-           playerPos.x,
-           playerPos.y + 5.0f,
-           playerPos.z
-        };
-
-        const XMFLOAT3& objExtent = objBox.Extents;
-
-        bool intersectX = abs(playerCenterWorld.x - objCenterWorld.x) <= (playerBox.Extents.x + objExtent.x);
-        bool intersectY = abs(playerCenterWorld.y - objCenterWorld.y) <= (playerBox.Extents.y + objExtent.y);
-        bool intersectZ = abs(playerCenterWorld.z - objCenterWorld.z) <= (playerBox.Extents.z + objExtent.z);
-
-        if (intersectX && intersectY && intersectZ)
+        if (m_particleManager)
         {
-            OutputDebugStringA("[Collision Detection] Player <-> Object\n");
-            m_player->SetPosition(m_player->m_prevPosition);
+            m_particleManager->Update(timeElapsed);
         }
-    }
 
-
-    int score = m_goldScore;
-    for (int i = 2; i >= 0; --i)
-    {
-        int digit = score % 10;
-        score /= 10;
-
-        if (i < m_goldDigits.size())
+        // 각 인벤토리 숫자의 UV 갱신
+        for (int i = 0; i < 6; ++i)
         {
-            auto& digitUI = m_goldDigits[i];
+            int digit = m_inventoryCounts[i];
 
-            float u0 = (digit * 100.0f) / 1000.0f;  // 픽셀 기준으로 계산
+            float u0 = (digit * 100.0f) / 1000.0f;
             float u1 = ((digit + 1) * 100.0f) / 1000.0f;
 
-            digitUI->SetCustomUV(u0, 0.0f, u1, 1.0f);
+            m_inventoryDigits[i]->SetCustomUV(u0, 0.0f, u1, 1.0f);
         }
     }
-
-    if (m_particleManager)
+    else //정점 스테이지
     {
-        m_particleManager->Update(timeElapsed);
+        for (auto& [type, group] : m_BossStageMonsters)
+        {
+            bool aniOff = (type == "Flower_Fairy" || type == "Plant_Dionaea" || type == "Venus_Blue");
+
+            for (auto& monster : group)
+            {
+                monster->Update(timeElapsed, aniOff);
+            }
+        }
+
+        // 보스 몬스터 업데이트
+        for (auto& boss : m_bossMonsters)
+        {
+            if (boss)
+            {
+                boss->Update(timeElapsed, true);
+            }
+        }
+
+
     }
 
-    // 각 인벤토리 숫자의 UV 갱신
-    for (int i = 0; i < 6; ++i)
-    {
-        int digit = m_inventoryCounts[i];
 
-        float u0 = (digit * 100.0f) / 1000.0f;
-        float u1 = ((digit + 1) * 100.0f) / 1000.0f;
 
-        m_inventoryDigits[i]->SetCustomUV(u0, 0.0f, u1, 1.0f);
-    }
 
-  
+
 
 }
 
@@ -568,6 +594,22 @@ void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) con
             boss->SetShader(m_shaders.at("FrightFly")); // 셰이더 필요시 따로 지정 가능
             boss->Render(commandList);
         }
+
+        //일반 몬스터 출력
+        for (const auto& [type, group] : m_BossStageMonsters)
+            for (const auto& monster : group)
+            {
+                if (m_OutLine)
+                {
+                    monster->SetOutlineShader(m_shaders.at("OUTLINE"));
+                    monster->RenderOutline(commandList);
+                }
+
+                monster->SetShader(m_shaders.at("FrightFly")); // 필요 시 타입별 셰이더 적용
+                monster->Render(commandList);
+            }
+
+
     }
 
     //캐릭터
@@ -671,6 +713,15 @@ void GameScene::PreRender(const ComPtr<ID3D12GraphicsCommandList>& commandList)
 	}
 
 	//if(m_player) m_player->UpdateBoneMatrices(commandList);
+
+    for (const auto& [type, group] : m_BossStageMonsters)
+    {
+        for (const auto& monster : group)
+        {
+            monster->UpdateBoneMatrices(commandList);
+        }
+    }
+
 
     for(int i=0;i<2;i++)
     {
@@ -1247,6 +1298,47 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
         //MetalonGroup[i]->SetPosition(gGameFramework->monstersCoord[i + 20]);
     }
 
+
+    float startZ = -50.f;   // 시작 위치
+    float gap = 20.f;       // 몬스터 간 거리
+
+    int index = 0;
+
+    // FrightFly 2마리
+    for (int i = 0; i < 2; ++i, ++index)
+    {
+        m_BossStageMonsters["FrightFly"].push_back(m_monsterGroups["FrightFly"][i]);
+        m_BossStageMonsters["FrightFly"][i]->SetPosition(XMFLOAT3{ 50.f, 49.f, startZ + gap * index });
+    }
+
+    // Flower_Fairy 2마리
+    for (int i = 0; i < 2; ++i, ++index)
+    {
+        m_BossStageMonsters["Flower_Fairy"].push_back(m_monsterGroups["Flower_Fairy"][i]);
+        m_BossStageMonsters["Flower_Fairy"][i]->SetPosition(XMFLOAT3{ 50.f, 49.f, startZ + gap * index });
+    }
+
+    // Mushroom_Dark 2마리
+    for (int i = 0; i < 2; ++i, ++index)
+    {
+        m_BossStageMonsters["Mushroom_Dark"].push_back(m_monsterGroups["Mushroom_Dark"][i]);
+        m_BossStageMonsters["Mushroom_Dark"][i]->SetPosition(XMFLOAT3{ 50.f, 49.f, startZ + gap * index });
+    }
+
+    // Venus_Blue 2마리
+    for (int i = 0; i < 2; ++i, ++index)
+    {
+        m_BossStageMonsters["Venus_Blue"].push_back(m_monsterGroups["Venus_Blue"][i]);
+        m_BossStageMonsters["Venus_Blue"][i]->SetPosition(XMFLOAT3{ 50.f, 49.f, startZ + gap * index });
+    }
+
+    // Plant_Dionaea 2마리
+    for (int i = 0; i < 2; ++i, ++index)
+    {
+        m_BossStageMonsters["Plant_Dionaea"].push_back(m_monsterGroups["Plant_Dionaea"][i]);
+        m_BossStageMonsters["Plant_Dionaea"][i]->SetPosition(XMFLOAT3{ 50.f, 49.f, startZ + gap * index });
+    }
+
     //스카이박스
     m_skybox = make_shared<GameObject>(device);
     m_skybox->SetMesh(m_meshes["SKYBOX"]);
@@ -1499,6 +1591,10 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
     {
         m_bossMonsters.push_back(metalonGroup[0]); // 첫 번째 보스만 따로 저장
     }
+
+
+
+
 }
 
 void GameScene::AddCubeCollider(const XMFLOAT3& position, const XMFLOAT3& extents, const FLOAT& rotate)

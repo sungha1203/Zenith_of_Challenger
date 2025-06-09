@@ -79,6 +79,9 @@ private:
 
     std::vector<std::shared_ptr<Monsters>> m_bossMonsters; //보스 몬스터
 
+    //정점 스테이지 몬스터 관리 변수
+    unordered_map<string, vector<shared_ptr<Monsters>>> m_BossStageMonsters; //정점 스테이지에서 쓰이는 몬스터 10마리
+
     //그림자 관련
     std::shared_ptr<DebugShadowShader> m_debugShadowShader;
     XMMATRIX m_shadowViewMatrix;

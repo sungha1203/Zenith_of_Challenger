@@ -57,7 +57,7 @@ void Monsters::KeyboardEvent(FLOAT timeElapsed)
 	// AI 몬스터는 직접 입력받지 않음
 }
 
-void Monsters::Update(FLOAT timeElapsed,bool aniOff)
+void Monsters::Update(FLOAT timeElapsed, bool aniOff)
 {
 	// 추후 AI나 타겟 추적 등으로 확장 가능
 
