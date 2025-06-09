@@ -6,9 +6,9 @@ enum class NormalMonsterType
 	Mushroom,
 	FightFly,
 	PlantDionaea,
-	PeaShooter,
 	PlantVenus,
-	FlowerFairy
+	FlowerFairy,
+	BossMonster
 };
 
 enum class DropItemType {

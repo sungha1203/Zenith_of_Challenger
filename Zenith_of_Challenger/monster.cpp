@@ -42,12 +42,6 @@ void Monster::SetMonster(int id, NormalMonsterType type, float x, float y, float
 		m_speed = 3;
 		m_attackspeed = 2;
 		break;
-	case NormalMonsterType::PeaShooter:
-		m_hp = 50;
-		m_attack = 3;
-		m_speed = 3;
-		m_attackspeed = 3;
-		break;
 	case NormalMonsterType::PlantVenus:
 		m_hp = 80;
 		m_attack = 4;

@@ -68,9 +68,10 @@ private:
 	static constexpr int CHALLENGE_TIME = 480;		// 8분
 	static constexpr int ZENITH_TIME	= 300;		// 5분
 	
-	std::array<Monster,50>	m_Cmonsters;			// 방에서 관리하는 몬스터(도전)
-	std::array<Monster,50>	m_Zmonsters;			// 방에서 관리하는 몬스터(도전)
-	int						m_CMonsterNum;			// 몬스터 수(도전)
+	std::array<Monster,50>	m_Cmonsters;			// 방에서 관리하는 일반몬스터(도전)
+	std::array<Monster,26>	m_Zmonsters;			// 방에서 관리하는 일반+보스몬스터(정점)
+	int						m_CMonsterNum;			// 일반몬스터 수(도전)
+	int						m_ZMonsterNum;			// 일반몬스터 수(정점)
 
 public:
 	Room() : m_room_id(-1), m_IsGaming(false), m_RoomState(Stage::LOBBY) {}
