@@ -41,7 +41,7 @@ void LoadAllMonsters(
             clips.push_back(clip);
 
         frightfly->SetAnimationClips(clips);
-        frightfly->SetCurrentAnimation("Polygonal_Frightfly_01|Polygonal_Frightfly_01|Idle|Animation Base Layer");
+        frightfly->SetCurrentAnimation("Polygonal_Frightfly_01__2_|Idle|Animation Base Layer");
         //frightfly->SetCurrentAnimation("Die");
         frightfly->SetBoneOffsets(boneOffsetLibrary.at("FrightFly"));
         frightfly->SetBoneNameToIndex(boneMap.at("FrightFly"));

@@ -209,11 +209,11 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
 
 	if (GetAsyncKeyState(VK_SPACE) & 0x8000)
 	{
-		if (m_monsterGroups["FrightFly"][0]->GetCurrentAnimation() == "Idle")
+		if (m_monsterGroups["FrightFly"][0]->GetCurrentAnimation() == "Polygonal_Frightfly_01__2_|Idle|Animation Base Layer")
 		{
 			for (int i = 0; i < m_monsterGroups["FrightFly"].size(); i++)
 			{
-				m_monsterGroups["FrightFly"][i]->PlayAnimationWithBlend("Die",0.2f);
+				m_monsterGroups["FrightFly"][i]->PlayAnimationWithBlend("Polygonal_Frightfly_01__2_|Bite Attack High|Animation Base Laye",0.2f);
 				m_monsterGroups["Flower_Fairy"][i]->PlayAnimationWithBlend("Die", 0.2f);
 				m_monsterGroups["Mushroom_Dark"][i]->PlayAnimationWithBlend("Die", 0.2f);
 				m_monsterGroups["Plant_Dionaea"][i]->PlayAnimationWithBlend("Die", 0.2f);
@@ -224,9 +224,9 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
 		{
 			for (int i = 0; i < m_monsterGroups["FrightFly"].size(); i++)
 			{
-				m_monsterGroups["FrightFly"][i]->PlayAnimationWithBlend("Idle", 0.2f);
+				m_monsterGroups["FrightFly"][i]->PlayAnimationWithBlend("Polygonal_Frightfly_01__2_|Idle|Animation Base Layer", 0.2f);
 				m_monsterGroups["Flower_Fairy"][i]->PlayAnimationWithBlend("Idle", 0.2f);
-				m_monsterGroups["Mushroom_Dark"][i]->PlayAnimationWithBlend("Idle", 0.2f);
+				m_monsterGroups["Mushroom_Dark"][i]->PlayAnimationWithBlend("Idle", 0.2f);                
 				m_monsterGroups["Plant_Dionaea"][i]->PlayAnimationWithBlend("Idle", 0.2f);
 				m_monsterGroups["Venus_Blue"][i]->PlayAnimationWithBlend("Idle", 0.2f);
 			}
@@ -794,7 +794,8 @@ void GameScene::BuildMeshes(const ComPtr<ID3D12Device>& device,
     auto frightflyLoader = make_shared<FBXLoader>();
     //if (frightflyLoader->LoadFBXModel("Model/Monsters/Frightfly/Frightfly_01.fbx", XMMatrixIdentity()))
     //if (frightflyLoader->LoadFBXModel("Model/Monsters/Frightfly/Polygonal Frightfly 09.fbx", XMMatrixIdentity()))
-    if (frightflyLoader->LoadFBXModel("Model/Monsters/Frightfly/FrightFlyBlend.fbx", XMMatrixIdentity()))
+    //if (frightflyLoader->LoadFBXModel("Model/Monsters/Frightfly/FrightFlyBlend.fbx", XMMatrixIdentity()))
+    if (frightflyLoader->LoadFBXModel("Model/Monsters/Frightfly/FrightFly0625.fbx", XMMatrixIdentity()))
     {
         auto meshes = frightflyLoader->GetMeshes();
         if (!meshes.empty())
