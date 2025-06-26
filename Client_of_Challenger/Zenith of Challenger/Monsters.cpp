@@ -137,22 +137,22 @@ void Monsters::Update(FLOAT timeElapsed, bool aniOff)
 		// [4] 몬스터가 플레이어를 향하도록 Y축 회전
 		if(m_monNum==2|| m_monNum == 3)
 		{
-			SetRotationY(degrees);
-			SetRotationZ(90.f);
+			SetRotationY(degrees+180);
+			//SetRotationZ(90.f);
 		}
 		else if (m_monNum==0)
 		{
-			SetRotationY(degrees + 90.f);
-			SetRotationZ(180.f);
+			SetRotationY(degrees + 180.f);
+			//SetRotationZ(180.f);
 		}
 		else if(m_monNum==1 ||m_monNum==4)
 		{
-			SetRotationY(degrees - 90.f);
+			SetRotationY(degrees+180);
 		}
 		else
 		{
 			//SetRotationY(degrees + 90.f);
-			SetRotationZ(160.f);
+			//SetRotationZ(160.f);
 		}
 
 
@@ -394,8 +394,9 @@ void Monsters::UpdateBoneMatrices(const ComPtr<ID3D12GraphicsCommandList>& comma
 		const auto& clip = m_animationClips.at(m_currentAnim);
 		float time = fmod(m_animTime, clip.duration);
 
-		boneTransforms = clip.GetBoneTransforms(time, m_boneNameToIndex, m_boneHierarchy, m_boneOffsets, m_nodeNameToLocalTransform);
+		boneTransforms = clip.GetBoneTransforms(time, m_boneNameToIndex, m_boneHierarchy, m_boneOffsets, m_nodeNameToLocalTransform);		
 	}
+
 
 	if (!boneTransforms.empty())
 	{

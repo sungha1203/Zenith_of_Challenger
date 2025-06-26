@@ -32,7 +32,8 @@ void LoadAllMonsters(
         frightfly->SetShader(shaders.at("FrightFly"));
         frightfly->SetDebugLineShader(shaders.at("DebugLineShader"));
         frightfly->SetHealthBarShader(shaders.at("HealthBarShader"));
-        frightfly->SetScale(XMFLOAT3{ 0.05, 0.05, 0.05 }); 
+        frightfly->m_scale = XMFLOAT3{ 0.05, 0.05, 0.05 };
+        frightfly->SetScale(frightfly->m_scale);
         frightfly->m_monNum = 0;
 
         // [2] 애니메이션 설정
@@ -78,7 +79,8 @@ void LoadAllMonsters(
         monster->SetShader(shaders.at("FrightFly"));
         monster->SetDebugLineShader(shaders.at("DebugLineShader"));
         monster->SetHealthBarShader(shaders.at("HealthBarShader"));
-        monster->SetScale(XMFLOAT3{ 0.1, 0.1, 0.1 });
+        monster->m_scale = XMFLOAT3{ 0.1, 0.1, 0.1 };
+        monster->SetScale(monster->m_scale);
         monster->m_monNum = 1;
         // [2] 애니메이션 설정
         vector<AnimationClip> clips;
@@ -120,7 +122,8 @@ void LoadAllMonsters(
         monster->SetTextureIndex(textures.at("Mushroom_Dark")->GetTextureIndex());
         monster->SetShader(shaders.at("FrightFly"));
         monster->SetDebugLineShader(shaders.at("DebugLineShader"));
-        monster->SetScale(XMFLOAT3{ 0.1,0.1,0.1 });
+        monster->m_scale = XMFLOAT3{ 0.1, 0.1, 0.1 };
+        monster->SetScale(monster->m_scale);
         monster->SetHealthBarShader(shaders.at("HealthBarShader"));
         monster->m_monNum = 2; 
         // [2] 애니메이션 설정
@@ -164,7 +167,8 @@ void LoadAllMonsters(
         monster->SetShader(shaders.at("FrightFly"));
         monster->SetDebugLineShader(shaders.at("DebugLineShader"));
         monster->SetHealthBarShader(shaders.at("HealthBarShader"));
-        monster->SetScale(XMFLOAT3{ 0.1,0.1,0.1 });
+        monster->m_scale = XMFLOAT3{ 0.1, 0.1, 0.1 };
+        monster->SetScale(monster->m_scale);
         monster->m_monNum = 3;
         // [2] 애니메이션 설정
         vector<AnimationClip> clips;
@@ -207,7 +211,8 @@ void LoadAllMonsters(
         monster->SetTextureIndex(textures.at("Plant_Dionaea")->GetTextureIndex());
         monster->SetShader(shaders.at("FrightFly"));
         monster->SetDebugLineShader(shaders.at("DebugLineShader"));
-        monster->SetScale(XMFLOAT3{ 0.1,0.1,0.1 });
+        monster->m_scale = XMFLOAT3{ 0.1, 0.1, 0.1 };
+        monster->SetScale(monster->m_scale);
         monster->m_monNum = 4;
         // [2] 애니메이션 설정
         vector<AnimationClip> clips;
@@ -251,7 +256,8 @@ void LoadAllMonsters(
         monster->SetTextureIndex(textures.at("Metalon")->GetTextureIndex());
         monster->SetShader(shaders.at("FrightFly"));
         monster->SetDebugLineShader(shaders.at("DebugLineShader"));
-        monster->SetScale(XMFLOAT3{ 0.2, 0.2, 0.2 });
+        monster->m_scale = XMFLOAT3{ 0.2, 0.2, 0.2 };
+        monster->SetScale(monster->m_scale);
         monster->m_monNum = 5;
         // [2] 애니메이션 설정
         vector<AnimationClip> clips;

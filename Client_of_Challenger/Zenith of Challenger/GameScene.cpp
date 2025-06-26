@@ -236,9 +236,9 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
     if (!m_player->isPunching&& GetAsyncKeyState('F') & 0x8000)
     {
         m_AttackCollision = true;
-        m_player->SetCurrentAnimation("Punch.001");
+        //m_player->SetCurrentAnimation("Punch.001");
         //m_player->SetCurrentAnimation("Hook");
-        //m_player->SetCurrentAnimation("Kick");
+        m_player->SetCurrentAnimation("Kick");
         m_player->isPunching=true;
         {
             CS_Packet_Animaition pkt;

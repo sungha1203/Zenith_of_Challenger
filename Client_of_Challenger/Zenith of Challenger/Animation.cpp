@@ -90,12 +90,7 @@ using namespace DirectX;
 XMMATRIX InterpolateKeyframes(const Keyframe& a, const Keyframe& b, float t, const std::string& currentBoneName, float currentTime)
 {
 	float timeGap = b.time - a.time;
-	if (fabsf(timeGap) < 0.0001f) {
-		char dbg[256];
-		sprintf_s(dbg, "[경고] %.4f 초에서 '%s'의 keyframe 시간 차이 매우 작음 → a=%.4f, b=%.4f\n",
-			currentTime, currentBoneName.c_str(), a.time, b.time);
-		OutputDebugStringA(dbg);
-	}
+	
 
 	// Load values
 	XMVECTOR posA = XMLoadFloat3(&a.position);
@@ -104,11 +99,7 @@ XMMATRIX InterpolateKeyframes(const Keyframe& a, const Keyframe& b, float t, con
 	XMVECTOR scaleB = XMLoadFloat3(&b.scale);
 	XMVECTOR rotA = XMQuaternionNormalize(XMLoadFloat4(&a.rotation));
 	XMVECTOR rotB = XMQuaternionNormalize(XMLoadFloat4(&b.rotation));
-
-	// NaN 체크
-	if (XMQuaternionIsNaN(rotA) || XMQuaternionIsNaN(rotB)) {
-		OutputDebugStringA("[오류] NaN Quaternion 발견\n");
-	}
+	
 
 	// Dot product 계산 (보간 방식 결정용)
 	float dot = XMVectorGetX(XMVector4Dot(rotA, rotB));
@@ -273,7 +264,7 @@ std::vector<XMMATRIX> AnimationClip::GetBoneTransforms(
 		// inverse 기준 본 설정
 		if ((boneName == "RigPelvis" || boneName == "mixamorig:Hips") && !inverseSet)
 		{
-			globalInverseTransform = XMMatrixInverse(nullptr, boneGlobalTransforms[boneName]);
+			//globalInverseTransform = XMMatrixInverse(nullptr, boneGlobalTransforms[boneName]);
 			inverseSet = true;
 		}
 	}

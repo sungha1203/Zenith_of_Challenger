@@ -406,29 +406,16 @@ void FBXLoader::ProcessAnimations(const aiScene* scene)
 			for (UINT k = 0; k < numRotKeys; ++k)
 			{
 				const aiQuatKey& key = aiNodeAnim->mRotationKeys[k];
-				if (isnan(key.mValue.w) || isnan(key.mValue.x) || isnan(key.mValue.y) || isnan(key.mValue.z)) {
-					OutputDebugStringA("[경고] NaN 쿼터니언 키 발견!\n");
-				}
+				
 				aiQuaternion q = aiNodeAnim->mRotationKeys[k].mValue;
-				if (fabs(q.w) < 0.01f || isnan(q.w))
-				{
-					char msg[256];
-					sprintf_s(msg, "[의심 회전값] Bone: %s | time=%.4f | quat=(%.4f, %.4f, %.4f, %.4f)\n",
-						aiNodeAnim->mNodeName.C_Str(),
-						(float)aiNodeAnim->mRotationKeys[k].mTime,
-						q.x, q.y, q.z, q.w);
-					OutputDebugStringA(msg);
-				}
+				
 				Keyframe keyframe;
 
 				//1. Rotation 기준 시간
 				keyframe.time = static_cast<float>(aiNodeAnim->mRotationKeys[k].mTime);
 
 				//2. Rotation
-				//const auto& rot = aiNodeAnim->mRotationKeys[k].mValue;
-				//keyframe.rotation = XMFLOAT4(rot.x, rot.y, rot.z, rot.w);
-				// 추가: 정규화 및 보정
-				//aiQuaternion q = key.mValue;
+				
 				q.Normalize();
 				
 				keyframe.rotation = XMFLOAT4(q.x, q.y, q.z, q.w);

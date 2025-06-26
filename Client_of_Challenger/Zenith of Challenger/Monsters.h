@@ -68,6 +68,8 @@ public:
 	void RenderOutline(const ComPtr<ID3D12GraphicsCommandList>& commandList) const;
 	void PlayAnimationWithBlend(const std::string& newAnim, float blendDuration);
 	int m_monNum;
+	XMFLOAT3 m_prevPelvisPos = XMFLOAT3(0, 0, 0); // 최초 한 번 초기화 필요
+	bool m_hasPrevPelvisPos = false;
 private:
 	shared_ptr<Camera> m_camera;
 
