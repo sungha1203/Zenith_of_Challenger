@@ -88,7 +88,7 @@ void LoadAllMonsters(
             clips.push_back(clip);
 
         monster->SetAnimationClips(clips);
-        monster->SetCurrentAnimation("Polygonal_Flower_Fairy_Yellow|Polygonal_Flower_Fairy_Yellow|Idle|Animation Base Layer");
+        monster->SetCurrentAnimation("Polygonal_Flower_Fairy_Yellow|Idle|Animation Base Layer");
         //monster->SetCurrentAnimation("Die");
         monster->SetBoneOffsets(boneOffsetLibrary.at("Flower_Fairy"));
         monster->SetBoneNameToIndex(boneMap.at("Flower_Fairy"));
@@ -132,7 +132,7 @@ void LoadAllMonsters(
             clips.push_back(clip);
 
         monster->SetAnimationClips(clips);
-        monster->SetCurrentAnimation("Polygonal_Mushroom_Dark__1_|Polygonal_Mushroom_Dark__1_|Idle|Animation Base Layer");
+        monster->SetCurrentAnimation("Polygonal_Mushroom_Dark__1_|Idle|Animation Base Layer.001");
         //monster->SetCurrentAnimation("Die");
         monster->SetBoneOffsets(boneOffsetLibrary.at("Mushroom_Dark"));
         monster->SetBoneNameToIndex(boneMap.at("Mushroom_Dark"));
@@ -176,7 +176,7 @@ void LoadAllMonsters(
             clips.push_back(clip);
 
         monster->SetAnimationClips(clips);
-        monster->SetCurrentAnimation("Polygonal_Plant_Venus_Blue|Polygonal_Plant_Venus_Blue|Idle|Animation Base Layer");
+        monster->SetCurrentAnimation("Polygonal_Plant_Venus_Blue|Idle|Animation Base Layer");
         //monster->SetCurrentAnimation("Die");
         monster->SetBoneOffsets(boneOffsetLibrary.at("Venus_Blue"));
         monster->SetBoneNameToIndex(boneMap.at("Venus_Blue"));
@@ -221,7 +221,7 @@ void LoadAllMonsters(
         monster->SetHealthBarShader(shaders.at("HealthBarShader"));
 
         monster->SetAnimationClips(clips);
-        monster->SetCurrentAnimation("Polygonal_Plant_Dionaea_Green|Polygonal_Plant_Dionaea_Green|Idle|Animation Base Layer");
+        monster->SetCurrentAnimation("Polygonal_Plant_Dionaea_Green|Idle|Animation Base Layer");
         //monster->SetCurrentAnimation("Die");
         monster->SetBoneOffsets(boneOffsetLibrary.at("Plant_Dionaea"));
         monster->SetBoneNameToIndex(boneMap.at("Plant_Dionaea"));

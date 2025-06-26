@@ -57,7 +57,7 @@ void Monsters::KeyboardEvent(FLOAT timeElapsed)
 	// AI 몬스터는 직접 입력받지 않음
 }
 
-void Monsters::Update(FLOAT timeElapsed, bool aniOff)
+void Monsters::Update(FLOAT timeElapsed)
 {
 	// 추후 AI나 타겟 추적 등으로 확장 가능
 
@@ -81,35 +81,10 @@ void Monsters::Update(FLOAT timeElapsed, bool aniOff)
 		if (m_animationClips.contains(m_currentAnim))
 		{
 			const auto& clip = m_animationClips.at(m_currentAnim);
-			m_animTime += timeElapsed * clip.ticksPerSecond;
-			//if (aniOff)
-			//	m_animTime = 0;
-			//if (m_animTime > clip.duration)
-			//{
-			//	m_animTime = fmod(m_animTime, clip.duration);
-			//	//m_animTime = 0.0f;
-			//}
+			m_animTime += timeElapsed * clip.ticksPerSecond;			
 			while (m_animTime >= clip.duration)
-				m_animTime -= clip.duration;
-			//char buffer[128];
-			//sprintf_s(buffer, "AnimTime: %.4f\n", m_animTime);
-			//OutputDebugStringA(buffer);
-		}
-		//if (m_animationClips.contains(m_currentAnim))
-		//{
-		//	const auto& clip = m_animationClips.at(m_currentAnim);
-		//	float deltaTime = timeElapsed * clip.ticksPerSecond;
-		//	float dt = std::min(deltaTime, 0.033f); // 최대 30FPS까지 허용
-		//	m_animTime += dt;
-		//	if (m_animTime > clip.duration)
-		//	{
-		//		m_animTime = fmod(m_animTime, clip.duration);
-		//		//m_animTime = 0.0f;
-		//	}
-		//	char buffer[128];
-		//	sprintf_s(buffer, "AnimTime: %.4f\n", m_animTime);
-		//	OutputDebugStringA(buffer);
-		//}
+				m_animTime -= clip.duration;		
+		}		
 	}
 
 
