@@ -97,7 +97,7 @@ void LoadAllMonsters(
 
         // [3] 바운딩 박스
         BoundingBox box;
-        box.Center = XMFLOAT3{ 0.f, 5.5f, 0.f };
+        box.Center = XMFLOAT3{ 0.f, 10.5f, 0.f };
         box.Extents = XMFLOAT3{ 1.5f, 4.0f, 1.5f };
         monster->SetMonstersBoundingBox(box);
 

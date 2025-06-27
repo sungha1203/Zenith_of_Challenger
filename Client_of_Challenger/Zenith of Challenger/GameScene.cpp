@@ -1130,8 +1130,8 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 
         // m_player 생성 이후 위치
         BoundingBox playerBox;
-        playerBox.Center = XMFLOAT3{ 0.f, 0.0f, 0.f };
-        playerBox.Extents = { 1.0f, 4.0f, 1.0f }; // 스케일링된 값
+        playerBox.Center = XMFLOAT3{ 0.f, 4.5f, 0.f };
+        playerBox.Extents = { 1.0f, 4.2f, 1.0f }; // 스케일링된 값
         player->SetPlayerBoundingBox(playerBox);
 
         BoundingBox playerAttBox;
