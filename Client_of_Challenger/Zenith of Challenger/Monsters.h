@@ -70,6 +70,8 @@ public:
 	int m_monNum;
 	XMFLOAT3 m_prevPelvisPos = XMFLOAT3(0, 0, 0); // 최초 한 번 초기화 필요
 	bool m_hasPrevPelvisPos = false;
+	BoundingBox AttackRange;
+	bool isAttacking = false;
 private:
 	shared_ptr<Camera> m_camera;
 
@@ -79,7 +81,6 @@ private:
 	std::unordered_map<std::string, AnimationClip> m_animationClips;
 	std::string m_currentAnim = "Idle";
 	float m_animTime = 0.f;
-
 	std::string m_nextAnim = "";       // 블렌딩할 애니메이션
 	float m_blendTime = 0.f;           // 블렌딩 경과 시간
 	float m_blendDuration = 0.2f;      // 블렌딩 지속 시간

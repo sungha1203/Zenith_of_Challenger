@@ -225,10 +225,11 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
 			for (int i = 0; i < m_monsterGroups["FrightFly"].size(); i++)
 			{
 				m_monsterGroups["FrightFly"][i]->PlayAnimationWithBlend("Polygonal_Frightfly_01__2_|Idle|Animation Base Layer", 0.2f);
-				m_monsterGroups["Flower_Fairy"][i]->PlayAnimationWithBlend("Idle", 0.2f);
-				m_monsterGroups["Mushroom_Dark"][i]->PlayAnimationWithBlend("Idle", 0.2f);                
-				m_monsterGroups["Plant_Dionaea"][i]->PlayAnimationWithBlend("Idle", 0.2f);
-				m_monsterGroups["Venus_Blue"][i]->PlayAnimationWithBlend("Idle", 0.2f);
+                m_monsterGroups["Flower_Fairy"][i]->PlayAnimationWithBlend("Polygonal_Flower_Fairy_Yellow|Idle|Animation Base Layer", 0.2f);
+                m_monsterGroups["Mushroom_Dark"][i]->PlayAnimationWithBlend("Polygonal_Mushroom_Dark__1_|Idle|Animation Base Layer.001", 0.2f);
+                m_monsterGroups["Plant_Dionaea"][i]->PlayAnimationWithBlend("Polygonal_Plant_Dionaea_Green|Idle|Animation Base Layer", 0.2f);
+                m_monsterGroups["Venus_Blue"][i]->PlayAnimationWithBlend("Polygonal_Plant_Venus_Blue|Idle|Animation Base Layer", 0.2f);
+
 			}
 		}
 	}
@@ -389,18 +390,34 @@ void GameScene::Update(FLOAT timeElapsed)
 
                     m_player->SetPosition(m_player->m_prevPosition); // 이동 되돌리기
                     monster->SetBaseColor(XMFLOAT4(1.f, 0.f, 0.f, 1.f)); // 충돌 시 빨강
-
+                                       
                     int offset = 0;
+                    monster->isAttacking = true;
                     if (type == "Mushroom_Dark")
+                    {
                         offset = 0;
+                        monster->PlayAnimationWithBlend("Polygonal_Mushroom_Dark__1_|Punch|Animation Base Layer", 0.2f);
+                    }
                     else if (type == "FrightFly")
+                    {
                         offset = 10;
+                        monster->PlayAnimationWithBlend("Polygonal_Frightfly_01__2_|Bite Attack High|Animation Base Laye", 0.2f);
+                    }
                     else if (type == "Plant_Dionaea")
+                    {
                         offset = 20;
+                        monster->PlayAnimationWithBlend("Polygonal_Plant_Dionaea_Green|Bite Attack|Animation Base Layer", 0.2f);
+                    }
                     else if (type == "Venus_Blue")
+                    {
                         offset = 30;
+                        monster->PlayAnimationWithBlend("Polygonal_Plant_Venus_Blue|Bite Attack|Animation Base Layer", 0.2f);
+                    }
                     else if (type == "Flower_Fairy")
+                    {
                         offset = 40;
+                        monster->PlayAnimationWithBlend("Polygonal_Flower_Fairy_Yellow|Projectile Attack|Animation Base ", 0.2f);
+                    }
                     if (getAttackCollision())
                     {
                         CS_Packet_MonsterHP pkt;
@@ -412,9 +429,30 @@ void GameScene::Update(FLOAT timeElapsed)
                         m_AttackCollision = false;
                     }
                 }
-                else
+                else if(monster->isAttacking&& !monster->AttackRange.Intersects(m_player->GetBoundingBox()))
                 {
+                    if (type == "Mushroom_Dark")
+                    {                      
+                        monster->PlayAnimationWithBlend("Polygonal_Mushroom_Dark__1_|Idle|Animation Base Layer.001", 0.2f);
+                    }
+                    else if (type == "FrightFly")
+                    {                              
+                        monster->PlayAnimationWithBlend("Polygonal_Frightfly_01__2_|Idle|Animation Base Layer", 0.2f);
+                    }
+                    else if (type == "Plant_Dionaea")
+                    {                      
+                        monster->PlayAnimationWithBlend("Polygonal_Plant_Dionaea_Green|Idle|Animation Base Layer", 0.2f); 
+                    }
+                    else if (type == "Venus_Blue" )
+                    {                       
+                        monster->PlayAnimationWithBlend("Polygonal_Plant_Venus_Blue|Idle|Animation Base Layer", 0.2f);
+                    }
+                    else if (type == "Flower_Fairy")
+                    {                        
+                        monster->PlayAnimationWithBlend("Polygonal_Flower_Fairy_Yellow|Idle|Animation Base Layer", 0.2f);
+                    }
                     monster->SetBaseColor(XMFLOAT4(1.f, 1.f, 1.f, 1.f)); // 기본 흰색
+                    monster->isAttacking = false;
                 }
             }
         }
@@ -1217,6 +1255,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 
         //frightflies[i]->SetPosition(XMFLOAT3{ x, y, z });
         frightflies[i]->SetPosition(gGameFramework->monstersCoord[i + 10]);
+        frightflies[i]->AttackRange.Center = gGameFramework->monstersCoord[i + 10];
     }
 
     // "Flower_Fairy" 타입 몬스터 배치
@@ -1231,6 +1270,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 
         //fairies[i]->SetPosition(XMFLOAT3{ x, y, z });
         fairies[i]->SetPosition(gGameFramework->monstersCoord[i + 40]);
+        fairies[i]->AttackRange.Center = gGameFramework->monstersCoord[i + 40];
 
     }
 
@@ -1246,6 +1286,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 
         //mushrooms[i]->SetPosition(XMFLOAT3{ x, y, z });
         mushrooms[i]->SetPosition(gGameFramework->monstersCoord[i]);
+        mushrooms[i]->AttackRange.Center = gGameFramework->monstersCoord[i];
     }
 
     // "Venus_Blue" 타입 몬스터 배치
@@ -1260,6 +1301,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 
         //venusGroup[i]->SetPosition(XMFLOAT3{ x, y, z });
         venusGroup[i]->SetPosition(gGameFramework->monstersCoord[i + 30]);
+        venusGroup[i]->AttackRange.Center = gGameFramework->monstersCoord[i + 30];
     }
 
     // "Plant_Dionaea" 타입 몬스터 배치
@@ -1274,6 +1316,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 
         //DionaeaGroup[i]->SetPosition(XMFLOAT3{ x, y, z });
         DionaeaGroup[i]->SetPosition(gGameFramework->monstersCoord[i + 20]);
+        DionaeaGroup[i]->AttackRange.Center = gGameFramework->monstersCoord[i + 20];
     }
 
     // "Metalon" 타입 보스 몬스터 배치
