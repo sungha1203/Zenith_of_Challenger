@@ -214,10 +214,10 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
 			for (int i = 0; i < m_monsterGroups["FrightFly"].size(); i++)
 			{
 				m_monsterGroups["FrightFly"][i]->PlayAnimationWithBlend("Polygonal_Frightfly_01__2_|Bite Attack High|Animation Base Laye",0.2f);
-				m_monsterGroups["Flower_Fairy"][i]->PlayAnimationWithBlend("Die", 0.2f);
-				m_monsterGroups["Mushroom_Dark"][i]->PlayAnimationWithBlend("Die", 0.2f);
-				m_monsterGroups["Plant_Dionaea"][i]->PlayAnimationWithBlend("Die", 0.2f);
-				m_monsterGroups["Venus_Blue"][i]->PlayAnimationWithBlend("Die", 0.2f);
+				m_monsterGroups["Flower_Fairy"][i]->PlayAnimationWithBlend("Polygonal_Flower_Fairy_Yellow|Projectile Attack|Animation Base ", 0.2f);
+				m_monsterGroups["Mushroom_Dark"][i]->PlayAnimationWithBlend("Polygonal_Mushroom_Dark__1_|Punch|Animation Base Layer", 0.2f);
+				m_monsterGroups["Plant_Dionaea"][i]->PlayAnimationWithBlend("Polygonal_Plant_Dionaea_Green|Bite Attack|Animation Base Layer", 0.2f);
+				m_monsterGroups["Venus_Blue"][i]->PlayAnimationWithBlend("Polygonal_Plant_Venus_Blue|Bite Attack|Animation Base Layer", 0.2f);
 			}
 		}
 		else
@@ -315,13 +315,10 @@ void GameScene::Update(FLOAT timeElapsed)
     if (!m_ZenithEnabled) { //도전 스테이지
         // [1] 몬스터 업데이트 (map 기반)
         for (auto& [type, group] : m_monsterGroups)
-        {
-            bool anioff = false;
-            if (type == "Flower_Fairy" || type == "Plant_Dionaea" || type == "Venus_Blue")
-                anioff = true;
+        {            
             for (auto& monster : group)
             {
-                monster->Update(timeElapsed, anioff);
+                monster->Update(timeElapsed);
             }
         }
 
@@ -491,12 +488,11 @@ void GameScene::Update(FLOAT timeElapsed)
     else //정점 스테이지
     {
         for (auto& [type, group] : m_BossStageMonsters)
-        {
-            bool aniOff = (type == "Flower_Fairy" || type == "Plant_Dionaea" || type == "Venus_Blue");
+        {           
 
             for (auto& monster : group)
             {
-                monster->Update(timeElapsed, aniOff);
+                monster->Update(timeElapsed);
             }
         }
 
@@ -505,18 +501,10 @@ void GameScene::Update(FLOAT timeElapsed)
         {
             if (boss)
             {
-                boss->Update(timeElapsed, true);
+                boss->Update(timeElapsed);
             }
         }
-
-
     }
-
-
-
-
-
-
 }
 
 void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
@@ -816,7 +804,8 @@ void GameScene::BuildMeshes(const ComPtr<ID3D12Device>& device,
 	}
 	// Flower_Fairy FBX 메쉬 저장
 	auto flowerFairyLoader = make_shared<FBXLoader>();
-	if (flowerFairyLoader->LoadFBXModel("Model/Monsters/Flower_Fairy/FlowerFairyBlender.fbx", XMMatrixIdentity()))//scale 0.1 
+	//if (flowerFairyLoader->LoadFBXModel("Model/Monsters/Flower_Fairy/FlowerFairyBlender.fbx", XMMatrixIdentity()))//scale 0.1 
+	if (flowerFairyLoader->LoadFBXModel("Model/Monsters/Flower_Fairy/ExportFairy.fbx", XMMatrixIdentity()))//scale 0.1 
 	{
 		auto meshes = flowerFairyLoader->GetMeshes();
 		if (!meshes.empty())
@@ -840,7 +829,7 @@ void GameScene::BuildMeshes(const ComPtr<ID3D12Device>& device,
 	}
 	// Mushroom_Dark FBX 메쉬 저장
 	auto mushroomDarkLoader = make_shared<FBXLoader>();
-	if (mushroomDarkLoader->LoadFBXModel("Model/Monsters/Mushroom_Dark/MushroomBlender.fbx", XMMatrixIdentity()))//scale 0.1 
+	if (mushroomDarkLoader->LoadFBXModel("Model/Monsters/Mushroom_Dark/ExportMushroom.fbx", XMMatrixIdentity()))//scale 0.1 
 	//if (mushroomDarkLoader->LoadFBXModel("Model/Monsters/Mushroom_Dark/Polygonal Mushroom Dark2.fbx", XMMatrixIdentity()))//scale 0.1 
 	{
 		auto meshes = mushroomDarkLoader->GetMeshes();
@@ -865,7 +854,7 @@ void GameScene::BuildMeshes(const ComPtr<ID3D12Device>& device,
 	}
 	// Venus_Blue FBX 메쉬 저장
 	auto venusBlueLoader = make_shared<FBXLoader>();
-	if (venusBlueLoader->LoadFBXModel("Model/Monsters/Venus_Blue/Venus_BlueBlender.fbx", XMMatrixIdentity()))//scale 0.1 
+	if (venusBlueLoader->LoadFBXModel("Model/Monsters/Venus_Blue/ExportVenus_Blue.fbx", XMMatrixIdentity()))//scale 0.1 
 	{
 		auto meshes = venusBlueLoader->GetMeshes();
 		if (!meshes.empty())
@@ -889,7 +878,7 @@ void GameScene::BuildMeshes(const ComPtr<ID3D12Device>& device,
 	}
 	// Plant_Dionaea FBX 메쉬 저장
 	auto Plant_DionaeaLoader = make_shared<FBXLoader>();
-	if (Plant_DionaeaLoader->LoadFBXModel("Model/Monsters/Plant_Dionaea/Plant_DionaeaBlender.fbx", XMMatrixIdentity()))//scale 0.1     
+	if (Plant_DionaeaLoader->LoadFBXModel("Model/Monsters/Plant_Dionaea/ExportPlant_Dionaea.fbx", XMMatrixIdentity()))//scale 0.1     
 	{
 		auto meshes = Plant_DionaeaLoader->GetMeshes();
 		if (!meshes.empty())
