@@ -29,6 +29,7 @@ public:
 	void		ProcessGamestart(char* buffer);
 	void		ProcessInitialstate(char* buffer);
 	void		ProcessInitMonster(char* buffer);
+	void		ProcessZenithMonster(char* buffer);
 	void		ProcessUpdateCoord2Player(char* buffer);
 	void		ProcessChat(char* buffer);
 	void		ProcessStartRepairTime(char* buffer);

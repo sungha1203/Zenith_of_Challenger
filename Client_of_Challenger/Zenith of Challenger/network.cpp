@@ -92,6 +92,9 @@ void ClientNetwork::Receive() {
 			case SC_PACKET_INITMONSTER:
 				ProcessInitMonster(currentBuffer);
 				break;
+			case SC_PACKET_ZENITHMONSTER:
+				ProcessZenithMonster(currentBuffer);
+				break;
 			case SC_PACKET_UPDATE2PLAYER:
 				ProcessUpdateCoord2Player(currentBuffer);
 				break;
@@ -208,12 +211,18 @@ void ClientNetwork::ProcessInitialstate(char* buffer)
 
 }
 
-void ClientNetwork::ProcessInitMonster(char* buffer) {
+void ClientNetwork::ProcessZenithMonster(char* buffer) {
 	SC_Packet_InitMonster* pkt = reinterpret_cast<SC_Packet_InitMonster*>(buffer);
 	for (auto i = 0; i < 50; ++i) {
 		XMFLOAT3 pos(pkt->monsters[i].x, pkt->monsters[i].y, pkt->monsters[i].z);
 		gGameFramework->monstersCoord[pkt->monsters[i].monsterid] = pos;
 	}
+}
+
+void ClientNetwork::ProcessZenithMonster(char* buffer)
+{
+	SC_Packet_ZenithMonster* pkt = reinterpret_cast<SC_Packet_ZenithMonster*>(buffer);
+
 }
 
 void ClientNetwork::ProcessUpdateCoord2Player(char* buffer)
