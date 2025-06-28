@@ -211,7 +211,7 @@ void ClientNetwork::ProcessInitialstate(char* buffer)
 
 }
 
-void ClientNetwork::ProcessZenithMonster(char* buffer) {
+void ClientNetwork::ProcessInitMonster(char* buffer) {
 	SC_Packet_InitMonster* pkt = reinterpret_cast<SC_Packet_InitMonster*>(buffer);
 	for (auto i = 0; i < 50; ++i) {
 		XMFLOAT3 pos(pkt->monsters[i].x, pkt->monsters[i].y, pkt->monsters[i].z);

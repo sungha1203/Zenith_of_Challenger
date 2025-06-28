@@ -672,7 +672,7 @@ void Network::SendGameStart(const std::vector<int> & client_id){
 	for(int id : client_id){
 		if(g_network.clients[id].m_used){
 			g_network.clients[id].do_send(packet);
-			std::cout << id << ": ½ÃÀÛ º¸³¿" << std::endl;
+			std::cout << "[INFO] " << id << " : ½ÃÀÛ º¸³¿" << std::endl;
 		}
 	}
 }
