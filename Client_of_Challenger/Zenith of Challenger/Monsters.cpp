@@ -45,7 +45,7 @@ Monsters::Monsters(const ComPtr<ID3D12Device>& device) : GameObject(device), m_s
 
 	//체력바 생성
 	m_healthBar = make_shared<HealthBarObject>(device);
-	AttackRange.Extents= { 8.0f, 8.0f, 8.0f };
+	AttackRange.Extents= { 10.0f, 10.0f, 10.0f };
 }
 
 void Monsters::MouseEvent(FLOAT timeElapsed)
