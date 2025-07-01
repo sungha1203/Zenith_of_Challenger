@@ -367,6 +367,41 @@ void GameScene::Update(FLOAT timeElapsed)
                 bool intersectY = dy <= (playerExtent.y + monsterExtent.y);
                 bool intersectZ = dz <= (playerExtent.z + monsterExtent.z);
 
+                if (monster->AttackRange.Intersects(m_player->GetBoundingBox()))
+                {
+                    if(!monster->isAttacking)
+                    {
+						monster->isAttacking = true;
+                        if (type == "Mushroom_Dark")
+                        {
+                            monster->PlayAnimationWithBlend("Polygonal_Mushroom_Dark__1_|Punch|Animation Base Layer", 0.2f);
+                        }
+                        else if (type == "FrightFly")
+                        {
+                            monster->PlayAnimationWithBlend("Polygonal_Frightfly_01__2_|Bite Attack High|Animation Base Laye", 0.2f);
+                        }
+                        else if (type == "Plant_Dionaea")
+                        {
+                            monster->PlayAnimationWithBlend("Polygonal_Plant_Dionaea_Green|Bite Attack|Animation Base Layer", 0.2f);
+                        }
+                        else if (type == "Venus_Blue")
+                        {
+                            monster->PlayAnimationWithBlend("Polygonal_Plant_Venus_Blue|Bite Attack|Animation Base Layer", 0.2f);
+                        }
+                        else if (type == "Flower_Fairy")
+                        {
+                            monster->PlayAnimationWithBlend("Polygonal_Flower_Fairy_Yellow|Projectile Attack|Animation Base ", 0.2f);
+                        }                       
+                    }
+
+
+                    const auto& clip = monster->m_animationClips.at(monster->m_currentAnim);
+                    if (monster->m_animTime > clip.duration / 3 && monster->m_animTime < clip.duration / 2)
+                    {
+                        m_uiObjects[1]->m_fillAmount -= 0.02;
+                    }
+                }
+
                 if (intersectX && intersectY && intersectZ)
                 {
                     char debugMsg[256];
@@ -396,27 +431,27 @@ void GameScene::Update(FLOAT timeElapsed)
                     if (type == "Mushroom_Dark")
                     {
                         offset = 0;
-                        monster->PlayAnimationWithBlend("Polygonal_Mushroom_Dark__1_|Punch|Animation Base Layer", 0.2f);
+                       // monster->PlayAnimationWithBlend("Polygonal_Mushroom_Dark__1_|Punch|Animation Base Layer", 0.2f);
                     }
                     else if (type == "FrightFly")
                     {
                         offset = 10;
-                        monster->PlayAnimationWithBlend("Polygonal_Frightfly_01__2_|Bite Attack High|Animation Base Laye", 0.2f);
+                       // monster->PlayAnimationWithBlend("Polygonal_Frightfly_01__2_|Bite Attack High|Animation Base Laye", 0.2f);
                     }
                     else if (type == "Plant_Dionaea")
                     {
                         offset = 20;
-                        monster->PlayAnimationWithBlend("Polygonal_Plant_Dionaea_Green|Bite Attack|Animation Base Layer", 0.2f);
+                       // monster->PlayAnimationWithBlend("Polygonal_Plant_Dionaea_Green|Bite Attack|Animation Base Layer", 0.2f);
                     }
                     else if (type == "Venus_Blue")
                     {
                         offset = 30;
-                        monster->PlayAnimationWithBlend("Polygonal_Plant_Venus_Blue|Bite Attack|Animation Base Layer", 0.2f);
+                       // monster->PlayAnimationWithBlend("Polygonal_Plant_Venus_Blue|Bite Attack|Animation Base Layer", 0.2f);
                     }
                     else if (type == "Flower_Fairy")
                     {
                         offset = 40;
-                        monster->PlayAnimationWithBlend("Polygonal_Flower_Fairy_Yellow|Projectile Attack|Animation Base ", 0.2f);
+                      //  monster->PlayAnimationWithBlend("Polygonal_Flower_Fairy_Yellow|Projectile Attack|Animation Base ", 0.2f);
                     }
                     if (getAttackCollision())
                     {
@@ -428,6 +463,7 @@ void GameScene::Update(FLOAT timeElapsed)
                         gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
                         m_AttackCollision = false;
                     }
+                    
                 }
                 else if(monster->isAttacking&& !monster->AttackRange.Intersects(m_player->GetBoundingBox()))
                 {
