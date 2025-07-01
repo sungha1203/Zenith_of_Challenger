@@ -73,6 +73,10 @@ private:
 	int						m_CMonsterNum;			// 일반몬스터 수(도전)
 	int						m_ZMonsterNum;			// 일반몬스터 수(정점)
 
+	std::vector<PlayerInfo> m_PlayerCoord;			// 각 플레이어의 현재 좌표
+	std::chrono::steady_clock::time_point m_UpdatelastAggro;
+	const float AGGRO_UPDATE_TIME = 0.3f;			// 0.3초 마다 좌표 리스트 갱신
+
 public:
 	Room() : m_room_id(-1), m_IsGaming(false), m_RoomState(Stage::LOBBY) {}
 
@@ -95,8 +99,10 @@ public:
 	void	StartZenithStage();							// 도전 스테이지 -> 정점스테이지
 	void	EndGame();									// 정점 스테이지 -> 로비
 	
-	void	SetStopTimer();
-	void	SetSkipTimer();
+	void	UpdateMonsterAggroList();					// 몬스터의 어그로 리스트 갱신 및 전달
+
+	void	SetStopTimer(bool check);
+	void	SetSkipTimer(bool check);
 	void	SetSkipButton(bool check);
 
 	int		GetClientsNum() const { return m_clients.size(); }								// 이 방에 몇명있어?

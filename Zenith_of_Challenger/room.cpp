@@ -13,8 +13,9 @@ void Room::ResetRoom()
 	m_clients.clear();                  // 클라이언트 목록 제거
 	m_inventory = InventoryItem();
 
-	m_skipTimer = false;
-	m_skipButton = false;
+	SetStopTimer(false);
+	SetSkipTimer(false);
+	SetSkipButton(false);
 	m_playerNum = 0;
 	m_enterClientNum = 0;
 	m_enterZenithNum = 0;
@@ -154,14 +155,38 @@ void Room::EndGame()
 	// TODO
 }
 
-void Room::SetStopTimer()
+void Room::UpdateMonsterAggroList()
 {
-	m_stopTimer = true;
+	// 0.3초마다 갱신
+	auto now = std::chrono::steady_clock::now();
+	float elapsed = std::chrono::duration<float>(now - m_UpdatelastAggro).count();
+	if (elapsed < AGGRO_UPDATE_TIME) return;
+
+	// 플레이어 좌표 초기화 및 갱신 --> 플레이어가 3명이 고정이 아니여서 그냥 밀어버리고 새로 받음.
+	m_PlayerCoord.clear();
+	for (int id : m_clients)
+	{
+		float x = g_client[id].GetX();
+		float z = g_client[id].GetZ();
+		m_PlayerCoord.push_back({ id, x, z });
+	}
+
+	// 몬스터에 플레이어 좌표 업데이트 리스트 전달
+	for (int i = 0; i < m_Zmonsters.size(); ++i) {
+		if (m_Zmonsters[i].GetLived() == false)
+			continue;
+		m_Zmonsters[i].UpdateAggroList(m_PlayerCoord);
+	}
 }
 
-void Room::SetSkipTimer()
+void Room::SetStopTimer(bool check)
 {
-	m_skipTimer = true;
+	m_stopTimer = check;
+}
+
+void Room::SetSkipTimer(bool check)
+{
+	m_skipTimer = check;
 }
 
 void Room::SetSkipButton(bool check)

@@ -28,6 +28,13 @@ struct Player
 	float			angle;					// 방향
 };
 
+// 몬스터와 어그로 상태를 알기위한 구조체
+struct PlayerInfo
+{
+	int		clientID;
+	float	x, z;
+};
+
 class ClientInfo       
 {
 private:

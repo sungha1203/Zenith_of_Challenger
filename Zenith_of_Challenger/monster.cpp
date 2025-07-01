@@ -74,6 +74,40 @@ void Monster::TakeDamage(int dmg)
 	mx.unlock();
 }
 
+void Monster::AIMove()
+{
+	if (m_aggroplayer == -1) return;
+}
+
+void Monster::UpdateAggroList(const std::vector<PlayerInfo>& players)
+{
+	m_AggroList.clear();
+	float mindist = FLT_MAX;
+	int nearID = -1;
+
+	for (const auto& p : players) {
+		float dx = m_x - p.x;	// 플레이어와 몬스터 x차이
+		float dz = m_z - p.z;	// 플레이어와 몬스터 z차이
+		float dist = dx * dx + dz * dz;
+
+		if (dist <= m_aggroRange * m_aggroRange)
+		{
+			m_AggroList.push_back({ p.clientID, dist });
+
+			if (dist < mindist)
+			{
+				mindist = dist;
+				nearID = p.clientID;
+			}
+		}
+	}
+
+	if (m_AggroList.size() == 0)
+		m_aggroplayer = -1;
+	else
+		m_aggroplayer = nearID;			// 지금 현재 어그로 끌린 플레이어
+}
+
 DropItemType Monster::DropWHAT()
 {
 	std::random_device rd;
@@ -84,7 +118,7 @@ DropItemType Monster::DropWHAT()
 	if (num <= 10) {							// 무기(검)
 		return DropItemType::SWORD;
 	}
-	else if (num >10 && num <= 20) {			// 무기(지팡이)
+	else if (num > 10 && num <= 20) {			// 무기(지팡이)
 		return DropItemType::WAND;
 	}
 	else if (num > 20 && num <= 30) {			// 무기(방패)
