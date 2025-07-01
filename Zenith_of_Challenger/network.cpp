@@ -402,7 +402,7 @@ void Network::ProcessSkipChallenge(int client_id, char * buffer, int length){
 
 		Room & room = g_room_manager.GetRoom(room_id);
 		if(room.GetSkipButton() == false){
-			room.SetSkipTimer();
+			room.SetSkipTimer(true);
 			room.SetSkipButton(true);
 		}
 	}
@@ -672,7 +672,7 @@ void Network::SendGameStart(const std::vector<int> & client_id){
 	for(int id : client_id){
 		if(g_network.clients[id].m_used){
 			g_network.clients[id].do_send(packet);
-			std::cout << "[INFO] " << id << " : 시작 보냄" << std::endl;
+			std::cout << "[INFO] 클라이언트 [" << id << "] 게임 시작 패킷 전송" << std::endl;
 		}
 	}
 }
