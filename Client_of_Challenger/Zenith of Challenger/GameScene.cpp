@@ -590,11 +590,11 @@ void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) con
             for (const auto& monster : group)
             {
                 // 1. 외곽선 Pass
-                if (m_OutLine)
-                {
-                    monster->SetOutlineShader(m_shaders.at("OUTLINE"));
-                    monster->RenderOutline(commandList);
-                }
+                //if (m_OutLine)
+                //{
+                //    monster->SetOutlineShader(m_shaders.at("OUTLINE"));
+                //    monster->RenderOutline(commandList);
+                //}
 
                 monster->SetShader(m_shaders.at("FrightFly"));
                 monster->Render(commandList);
@@ -611,11 +611,11 @@ void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) con
         // 보스 몬스터 출력
         for (const auto& boss : m_bossMonsters)
         {
-            if (m_OutLine)
-            {
-                boss->SetOutlineShader(m_shaders.at("OUTLINE"));
-                boss->RenderOutline(commandList);
-            }
+            //if (m_OutLine)
+            //{
+            //    boss->SetOutlineShader(m_shaders.at("OUTLINE"));
+            //    boss->RenderOutline(commandList);
+            //}
 
             boss->SetShader(m_shaders.at("FrightFly")); // 셰이더 필요시 따로 지정 가능
             boss->Render(commandList);
@@ -625,11 +625,11 @@ void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) con
         for (const auto& [type, group] : m_BossStageMonsters)
             for (const auto& monster : group)
             {
-                if (m_OutLine)
-                {
-                    monster->SetOutlineShader(m_shaders.at("OUTLINE"));
-                    monster->RenderOutline(commandList);
-                }
+                //if (m_OutLine)
+                //{
+                //    monster->SetOutlineShader(m_shaders.at("OUTLINE"));
+                //    monster->RenderOutline(commandList);
+                //}
 
                 monster->SetShader(m_shaders.at("FrightFly")); // 필요 시 타입별 셰이더 적용
                 monster->Render(commandList);
@@ -1696,6 +1696,7 @@ void GameScene::RenderShadowPass(const ComPtr<ID3D12GraphicsCommandList>& comman
             obj->SetShader(m_shaders.at("SHADOW"));
             obj->Render(commandList);
         }
+
     }
     else {
         for (auto& obj : m_fbxObjects)
@@ -1703,16 +1704,6 @@ void GameScene::RenderShadowPass(const ComPtr<ID3D12GraphicsCommandList>& comman
             if (obj.get() == m_player.get()) continue;
             obj->SetShader(m_shaders.at("SHADOW"));
             obj->Render(commandList);
-        }
-
-        for (const auto& [type, group] : m_monsterGroups)
-        {
-            if (type == "Metalon") continue;
-            for (const auto& monster : group)
-            {
-                monster->SetShader(m_shaders.at("ShadowSkinned"));
-                monster->Render(commandList);
-            }
         }
     }
 
@@ -1733,6 +1724,16 @@ void GameScene::RenderShadowPass(const ComPtr<ID3D12GraphicsCommandList>& comman
             op->Render(commandList);
         }
     }
+
+    for (const auto& [type, group] : m_monsterGroups)
+    {
+        for (const auto& monster : group)
+        {
+            monster->SetShader(m_shaders.at("ShadowSkinned"));
+            monster->Render(commandList);
+        }
+    }
+
 }
 
 
