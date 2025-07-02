@@ -84,6 +84,8 @@ public:
 	float m_blendTime = 0.f;           // 블렌딩 경과 시간
 	float m_blendDuration = 0.2f;      // 블렌딩 지속 시간
 	bool m_isBlending = false;
+	bool m_didDamageThisAnim = false;
+	float m_prevAnimTime = -1.0f;
 private:
 
 	std::unordered_map<std::string, int> m_boneNameToIndex;
@@ -97,8 +99,7 @@ private:
 	unordered_map<int, XMMATRIX> m_boneOffsets;
 
 	//애니메이션 최적화용
-	std::string m_prevAnimName = "";
-	float m_prevAnimTime = -1.0f;
+	std::string m_prevAnimName = "";	
 	std::pair<std::vector<XMMATRIX>, std::unordered_map<std::string, int>> m_cachedBoneTransforms;
 
 	//몬스터 체력바 관련

@@ -128,7 +128,7 @@ public:
 	void SetDrawBoundingBox(bool draw) { m_drawBoundingBox = draw; }
 	bool IsDrawBoundingBox() const { return m_drawBoundingBox; }
 	int m_textureIndex = 0;
-	float m_fillAmount = 2.0f;
+	float m_fillAmount = 1.0f;
 
 
 	void SetHealthBarShader(const shared_ptr<Shader>& shader) { m_HealthBarShader = shader; }

@@ -192,7 +192,7 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
     if (GetAsyncKeyState(VK_LEFT) & 0x8000)
         m_uiObjects[1]->m_fillAmount -= 0.1;
 
-    if (GetAsyncKeyState(VK_RIGHT) & 0x8000)
+    if (GetAsyncKeyState(VK_RIGHT) & 0x8000 && m_uiObjects[1]->m_fillAmount < 1.0)
         m_uiObjects[1]->m_fillAmount += 0.1;
 
 
@@ -393,13 +393,24 @@ void GameScene::Update(FLOAT timeElapsed)
                             monster->PlayAnimationWithBlend("Polygonal_Flower_Fairy_Yellow|Projectile Attack|Animation Base ", 0.2f);
                         }                       
                     }
+                    float time = monster->m_animTime;
+                    float duration = monster->m_animationClips.at(monster->m_currentAnim).duration;
 
+                    if (monster->m_prevAnimTime > time)
+                    {
+                        monster->m_didDamageThisAnim = false;
+                    }
 
                     const auto& clip = monster->m_animationClips.at(monster->m_currentAnim);
-                    if (monster->m_animTime > clip.duration / 3 && monster->m_animTime < clip.duration / 2)
-                    {
-                        m_uiObjects[1]->m_fillAmount -= 0.02;
+
+
+                    if (monster->m_animTime > clip.duration / 3 && !monster->m_didDamageThisAnim)
+                    {                       
+                        m_uiObjects[1]->m_fillAmount -= 0.1;
+                        monster->m_didDamageThisAnim = true;
                     }
+
+                    monster->m_prevAnimTime = time;
                 }
 
                 if (intersectX && intersectY && intersectZ)
