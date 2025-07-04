@@ -5,6 +5,7 @@
 #include "Monsters.h"
 #include "ParticleEffect.h"
 #include "ParticleManager.h"
+#include "HealingObject.h"
 
 class FBXLoader; // 전방 선언 추가
 
@@ -55,6 +56,9 @@ public:
 
     void SetAttackCollision(bool SAC) { m_AttackCollision = SAC; }
     bool getAttackCollision() { return m_AttackCollision; }
+
+    //스킬
+    void SpawnHealingObject();
 
 private:
     shared_ptr<FBXLoader> m_fbxLoader; // FBX 로더 추가
@@ -135,4 +139,8 @@ private:
 
     //펀치 충돌
     bool m_AttackCollision = false;
+
+
+    //스킬 힐링 아이템 오브젝트
+    vector<shared_ptr<GameObject>> m_healingObjects;
 };

@@ -278,6 +278,13 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
         m_showReinforcedWindow = !m_showReinforcedWindow;
         OutputDebugStringA(m_showReinforcedWindow ? "[UI] Reinforced ON\n" : "[UI] Reinforced OFF\n");
     }
+
+
+    if (GetAsyncKeyState('H') & 0x0001)
+    {
+        SpawnHealingObject();
+    }
+
 }
 
 void GameScene::Update(FLOAT timeElapsed)
@@ -579,6 +586,14 @@ void GameScene::Update(FLOAT timeElapsed)
             }
         }
     }
+
+    //힐탱커 스킬 업데이트
+    for (const auto& healing : m_healingObjects)
+    {
+        healing->Update(timeElapsed);
+    }
+
+
 }
 
 void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) const
@@ -746,6 +761,11 @@ void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) con
         }
     }
 
+    for (const auto& healing : m_healingObjects)
+    {
+        healing->SetShader(m_shaders.at("FBX"));
+        healing->Render(commandList);
+    }
 
     // 디버그용 그림자맵 시각화
     if (m_debugShadowShader && m_ShadowMapEnabled)
@@ -837,6 +857,9 @@ void GameScene::BuildShaders(const ComPtr<ID3D12Device>& device,
 
     auto Shadowshader = make_shared<ShadowCharSkinnedShader>(device, rootSignature);
     m_shaders.insert({ "SHADOWCHARSKINNED", Shadowshader });
+
+    //auto healingShader = make_shared<HealingSkillShader>(device, rootSignature);
+    //m_shaders.insert({ "HEALING", healingShader });
 
 }
 
@@ -997,6 +1020,17 @@ void GameScene::BuildMeshes(const ComPtr<ID3D12Device>& device,
         else
         {
             OutputDebugStringA("[FBXLoader] Metalon 메쉬 없음\n");
+        }
+    }
+
+
+    auto healingLoader = make_shared<FBXLoader>();
+    if (healingLoader->LoadFBXModel("Model/Skill/HealingObject.fbx", XMMatrixIdentity()))
+    {
+        auto meshes = healingLoader->GetMeshes();
+        if (!meshes.empty())
+        {
+            m_meshLibrary["Healing"] = meshes[0];
         }
     }
 
@@ -1770,6 +1804,12 @@ void GameScene::RenderShadowPass(const ComPtr<ID3D12GraphicsCommandList>& comman
         }
     }
 
+    for (const auto& healing : m_healingObjects)
+    {
+        healing->SetShader(m_shaders.at("SHADOW"));
+        healing->Render(commandList);
+    }
+
 }
 
 
@@ -1871,4 +1911,29 @@ void GameScene::UpdateEnhanceDigits()
             digitUI->SetCustomUV(u0, 0.0f, u1, 1.0f);
         }
     }
+}
+
+void GameScene::SpawnHealingObject()
+{
+    auto device = gGameFramework->GetDevice();
+    auto healing = make_shared<HealingObject>(device);
+
+    // 메시 및 셰이더 설정
+    healing->SetMesh(m_meshLibrary["Healing"]);
+    healing->SetShader(m_shaders["FBX"]);
+
+    // 밝은 녹색 색상 설정
+    healing->SetBaseColor(XMFLOAT4(0.5f, 1.0f, 0.5f, 1.0f));
+    healing->SetUseTexture(false);
+
+    // 위치 설정: 플레이어 근처 예시
+    auto playerPos = m_player->GetPosition();
+    playerPos.y += 10.f; // 지면 위로 살짝 띄움
+    healing->SetPosition(playerPos);
+
+    // 크기/회전 조정
+    healing->SetScale(XMFLOAT3(0.05f, 0.05f, 0.05f));
+    healing->SetRotationY(0.0f);
+
+    m_healingObjects.push_back(healing);
 }

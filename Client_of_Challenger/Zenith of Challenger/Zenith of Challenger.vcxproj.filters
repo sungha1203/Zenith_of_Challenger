@@ -51,6 +51,15 @@
     <Filter Include="소스 파일\Object\Other Player">
       <UniqueIdentifier>{21a7a514-4bd7-4e1c-a783-5c20fbaabd2c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\Object\Player">
+      <UniqueIdentifier>{0e93eb79-4e49-4971-ab42-175be733df99}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Object\GameObject">
+      <UniqueIdentifier>{30627387-b7e2-4a41-bdd4-8fd276c35aa5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Object\Skill">
+      <UniqueIdentifier>{c2181a3b-1b35-470a-b4bc-ca54c7e794f9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameFramework.h">
@@ -70,12 +79,6 @@
     </ClInclude>
     <ClInclude Include="Scene.h">
       <Filter>소스 파일\Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="Object.h">
-      <Filter>소스 파일\Object</Filter>
-    </ClInclude>
-    <ClInclude Include="Player.h">
-      <Filter>소스 파일\Object</Filter>
     </ClInclude>
     <ClInclude Include="DDSTextureLoader12.h">
       <Filter>외부 파일</Filter>
@@ -157,6 +160,15 @@
     </ClInclude>
     <ClInclude Include="ParticleEffect.h" />
     <ClInclude Include="ParticleManager.h" />
+    <ClInclude Include="Player.h">
+      <Filter>소스 파일\Object\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="Object.h">
+      <Filter>소스 파일\Object\GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="HealingObject.h">
+      <Filter>소스 파일\Object\Skill</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Zenith of Challenger.cpp">
@@ -176,12 +188,6 @@
     </ClCompile>
     <ClCompile Include="Scene.cpp">
       <Filter>소스 파일\Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="Object.cpp">
-      <Filter>소스 파일\Object</Filter>
-    </ClCompile>
-    <ClCompile Include="Player.cpp">
-      <Filter>소스 파일\Object</Filter>
     </ClCompile>
     <ClCompile Include="DDSTextureLoader12.cpp">
       <Filter>외부 파일</Filter>
@@ -248,6 +254,15 @@
     </ClCompile>
     <ClCompile Include="ParticleManager.cpp">
       <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Player.cpp">
+      <Filter>소스 파일\Object\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="Object.cpp">
+      <Filter>소스 파일\Object\GameObject</Filter>
+    </ClCompile>
+    <ClCompile Include="HealingObject.cpp">
+      <Filter>소스 파일\Object\Skill</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

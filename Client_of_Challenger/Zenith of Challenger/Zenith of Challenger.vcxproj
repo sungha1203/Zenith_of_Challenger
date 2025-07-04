@@ -167,6 +167,7 @@
     <ClInclude Include="FBXLoader.h" />
     <ClInclude Include="GameFramework.h" />
     <ClInclude Include="GameScene.h" />
+    <ClInclude Include="HealingObject.h" />
     <ClInclude Include="Instance.h" />
     <ClInclude Include="Lighting.h" />
     <ClInclude Include="Material.h" />
@@ -209,6 +210,7 @@
     </ClCompile>
     <ClCompile Include="GameFramework.cpp" />
     <ClCompile Include="GameScene.cpp" />
+    <ClCompile Include="HealingObject.cpp" />
     <ClCompile Include="Instance.cpp" />
     <ClCompile Include="Lighting.cpp" />
     <ClCompile Include="Material.cpp" />
