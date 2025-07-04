@@ -177,6 +177,14 @@ void Room::UpdateMonsterAggroList()
 			continue;
 		m_Zmonsters[i].UpdateAggroList(m_PlayerCoord);
 	}
+
+	for (int i = 0; i < m_ZMonsterNum; ++i)
+	{
+		if (m_Cmonsters[i].GetLived())  // 살아있을때
+		{
+			m_Zmonsters[i].AIMove();
+		}
+	}
 }
 
 void Room::SetStopTimer(bool check)
