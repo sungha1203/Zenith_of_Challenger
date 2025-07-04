@@ -1,6 +1,8 @@
 // 몬스터 개별 행동
 #include "stdafx.h"
 
+extern std::unordered_map<int, ClientInfo> g_client;
+
 enum class NormalMonsterType
 {
 	Mushroom,
@@ -36,6 +38,7 @@ public:
 	void			TakeDamage(int dmg);
 	void			AIMove();
 	void			UpdateAggroList(const std::vector<PlayerInfo>& players);
+	void			Astar(const float x, const float z, const float targetX, const float targetZ);
 	DropItemType	DropWHAT();
 
 	NormalMonsterType		GetType() const { return m_type; }
