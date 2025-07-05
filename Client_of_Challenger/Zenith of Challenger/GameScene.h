@@ -58,7 +58,7 @@ public:
     bool getAttackCollision() { return m_AttackCollision; }
 
     //스킬
-    void SpawnHealingObject();
+    void SpawnHealingObject(int num);
 
 private:
     shared_ptr<FBXLoader> m_fbxLoader; // FBX 로더 추가
@@ -111,6 +111,7 @@ private:
     //인벤토리 무기 및 전직서 관련
     bool m_WeaponOnly = false;
     bool m_JopOnly = false;
+    int  m_job = 0;
 
     //강화창 관련
     std::shared_ptr<GameObject> m_reinforcedWindowUI;

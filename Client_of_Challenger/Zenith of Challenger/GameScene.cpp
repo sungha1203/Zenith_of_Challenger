@@ -280,9 +280,29 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
     }
 
 
-    if (GetAsyncKeyState('H') & 0x0001)
+    if (GetAsyncKeyState('H') & 0x0001)     // 정점 스테이지 직업별 스킬 공격
     {
-        SpawnHealingObject();
+        //if (m_job == 1) {      // 너가 전사라면
+        //    // 
+        //}
+        //else if (m_job == 2) { // 너가 마법사라면
+        //    //
+        //}
+        //else if (m_job == 3) { // 너가 힐탱커라면
+        //    SpawnHealingObject(2);
+        //}
+
+        SpawnHealingObject(2);
+
+        // 다른 플레이어들한테 내가 스킬 뭐 쓰는지 보내주기
+        {
+            CS_Packet_Animaition pkt;
+            pkt.type = CS_PACKET_ANIMATION;
+            pkt.animation = 4;
+            pkt.size = sizeof(pkt);
+
+            gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
+        }
     }
 
 }
@@ -1877,6 +1897,7 @@ void GameScene::HandleMouseClick(int mouseX, int mouseY)
                 }
                 else if (i >= 3 && !m_JopOnly)
                 {
+                    m_job = i - 2;
                     m_JopOnly = true;
                     SetJobSlotUV(i - 3); // 전사, 마법사, 탱커
                 }
@@ -1924,7 +1945,7 @@ void GameScene::UpdateEnhanceDigits()
     }
 }
 
-void GameScene::SpawnHealingObject()
+void GameScene::SpawnHealingObject(int num)
 {
     auto device = gGameFramework->GetDevice();
     auto healing = make_shared<HealingObject>(device);
@@ -1938,9 +1959,16 @@ void GameScene::SpawnHealingObject()
     healing->SetUseTexture(false);
 
     // 위치 설정: 플레이어 근처 예시
-    auto playerPos = m_player->GetPosition();
-    playerPos.y += 10.f; // 지면 위로 살짝 띄움
-    healing->SetPosition(playerPos);
+    if (num == 2) { // 본인
+        auto playerPos = m_player->GetPosition();
+        playerPos.y += 10.f; // 지면 위로 살짝 띄움
+        healing->SetPosition(playerPos);
+    }
+    else {  // 다른 플레이어
+        auto playerPos = otherpos[num];
+        playerPos.y += 10.f; // 지면 위로 살짝 띄움
+        healing->SetPosition(playerPos);
+    }
 
     // 크기/회전 조정
     healing->SetScale(XMFLOAT3(0.05f, 0.05f, 0.05f));

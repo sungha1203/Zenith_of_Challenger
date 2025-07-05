@@ -624,10 +624,28 @@ void Network::ProcessAnimation(int client_id, char * buffer, int length){
 	Room & room = g_room_manager.GetRoom(room_id);
 	const auto & client = room.GetClients();
 
+	int job = (int)g_client[client_id].GetJobType();  // 0 : 도전자,  1 : 전사, 2 : 마법사, 3 : 힐탱커
+
 	SC_Packet_Animaition pkt2;
 	pkt2.type = SC_PACKET_ANIMATION;
 	pkt2.client_id = client_id;
-	pkt2.animation = pkt->animation;
+	if (pkt->animation == 4 ) { // 0 : 기본, 1 : 걷기, 2 : 달리기, 3 : 기본 공격, 4 : 직업스킬
+		if (job == 0) {			// 도전자
+			pkt2.animation = 3;
+		}
+		else if (job == 1) {	// 전사
+			pkt2.animation = 4;
+		}
+		else if (job == 2) {	// 마법사
+			pkt2.animation = 5;
+		}
+		else if (job == 3) {	// 힐탱커
+			pkt2.animation = 6;
+		}
+	}
+	else {
+		pkt2.animation = pkt->animation;
+	}
 	pkt2.size = sizeof(pkt2);
 
 	for(int other_id : client){
