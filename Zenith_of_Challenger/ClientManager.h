@@ -17,6 +17,7 @@ struct Weapon
 
 struct Player
 {
+	int				clientID = -1;				// 아이디
 	Classtype		classtype;				// 직업 
 	Weapon			weapon;					// 무기
 	int				clothes[3] = {0,0,0};	// 옷종류
@@ -61,6 +62,7 @@ public:
 	Classtype GetJobType() const { return m_ingameInfo.classtype; }			// 캐릭터 직업 반환
 	int		GetWeaponType() const { return m_ingameInfo.weapon.type; }		// 캐릭터 무기 반환
 	int		GetWeaponGrade() const { return m_ingameInfo.weapon.level; }	// 캐릭터 무기 등급 반환
+	int		GetID() const { return m_ingameInfo.clientID;  }				// 캐릭터 아이디 반환
 	float	GetX() const { return m_ingameInfo.x; }							// 캐릭터 X좌표 반환
 	float	GetY() const { return m_ingameInfo.y; }							// 캐릭터 y좌표 반환
 	float	GetZ() const { return m_ingameInfo.z; }							// 캐릭터 z좌표 반환

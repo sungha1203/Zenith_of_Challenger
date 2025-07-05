@@ -75,7 +75,7 @@ private:
 
 	std::vector<PlayerInfo> m_PlayerCoord;			// 각 플레이어의 현재 좌표
 	std::chrono::steady_clock::time_point m_UpdatelastAggro;
-	const float AGGRO_UPDATE_TIME = 0.3f;			// 0.3초 마다 좌표 리스트 갱신
+	const float AGGRO_N_TARGET_UPDATE_TIME = 3.0f;	// 3초마다 어그로, 바라보는 방향 리스트 갱신
 
 public:
 	Room() : m_room_id(-1), m_IsGaming(false), m_RoomState(Stage::LOBBY) {}
@@ -99,6 +99,7 @@ public:
 	void	StartZenithStage();							// 도전 스테이지 -> 정점스테이지
 	void	EndGame();									// 정점 스테이지 -> 로비
 	
+	void	UpdateMonsterTargetList();					// 몬스터가 현재 바라보고 있는 플레이어 리스트 전달
 	void	UpdateMonsterAggroList();					// 몬스터의 어그로 리스트 갱신 및 전달
 
 	void	SetStopTimer(bool check);

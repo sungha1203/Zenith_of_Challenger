@@ -131,6 +131,12 @@ void ClientNetwork::Receive() {
 			case SC_PACKET_ZENITHSTATE:
 				ProcessZenithState(currentBuffer);
 				break;
+			case SC_PACKET_CMONSTERTARGET:
+				ProcessCMonsterTarget(currentBuffer);
+				break;
+			case SC_PACKET_ZMONSTERTARGET:
+				ProcessZMonsterTarget(currentBuffer);
+				break;
 			default:
 				break;
 			}
@@ -569,4 +575,18 @@ void ClientNetwork::ProcessZenithStage(char* buffer)
 
 		gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
 	}
+}
+
+void ClientNetwork::ProcessCMonsterTarget(char* buffer)
+{
+	SC_Packet_CMonsterTarget* pkt = reinterpret_cast<SC_Packet_CMonsterTarget*>(buffer);
+	pkt->monsterID;
+	pkt->targetID;
+}
+
+void ClientNetwork::ProcessZMonsterTarget(char* buffer)
+{
+	SC_Packet_ZMonsterTarget* pkt = reinterpret_cast<SC_Packet_ZMonsterTarget*>(buffer);
+	pkt->monsterID;
+	pkt->targetID;
 }

@@ -37,6 +37,7 @@ public:
 	void			SetMonster(int id, NormalMonsterType type, float x, float y, float z);
 	void			TakeDamage(int dmg);
 	void			AIMove();
+	int				UpdateTargetList();
 	void			UpdateAggroList(const std::vector<PlayerInfo>& players);
 	void			Astar(const float x, const float z, const float targetX, const float targetZ);
 	DropItemType	DropWHAT();
@@ -58,6 +59,7 @@ private:
 	int					m_attack;				// 공격력
 	int					m_speed;				// 이동속도
 	int					m_attackspeed;			// 공격속도
+	int					m_targetplayer;			// 어그로X, 그냥 바라보고있는 방향(플레이어)
 
 	std::vector<AggroInfo> m_AggroList;			// 어그로 리스트
 	bool				m_aggro = false;		// 어그로 됐는지(정점스테이지에서만 사용)

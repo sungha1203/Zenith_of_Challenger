@@ -7,6 +7,7 @@ ClientInfo::ClientInfo()
 
 ClientInfo::ClientInfo(int client_id)
 {
+    m_ingameInfo.clientID = client_id;                  // 아이디
     m_ingameInfo.classtype = Classtype::CHALLENGER;     // 초기 직업 : 도전자
     m_ingameInfo.weapon.type = 0;                       // 기본 무기 : 맨손
     m_ingameInfo.weapon.level = 0;                      // 무기 레벨 : 0
