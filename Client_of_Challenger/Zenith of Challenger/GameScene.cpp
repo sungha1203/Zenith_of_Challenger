@@ -282,17 +282,17 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
 
     if (GetAsyncKeyState('H') & 0x0001)     // 정점 스테이지 직업별 스킬 공격
     {
-        //if (m_job == 1) {      // 너가 전사라면
-        //    // 
-        //}
-        //else if (m_job == 2) { // 너가 마법사라면
-        //    //
-        //}
-        //else if (m_job == 3) { // 너가 힐탱커라면
-        //    SpawnHealingObject(2);
-        //}
+        if (m_job == 1) {      // 너가 전사라면
+            // 
+        }
+        else if (m_job == 2) { // 너가 마법사라면
+            //
+        }
+        else if (m_job == 3) { // 너가 힐탱커라면
+            SpawnHealingObject(2);
+        }
 
-        SpawnHealingObject(2);
+        //SpawnHealingObject(2);
 
         // 다른 플레이어들한테 내가 스킬 뭐 쓰는지 보내주기
         {

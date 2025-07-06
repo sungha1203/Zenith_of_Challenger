@@ -137,6 +137,9 @@ void ClientNetwork::Receive() {
 			case SC_PACKET_ZMONSTERTARGET:
 				ProcessZMonsterTarget(currentBuffer);
 				break;
+			case SC_PACKET_RESPONE:
+				ProcessRespone(currentBuffer);
+				break;
 			default:
 				break;
 			}
@@ -639,4 +642,14 @@ void ClientNetwork::ProcessZMonsterTarget(char* buffer)
 	SC_Packet_ZMonsterTarget* pkt = reinterpret_cast<SC_Packet_ZMonsterTarget*>(buffer);
 	pkt->monsterID;
 	pkt->targetID;
+}
+
+void ClientNetwork::ProcessRespone(char* buffer)
+{
+	SC_Packet_Respone* pkt = reinterpret_cast<SC_Packet_Respone*>(buffer);
+	pkt->clientID;
+	pkt->x;
+	pkt->y;
+	pkt->z;
+	// ProcessWhoisMyteam()부분보고 하면 돼. id랑 xyz값 넘겨주니까 그걸로 상대방 위치 보내주면 돼.
 }

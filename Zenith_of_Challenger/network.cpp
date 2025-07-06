@@ -458,19 +458,19 @@ void Network::ProcessMonsterHP(int client_id, char * buffer, int length){
 	Room & room = g_room_manager.GetRoom(room_id);
 	const auto & client = room.GetClients();
 
-	room.GetMonster(pkt->monsterID).TakeDamage(pkt->damage);
+	room.GetCMonster(pkt->monsterID).TakeDamage(pkt->damage);
 
 	SC_Packet_MonsterHP pkt2;
 	pkt2.type = SC_PACKET_MONSTERHP;
 	pkt2.monsterID = pkt->monsterID;
-	pkt2.monsterHP = room.GetMonsters(pkt->monsterID).GetHP();
+	pkt2.monsterHP = room.GetCMonsters(pkt->monsterID).GetHP();
 	pkt2.size = sizeof(SC_Packet_MonsterHP);
 	for(int other_id : client){
 		g_network.clients[other_id].do_send(pkt2);
 	}
 
-	if(room.GetMonster(pkt->monsterID).GetHP() == 0){
-		int dropItem = static_cast<int>( room.GetMonster(pkt->monsterID).DropWHAT() );
+	if(room.GetCMonster(pkt->monsterID).GetHP() == 0){
+		int dropItem = static_cast<int>( room.GetCMonster(pkt->monsterID).DropWHAT() );
 
 		std::random_device rd;
 		std::default_random_engine dre{ rd() };
@@ -480,9 +480,9 @@ void Network::ProcessMonsterHP(int client_id, char * buffer, int length){
 		SC_Packet_DropItem pkt3;
 		pkt3.type = SC_PACKET_DROPITEM;
 		pkt3.item = dropItem - 1;
-		pkt3.x = room.GetMonster(pkt->monsterID).GetX();
-		pkt3.y = room.GetMonster(pkt->monsterID).GetY();
-		pkt3.z = room.GetMonster(pkt->monsterID).GetZ();
+		pkt3.x = room.GetCMonster(pkt->monsterID).GetX();
+		pkt3.y = room.GetCMonster(pkt->monsterID).GetY();
+		pkt3.z = room.GetCMonster(pkt->monsterID).GetZ();
 		pkt3.size = sizeof(pkt3);
 
 		if(dropItem > 0 && dropItem <= 3){		// 무기
@@ -650,6 +650,60 @@ void Network::ProcessAnimation(int client_id, char * buffer, int length){
 
 	for(int other_id : client){
 		g_network.clients[other_id].do_send(pkt2);
+	}
+}
+
+// 힐팩 먹기
+void Network::ProcessEatHealPack(int client_id, char* buffer, int length)
+{
+	CS_Packet_HealPack* pkt = reinterpret_cast<CS_Packet_HealPack*>(buffer);
+	if (pkt->eat == true) {
+		g_client[client_id].AddHP(10);
+	}
+}
+
+void Network::ProcessDamaged(int client_id, char* buffer, int length)
+{
+	CS_Packet_Damaged* pkt = reinterpret_cast<CS_Packet_Damaged*>(buffer);
+	
+	int room_id = g_room_manager.GetRoomID(client_id);
+	Room& room = g_room_manager.GetRoom(room_id);
+	const auto& client = room.GetClients();
+
+	if (room.GetMode() == 1) {		// 도전 스테이지
+		int result = g_client[client_id].MinusHP(room.GetCMonsters(pkt->monsterID).GetAttack(),1);
+		if (result == 1) {
+			SC_Packet_Respone pkt2;
+			pkt2.type = SC_PACKET_RESPONE;
+			pkt2.size = sizeof(pkt2);
+			pkt2.clientID = client_id;
+			pkt2.x = g_client[client_id].GetX();
+			pkt2.y = g_client[client_id].GetY();
+			pkt2.z = g_client[client_id].GetZ();
+
+			for (int other_id : client) {
+				if (other_id == client_id) continue;
+				g_network.clients[other_id].do_send(pkt2);
+			}
+		}
+			
+	}
+	else if (room.GetMode() == 3) {	// 정점 스테이지
+		int result = g_client[client_id].MinusHP(room.GetZMonsters(pkt->monsterID).GetAttack(),3);
+		if (result == 1) {
+			SC_Packet_Respone pkt3;
+			pkt3.type = SC_PACKET_RESPONE;
+			pkt3.size = sizeof(pkt3);
+			pkt3.clientID = client_id;
+			pkt3.x = g_client[client_id].GetX();
+			pkt3.y = g_client[client_id].GetY();
+			pkt3.z = g_client[client_id].GetZ();
+
+			for (int other_id : client) {
+				if (other_id == client_id) continue;
+				g_network.clients[other_id].do_send(pkt3);
+			}
+		}
 	}
 }
 

@@ -48,6 +48,7 @@ public:
 	float					GetY() const { return m_y; }
 	float					GetZ() const { return m_z; }
 	int						GetHP() const { return m_hp; }
+	int						GetAttack() const { return m_attack; }
 	
 private:
 	int					m_version;				// 도전 - 0, 정점 - 1

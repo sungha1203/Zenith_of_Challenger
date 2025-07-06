@@ -112,13 +112,16 @@ public:
 	int		GetEnterClientNum() const { return m_enterClientNum; }							// 지금 몇명이 게임 대기중이야?
 	int		GetEnterZenithNum() const { return m_enterZenithNum;  }							// 지금 몇명이 정점 스테이지 대기중이야?
 	bool	GetSkipButton() const { return m_skipButton;  }									// 스킵 버튼 눌렀어 안눌렀어?
+	int		GetMode() const { return (int)m_RoomState; }									// 지금 무슨 스테이지야?
 	int		GetGold() const { return m_inventory.gold; }									// 골드 얼마있어?
 	int		GetWeaponTypeNum(int num) const { return m_inventory.JobWeapons.at(static_cast<JobWeapon>(num-1));}		// 해당 무기 몇개 있어?
 	int		GetJobTypeNum(int num) const { return m_inventory.JobDocuments.at(static_cast<JobDocument>(num-4));}		// 해당 전직서 몇개 있어?
 
 	const std::vector<int>& GetClients() const { return m_clients; }						// 게임 중인 모든 클라이언트
-	const Monster&	GetMonsters(int monsterID) const { return m_Cmonsters[monsterID]; }		// 도전 스테이지 몬스터
-	Monster& GetMonster(int monsterID) { return m_Cmonsters[monsterID]; }
+	const Monster&	GetCMonsters(int monsterID) const { return m_Cmonsters[monsterID]; }		// 도전 스테이지 몬스터
+	const Monster&	GetZMonsters(int monsterID) const { return m_Zmonsters[monsterID]; }		// 정점 스테이지 몬스터
+	Monster& GetCMonster(int monsterID) { return m_Cmonsters[monsterID]; }
+	Monster& GetZMonster(int monsterID) { return m_Zmonsters[monsterID]; }
 
 	// 인벤토리
 	void	AddGold(int plusgold);					// +골드
