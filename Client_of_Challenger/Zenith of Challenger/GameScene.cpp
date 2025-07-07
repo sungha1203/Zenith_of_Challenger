@@ -96,6 +96,8 @@ void GameScene::MouseEvent(HWND hWnd, FLOAT timeElapsed)
             pkt.size = sizeof(pkt);
             gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
         }
+
+        FireMagicBall();
     }
 }
 
@@ -283,6 +285,12 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
     if (GetAsyncKeyState('H') & 0x0001)
     {
         SpawnHealingObject();
+    }
+
+
+    if (GetAsyncKeyState('C') & 0x0001)
+    {
+        FireMagicBall();
     }
 
 }
@@ -604,6 +612,20 @@ void GameScene::Update(FLOAT timeElapsed)
         healing->Update(timeElapsed);
     }
 
+    for (auto it = m_magicBalls.begin(); it != m_magicBalls.end();)
+    {
+        auto& ball = *it;
+        ball->Update(timeElapsed);
+
+        if (ball->IsDead())
+        {
+            it = m_magicBalls.erase(it); // 수명 끝난 매직볼 제거
+        }
+        else
+        {
+            ++it;
+        }
+    }
 
 }
 
@@ -778,11 +800,19 @@ void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) con
         healing->Render(commandList);
     }
 
+    for (const auto& ball : m_magicBalls)
+    {
+        if (!ball->IsActive()) continue;
+        ball->SetShader(m_shaders.at("MagicBall"));
+        ball->Render(commandList);
+    }
+
     // 디버그용 그림자맵 시각화
     if (m_debugShadowShader && m_ShadowMapEnabled)
     {
         m_debugShadowShader->Render(commandList, gGameFramework->GetShadowMapSrv());
     }
+
 }
 
 
@@ -869,9 +899,8 @@ void GameScene::BuildShaders(const ComPtr<ID3D12Device>& device,
     auto Shadowshader = make_shared<ShadowCharSkinnedShader>(device, rootSignature);
     m_shaders.insert({ "SHADOWCHARSKINNED", Shadowshader });
 
-    //auto healingShader = make_shared<HealingSkillShader>(device, rootSignature);
-    //m_shaders.insert({ "HEALING", healingShader });
-
+    auto magicBallShader = make_shared<MagicBallShader>(device, rootSignature);
+    m_shaders.insert({ "MagicBall", magicBallShader });
 }
 
 void GameScene::BuildMeshes(const ComPtr<ID3D12Device>& device,
@@ -1044,6 +1073,17 @@ void GameScene::BuildMeshes(const ComPtr<ID3D12Device>& device,
             m_meshLibrary["Healing"] = meshes[0];
         }
     }
+
+    auto magicBallLoader = make_shared<FBXLoader>();
+    if (magicBallLoader->LoadFBXModel("Model/Skill/MagicBall.fbx", XMMatrixIdentity()))
+    {
+        auto meshes = magicBallLoader->GetMeshes();
+        if (!meshes.empty())
+        {
+            m_meshLibrary["MagicBall"] = meshes[0];
+        }
+    }
+
 
 }
 
@@ -1821,6 +1861,13 @@ void GameScene::RenderShadowPass(const ComPtr<ID3D12GraphicsCommandList>& comman
         healing->Render(commandList);
     }
 
+    for (const auto& ball : m_magicBalls)
+    {
+        if (!ball->IsActive()) continue;
+        ball->SetShader(m_shaders.at("SHADOW"));
+        ball->Render(commandList);
+    }
+
 }
 
 
@@ -1947,4 +1994,29 @@ void GameScene::SpawnHealingObject()
     healing->SetRotationY(0.0f);
 
     m_healingObjects.push_back(healing);
+}
+
+void GameScene::FireMagicBall()
+{
+    if (m_meshLibrary.find("MagicBall") == m_meshLibrary.end()) return;
+
+    auto ball = make_shared<MagicBall>(m_device);
+    ball->SetMesh(m_meshLibrary["MagicBall"]);
+    ball->SetShader(m_shaders["MagicBall"]);
+
+    // 시작 위치 = 플레이어 위치
+    XMFLOAT3 startPos = m_player->GetPosition();
+    startPos.y += 8.0f; // 살짝 위로
+    ball->SetPosition(startPos);
+
+    // 발사 방향 = 플레이어 forward
+    XMFLOAT3 forward = m_player->GetForward();
+    forward = Vector3::Normalize(forward); // 단위 벡터 보정
+    ball->SetDirection(forward);
+
+    // 옵션
+    ball->SetSpeed(50.0f);     // 속도 증가
+    ball->SetLifetime(3.0f);   // 3초 후 자동 제거
+
+    m_magicBalls.push_back(ball);
 }

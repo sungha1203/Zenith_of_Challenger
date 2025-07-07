@@ -169,6 +169,9 @@
     <ClInclude Include="HealingObject.h">
       <Filter>소스 파일\Object\Skill</Filter>
     </ClInclude>
+    <ClInclude Include="MagicBall.h">
+      <Filter>소스 파일\Object\Skill</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Zenith of Challenger.cpp">
@@ -264,6 +267,9 @@
     <ClCompile Include="HealingObject.cpp">
       <Filter>소스 파일\Object\Skill</Filter>
     </ClCompile>
+    <ClCompile Include="MagicBall.cpp">
+      <Filter>소스 파일\Object\Skill</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Zenith of Challenger.rc">
@@ -325,6 +331,9 @@
       <Filter>셰이더 파일</Filter>
     </FxCompile>
     <FxCompile Include="ShadowMap_Char_Skinned.hlsl">
+      <Filter>셰이더 파일</Filter>
+    </FxCompile>
+    <FxCompile Include="MagicBallShader.hlsl">
       <Filter>셰이더 파일</Filter>
     </FxCompile>
   </ItemGroup>

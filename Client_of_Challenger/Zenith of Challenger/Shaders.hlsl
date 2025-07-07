@@ -17,6 +17,8 @@ cbuffer GameObject : register(b0)
 
     float4 g_customUV : packoffset(c6); // 추가 (c6 전체 16byte 차지)
     int g_useCustomUV : packoffset(c7.x);
+    float g_totalTime : packoffset(c7.y);
+    
 };
 
 // Camera: b1, space0

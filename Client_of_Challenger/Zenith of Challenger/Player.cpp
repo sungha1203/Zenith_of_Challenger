@@ -478,6 +478,19 @@ void Player::PlayAnimationWithBlend(const std::string& newAnim, float blendDurat
     m_isBlending = true;
 }
 
+XMFLOAT3 Player::GetForward() const
+{
+    XMMATRIX world = XMLoadFloat4x4(&GetWorldMatrix());
+
+    // 월드행렬의 z축 추출
+    XMVECTOR forward = XMVector3Normalize(world.r[2]);
+    forward = XMVectorNegate(forward);
+
+    XMFLOAT3 dir;
+    XMStoreFloat3(&dir, forward);
+
+    return dir;
+}
 void Player::Move(XMFLOAT3 direction, FLOAT speed)
 {
     direction = Vector3::Normalize(direction);

@@ -763,3 +763,77 @@ ShadowCharSkinnedShader::ShadowCharSkinnedShader(const ComPtr<ID3D12Device>& dev
 
 	ThrowIfFailed(device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_pipelineState)));
 }
+
+MagicBallShader::MagicBallShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSignature)
+{
+	std::vector<D3D12_INPUT_ELEMENT_DESC> inputLayout = {
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,  D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "NORMAL",   0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,    0, 24, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+	};
+
+#if defined(_DEBUG)
+	UINT compileFlags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
+#else
+	UINT compileFlags = 0;
+#endif
+
+	ComPtr<ID3DBlob> vsByteCode, psByteCode, errorMsgs;
+
+	HRESULT hr1 = D3DCompileFromFile(TEXT("MagicBallShader.hlsl"), nullptr,
+		D3D_COMPILE_STANDARD_FILE_INCLUDE, "VSMain", "vs_5_1", compileFlags, 0, &vsByteCode, &errorMsgs);
+	if (FAILED(hr1) && errorMsgs)
+		OutputDebugStringA((char*)errorMsgs->GetBufferPointer());
+
+	HRESULT hr2 = D3DCompileFromFile(TEXT("MagicBallShader.hlsl"), nullptr,
+		D3D_COMPILE_STANDARD_FILE_INCLUDE, "PSMain", "ps_5_1", compileFlags, 0, &psByteCode, &errorMsgs);
+	if (FAILED(hr2) && errorMsgs)
+		OutputDebugStringA((char*)errorMsgs->GetBufferPointer());
+
+	//Additive Blending 설정
+	D3D12_BLEND_DESC blendDesc = {};
+	blendDesc.AlphaToCoverageEnable = FALSE;
+	blendDesc.IndependentBlendEnable = FALSE;
+
+	D3D12_RENDER_TARGET_BLEND_DESC rtBlendDesc = {};
+	rtBlendDesc.BlendEnable = TRUE;
+	rtBlendDesc.LogicOpEnable = FALSE;
+
+	rtBlendDesc.SrcBlend = D3D12_BLEND_SRC_ALPHA;     // 픽셀 알파
+	rtBlendDesc.DestBlend = D3D12_BLEND_ONE;          // 원본 + 픽셀
+	rtBlendDesc.BlendOp = D3D12_BLEND_OP_ADD;
+
+	rtBlendDesc.SrcBlendAlpha = D3D12_BLEND_ONE;
+	rtBlendDesc.DestBlendAlpha = D3D12_BLEND_ZERO;
+	rtBlendDesc.BlendOpAlpha = D3D12_BLEND_OP_ADD;
+
+	rtBlendDesc.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+
+	blendDesc.RenderTarget[0] = rtBlendDesc;
+
+	// PSO 설정
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc{};
+	psoDesc.InputLayout = { inputLayout.data(), (UINT)inputLayout.size() };
+	psoDesc.pRootSignature = rootSignature.Get();
+	psoDesc.VS = { reinterpret_cast<BYTE*>(vsByteCode->GetBufferPointer()), vsByteCode->GetBufferSize() };
+	psoDesc.PS = { reinterpret_cast<BYTE*>(psByteCode->GetBufferPointer()), psByteCode->GetBufferSize() };
+	psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+	psoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
+
+	// 필요 시 Depth 쓰기 끄기 (optional)
+	D3D12_DEPTH_STENCIL_DESC depthDesc = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
+	// depthDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO; // ← 필요하면 주석 해제
+	psoDesc.DepthStencilState = depthDesc;
+
+	psoDesc.BlendState = blendDesc;
+	psoDesc.SampleMask = UINT_MAX;
+	psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+	psoDesc.NumRenderTargets = 1;
+	psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+	psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
+	psoDesc.SampleDesc.Count = 1;
+
+	HRESULT hr3 = device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_pipelineState));
+	if (FAILED(hr3))
+		OutputDebugStringA("[MagicBallShader] PSO 생성 실패!\n");
+}

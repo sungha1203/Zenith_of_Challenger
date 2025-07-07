@@ -6,6 +6,7 @@
 #include "ParticleEffect.h"
 #include "ParticleManager.h"
 #include "HealingObject.h"
+#include "MagicBall.h"
 
 class FBXLoader; // 전방 선언 추가
 
@@ -58,7 +59,9 @@ public:
     bool getAttackCollision() { return m_AttackCollision; }
 
     //스킬
-    void SpawnHealingObject();
+    void SpawnHealingObject(); //힐러 스킬
+    void FireMagicBall(); //마법사 평타
+
 
 private:
     shared_ptr<FBXLoader> m_fbxLoader; // FBX 로더 추가
@@ -81,13 +84,13 @@ private:
     unordered_map<string, vector<shared_ptr<Monsters>>> m_monsterGroups;
     unordered_map<string, shared_ptr<MeshBase>> m_meshLibrary;
 
-    std::vector<std::shared_ptr<Monsters>> m_bossMonsters; //보스 몬스터
+    vector<shared_ptr<Monsters>> m_bossMonsters; //보스 몬스터
 
     //정점 스테이지 몬스터 관리 변수
     unordered_map<string, vector<shared_ptr<Monsters>>> m_BossStageMonsters; //정점 스테이지에서 쓰이는 몬스터 10마리
 
     //그림자 관련
-    std::shared_ptr<DebugShadowShader> m_debugShadowShader;
+    shared_ptr<DebugShadowShader> m_debugShadowShader;
     XMMATRIX m_shadowViewMatrix;
     XMMATRIX m_shadowProjMatrix;
 
@@ -99,13 +102,13 @@ private:
 
     //골드 관련
     int m_goldScore = 0; // Gold 점수
-    std::vector<std::shared_ptr<GameObject>> m_goldDigits; // 각 자릿수마다 UI 오브젝트를 저장
+    vector<shared_ptr<GameObject>> m_goldDigits; // 각 자릿수마다 UI 오브젝트를 저장
 
     //파티클 관련
     shared_ptr<ParticleManager> m_particleManager;
 
     //인벤토리 숫자 관련
-    std::vector<std::shared_ptr<GameObject>> m_inventoryDigits;
+    vector<shared_ptr<GameObject>> m_inventoryDigits;
     int m_inventoryCounts[6] = { 0, 0, 0, 0, 0, 0 };
     
     //인벤토리 무기 및 전직서 관련
@@ -113,20 +116,20 @@ private:
     bool m_JopOnly = false;
 
     //강화창 관련
-    std::shared_ptr<GameObject> m_reinforcedWindowUI;
+    shared_ptr<GameObject> m_reinforcedWindowUI;
     bool m_showReinforcedWindow = false;
 
     bool m_isReinforceWindowVisible = false; // 'I'키 토글
     bool m_isReinforceSlotOccupied = false;
 
-    std::string m_selectedItemType = ""; // "weapon", "job"
+    string m_selectedItemType = ""; // "weapon", "job"
 
-    std::shared_ptr<GameObject> m_weaponSlotIcon;
-    std::shared_ptr<GameObject> m_jobSlotIcon;
-    std::shared_ptr<GameObject> m_plusIcon;
+    shared_ptr<GameObject> m_weaponSlotIcon;
+    shared_ptr<GameObject> m_jobSlotIcon;
+    shared_ptr<GameObject> m_plusIcon;
 
     int m_upgradeScore = 0;
-    std::vector<std::shared_ptr<GameObject>> m_forcedDigits;
+    vector<shared_ptr<GameObject>> m_forcedDigits;
 
     //툰 렌더링 외곽선 토글키
     bool m_OutLine = false;
@@ -141,6 +144,8 @@ private:
     bool m_AttackCollision = false;
 
 
-    //스킬 힐링 아이템 오브젝트
-    vector<shared_ptr<GameObject>> m_healingObjects;
+    //스킬
+    vector<shared_ptr<GameObject>> m_healingObjects; //힐링 아이템 오브젝트
+    vector<shared_ptr<MagicBall>> m_magicBalls; // 마법사 평타 구체
+
 };
