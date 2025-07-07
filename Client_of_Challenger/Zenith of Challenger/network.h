@@ -43,6 +43,9 @@ public:
 	void		ProcessAnimation(char* buffer);
 	void		ProcessZenithState(char* buffer);
 	void		ProcessZenithStage(char* buffer);
+	void		ProcessCMonsterTarget(char* buffer);
+	void		ProcessZMonsterTarget(char* buffer);
+	void		ProcessRespone(char* buffer);
 
 public:
 	SOCKET			m_clientsocket = INVALID_SOCKET;

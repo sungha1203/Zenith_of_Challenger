@@ -49,6 +49,9 @@ constexpr int NAME_SIZE = 20;				// 이름 글자 수
 #define SC_PACKET_CHAT				 119		// 인게임 속 채팅
 #define SC_PACKET_DEBUGITEM			 120		// 디버깅용 아이템 추가
 #define SC_PACKET_ANIMATION			 121		// 애니메이션
+#define SC_PACKET_CMONSTERTARGET	 122		// 도전스테이지 몬스터가 바라보는 방향
+#define SC_PACKET_ZMONSTERTARGET	 123		// 정점스테이지 몬스터가 바라보는 방향
+#define SC_PACKET_RESPONE			 124		// 도전or정점 죽은 후 리스폰
 
 #define SC_PACKET_SKIPCHALLENGE		 998		// 도전스테이지 스킵
 #define SC_PACKET_LOGOUT			 999		// 로그아웃
@@ -169,7 +172,21 @@ struct CS_Packet_Animaition
 struct CS_Packet_Logout
 {
 	char	type;
-	int	size;
+	int		size;
+};
+
+struct CS_Packet_HealPack
+{
+	char	type;
+	int		size;
+	bool	eat;
+};
+
+struct CS_Packet_Damaged
+{
+	char	type;
+	int		size;
+	int		monsterID;
 };
 
 //---------------------------------------
@@ -353,4 +370,29 @@ struct SC_Packet_Chat
 	int		size;
 	char	msg[256];
 };
+
+struct SC_Packet_CMonsterTarget
+{
+	char	type;
+	int		size;
+	int		monsterID;
+	int		targetID;
+};
+
+struct SC_Packet_ZMonsterTarget
+{
+	char	type;
+	int		size;
+	int		monsterID;
+	int		targetID;
+};
+
+struct SC_Packet_Respone
+{
+	char	type;
+	int		size;
+	int		clientID;
+	float	x, y, z;
+};
+
 #pragma pack(pop)

@@ -131,6 +131,15 @@ void ClientNetwork::Receive() {
 			case SC_PACKET_ZENITHSTATE:
 				ProcessZenithState(currentBuffer);
 				break;
+			case SC_PACKET_CMONSTERTARGET:
+				ProcessCMonsterTarget(currentBuffer);
+				break;
+			case SC_PACKET_ZMONSTERTARGET:
+				ProcessZMonsterTarget(currentBuffer);
+				break;
+			case SC_PACKET_RESPONE:
+				ProcessRespone(currentBuffer);
+				break;
 			default:
 				break;
 			}
@@ -475,12 +484,12 @@ void ClientNetwork::ProcessAnimation(char* buffer)
 		if (pkt->client_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[0])
 		{
 			shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
-			if(currentScene->m_Otherplayer[0])currentScene->m_Otherplayer[0]->m_CurrentAnim = pkt->animation;
+			if (currentScene->m_Otherplayer[0])currentScene->m_Otherplayer[0]->m_CurrentAnim = pkt->animation;
 		}
 		else if (pkt->client_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[1])
 		{
 			shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
-			if(currentScene->m_Otherplayer[1])currentScene->m_Otherplayer[1]->m_CurrentAnim = pkt->animation;
+			if (currentScene->m_Otherplayer[1])currentScene->m_Otherplayer[1]->m_CurrentAnim = pkt->animation;
 		}
 		break;
 	case 1:  // walking
@@ -517,6 +526,56 @@ void ClientNetwork::ProcessAnimation(char* buffer)
 		{
 			shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
 			currentScene->m_Otherplayer[1]->m_CurrentAnim = pkt->animation;
+		}
+		break;
+	case 4: // 전사
+		if (pkt->client_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[0])
+		{
+			shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
+			currentScene->m_Otherplayer[0]->m_CurrentAnim = pkt->animation;
+		}
+		else if (pkt->client_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[1])
+		{
+			shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
+			currentScene->m_Otherplayer[1]->m_CurrentAnim = pkt->animation;
+		}
+		break;
+	case 5: // 법사
+		if (pkt->client_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[0])
+		{
+			shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
+			currentScene->m_Otherplayer[0]->m_CurrentAnim = pkt->animation;
+		}
+		else if (pkt->client_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[1])
+		{
+			shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
+			currentScene->m_Otherplayer[1]->m_CurrentAnim = pkt->animation;
+		}
+		break;
+	case 6: // 힐탱커
+		if (pkt->client_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[0])
+		{
+			shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
+			currentScene->m_Otherplayer[0]->m_CurrentAnim = pkt->animation;
+
+			auto currentScene2 = gGameFramework->GetSceneManager()->GetCurrentScene();
+			auto gameScene = std::dynamic_pointer_cast<GameScene>(currentScene2);
+			if (gameScene) {
+				gameScene->SpawnHealingObject(0);
+
+			}
+		}
+		else if (pkt->client_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[1])
+		{
+			shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
+			currentScene->m_Otherplayer[1]->m_CurrentAnim = pkt->animation;
+			
+			auto currentScene2 = gGameFramework->GetSceneManager()->GetCurrentScene();
+			auto gameScene = std::dynamic_pointer_cast<GameScene>(currentScene2);
+			if (gameScene) {
+				gameScene->SpawnHealingObject(1);
+
+			}
 		}
 		break;
 	}
@@ -569,4 +628,28 @@ void ClientNetwork::ProcessZenithStage(char* buffer)
 
 		gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
 	}
+}
+
+void ClientNetwork::ProcessCMonsterTarget(char* buffer)
+{
+	SC_Packet_CMonsterTarget* pkt = reinterpret_cast<SC_Packet_CMonsterTarget*>(buffer);
+	pkt->monsterID;
+	pkt->targetID;
+}
+
+void ClientNetwork::ProcessZMonsterTarget(char* buffer)
+{
+	SC_Packet_ZMonsterTarget* pkt = reinterpret_cast<SC_Packet_ZMonsterTarget*>(buffer);
+	pkt->monsterID;
+	pkt->targetID;
+}
+
+void ClientNetwork::ProcessRespone(char* buffer)
+{
+	SC_Packet_Respone* pkt = reinterpret_cast<SC_Packet_Respone*>(buffer);
+	pkt->clientID;
+	pkt->x;
+	pkt->y;
+	pkt->z;
+	// ProcessWhoisMyteam()부분보고 하면 돼. id랑 xyz값 넘겨주니까 그걸로 상대방 위치 보내주면 돼.
 }

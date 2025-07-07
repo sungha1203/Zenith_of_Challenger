@@ -75,7 +75,7 @@ private:
 
 	std::vector<PlayerInfo> m_PlayerCoord;			// 각 플레이어의 현재 좌표
 	std::chrono::steady_clock::time_point m_UpdatelastAggro;
-	const float AGGRO_UPDATE_TIME = 0.3f;			// 0.3초 마다 좌표 리스트 갱신
+	const float AGGRO_N_TARGET_UPDATE_TIME = 3.0f;	// 3초마다 어그로, 바라보는 방향 리스트 갱신
 
 public:
 	Room() : m_room_id(-1), m_IsGaming(false), m_RoomState(Stage::LOBBY) {}
@@ -99,6 +99,7 @@ public:
 	void	StartZenithStage();							// 도전 스테이지 -> 정점스테이지
 	void	EndGame();									// 정점 스테이지 -> 로비
 	
+	void	UpdateMonsterTargetList();					// 몬스터가 현재 바라보고 있는 플레이어 리스트 전달
 	void	UpdateMonsterAggroList();					// 몬스터의 어그로 리스트 갱신 및 전달
 
 	void	SetStopTimer(bool check);
@@ -111,13 +112,16 @@ public:
 	int		GetEnterClientNum() const { return m_enterClientNum; }							// 지금 몇명이 게임 대기중이야?
 	int		GetEnterZenithNum() const { return m_enterZenithNum;  }							// 지금 몇명이 정점 스테이지 대기중이야?
 	bool	GetSkipButton() const { return m_skipButton;  }									// 스킵 버튼 눌렀어 안눌렀어?
+	int		GetMode() const { return (int)m_RoomState; }									// 지금 무슨 스테이지야?
 	int		GetGold() const { return m_inventory.gold; }									// 골드 얼마있어?
 	int		GetWeaponTypeNum(int num) const { return m_inventory.JobWeapons.at(static_cast<JobWeapon>(num-1));}		// 해당 무기 몇개 있어?
 	int		GetJobTypeNum(int num) const { return m_inventory.JobDocuments.at(static_cast<JobDocument>(num-4));}		// 해당 전직서 몇개 있어?
 
 	const std::vector<int>& GetClients() const { return m_clients; }						// 게임 중인 모든 클라이언트
-	const Monster&	GetMonsters(int monsterID) const { return m_Cmonsters[monsterID]; }		// 도전 스테이지 몬스터
-	Monster& GetMonster(int monsterID) { return m_Cmonsters[monsterID]; }
+	const Monster&	GetCMonsters(int monsterID) const { return m_Cmonsters[monsterID]; }		// 도전 스테이지 몬스터
+	const Monster&	GetZMonsters(int monsterID) const { return m_Zmonsters[monsterID]; }		// 정점 스테이지 몬스터
+	Monster& GetCMonster(int monsterID) { return m_Cmonsters[monsterID]; }
+	Monster& GetZMonster(int monsterID) { return m_Zmonsters[monsterID]; }
 
 	// 인벤토리
 	void	AddGold(int plusgold);					// +골드

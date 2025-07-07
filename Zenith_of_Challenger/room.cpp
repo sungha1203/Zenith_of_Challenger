@@ -113,6 +113,7 @@ void Room::ChallengeTimerThread()
 		std::this_thread::sleep_for(std::chrono::seconds(1));
 		if (m_stopTimer) return;
 		if (m_skipTimer) break;
+		UpdateMonsterTargetList();
 	}
 	RepairTime();
 }
@@ -126,11 +127,14 @@ void Room::StartZenithStage()
 	m_timer = std::thread(&Room::ZenithTimerThread, this);
 }
 
-void Room::ZenithTimerThread() 
+void Room::ZenithTimerThread()
 {
 	// 정점 스테이지 5분
-	std::this_thread::sleep_for(std::chrono::seconds(ZENITH_TIME));
-	if (m_stopTimer) return;
+	for(int i = 0; i < ZENITH_TIME; ++i){
+		std::this_thread::sleep_for(std::chrono::seconds(ZENITH_TIME));
+		if (m_stopTimer) return;
+		UpdateMonsterTargetList();
+	}
 	EndGame();
 }
 
@@ -155,12 +159,66 @@ void Room::EndGame()
 	// TODO
 }
 
+void Room::UpdateMonsterTargetList()
+{
+	static auto lastUpdate = std::chrono::steady_clock::now();
+	auto now = std::chrono::steady_clock::now();
+	float elapsed = std::chrono::duration<float>(now - lastUpdate).count();
+	if (elapsed < AGGRO_N_TARGET_UPDATE_TIME) return;  // 3초마다 실행
+	lastUpdate = now;
+	
+	if (m_RoomState == Stage::CHALLENGE_STAGE) {		// 도전스테이지 몬스터
+		for (int i = 0; i < m_CMonsterNum; ++i)
+		{
+			if (m_Cmonsters[i].GetLived())
+			{
+				int targetID = m_Cmonsters[i].UpdateTargetList();
+
+				// 클라이언트에게 바라보는 대상 패킷 전송
+				SC_Packet_CMonsterTarget pkt;
+				pkt.type = SC_PACKET_CMONSTERTARGET;
+				pkt.size = sizeof(pkt);
+				pkt.monsterID = i;
+				pkt.targetID = targetID;
+
+				for (int id : m_clients)
+				{
+					if (g_network.clients[id].m_used)
+						g_network.clients[id].do_send(pkt);
+				}
+			}
+		}
+	}
+	else if (m_RoomState == Stage::ZENITH_STAGE) {		// 정점스테이지 몬스터
+		for (int i = 0; i < m_ZMonsterNum; ++i)
+		{
+			if (m_Zmonsters[i].GetLived())
+			{
+				int targetID = m_Zmonsters[i].UpdateTargetList();
+
+				// 클라이언트에게 바라보는 대상 패킷 전송
+				SC_Packet_ZMonsterTarget pkt;
+				pkt.type = SC_PACKET_ZMONSTERTARGET;
+				pkt.size = sizeof(pkt);
+				pkt.monsterID = i;
+				pkt.targetID = targetID;
+
+				for (int id : m_clients)
+				{
+					if (g_network.clients[id].m_used)
+						g_network.clients[id].do_send(pkt);
+				}
+			}
+		}
+	}
+
+}
+
 void Room::UpdateMonsterAggroList()
 {
-	// 0.3초마다 갱신
 	auto now = std::chrono::steady_clock::now();
 	float elapsed = std::chrono::duration<float>(now - m_UpdatelastAggro).count();
-	if (elapsed < AGGRO_UPDATE_TIME) return;
+	if (elapsed < AGGRO_N_TARGET_UPDATE_TIME) return;  // 0.3초마다 갱신
 
 	// 플레이어 좌표 초기화 및 갱신 --> 플레이어가 3명이 고정이 아니여서 그냥 밀어버리고 새로 받음.
 	m_PlayerCoord.clear();
@@ -176,6 +234,14 @@ void Room::UpdateMonsterAggroList()
 		if (m_Zmonsters[i].GetLived() == false)
 			continue;
 		m_Zmonsters[i].UpdateAggroList(m_PlayerCoord);
+	}
+
+	for (int i = 0; i < m_ZMonsterNum; ++i)
+	{
+		if (m_Cmonsters[i].GetLived())  // 살아있을때
+		{
+			m_Zmonsters[i].AIMove();
+		}
 	}
 }
 

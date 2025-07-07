@@ -77,6 +77,32 @@ void Monster::TakeDamage(int dmg)
 void Monster::AIMove()
 {
 	if (m_aggroplayer == -1) return;
+
+	float targetX = g_client[m_aggroplayer].GetX();
+	float targetZ = g_client[m_aggroplayer].GetZ();
+
+	Astar(m_x, m_z, targetX, targetZ);
+}
+
+int Monster::UpdateTargetList()
+{
+	float mindist = FLT_MAX;
+	int nearestID = -1;
+
+	for (const auto& player : g_client)
+	{
+		float dx = player.second.GetX() - m_x;
+		float dz = player.second.GetZ() - m_z;
+		float distSq = dx * dx + dz * dz;
+
+		if (distSq < mindist)
+		{
+			mindist = distSq;
+			nearestID = player.second.GetID();
+		}
+	}
+	m_targetplayer = nearestID; // 가장 가까운 플레이어
+	return m_targetplayer;
 }
 
 void Monster::UpdateAggroList(const std::vector<PlayerInfo>& players)
@@ -106,6 +132,11 @@ void Monster::UpdateAggroList(const std::vector<PlayerInfo>& players)
 		m_aggroplayer = -1;
 	else
 		m_aggroplayer = nearID;			// 지금 현재 어그로 끌린 플레이어
+}
+
+void Monster::Astar(const float x, const float z, const float targetX, const float targetZ)
+{
+
 }
 
 DropItemType Monster::DropWHAT()

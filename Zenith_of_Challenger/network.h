@@ -32,6 +32,8 @@ public:
 	static void		ProcessDebugGold(int client_id, char * buffer, int length);			// 디버깅용 골드 추가
 	static void		ProcessDebugItem(int client_id, char * buffer, int length);			// 디버깅용 무기 및 전직서 추가
 	static void		ProcessAnimation(int client_id, char * buffer, int length);			// 애니메이션
+	static void		ProcessEatHealPack(int client_id, char* buffer, int length);		// 힐팩먹기
+	static void		ProcessDamaged(int client_id, char* buffer, int length);			// 몬스터한테 피해 입었을 때
 
 	// ---------패킷 뿌려주기---------
 	static void		SendLoginResponse(int client_id, bool success);

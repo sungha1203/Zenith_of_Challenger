@@ -59,7 +59,7 @@ public:
     bool getAttackCollision() { return m_AttackCollision; }
 
     //스킬
-    void SpawnHealingObject(); //힐러 스킬
+    void SpawnHealingObject(int num);
     void FireMagicBall(); //마법사 평타
 
 
@@ -114,6 +114,7 @@ private:
     //인벤토리 무기 및 전직서 관련
     bool m_WeaponOnly = false;
     bool m_JopOnly = false;
+    int  m_job = 0;
 
     //강화창 관련
     shared_ptr<GameObject> m_reinforcedWindowUI;
