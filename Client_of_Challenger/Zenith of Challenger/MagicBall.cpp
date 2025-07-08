@@ -12,25 +12,36 @@ MagicBall::MagicBall(const ComPtr<ID3D12Device>& device)
 void MagicBall::Update(FLOAT timeElapsed)
 {
     m_aliveTime += timeElapsed;
-    if (IsDead())
-    {
-        return;
-    }
+    if (IsDead()) return;
 
-    // 위치 이동
-    XMFLOAT3 currPos = GetPosition();
-    currPos.x += m_direction.x * m_speed * timeElapsed;
-    currPos.y += m_direction.y * m_speed * timeElapsed;
-    currPos.z += m_direction.z * m_speed * timeElapsed;
-    SetPosition(currPos);
+    XMFLOAT3 pos = GetPosition();
+    pos.x += m_direction.x * m_speed * timeElapsed;
+    pos.y += m_direction.y * m_speed * timeElapsed;
+    pos.z += m_direction.z * m_speed * timeElapsed;
 
-    // 회전 (옵션)
-    float yaw = XMConvertToRadians(m_aliveTime * 360.0f);
+    float waveX = sinf(m_aliveTime * 10.0f);       // 좌우
+    float waveY = cosf(m_aliveTime * 7.0f);        // 상하
+    float waveAmp = 0.25f;                         // 진폭 (진동 강도)
+
+    pos.x += waveX * waveAmp;  // 좌우 흔들림
+    pos.y += waveY * waveAmp;  // 상하 흔들림
+
+    SetPosition(pos);
+
+    float yaw = XMConvertToRadians(m_aliveTime * 360.0f); // 초당 1회전
     XMMATRIX rot = XMMatrixRotationY(yaw);
 
-    // 스케일/회전/이동 적용
-    XMMATRIX scl = XMMatrixScaling(m_scale.x, m_scale.y, m_scale.z);
-    XMMATRIX trn = XMMatrixTranslation(currPos.x, currPos.y, currPos.z);
+    float pulseX = 1.0f + 0.25f * sinf(m_aliveTime * 6.0f);   // X축
+    float pulseY = 1.0f + 0.15f * cosf(m_aliveTime * 8.0f);   // Y축
+    float pulseZ = 1.0f + 0.2f * sinf(m_aliveTime * 5.0f);    // Z축
 
+    XMMATRIX scl = XMMatrixScaling(
+        pulseX * m_scale.x,
+        pulseY * m_scale.y,
+        pulseZ * m_scale.z
+    );
+
+    XMMATRIX trn = XMMatrixTranslation(pos.x, pos.y, pos.z);
     SetWorldMatrix(scl * rot * trn);
 }
+

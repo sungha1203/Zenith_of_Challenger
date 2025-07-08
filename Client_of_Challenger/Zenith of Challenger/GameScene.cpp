@@ -97,7 +97,7 @@ void GameScene::MouseEvent(HWND hWnd, FLOAT timeElapsed)
             gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
         }
 
-        FireMagicBall();
+        //FireMagicBall();
     }
 }
 
