@@ -172,6 +172,9 @@
     <ClInclude Include="MagicBall.h">
       <Filter>소스 파일\Object\Skill</Filter>
     </ClInclude>
+    <ClInclude Include="MagicBallTrail.h">
+      <Filter>소스 파일\Object\Skill</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Zenith of Challenger.cpp">
@@ -268,6 +271,9 @@
       <Filter>소스 파일\Object\Skill</Filter>
     </ClCompile>
     <ClCompile Include="MagicBall.cpp">
+      <Filter>소스 파일\Object\Skill</Filter>
+    </ClCompile>
+    <ClCompile Include="MagicBallTrail.cpp">
       <Filter>소스 파일\Object\Skill</Filter>
     </ClCompile>
   </ItemGroup>

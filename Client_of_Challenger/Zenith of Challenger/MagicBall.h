@@ -31,6 +31,8 @@ public:
         m_scaleAmpZ = ampZ;
     }
 
+    void CreateTrail();
+
 private:
     float m_aliveTime = 0.0f;       // 누적 생존 시간
     float m_lifetime = 3.0f;        // 최대 생존 시간
@@ -48,4 +50,7 @@ private:
     float m_scaleAmpZ = 0.2f;
 
     XMFLOAT3 m_direction = { 0, 0, 1 }; // 이동 방향
+
+    float m_trailElapsed = 0.0f;
+    float m_trailInterval = 0.05f;
 };

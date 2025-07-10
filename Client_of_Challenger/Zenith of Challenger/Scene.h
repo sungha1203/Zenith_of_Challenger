@@ -37,6 +37,9 @@ public:
     void SetDevice(const ComPtr<ID3D12Device>& device) { m_device = device; }
     void SetCommandList(const ComPtr<ID3D12GraphicsCommandList>& commandList) { m_commandList = commandList; }
     void SetRootSignature(const ComPtr<ID3D12RootSignature>& rootSignature) { m_rootSignature = rootSignature; }
+
+    virtual void AddTrailObject(const std::shared_ptr<GameObject>& obj);
+
     int otherid[2] = { -2,-2 };
     XMFLOAT3 otherpos[2];
     float otherangle[2];

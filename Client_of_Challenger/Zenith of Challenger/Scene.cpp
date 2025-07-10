@@ -107,3 +107,7 @@ void Scene::ClearSceneResources()
 		m_device->GetDeviceRemovedReason();
 	}
 }
+
+void Scene::AddTrailObject(const std::shared_ptr<GameObject>& obj)
+{
+}

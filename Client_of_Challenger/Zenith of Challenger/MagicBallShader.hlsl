@@ -33,7 +33,7 @@ PSInput VSMain(VSInput input)
 
 float4 PSMain(PSInput input) : SV_TARGET
 {
-    float3 baseColor = float3(1.0f, 0.2f, 0.9f);
+    float3 baseColor = float3(0.3f, 0.5f, 1.0f);
 
     float2 centeredUV = input.TexCoord - float2(0.5f, 0.5f);
     float dist = length(centeredUV) * 2.0f;

@@ -158,6 +158,9 @@ public:
 
 	const XMFLOAT4X4& GetWorldMatrix() const { return m_worldMatrix; }
 
+	void MarkDead() { m_isDead = true; }
+	bool IsDead() const { return m_isDead; }
+
 protected:
 	shared_ptr<MeshBase> m_mesh;
 	shared_ptr<Texture> m_texture;
@@ -191,6 +194,7 @@ protected:
 	shared_ptr<Shader> m_outlineShader;
 
 	bool m_isActive = true; // 기본값은 true
+	bool m_isDead = false;
 
 };
 

@@ -171,6 +171,7 @@
     <ClInclude Include="Instance.h" />
     <ClInclude Include="Lighting.h" />
     <ClInclude Include="MagicBall.h" />
+    <ClInclude Include="MagicBallTrail.h" />
     <ClInclude Include="Material.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="Monster.h" />
@@ -215,6 +216,7 @@
     <ClCompile Include="Instance.cpp" />
     <ClCompile Include="Lighting.cpp" />
     <ClCompile Include="MagicBall.cpp" />
+    <ClCompile Include="MagicBallTrail.cpp" />
     <ClCompile Include="Material.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="MonsterLoader.cpp" />

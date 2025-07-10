@@ -420,7 +420,7 @@ void Room::InitZenithMonsters()
 		m_Zmonsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantVenus, 91.f, 2.f, -73.f);
 		m_Zmonsters[++monsterID].SetMonster(monsterID, NormalMonsterType::PlantVenus, 105.f, 2.f, -27.f);
 	} 
-	// Flower Fairy
+	// Flower Fairy 
 	{
 		m_Zmonsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FlowerFairy, 143.f, 5.f, -158.f);
 		m_Zmonsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FlowerFairy, 153.f, 5.f, -209.f);

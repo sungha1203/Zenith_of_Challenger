@@ -236,7 +236,9 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
 		}
 	}
 
-    if (!m_player->isPunching&& GetAsyncKeyState('F') & 0x8000)
+    bool isFPressed = (GetAsyncKeyState('F') & 0x8000) != 0;
+
+    if (!m_player->isPunching && isFPressed && !wasKeyPressedF)
     {
         m_AttackCollision = true;
         //m_player->SetCurrentAnimation("Punch.001");
@@ -252,6 +254,7 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
         }
     }
 
+    wasKeyPressedF = isFPressed;
 
 
     if (GetAsyncKeyState(VK_DOWN) & 0x8000)
@@ -632,6 +635,7 @@ void GameScene::Update(FLOAT timeElapsed)
         healing->Update(timeElapsed);
     }
 
+    //마법사 평타 업데이트
     for (auto it = m_magicBalls.begin(); it != m_magicBalls.end();)
     {
         auto& ball = *it;
@@ -646,6 +650,16 @@ void GameScene::Update(FLOAT timeElapsed)
             ++it;
         }
     }
+
+    for (auto& trail : m_trailObjects)
+        trail->Update(timeElapsed);
+
+    m_trailObjects.erase(
+        std::remove_if(m_trailObjects.begin(), m_trailObjects.end(),
+            [](const std::shared_ptr<GameObject>& obj) { return obj->IsDead(); }),
+        m_trailObjects.end()
+    );
+
 
 }
 
@@ -825,6 +839,12 @@ void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) con
         if (!ball->IsActive()) continue;
         ball->SetShader(m_shaders.at("MagicBall"));
         ball->Render(commandList);
+    }
+
+    for (const auto& trail : m_trailObjects)
+    {
+        trail->SetShader(m_shaders.at("MagicBall")); // 또는 별도 트레일 셰이더 사용 가능
+        trail->Render(commandList);
     }
 
     // 디버그용 그림자맵 시각화
@@ -2073,5 +2093,10 @@ void GameScene::FireMagicBall()
 
         m_magicBalls.push_back(ball);
     }
+}
+
+void GameScene::AddTrailObject(const std::shared_ptr<GameObject>& obj)
+{
+    m_trailObjects.push_back(obj);
 }
 
