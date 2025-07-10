@@ -134,6 +134,13 @@ namespace DescriptorRange
 	constexpr UINT Count = 5;
 }
 
+namespace Random {
+	inline float Range(float min, float max) {
+		return min + static_cast<float>(rand()) / RAND_MAX * (max - min);
+	}
+}
+
+
 enum class CameraMode
 {
 	QuarterView,

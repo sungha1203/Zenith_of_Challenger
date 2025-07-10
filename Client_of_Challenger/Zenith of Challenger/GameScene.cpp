@@ -2028,23 +2028,50 @@ void GameScene::FireMagicBall()
 {
     if (m_meshLibrary.find("MagicBall") == m_meshLibrary.end()) return;
 
-    auto ball = make_shared<MagicBall>(m_device);
-    ball->SetMesh(m_meshLibrary["MagicBall"]);
-    ball->SetShader(m_shaders["MagicBall"]);
+    const int numShots = 5;
+    const float maxAngleOffset = XMConvertToRadians(3.0f); // 최대 ±3도 퍼짐
+    const float speed = 50.0f;
 
-    // 시작 위치 = 플레이어 위치
-    XMFLOAT3 startPos = m_player->GetPosition();
-    startPos.y += 8.0f; // 살짝 위로
-    ball->SetPosition(startPos);
+    XMFLOAT3 playerPos = m_player->GetPosition();
+    playerPos.y += 8.0f;
 
-    // 발사 방향 = 플레이어 forward
-    XMFLOAT3 forward = m_player->GetForward();
-    forward = Vector3::Normalize(forward); // 단위 벡터 보정
-    ball->SetDirection(forward);
+    XMFLOAT3 forward = Vector3::Normalize(m_player->GetForward());
+    XMVECTOR forwardVec = XMLoadFloat3(&forward);
 
-    // 옵션
-    ball->SetSpeed(50.0f);     // 속도 증가
-    ball->SetLifetime(3.0f);   // 3초 후 자동 제거
+    for (int i = 0; i < numShots; ++i)
+    {
+        auto ball = make_shared<MagicBall>(m_device);
+        ball->SetMesh(m_meshLibrary["MagicBall"]);
+        ball->SetShader(m_shaders["MagicBall"]);
+        ball->SetPosition(playerPos);
 
-    m_magicBalls.push_back(ball);
+        float angleOffset = Random::Range(-maxAngleOffset, maxAngleOffset);
+        XMMATRIX rot = XMMatrixRotationY(angleOffset);
+        XMVECTOR shotDir = XMVector3TransformNormal(forwardVec, rot);
+
+        XMFLOAT3 dir;
+        XMStoreFloat3(&dir, shotDir);
+        dir = Vector3::Normalize(dir);
+        ball->SetDirection(dir);
+        ball->SetSpeed(speed);
+        ball->SetLifetime(3.0f);
+
+        float offsetX = Random::Range(0.0f, XM_2PI);
+        float offsetY = Random::Range(0.0f, XM_2PI);
+        ball->SetWaveOffsets(offsetX, offsetY);
+
+
+        float freqX = Random::Range(5.0f, 8.0f);
+        float freqY = Random::Range(6.0f, 9.0f);
+        float freqZ = Random::Range(4.0f, 7.0f);
+
+        float ampX = Random::Range(0.2f, 0.4f);
+        float ampY = Random::Range(0.15f, 0.3f);
+        float ampZ = Random::Range(0.2f, 0.35f);
+
+        ball->SetScaleAnimation(freqX, ampX, freqY, ampY, freqZ, ampZ);
+
+        m_magicBalls.push_back(ball);
+    }
 }
+

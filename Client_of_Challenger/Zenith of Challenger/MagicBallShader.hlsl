@@ -33,26 +33,21 @@ PSInput VSMain(VSInput input)
 
 float4 PSMain(PSInput input) : SV_TARGET
 {
-    // 보라빛 마법 에너지 색
-    float3 baseColor = float3(1.0f, 0.3f, 1.0f);
+    float3 baseColor = float3(1.0f, 0.2f, 0.9f);
 
-    // 중심 기준 Glow 계산
     float2 centeredUV = input.TexCoord - float2(0.5f, 0.5f);
     float dist = length(centeredUV) * 2.0f;
+    float glow = saturate(1.0f - dist * dist); // 중심 밝음
 
-    // Glow는 중심에서 가장 밝고 바깥은 점점 어두워짐
-    float glow = saturate(1.0f - dist * dist);
+    float pulse = 0.95f + 0.1f * sin(g_totalTime * 6.0f);
 
-    // 펄스: 0.8 ~ 1.0 범위로 깜빡임 (어두워지지 않게)
-    float pulse = 0.9f + 0.1f * sin(g_totalTime * 6.0f);
+    float brightness = 2.0f;
+    float3 color = baseColor * glow * pulse * brightness;
 
-    // 최종 glow 강도 (최소 밝기 유지)
-    glow = lerp(0.6f, 1.0f, glow) * pulse;
+    color = min(color, float3(1.0f, 0.7f, 1.0f)); // 최대치를 보라색 톤으로 유지
 
-    // 빛나게 하기 위해 감마나 강도를 높임
-    float brightness = 2.5f;
-    float3 color = baseColor * glow * brightness;
+    float alpha = lerp(0.6f, 1.0f, glow);
 
-    // 밝고 야광 같은 마법 볼 색상 반환 (alpha도 glow 기반)
-    return float4(color, glow);
+    return float4(color, alpha);
 }
+
