@@ -96,6 +96,8 @@ void GameScene::MouseEvent(HWND hWnd, FLOAT timeElapsed)
             pkt.size = sizeof(pkt);
             gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
         }
+
+        //FireMagicBall();
     }
 }
 
@@ -234,7 +236,9 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
 		}
 	}
 
-    if (!m_player->isPunching&& GetAsyncKeyState('F') & 0x8000)
+    bool isFPressed = (GetAsyncKeyState('F') & 0x8000) != 0;
+
+    if (!m_player->isPunching && isFPressed && !wasKeyPressedF)
     {
         m_AttackCollision = true;
         //m_player->SetCurrentAnimation("Punch.001");
@@ -250,6 +254,7 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
         }
     }
 
+    wasKeyPressedF = isFPressed;
 
 
     if (GetAsyncKeyState(VK_DOWN) & 0x8000)
@@ -303,6 +308,12 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
 
             gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
         }
+    }
+
+
+    if (GetAsyncKeyState('C') & 0x0001)
+    {
+        FireMagicBall();
     }
 
 }
@@ -616,6 +627,7 @@ void GameScene::Update(FLOAT timeElapsed)
                 boss->Update(timeElapsed);
             }
         }
+
     }
 
     //힐탱커 스킬 업데이트
@@ -623,6 +635,98 @@ void GameScene::Update(FLOAT timeElapsed)
     {
         healing->Update(timeElapsed);
     }
+
+    //마법사 평타 업데이트
+    for (auto it = m_magicBalls.begin(); it != m_magicBalls.end();)
+    {
+        auto& ball = *it;
+        ball->Update(timeElapsed);
+
+        if (ball->IsDead())
+        {
+            it = m_magicBalls.erase(it); // 수명 끝난 매직볼 제거
+        }
+        else
+        {
+            ++it;
+        }
+    }
+
+    for (auto& trail : m_trailObjects)
+        trail->Update(timeElapsed);
+
+    m_trailObjects.erase(
+        std::remove_if(m_trailObjects.begin(), m_trailObjects.end(),
+            [](const std::shared_ptr<GameObject>& obj) { return obj->IsDead(); }),
+        m_trailObjects.end()
+    );
+
+
+    //마법사 평타 몬스터 충돌처리
+    for (auto& ball : m_magicBalls)
+    {
+        if (!ball->IsActive()) continue;
+
+        const BoundingBox& ballBox = ball->GetBoundingBox();
+        const XMFLOAT3& ballCenter = ballBox.Center;
+        XMFLOAT3 ballPos = ball->GetPosition();
+
+        XMFLOAT3 ballCenterWorld = {
+            ballPos.x + ballCenter.x,
+            ballPos.y + ballCenter.y,
+            ballPos.z + ballCenter.z
+        };
+
+        const XMFLOAT3& ballExtent = ballBox.Extents;
+
+        // 모든 몬스터 대상 충돌 체크
+        for (auto& [type, group] : m_monsterGroups)
+        {
+            for (auto& monster : group)
+            {
+                if (!monster || monster->IsDead()) continue;
+
+                const BoundingBox& monBox = monster->GetBoundingBox();
+                const XMFLOAT3& monCenter = monBox.Center;
+                const XMFLOAT3& monExtent = monBox.Extents;
+
+                XMFLOAT3 monPos = monster->GetPosition();
+                XMFLOAT3 monCenterWorld = {
+                    monPos.x + monCenter.x,
+                    monPos.y + monCenter.y,
+                    monPos.z + monCenter.z
+                };
+
+                bool intersectX = abs(ballCenterWorld.x - monCenterWorld.x) <= (ballExtent.x + monExtent.x);
+                bool intersectY = abs(ballCenterWorld.y - monCenterWorld.y) <= (ballExtent.y + monExtent.y);
+                bool intersectZ = abs(ballCenterWorld.z - monCenterWorld.z) <= (ballExtent.z + monExtent.z);
+
+                if (intersectX && intersectY && intersectZ)
+                {
+                    OutputDebugStringA("[Collision] MagicBall <-> Monster\n");
+
+                    monster->ApplyDamage(1.0f); // 데미지 지정
+
+                    SpawnMagicImpactEffect(ballCenterWorld);
+
+                    ball->SetActive(false);
+                    break; // 여러 몬스터에게 다중 충돌 막기
+                }
+            }
+        }
+    }
+
+    //평타 이펙트
+    for (auto& effect : m_effects)
+    {
+        if (effect->IsActive())
+            effect->Update(timeElapsed);
+    }
+    m_effects.erase(std::remove_if(m_effects.begin(), m_effects.end(),
+        [](const std::shared_ptr<GameObject>& obj) { return !obj->IsActive(); }),
+        m_effects.end());
+
+
 
 
 }
@@ -798,11 +902,31 @@ void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) con
         healing->Render(commandList);
     }
 
+    for (const auto& ball : m_magicBalls)
+    {
+        if (!ball->IsActive()) continue;
+        ball->SetShader(m_shaders.at("MagicBall"));
+        ball->Render(commandList);
+    }
+
+    for (const auto& trail : m_trailObjects)
+    {
+        trail->SetShader(m_shaders.at("MagicBall")); // 또는 별도 트레일 셰이더 사용 가능
+        trail->Render(commandList);
+    }
+
+    for (const auto& effect : m_effects)
+    {
+        effect->SetShader(m_shaders.at("Impact"));
+        effect->Render(commandList);
+    }
+
     // 디버그용 그림자맵 시각화
     if (m_debugShadowShader && m_ShadowMapEnabled)
     {
         m_debugShadowShader->Render(commandList, gGameFramework->GetShadowMapSrv());
     }
+
 }
 
 
@@ -889,8 +1013,11 @@ void GameScene::BuildShaders(const ComPtr<ID3D12Device>& device,
     auto Shadowshader = make_shared<ShadowCharSkinnedShader>(device, rootSignature);
     m_shaders.insert({ "SHADOWCHARSKINNED", Shadowshader });
 
-    //auto healingShader = make_shared<HealingSkillShader>(device, rootSignature);
-    //m_shaders.insert({ "HEALING", healingShader });
+    auto magicBallShader = make_shared<MagicBallShader>(device, rootSignature);
+    m_shaders.insert({ "MagicBall", magicBallShader });
+
+    auto ImpactShader = make_shared<MagicImpactShader>(device, rootSignature);
+    m_shaders.insert({ "Impact", ImpactShader });
 
 }
 
@@ -1064,6 +1191,17 @@ void GameScene::BuildMeshes(const ComPtr<ID3D12Device>& device,
             m_meshLibrary["Healing"] = meshes[0];
         }
     }
+
+    auto magicBallLoader = make_shared<FBXLoader>();
+    if (magicBallLoader->LoadFBXModel("Model/Skill/MagicBall.fbx", XMMatrixIdentity()))
+    {
+        auto meshes = magicBallLoader->GetMeshes();
+        if (!meshes.empty())
+        {
+            m_meshLibrary["MagicBall"] = meshes[0];
+        }
+    }
+
 
 }
 
@@ -1841,6 +1979,13 @@ void GameScene::RenderShadowPass(const ComPtr<ID3D12GraphicsCommandList>& comman
         healing->Render(commandList);
     }
 
+    for (const auto& ball : m_magicBalls)
+    {
+        if (!ball->IsActive()) continue;
+        ball->SetShader(m_shaders.at("SHADOW"));
+        ball->Render(commandList);
+    }
+
 }
 
 
@@ -1976,3 +2121,72 @@ void GameScene::SpawnHealingObject(int num)
 
     m_healingObjects.push_back(healing);
 }
+
+void GameScene::FireMagicBall()
+{
+    if (m_meshLibrary.find("MagicBall") == m_meshLibrary.end()) return;
+
+    const int numShots = 5;
+    const float maxAngleOffset = XMConvertToRadians(3.0f); // 최대 ±3도 퍼짐
+    const float speed = 50.0f;
+
+    XMFLOAT3 playerPos = m_player->GetPosition();
+    playerPos.y += 8.0f;
+
+    XMFLOAT3 forward = Vector3::Normalize(m_player->GetForward());
+    XMVECTOR forwardVec = XMLoadFloat3(&forward);
+
+    for (int i = 0; i < numShots; ++i)
+    {
+        auto ball = make_shared<MagicBall>(m_device);
+        ball->SetMesh(m_meshLibrary["MagicBall"]);
+        ball->SetShader(m_shaders["MagicBall"]);
+        ball->SetPosition(playerPos);
+
+        float angleOffset = Random::Range(-maxAngleOffset, maxAngleOffset);
+        XMMATRIX rot = XMMatrixRotationY(angleOffset);
+        XMVECTOR shotDir = XMVector3TransformNormal(forwardVec, rot);
+
+        XMFLOAT3 dir;
+        XMStoreFloat3(&dir, shotDir);
+        dir = Vector3::Normalize(dir);
+        ball->SetDirection(dir);
+        ball->SetSpeed(speed);
+        ball->SetLifetime(3.0f);
+
+        float offsetX = Random::Range(0.0f, XM_2PI);
+        float offsetY = Random::Range(0.0f, XM_2PI);
+        ball->SetWaveOffsets(offsetX, offsetY);
+
+
+        float freqX = Random::Range(5.0f, 8.0f);
+        float freqY = Random::Range(6.0f, 9.0f);
+        float freqZ = Random::Range(4.0f, 7.0f);
+
+        float ampX = Random::Range(0.2f, 0.4f);
+        float ampY = Random::Range(0.15f, 0.3f);
+        float ampZ = Random::Range(0.2f, 0.35f);
+
+        ball->SetScaleAnimation(freqX, ampX, freqY, ampY, freqZ, ampZ);
+
+        m_magicBalls.push_back(ball);
+    }
+}
+
+void GameScene::AddTrailObject(const shared_ptr<GameObject>& obj)
+{
+    m_trailObjects.push_back(obj);
+}
+
+void GameScene::SpawnMagicImpactEffect(const XMFLOAT3& pos)
+{
+    auto effect = make_shared<MagicImpactEffect>(m_device);
+
+    effect->SetMesh(m_meshLibrary["MagicBall"]);  // 임팩트용 메시
+    effect->SetShader(m_shaders["Impact"]);    // ImpactShader.hlsl로 만든 셰이더
+    effect->SetLifetime(0.5f);
+    effect->SetPosition(pos);
+
+    m_effects.push_back(effect);
+}
+

@@ -109,6 +109,20 @@ public:
 	~OutlineShader() override = default;
 };
 
+class MagicBallShader : public Shader
+{
+public:
+	MagicBallShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSignature);
+	~MagicBallShader() override = default;
+};
+
+class MagicImpactShader : public Shader
+{
+public:
+	MagicImpactShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSignature);
+	~MagicImpactShader() override = default;
+};
+
 class ShadowSkinnedShader : public Shader {
 public:
 	ShadowSkinnedShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSignature);
@@ -122,3 +136,4 @@ public:
 	~ShadowCharSkinnedShader() override = default;
 	bool IsShadowShader() const override { return true; }
 };
+

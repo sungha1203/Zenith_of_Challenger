@@ -172,6 +172,11 @@ UINT CGameFramework::GetWindowHeight()
 	return m_nWndClientHeight;
 }
 
+FLOAT CGameFramework::GetTotalTime()
+{
+	return m_GameTimer.GetTotalTime();
+}
+
 D3D12_CPU_DESCRIPTOR_HANDLE CGameFramework::GetCpuSrvHandle() const
 {
 	return m_cbvSrvUavCpuDescriptorStartHandle;

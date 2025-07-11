@@ -73,14 +73,20 @@ protected:
 
 struct ObjectData : public BufferBase
 {
-	XMFLOAT4X4 worldMatrix;    // 64 bytes
-	XMFLOAT4 baseColor;        // 16 bytes
-	UINT useTexture;           // 4 bytes
-	UINT textureIndex;         // 4 bytes
-	UINT isHovered;			   // 4 bytes
-	FLOAT fillAmount = {};     // 12 bytes → 총 32 bytes로 16바이트 정렬 유지
-	XMFLOAT4 customUV;
-	UINT useCustomUV;
+	XMFLOAT4X4 worldMatrix;   // 64 bytes (c0~c3)
+	XMFLOAT4 baseColor;       // 16 bytes (c4)
+
+	UINT useTexture;          // 4 bytes (c5.x)
+	UINT textureIndex;        // 4 bytes (c5.y)
+	UINT isHovered;           // 4 bytes (c5.z)
+	FLOAT fillAmount;         // 4 bytes (c5.w)
+
+	XMFLOAT4 customUV;        // 16 bytes (c6)
+
+	UINT useCustomUV;         // 4 bytes (c7.x)
+	FLOAT totalTime;          // 4 bytes (c7.y)
+
+	XMFLOAT2 padding;         // 8 bytes → 총 16바이트 정렬 맞춤
 };
 
 class GameObject : public Object
@@ -146,6 +152,15 @@ public:
 	//바운딩 박스 따로 스케일 정의
 	void RenderBoundingBoxWithoutScale(const ComPtr<ID3D12GraphicsCommandList>& commandList) const;
 
+
+	void SetActive(bool active) { m_isActive = active; }
+	bool IsActive() const { return m_isActive; }
+
+	const XMFLOAT4X4& GetWorldMatrix() const { return m_worldMatrix; }
+
+	void MarkDead() { m_isDead = true; }
+	bool IsDead() const { return m_isDead; }
+
 protected:
 	shared_ptr<MeshBase> m_mesh;
 	shared_ptr<Texture> m_texture;
@@ -177,6 +192,10 @@ protected:
 
 	//외곽선 전용
 	shared_ptr<Shader> m_outlineShader;
+
+	bool m_isActive = true; // 기본값은 true
+	bool m_isDead = false;
+
 };
 
 class RotatingObject : public InstanceObject

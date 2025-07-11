@@ -49,10 +49,10 @@ public:
     void KeyboardEvent(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
     void SetActive(BOOL isActive);
-
     FLOAT GetAspectRatio();
     UINT GetWindowWidth();
     UINT GetWindowHeight();
+    FLOAT GetTotalTime();
 
     ComPtr<ID3D12Device> GetDevice() { return m_device; }
     ComPtr<ID3D12GraphicsCommandList> GetCommandList() { return m_commandList; }

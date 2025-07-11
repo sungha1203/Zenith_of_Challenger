@@ -191,6 +191,7 @@ void InstanceObject::SetMaterialIndex(UINT materialIndex)
 GameObject::GameObject(const ComPtr<ID3D12Device>& device) : Object()
 {
     m_constantBuffer = make_unique<UploadBuffer<ObjectData>>(device, (UINT)RootParameter::GameObject, true);
+    m_isActive = true;
 }
 
 void GameObject::Update(FLOAT timeElapsed)
@@ -238,6 +239,7 @@ void GameObject::UpdateShaderVariable(const ComPtr<ID3D12GraphicsCommandList>& c
     buffer.fillAmount = m_fillAmount;
     buffer.customUV = m_customUV;
     buffer.useCustomUV = m_useCustomUV;
+    buffer.totalTime = gGameFramework->GetTotalTime();
 
     m_constantBuffer->Copy(buffer);
     m_constantBuffer->UpdateRootConstantBuffer(commandList);

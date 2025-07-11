@@ -232,12 +232,13 @@ void Player::Update(FLOAT timeElapsed)
         //m_currentAnim = "Walking";
         XMFLOAT3 AttBoundingExtents = {3.0f,4.0f,3.0f};
         m_boundingBox.Extents = AttBoundingExtents;
-        if (m_animTime > m_animationClips.at(m_currentAnim).duration-1.0)
+        if (m_animTime > m_animationClips.at(m_currentAnim).duration - 1.0)
         {
             isPunching = false;
             isMoving = false;
-            SetCurrentAnimation("Idle");
-            m_boundingBox.Extents = { 1.0f,4.0f,1.0f };
+            //SetCurrentAnimation("Idle");
+            m_currentAnim = "Idle";
+            m_boundingBox.Extents = { 1.0f, 4.0f, 1.0f };
             {
                 CS_Packet_Animaition pkt;
                 pkt.type = CS_PACKET_ANIMATION;
@@ -478,6 +479,19 @@ void Player::PlayAnimationWithBlend(const std::string& newAnim, float blendDurat
     m_isBlending = true;
 }
 
+XMFLOAT3 Player::GetForward() const
+{
+    XMMATRIX world = XMLoadFloat4x4(&GetWorldMatrix());
+
+    // 월드행렬의 z축 추출
+    XMVECTOR forward = XMVector3Normalize(world.r[2]);
+    forward = XMVectorNegate(forward);
+
+    XMFLOAT3 dir;
+    XMStoreFloat3(&dir, forward);
+
+    return dir;
+}
 void Player::Move(XMFLOAT3 direction, FLOAT speed)
 {
     direction = Vector3::Normalize(direction);
