@@ -616,6 +616,8 @@ void GameScene::Update(FLOAT timeElapsed)
             for (auto& monster : group)
             {
                 monster->Update(timeElapsed);
+                if(type=="Mushroom_Dark")
+                    monster->SetPosition(XMFLOAT3(gGameFramework->ZmonstersCoord[0].x, 43.f, gGameFramework->ZmonstersCoord[0].z)); 
             }
         }
 
