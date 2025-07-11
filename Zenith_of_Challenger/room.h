@@ -134,4 +134,6 @@ public:
 	// 몬스터
 	void	InitChallengeMonsters();				// 도전 스테이지 몬스터 초기화
 	void	InitZenithMonsters();					// 정점 스테이지 몬스터 초기화(보스 몬스터 포함)
+	void	InitZMonsterFirstLastCoord();			// 정점 스테이지 몬스터 기존 루트 좌표 설정
+	void	BroadcastMonsterPosition();				// 정점 스테이지 몬스터 일정 시간 간격으로 좌표 갱신
 };

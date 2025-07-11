@@ -52,6 +52,8 @@ constexpr int NAME_SIZE = 20;				// 이름 글자 수
 #define SC_PACKET_CMONSTERTARGET	 122		// 도전스테이지 몬스터가 바라보는 방향
 #define SC_PACKET_ZMONSTERTARGET	 123		// 정점스테이지 몬스터가 바라보는 방향
 #define SC_PACKET_RESPONE			 124		// 도전or정점 죽은 후 리스폰
+#define SC_PACKET_ZMONSTERMOVE		 125		// 정점 스테이지 몬스터의 이동
+#define SC_PACKET_ZMONSTERATTACK	 126	// 정점 스테이지 몬스터의 공격
 
 #define SC_PACKET_SKIPCHALLENGE		 998		// 도전스테이지 스킵
 #define SC_PACKET_LOGOUT			 999		// 로그아웃
@@ -393,6 +395,21 @@ struct SC_Packet_Respone
 	int		size;
 	int		clientID;
 	float	x, y, z;
+};
+
+struct SC_Packet_ZMonsterMove
+{
+	char	type;
+	int		size;
+	int		monsterID;
+	float	x, z;
+};
+
+struct SC_Packet_ZMonsterAttack
+{
+	char	type;
+	int		size;
+	bool	attack;
 };
 
 #pragma pack(pop)

@@ -46,6 +46,7 @@ public:
 	void		ProcessCMonsterTarget(char* buffer);
 	void		ProcessZMonsterTarget(char* buffer);
 	void		ProcessRespone(char* buffer);
+	void		ProcessZMonsterMove(char* buffer);
 
 public:
 	SOCKET			m_clientsocket = INVALID_SOCKET;

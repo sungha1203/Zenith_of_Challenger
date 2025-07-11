@@ -19,6 +19,14 @@ enum class DropItemType {
 	WARRIOR, MAGE, HEALTANKER
 };
 
+enum class MonsterState
+{
+	Idle,				// 직선 왕복운동
+	Aggro,				// 플레이어 어그로
+	ReturnStart,		// 시작 지점으로 복귀
+	Attack				// 공격
+};
+
 struct AggroInfo
 {
 	int		playerID = -1;		// 플레이어의 아이디
@@ -36,11 +44,13 @@ public:
 	void			Reset();
 	void			SetMonster(int id, NormalMonsterType type, float x, float y, float z);
 	void			TakeDamage(int dmg);
-	void			AIMove();
+	void			Move();
 	int				UpdateTargetList();
 	void			UpdateAggroList(const std::vector<PlayerInfo>& players);
-	void			Astar(const float x, const float z, const float targetX, const float targetZ);
+	void			RealMove(const float x, const float z, const float X, const float Z);
+	void			FirstMove();
 	DropItemType	DropWHAT();
+	void			SetFristLastCoord(float x1, float z1, float x2, float z2);
 
 	NormalMonsterType		GetType() const { return m_type; }
 	bool					GetLived() const { return m_islived; }
@@ -60,10 +70,15 @@ private:
 	int					m_attack;				// 공격력
 	int					m_speed;				// 이동속도
 	int					m_attackspeed;			// 공격속도
+	float				m_attackrange;			// 공격범위
 	int					m_targetplayer;			// 어그로X, 그냥 바라보고있는 방향(플레이어)
+	MonsterState		m_state = MonsterState::Idle;	// 왕복 직선 운동
 
 	std::vector<AggroInfo> m_AggroList;			// 어그로 리스트
 	bool				m_aggro = false;		// 어그로 됐는지(정점스테이지에서만 사용)
 	float				m_aggroRange = 5.f;		// 어그로 범위
 	int					m_aggroplayer = -1;		// 현재 어그로 끌린 플레이어의 id
+	float				m_FirstLastCoord[2][2];	// 기본 돌아다니는 처음과 끝 좌표
+	//float				m_StopCoord;			// 기본 이동 루트에서 어그로에 끌려 움직인 곳(어그로가 풀리면 다시 돌아갈 위치)
+	bool				m_direction = true;		// 기본 이동 루트 방향    // true : 정방향, false : 역방향
 };

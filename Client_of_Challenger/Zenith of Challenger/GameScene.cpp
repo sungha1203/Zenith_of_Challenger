@@ -1355,8 +1355,8 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
         float y = 5.f;
 
         //frightflies[i]->SetPosition(XMFLOAT3{ x, y, z });
-        frightflies[i]->SetPosition(gGameFramework->monstersCoord[i + 10]);
-        frightflies[i]->AttackRange.Center = gGameFramework->monstersCoord[i + 10];
+        frightflies[i]->SetPosition(gGameFramework->CmonstersCoord[i + 10]);
+        frightflies[i]->AttackRange.Center = gGameFramework->CmonstersCoord[i + 10];
     }
 
     // "Flower_Fairy" 타입 몬스터 배치
@@ -1370,8 +1370,8 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
         float y = 5.f;
 
         //fairies[i]->SetPosition(XMFLOAT3{ x, y, z });
-        fairies[i]->SetPosition(gGameFramework->monstersCoord[i + 40]);
-        fairies[i]->AttackRange.Center = gGameFramework->monstersCoord[i + 40];
+        fairies[i]->SetPosition(gGameFramework->CmonstersCoord[i + 40]);
+        fairies[i]->AttackRange.Center = gGameFramework->CmonstersCoord[i + 40];
 
     }
 
@@ -1386,8 +1386,8 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
         float y = 5.f; // 지면 높이에 맞게 조절
 
         //mushrooms[i]->SetPosition(XMFLOAT3{ x, y, z });
-        mushrooms[i]->SetPosition(gGameFramework->monstersCoord[i]);
-        mushrooms[i]->AttackRange.Center = gGameFramework->monstersCoord[i];
+        mushrooms[i]->SetPosition(gGameFramework->CmonstersCoord[i]);
+        mushrooms[i]->AttackRange.Center = gGameFramework->CmonstersCoord[i];
     }
 
     // "Venus_Blue" 타입 몬스터 배치
@@ -1401,8 +1401,8 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
         float y = 5.f;
 
         //venusGroup[i]->SetPosition(XMFLOAT3{ x, y, z });
-        venusGroup[i]->SetPosition(gGameFramework->monstersCoord[i + 30]);
-        venusGroup[i]->AttackRange.Center = gGameFramework->monstersCoord[i + 30];
+        venusGroup[i]->SetPosition(gGameFramework->CmonstersCoord[i + 30]);
+        venusGroup[i]->AttackRange.Center = gGameFramework->CmonstersCoord[i + 30];
     }
 
     // "Plant_Dionaea" 타입 몬스터 배치
@@ -1416,8 +1416,8 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
         float y = 5.f;
 
         //DionaeaGroup[i]->SetPosition(XMFLOAT3{ x, y, z });
-        DionaeaGroup[i]->SetPosition(gGameFramework->monstersCoord[i + 20]);
-        DionaeaGroup[i]->AttackRange.Center = gGameFramework->monstersCoord[i + 20];
+        DionaeaGroup[i]->SetPosition(gGameFramework->CmonstersCoord[i + 20]);
+        DionaeaGroup[i]->AttackRange.Center = gGameFramework->CmonstersCoord[i + 20];
     }
 
     // "Metalon" 타입 보스 몬스터 배치
@@ -1429,7 +1429,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
         float z = 0.f;
 
         MetalonGroup[i]->SetPosition(XMFLOAT3{ x, y, z });
-        //MetalonGroup[i]->SetPosition(gGameFramework->monstersCoord[i + 20]);
+        //MetalonGroup[i]->SetPosition(gGameFramework->CmonstersCoord[i + 20]);
     }
 
 
@@ -1438,39 +1438,39 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 
     int index = 0;
 
-    // FrightFly 2마리
-    for (int i = 0; i < 2; ++i, ++index)
+    // FrightFly 5마리
+    for (int i = 0; i < 5; ++i, ++index)
     {
         m_BossStageMonsters["FrightFly"].push_back(m_monsterGroups["FrightFly"][i]);
-        m_BossStageMonsters["FrightFly"][i]->SetPosition(XMFLOAT3{ 50.f, 49.f, startZ + gap * index });
+        m_BossStageMonsters["FrightFly"][i]->SetPosition(gGameFramework->ZmonstersCoord[i + 10]);
     }
 
-    // Flower_Fairy 2마리
-    for (int i = 0; i < 2; ++i, ++index)
+    // Flower_Fairy 5마리
+    for (int i = 0; i < 5; ++i, ++index)
     {
         m_BossStageMonsters["Flower_Fairy"].push_back(m_monsterGroups["Flower_Fairy"][i]);
-        m_BossStageMonsters["Flower_Fairy"][i]->SetPosition(XMFLOAT3{ 50.f, 49.f, startZ + gap * index });
+        m_BossStageMonsters["Flower_Fairy"][i]->SetPosition(gGameFramework->ZmonstersCoord[i + 40]);
     }
 
-    // Mushroom_Dark 2마리
-    for (int i = 0; i < 2; ++i, ++index)
+    // Mushroom_Dark 5마리
+    for (int i = 0; i < 5; ++i, ++index)
     {
         m_BossStageMonsters["Mushroom_Dark"].push_back(m_monsterGroups["Mushroom_Dark"][i]);
-        m_BossStageMonsters["Mushroom_Dark"][i]->SetPosition(XMFLOAT3{ 50.f, 49.f, startZ + gap * index });
+        m_BossStageMonsters["Mushroom_Dark"][i]->SetPosition(gGameFramework->ZmonstersCoord[i]);
     }
 
-    // Venus_Blue 2마리
-    for (int i = 0; i < 2; ++i, ++index)
+    // Venus_Blue 5마리
+    for (int i = 0; i < 5; ++i, ++index)
     {
         m_BossStageMonsters["Venus_Blue"].push_back(m_monsterGroups["Venus_Blue"][i]);
-        m_BossStageMonsters["Venus_Blue"][i]->SetPosition(XMFLOAT3{ 50.f, 49.f, startZ + gap * index });
+        m_BossStageMonsters["Venus_Blue"][i]->SetPosition(gGameFramework->ZmonstersCoord[i + 30]);
     }
 
-    // Plant_Dionaea 2마리
-    for (int i = 0; i < 2; ++i, ++index)
+    // Plant_Dionaea 5마리
+    for (int i = 0; i < 5; ++i, ++index)
     {
         m_BossStageMonsters["Plant_Dionaea"].push_back(m_monsterGroups["Plant_Dionaea"][i]);
-        m_BossStageMonsters["Plant_Dionaea"][i]->SetPosition(XMFLOAT3{ 50.f, 49.f, startZ + gap * index });
+        m_BossStageMonsters["Plant_Dionaea"][i]->SetPosition(gGameFramework->ZmonstersCoord[i + 20]);
     }
 
     //스카이박스

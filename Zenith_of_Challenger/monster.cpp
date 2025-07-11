@@ -22,6 +22,7 @@ void Monster::SetMonster(int id, NormalMonsterType type, float x, float y, float
 	m_x = x;
 	m_y = y;
 	m_z = z;
+	m_attackrange = 2.0f;
 
 	switch (type) {
 	case NormalMonsterType::Mushroom:
@@ -74,16 +75,7 @@ void Monster::TakeDamage(int dmg)
 	mx.unlock();
 }
 
-void Monster::AIMove()
-{
-	if (m_aggroplayer == -1) return;
-
-	float targetX = g_client[m_aggroplayer].GetX();
-	float targetZ = g_client[m_aggroplayer].GetZ();
-
-	Astar(m_x, m_z, targetX, targetZ);
-}
-
+// 플레이어 바라보는 리스트 (도전 스테이지만)
 int Monster::UpdateTargetList()
 {
 	float mindist = FLT_MAX;
@@ -105,6 +97,7 @@ int Monster::UpdateTargetList()
 	return m_targetplayer;
 }
 
+// 어그로 리스트(누구 쫒아갈건지 정해주는..)
 void Monster::UpdateAggroList(const std::vector<PlayerInfo>& players)
 {
 	m_AggroList.clear();
@@ -130,13 +123,115 @@ void Monster::UpdateAggroList(const std::vector<PlayerInfo>& players)
 
 	if (m_AggroList.size() == 0)
 		m_aggroplayer = -1;
-	else
+	else {
 		m_aggroplayer = nearID;			// 지금 현재 어그로 끌린 플레이어
+		m_state = MonsterState::Aggro;
+	}
 }
 
-void Monster::Astar(const float x, const float z, const float targetX, const float targetZ)
+// 호출 타겟 플레이어가 이동하면 최종 도착지를 변경하기 위함.
+void Monster::Move()
 {
+	switch (m_state)
+	{
+	case MonsterState::Idle:		// 기본 왕복 운동
+	{
+		FirstMove();
+		break;
+	}
+	case MonsterState::Aggro:		// 타겟 플레이어 어그로
+	{
+		if (m_aggroplayer == -1) {
+			m_state = MonsterState::ReturnStart;
+			return;
+		}
+		float targetX = g_client[m_aggroplayer].GetX();
+		float targetZ = g_client[m_aggroplayer].GetZ();
 
+		// 플레이어와 몬스터의 거리
+		float dx = targetX - m_x;
+		float dz = targetZ - m_z;
+		float dist = dx * dx + dz * dz;
+
+		// 몬스터와 시작 지점과의 위치(너무 많이 따라가지 않게 하기 위함)
+		float dx2 = m_FirstLastCoord[0][0] - m_x;
+		float dz2 = m_FirstLastCoord[0][1] - m_z;
+		float dist2 = dx2 * dx2 + dz2 * dz2;
+
+		if (dist > 10.0f) {			// 어그로에 끌린 플레이어가 일정 거리 떨어지면 복귀
+			m_state = MonsterState::ReturnStart;
+			m_aggroplayer = -1;
+		}
+		else if (dist2 > 15.0f) {	// 몬스터가 플레이어를 일정 거리 따라가면 복귀
+			m_state = MonsterState::ReturnStart;
+			m_aggroplayer = -1;
+		}
+		else						// 플레이어 따라가자!
+			RealMove(m_x, m_z, targetX, targetZ);
+		break;
+	}
+	case MonsterState::ReturnStart:	// 어그로 해제 및 시작 왕복 장소로 이동
+	{
+		float StartX = m_FirstLastCoord[0][0];
+		float StartZ = m_FirstLastCoord[0][1];
+		float dx = StartX - m_x;
+		float dz = StartZ - m_z;
+		float dist = dx * dx + dz * dz;
+
+		if (dist < 0.01f) {
+			m_state = MonsterState::Idle;
+		}
+		else
+			RealMove(m_x, m_z, StartX, StartZ);
+		break;
+	}
+	case MonsterState::Attack:
+	{
+		break;
+	}
+	default:
+	{
+		break;
+	}
+	}
+}
+
+// 실제 좌표 이동
+void Monster::RealMove(const float x, const float z, const float X, const float Z)
+{
+	float dx = X - x;
+	float dz = Z - z;
+	float len = sqrtf(dx * dx + dz * dz);
+	if (len < 0.001f) return;
+
+	dx /= len;
+	dz /= len;
+
+	m_x += dx * m_speed * 1.0f;
+	m_z += dz * m_speed * 1.0f;
+}
+
+// 기본 루트 왕복 이동
+void Monster::FirstMove()
+{
+	float* to = m_direction ? m_FirstLastCoord[1] : m_FirstLastCoord[0];
+
+	RealMove(m_x, m_z, to[0], to[1]);
+
+	float dx = to[0] - m_x;
+	float dz = to[1] - m_z;
+	float distSq = sqrtf(dx * dx + dz * dz);
+
+	if (distSq < 1.0f)
+		m_direction = !m_direction;
+}
+
+void Monster::SetFristLastCoord(float x1, float z1, float x2, float z2)
+{
+	m_FirstLastCoord[0][0] = x1;
+	m_FirstLastCoord[0][1] = z1;
+	m_FirstLastCoord[1][0] = x2;
+	m_FirstLastCoord[1][1] = z2;
 }
 
 DropItemType Monster::DropWHAT()

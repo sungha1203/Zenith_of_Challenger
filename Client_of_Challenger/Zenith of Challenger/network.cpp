@@ -140,6 +140,9 @@ void ClientNetwork::Receive() {
 			case SC_PACKET_RESPONE:
 				ProcessRespone(currentBuffer);
 				break;
+			case SC_PACKET_ZMONSTERMOVE:
+				ProcessZMonsterMove(currentBuffer);
+				break;
 			default:
 				break;
 			}
@@ -224,14 +227,17 @@ void ClientNetwork::ProcessInitMonster(char* buffer) {
 	SC_Packet_InitMonster* pkt = reinterpret_cast<SC_Packet_InitMonster*>(buffer);
 	for (auto i = 0; i < 50; ++i) {
 		XMFLOAT3 pos(pkt->monsters[i].x, pkt->monsters[i].y, pkt->monsters[i].z);
-		gGameFramework->monstersCoord[pkt->monsters[i].monsterid] = pos;
+		gGameFramework->CmonstersCoord[pkt->monsters[i].monsterid] = pos;
 	}
 }
 
 void ClientNetwork::ProcessZenithMonster(char* buffer)
 {
 	SC_Packet_ZenithMonster* pkt = reinterpret_cast<SC_Packet_ZenithMonster*>(buffer);
-
+	for (auto i = 0; i < 26; ++i) {
+		XMFLOAT3 pos(pkt->monsters[i].x, pkt->monsters[i].y, pkt->monsters[i].z);
+		gGameFramework->ZmonstersCoord[pkt->monsters[i].monsterid] = pos;
+	}
 }
 
 void ClientNetwork::ProcessUpdateCoord2Player(char* buffer)
@@ -652,4 +658,14 @@ void ClientNetwork::ProcessRespone(char* buffer)
 	pkt->y;
 	pkt->z;
 	// ProcessWhoisMyteam()부분보고 하면 돼. id랑 xyz값 넘겨주니까 그걸로 상대방 위치 보내주면 돼.
+}
+
+void ClientNetwork::ProcessZMonsterMove(char* buffer)
+{
+	SC_Packet_ZMonsterMove* pkt = reinterpret_cast<SC_Packet_ZMonsterMove*>(buffer);
+
+	gGameFramework->ZmonstersCoord[pkt->monsterID].x = pkt->x;
+	gGameFramework->ZmonstersCoord[pkt->monsterID].z = pkt->z;
+
+
 }

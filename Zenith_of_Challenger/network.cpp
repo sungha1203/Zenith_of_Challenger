@@ -885,7 +885,7 @@ void Network::SendInitMonster(const std::vector<int> & client_id, const std::arr
 }
 
 // 정점 몬스터 좌표 초기 설정
-void Network::SendZenithMonster(const std::vector<int>& client_id, const std::array<Monster, 50>& monsters)
+void Network::SendZenithMonster(const std::vector<int>& client_id, const std::array<Monster, 26>& monsters)
 {
 	SC_Packet_ZenithMonster packet;
 	packet.type = SC_PACKET_ZENITHMONSTER;
