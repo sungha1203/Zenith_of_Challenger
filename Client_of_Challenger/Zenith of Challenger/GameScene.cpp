@@ -627,6 +627,7 @@ void GameScene::Update(FLOAT timeElapsed)
                 boss->Update(timeElapsed);
             }
         }
+
     }
 
     //힐탱커 스킬 업데이트
@@ -659,6 +660,73 @@ void GameScene::Update(FLOAT timeElapsed)
             [](const std::shared_ptr<GameObject>& obj) { return obj->IsDead(); }),
         m_trailObjects.end()
     );
+
+
+    //마법사 평타 몬스터 충돌처리
+    for (auto& ball : m_magicBalls)
+    {
+        if (!ball->IsActive()) continue;
+
+        const BoundingBox& ballBox = ball->GetBoundingBox();
+        const XMFLOAT3& ballCenter = ballBox.Center;
+        XMFLOAT3 ballPos = ball->GetPosition();
+
+        XMFLOAT3 ballCenterWorld = {
+            ballPos.x + ballCenter.x,
+            ballPos.y + ballCenter.y,
+            ballPos.z + ballCenter.z
+        };
+
+        const XMFLOAT3& ballExtent = ballBox.Extents;
+
+        // 모든 몬스터 대상 충돌 체크
+        for (auto& [type, group] : m_monsterGroups)
+        {
+            for (auto& monster : group)
+            {
+                if (!monster || monster->IsDead()) continue;
+
+                const BoundingBox& monBox = monster->GetBoundingBox();
+                const XMFLOAT3& monCenter = monBox.Center;
+                const XMFLOAT3& monExtent = monBox.Extents;
+
+                XMFLOAT3 monPos = monster->GetPosition();
+                XMFLOAT3 monCenterWorld = {
+                    monPos.x + monCenter.x,
+                    monPos.y + monCenter.y,
+                    monPos.z + monCenter.z
+                };
+
+                bool intersectX = abs(ballCenterWorld.x - monCenterWorld.x) <= (ballExtent.x + monExtent.x);
+                bool intersectY = abs(ballCenterWorld.y - monCenterWorld.y) <= (ballExtent.y + monExtent.y);
+                bool intersectZ = abs(ballCenterWorld.z - monCenterWorld.z) <= (ballExtent.z + monExtent.z);
+
+                if (intersectX && intersectY && intersectZ)
+                {
+                    OutputDebugStringA("[Collision] MagicBall <-> Monster\n");
+
+                    monster->ApplyDamage(1.0f); // 데미지 지정
+
+                    SpawnMagicImpactEffect(ballCenterWorld);
+
+                    ball->SetActive(false);
+                    break; // 여러 몬스터에게 다중 충돌 막기
+                }
+            }
+        }
+    }
+
+    //평타 이펙트
+    for (auto& effect : m_effects)
+    {
+        if (effect->IsActive())
+            effect->Update(timeElapsed);
+    }
+    m_effects.erase(std::remove_if(m_effects.begin(), m_effects.end(),
+        [](const std::shared_ptr<GameObject>& obj) { return !obj->IsActive(); }),
+        m_effects.end());
+
+
 
 
 }
@@ -847,6 +915,12 @@ void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) con
         trail->Render(commandList);
     }
 
+    for (const auto& effect : m_effects)
+    {
+        effect->SetShader(m_shaders.at("Impact"));
+        effect->Render(commandList);
+    }
+
     // 디버그용 그림자맵 시각화
     if (m_debugShadowShader && m_ShadowMapEnabled)
     {
@@ -941,6 +1015,10 @@ void GameScene::BuildShaders(const ComPtr<ID3D12Device>& device,
 
     auto magicBallShader = make_shared<MagicBallShader>(device, rootSignature);
     m_shaders.insert({ "MagicBall", magicBallShader });
+
+    auto ImpactShader = make_shared<MagicImpactShader>(device, rootSignature);
+    m_shaders.insert({ "Impact", ImpactShader });
+
 }
 
 void GameScene::BuildMeshes(const ComPtr<ID3D12Device>& device,
@@ -2095,8 +2173,20 @@ void GameScene::FireMagicBall()
     }
 }
 
-void GameScene::AddTrailObject(const std::shared_ptr<GameObject>& obj)
+void GameScene::AddTrailObject(const shared_ptr<GameObject>& obj)
 {
     m_trailObjects.push_back(obj);
+}
+
+void GameScene::SpawnMagicImpactEffect(const XMFLOAT3& pos)
+{
+    auto effect = make_shared<MagicImpactEffect>(m_device);
+
+    effect->SetMesh(m_meshLibrary["MagicBall"]);  // 임팩트용 메시
+    effect->SetShader(m_shaders["Impact"]);    // ImpactShader.hlsl로 만든 셰이더
+    effect->SetLifetime(0.5f);
+    effect->SetPosition(pos);
+
+    m_effects.push_back(effect);
 }
 

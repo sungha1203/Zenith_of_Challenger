@@ -50,4 +50,5 @@ public:
     {
         SetScale(XMFLOAT3(1.0f, 1.0f, 1.0f));
     }
+
 };

@@ -248,7 +248,7 @@ void LoadAllMonsters(
     //// [6] Metalon 보스
     for (int i = 0; i < 1; ++i)
     {
-        auto monster = make_shared<Boss>(device); // PlantDionaea 클래스 필요
+        auto monster = make_shared<Monsters>(device); // PlantDionaea 클래스 필요
         // [1] 메쉬, 텍스처, 셰이더 설정
         monster->SetMesh(meshLibrary.at("Metalon"));
         monster->SetCamera(camera);
@@ -259,6 +259,7 @@ void LoadAllMonsters(
         monster->m_scale = XMFLOAT3{ 0.2, 0.2, 0.2 };
         monster->SetScale(monster->m_scale);
         monster->m_monNum = 5;
+        monster->GetHealthBar()->SetIsBoss(true);
         // [2] 애니메이션 설정
         vector<AnimationClip> clips;
         for (const auto& [name, clip] : animClipLibrary.at("Metalon"))
@@ -276,8 +277,8 @@ void LoadAllMonsters(
 
         // [3] 바운딩 박스
         BoundingBox box;
-        box.Center = XMFLOAT3{ 0.f, 5.5f, 0.f };
-        box.Extents = XMFLOAT3{ 5.5f, 9.5f, 5.5f };
+        box.Center = XMFLOAT3{ 0.f, 10.5f, 0.f };
+        box.Extents = XMFLOAT3{ 15.0f, 10.0f, 10.0f };
         monster->SetMonstersBoundingBox(box);
 
         // [4] 본 버퍼 SRV 생성

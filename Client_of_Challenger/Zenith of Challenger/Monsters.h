@@ -86,6 +86,9 @@ public:
 	bool m_isBlending = false;
 	bool m_didDamageThisAnim = false;
 	float m_prevAnimTime = -1.0f;
+
+	shared_ptr<HealthBarObject> GetHealthBar() const { return m_healthBar; }
+
 private:
 
 	std::unordered_map<std::string, int> m_boneNameToIndex;
@@ -110,6 +113,7 @@ private:
 	//몬스터 죽음, 파티클 관련
 	bool m_isDead = false;
 	bool m_particleSpawned = false;
+
 	//-------------------------인게임 정보-------------------------
 
 
@@ -128,8 +132,13 @@ public:
 
 	virtual void Update(FLOAT timeElapsed) override; // 원래 Object 상속용
 	void Update(FLOAT timeElapsed, const shared_ptr<Camera>& camera);
+
+	void SetIsBoss(bool isBoss) { m_isBoss = isBoss; }
+	bool GetIsBoss() const { return m_isBoss; }
+
 private:
 	float m_currentHP = 100.f;
 	float m_maxHP = 100.f;
 	bool m_rotationFixed = false;
+	bool m_isBoss = false;
 };

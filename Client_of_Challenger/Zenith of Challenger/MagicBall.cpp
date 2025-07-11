@@ -81,3 +81,24 @@ void MagicBall::CreateTrail()
 
     gGameFramework->GetSceneManager()->GetCurrentScene()->AddTrailObject(trail);
 }
+
+
+MagicImpactEffect::MagicImpactEffect(const ComPtr<ID3D12Device>& device)
+    : GameObject(device)
+{
+    m_isActive = true;
+}
+
+void MagicImpactEffect::Update(FLOAT timeElapsed)
+{
+    m_elapsed += timeElapsed;
+
+    if (m_elapsed > m_lifetime)
+    {
+        m_isActive = false; // 비활성화 처리
+        return;
+    }
+
+    float scale = 1.5f + 2.0f * sin(m_elapsed * XM_PI * 2.0f); // 파동처럼 터짐
+    SetScale(XMFLOAT3(scale, scale, scale));
+}

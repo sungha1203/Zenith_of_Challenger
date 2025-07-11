@@ -54,3 +54,20 @@ private:
     float m_trailElapsed = 0.0f;
     float m_trailInterval = 0.05f;
 };
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+class MagicImpactEffect : public GameObject
+{
+public:
+    MagicImpactEffect(const ComPtr<ID3D12Device>& device);
+    ~MagicImpactEffect() override = default;
+
+    virtual void Update(FLOAT timeElapsed) override;
+    void SetLifetime(float sec) { m_lifetime = sec; }
+
+private:
+    float m_elapsed = 0.0f;
+    float m_lifetime = 0.5f; // 0.5초 후 자동 삭제
+};

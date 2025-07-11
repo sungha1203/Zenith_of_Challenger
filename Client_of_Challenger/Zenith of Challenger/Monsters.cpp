@@ -281,6 +281,7 @@ void Monsters::UploadBoneMatricesToShader(const std::vector<XMMATRIX>& boneTrans
 	//		mat._41, mat._42, mat._43, mat._44);
 	//	OutputDebugStringA(debug);
 	//}
+
 	// === 실제 m_boneMatrixBuffer에 복사 ===
 	commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(
 		m_boneMatrixBuffer.Get(), D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_STATE_COPY_DEST));
@@ -456,40 +457,38 @@ void HealthBarObject::Update(FLOAT timeElapsed)
 
 void HealthBarObject::Update(FLOAT timeElapsed, const shared_ptr<Camera>& camera)
 {
-	// 체력 비율 계산
 	float ratio = m_currentHP / m_maxHP;
-	ratio = max(0.0f, min(1.0f, ratio)); // 0~1 범위로 클램프
+	ratio = max(0.0f, min(1.0f, ratio));
 
-	// 체력 비율에 따라 스케일 조정 (가로만)
-	SetScale(XMFLOAT3(ratio, 1.f, 1.f));
+	float xScale = m_isBoss ? ratio * 8.0f : ratio;
+	float yScale = m_isBoss ? 5.0f : 1.0f;
 
-	// 체력량에 따라 색상도 바꿀 수 있음 (선택)
+	SetScale(XMFLOAT3(xScale, yScale, 1.f));
+
 	if (ratio > 0.5f)
-		m_baseColor = XMFLOAT4(1.f, 0.f, 0.f, 1.f); // 초록색
+		m_baseColor = XMFLOAT4(1.f, 0.f, 0.f, 1.f);
 	else if (ratio > 0.2f)
-		m_baseColor = XMFLOAT4(0.f, 1.f, 0.f, 1.f); // 노란색
+		m_baseColor = XMFLOAT4(1.f, 1.f, 0.f, 1.f);
 	else
-		m_baseColor = XMFLOAT4(0.f, 0.f, 1.f, 1.f); // 빨간색
+		m_baseColor = XMFLOAT4(0.f, 1.f, 0.f, 1.f);
 
 	if (camera)
 	{
 		XMFLOAT3 pos = GetPosition();
+		if (m_isBoss) pos.y += 30.0f;
 
-		// 카메라 Basis 가져오기
-		XMFLOAT3 cameraRight = camera->GetU();  // 오른쪽 방향 (X)
-		XMFLOAT3 cameraUp = camera->GetV();     // 위쪽 방향 (Y)
+		XMFLOAT3 cameraRight = camera->GetU();
+		XMFLOAT3 cameraUp = camera->GetV();
 
-		// Billboard용 WorldMatrix 구성
 		XMMATRIX world =
 			XMMatrixScaling(m_scale.x, m_scale.y, m_scale.z) *
 			XMMATRIX(
 				XMLoadFloat3(&cameraRight),
 				XMLoadFloat3(&cameraUp),
-				XMVectorSet(0.f, 0.f, 1.f, 0.f), // 깊이방향 고정
+				XMVectorSet(0.f, 0.f, 1.f, 0.f),
 				XMVectorSet(pos.x, pos.y, pos.z, 1.f)
 			);
 
 		XMStoreFloat4x4(&m_worldMatrix, world);
 	}
-
 }

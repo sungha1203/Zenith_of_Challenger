@@ -116,6 +116,13 @@ public:
 	~MagicBallShader() override = default;
 };
 
+class MagicImpactShader : public Shader
+{
+public:
+	MagicImpactShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSignature);
+	~MagicImpactShader() override = default;
+};
+
 class ShadowSkinnedShader : public Shader {
 public:
 	ShadowSkinnedShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSignature);

@@ -62,6 +62,7 @@ public:
     void SpawnHealingObject(int num);
     void FireMagicBall(); //마법사 평타
     void AddTrailObject(const std::shared_ptr<GameObject>& obj);
+    void SpawnMagicImpactEffect(const XMFLOAT3& pos);
 
 private:
     shared_ptr<FBXLoader> m_fbxLoader; // FBX 로더 추가
@@ -149,4 +150,6 @@ private:
     vector<shared_ptr<GameObject>> m_healingObjects; //힐링 아이템 오브젝트
     vector<shared_ptr<MagicBall>> m_magicBalls; // 마법사 평타 구체
     vector<shared_ptr<GameObject>> m_trailObjects; //마법사 평타 트레일
+    vector<shared_ptr<GameObject>> m_effects;
+
 };
