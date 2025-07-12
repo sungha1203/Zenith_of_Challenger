@@ -88,6 +88,8 @@ public:
 	float m_prevAnimTime = -1.0f;
 
 	shared_ptr<HealthBarObject> GetHealthBar() const { return m_healthBar; }
+	void SetActive(bool active) { m_isActive = active; }
+	bool IsActive() const { return m_isActive; }
 
 private:
 
@@ -113,6 +115,10 @@ private:
 	//몬스터 죽음, 파티클 관련
 	bool m_isDead = false;
 	bool m_particleSpawned = false;
+
+	//몬스터 그림자 용
+	bool m_isActive = true; // 기본값은 활성
+
 
 	//-------------------------인게임 정보-------------------------
 

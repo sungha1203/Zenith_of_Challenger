@@ -81,7 +81,7 @@ public:
 
     std::pair<D3D12_CPU_DESCRIPTOR_HANDLE, D3D12_GPU_DESCRIPTOR_HANDLE> AllocateDescriptorHeapSlot();
     UINT GetCurrentSRVOffset() const { return m_srvHeapOffset; }
-    HWND GetHWND() const { return m_hWnd; } 
+    HWND GetHWND() const { return m_hWnd; }
 
     void WaitForGpuComplete();
 
@@ -107,7 +107,7 @@ private:
     void CreateDescriptorHeaps();
     void HandleSceneTransition();
     void CreateShadowMapResources(); // Shadow 府家胶 积己 窃荐
-    
+
     void BuildObjects();
 
     void Update();
