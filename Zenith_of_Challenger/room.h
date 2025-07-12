@@ -58,6 +58,8 @@ private:
 	std::atomic<bool>	m_skipTimer = false;		// 도전스테이지 스킵을 눌렀을 때 -> true
 	std::atomic<bool>	m_skipButton = false;		// 스킵 버튼 두번 이상 못누름
 	std::thread			m_timer;
+	std::thread			m_ZmonsterPosTimer;
+	std::atomic<bool>	m_stopMonsterPosThread = false;
 	int					m_playerNum = 0;			// 게임 시작하는 총 플레이어 인원수
 	int					m_enterClientNum = 0;		// 도전 스테이지에 입장한 클라이언트 명수 (다 들어와야지 타이머 시작)
 	int					m_enterZenithNum = 0;		// 정점스테이지 입장 대기 명수 (다 들어와야지 타이머 시작)
@@ -94,6 +96,7 @@ public:
 	void	PlusPlayerZenithReadyNum();					// 정점 스테이지 입장 대기 명수 ++1
 	void    ChallengeTimerThread();						// 도전 스테이지 타이머 스레드
 	void	ZenithTimerThread();						// 정점 스테이지 타이머 스레드
+	void	m_ZmonsterPosTimerThread();						// 정점 스테이지 몬스터 좌표 갱신 스레드
 	void	StartGame();								// 로비			-> 도전스테이지
 	void	RepairTime();								// 도전 스테이지 내 재정비 시간
 	void	StartZenithStage();							// 도전 스테이지 -> 정점스테이지
@@ -135,5 +138,5 @@ public:
 	void	InitChallengeMonsters();				// 도전 스테이지 몬스터 초기화
 	void	InitZenithMonsters();					// 정점 스테이지 몬스터 초기화(보스 몬스터 포함)
 	void	InitZMonsterFirstLastCoord();			// 정점 스테이지 몬스터 기존 루트 좌표 설정
-	void	BroadcastMonsterPosition();				// 정점 스테이지 몬스터 일정 시간 간격으로 좌표 갱신
+	void	BroadcastMonsterPosition(int idx);		// 정점 스테이지 몬스터 일정 시간 간격으로 좌표 갱신
 };

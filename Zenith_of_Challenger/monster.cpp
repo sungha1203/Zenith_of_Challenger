@@ -28,31 +28,31 @@ void Monster::SetMonster(int id, NormalMonsterType type, float x, float y, float
 	case NormalMonsterType::Mushroom:
 		m_hp = 100;
 		m_attack = 5;
-		m_speed = 2;
+		m_speed = 3;
 		m_attackspeed = 1;
 		break;
 	case NormalMonsterType::FightFly:
 		m_hp = 100;
 		m_attack = 3;
-		m_speed = 5;
+		m_speed = 8;
 		m_attackspeed = 2;
 		break;
 	case NormalMonsterType::PlantDionaea:
 		m_hp = 50;
 		m_attack = 3;
-		m_speed = 3;
+		m_speed = 2;
 		m_attackspeed = 2;
 		break;
 	case NormalMonsterType::PlantVenus:
 		m_hp = 80;
 		m_attack = 4;
-		m_speed = 2;
+		m_speed = 1;
 		m_attackspeed = 1;
 		break;
 	case NormalMonsterType::FlowerFairy:
 		m_hp = 50;
 		m_attack = 5;
-		m_speed = 2;
+		m_speed = 6;
 		m_attackspeed = 1;
 		break;
 	default:
@@ -107,9 +107,9 @@ void Monster::UpdateAggroList(const std::vector<PlayerInfo>& players)
 	for (const auto& p : players) {
 		float dx = m_x - p.x;	// 플레이어와 몬스터 x차이
 		float dz = m_z - p.z;	// 플레이어와 몬스터 z차이
-		float dist = dx * dx + dz * dz;
+		float dist = sqrtf(dx * dx + dz * dz);
 
-		if (dist <= m_aggroRange * m_aggroRange)
+		if (dist <= m_aggroRange)
 		{
 			m_AggroList.push_back({ p.clientID, dist });
 
@@ -151,18 +151,18 @@ void Monster::Move()
 		// 플레이어와 몬스터의 거리
 		float dx = targetX - m_x;
 		float dz = targetZ - m_z;
-		float dist = dx * dx + dz * dz;
+		float dist = sqrtf(dx * dx + dz * dz);
 
 		// 몬스터와 시작 지점과의 위치(너무 많이 따라가지 않게 하기 위함)
 		float dx2 = m_FirstLastCoord[0][0] - m_x;
 		float dz2 = m_FirstLastCoord[0][1] - m_z;
-		float dist2 = dx2 * dx2 + dz2 * dz2;
+		float dist2 = sqrtf(dx2 * dx2 + dz2 * dz2);
 
-		if (dist > 10.0f) {			// 어그로에 끌린 플레이어가 일정 거리 떨어지면 복귀
+		if (dist > 45.0f) {			// 어그로에 끌린 플레이어가 일정 거리 떨어지면 복귀
 			m_state = MonsterState::ReturnStart;
 			m_aggroplayer = -1;
 		}
-		else if (dist2 > 15.0f) {	// 몬스터가 플레이어를 일정 거리 따라가면 복귀
+		else if (dist2 > 60.0f) {	// 몬스터가 플레이어를 일정 거리 따라가면 복귀
 			m_state = MonsterState::ReturnStart;
 			m_aggroplayer = -1;
 		}
@@ -176,9 +176,9 @@ void Monster::Move()
 		float StartZ = m_FirstLastCoord[0][1];
 		float dx = StartX - m_x;
 		float dz = StartZ - m_z;
-		float dist = dx * dx + dz * dz;
+		float dist = sqrtf(dx * dx + dz * dz);
 
-		if (dist < 0.01f) {
+		if (dist < 1.0f) {
 			m_state = MonsterState::Idle;
 		}
 		else
@@ -207,8 +207,8 @@ void Monster::RealMove(const float x, const float z, const float X, const float 
 	dx /= len;
 	dz /= len;
 
-	m_x += dx * m_speed * 1.0f;
-	m_z += dz * m_speed * 1.0f;
+	m_x += dx * m_speed * 0.2f;
+	m_z += dz * m_speed * 0.2f;
 }
 
 // 기본 루트 왕복 이동

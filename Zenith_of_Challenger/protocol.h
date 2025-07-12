@@ -402,7 +402,7 @@ struct SC_Packet_ZMonsterMove
 	char	type;
 	int		size;
 	int		monsterID;
-	float	x, z;
+	float	x, y, z;
 };
 
 struct SC_Packet_ZMonsterAttack

@@ -76,7 +76,7 @@ private:
 
 	std::vector<AggroInfo> m_AggroList;			// 어그로 리스트
 	bool				m_aggro = false;		// 어그로 됐는지(정점스테이지에서만 사용)
-	float				m_aggroRange = 5.f;		// 어그로 범위
+	float				m_aggroRange = 40.f;	// 어그로 범위 40
 	int					m_aggroplayer = -1;		// 현재 어그로 끌린 플레이어의 id
 	float				m_FirstLastCoord[2][2];	// 기본 돌아다니는 처음과 끝 좌표
 	//float				m_StopCoord;			// 기본 이동 루트에서 어그로에 끌려 움직인 곳(어그로가 풀리면 다시 돌아갈 위치)

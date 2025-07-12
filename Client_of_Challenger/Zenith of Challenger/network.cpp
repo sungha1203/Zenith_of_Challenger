@@ -665,7 +665,6 @@ void ClientNetwork::ProcessZMonsterMove(char* buffer)
 	SC_Packet_ZMonsterMove* pkt = reinterpret_cast<SC_Packet_ZMonsterMove*>(buffer);
 
 	gGameFramework->ZmonstersCoord[pkt->monsterID].x = pkt->x;
+	gGameFramework->ZmonstersCoord[pkt->monsterID].y = pkt->y;
 	gGameFramework->ZmonstersCoord[pkt->monsterID].z = pkt->z;
-
-
 }
