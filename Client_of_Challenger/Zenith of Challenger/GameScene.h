@@ -65,6 +65,7 @@ public:
     void SpawnMagicImpactEffect(const XMFLOAT3& pos);
 
     void ActivateZenithStageMonsters();
+
 private:
     shared_ptr<FBXLoader> m_fbxLoader; // FBX 로더 추가
     shared_ptr<FBXLoader> m_ZenithLoader; // FBX 로더 추가

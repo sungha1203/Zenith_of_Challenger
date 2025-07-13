@@ -454,15 +454,6 @@ void GameScene::Update(FLOAT timeElapsed)
 
                 if (intersectX && intersectY && intersectZ)
                 {
-                    char debugMsg[256];
-                    sprintf_s(debugMsg,
-                        "[Collision Detection] Player collides with monster! Type: %s, Index: %llu\n",
-                        type.c_str(), static_cast<unsigned long long>(i));
-
-                    OutputDebugStringA(debugMsg);
-
-                    //monster->ApplyDamage(1.f);
-
                     if (monster->IsDead() && !monster->IsParticleSpawned())
                     {
                         for (int i = 0; i < 100; ++i)
@@ -570,7 +561,6 @@ void GameScene::Update(FLOAT timeElapsed)
 
             if (intersectX && intersectY && intersectZ)
             {
-                OutputDebugStringA("[Collision Detection] Player <-> Object\n");
                 m_player->SetPosition(m_player->m_prevPosition);
             }
         }
@@ -790,12 +780,7 @@ void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) con
 
             for (const auto& monster : group)
             {
-                // 1. 외곽선 Pass
-                //if (m_OutLine)
-                //{
-                //    monster->SetOutlineShader(m_shaders.at("OUTLINE"));
-                //    monster->RenderOutline(commandList);
-                //}
+                if (!monster->IsActive()) continue;
 
                 monster->SetShader(m_shaders.at("FrightFly"));
                 monster->Render(commandList);
@@ -812,12 +797,7 @@ void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) con
         // 보스 몬스터 출력
         for (const auto& boss : m_bossMonsters)
         {
-            //if (m_OutLine)
-            //{
-            //    boss->SetOutlineShader(m_shaders.at("OUTLINE"));
-            //    boss->RenderOutline(commandList);
-            //}
-
+            if (!boss || !boss->IsActive()) continue;
             boss->SetShader(m_shaders.at("FrightFly")); // 셰이더 필요시 따로 지정 가능
             boss->Render(commandList);
         }
@@ -826,17 +806,10 @@ void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) con
         for (const auto& [type, group] : m_BossStageMonsters)
             for (const auto& monster : group)
             {
-                //if (m_OutLine)
-                //{
-                //    monster->SetOutlineShader(m_shaders.at("OUTLINE"));
-                //    monster->RenderOutline(commandList);
-                //}
-
+                if (!monster->IsActive()) continue;
                 monster->SetShader(m_shaders.at("FrightFly")); // 필요 시 타입별 셰이더 적용
                 monster->Render(commandList);
             }
-
-
     }
 
     //캐릭터
