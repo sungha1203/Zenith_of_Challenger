@@ -104,6 +104,9 @@ void ClientNetwork::Receive() {
 			case SC_PACKET_MONSTERHP:
 				ProcessMonsterHP(currentBuffer);
 				break;
+			case SC_PACKET_ZMONSTERHP:
+				ProcessZMonsterHP(currentBuffer);
+				break;
 			case SC_PACKET_DROPITEM:
 				ProcessItemDrop(currentBuffer);
 				break;
@@ -133,9 +136,6 @@ void ClientNetwork::Receive() {
 				break;
 			case SC_PACKET_CMONSTERTARGET:
 				ProcessCMonsterTarget(currentBuffer);
-				break;
-			case SC_PACKET_ZMONSTERTARGET:
-				ProcessZMonsterTarget(currentBuffer);
 				break;
 			case SC_PACKET_RESPONE:
 				ProcessRespone(currentBuffer);
@@ -264,6 +264,7 @@ void ClientNetwork::ProcessUpdateCoord2Player(char* buffer)
 	}
 }
 
+// [개발중] 채팅
 void ClientNetwork::ProcessChat(char* buffer)
 {
 	SC_Packet_Chat* pkt = reinterpret_cast<SC_Packet_Chat*>(buffer);
@@ -376,6 +377,44 @@ void ClientNetwork::ProcessMonsterHP(char* buffer)
 	}
 }
 
+// [개발중] 정점 몬스터 HP 갱신
+void ClientNetwork::ProcessZMonsterHP(char* buffer)
+{
+	SC_Packet_ZMonsterHP* pkt = reinterpret_cast<SC_Packet_ZMonsterHP*>(buffer);
+	int monsterID = pkt->monsterID;
+	int hp = pkt->monsterHP;
+
+	// 1. ID → 타입 + 인덱스 해석
+	string type;
+	int index = 0;
+
+	if (monsterID >= 0 && monsterID < 5) {
+		type = "Mushroom_Dark"; index = monsterID;
+	}
+	else if (monsterID < 10) {
+
+		type = "FrightFly"; index = monsterID - ?;
+	}
+	else if (monsterID < 15) {
+		type = "Plant_Dionaea"; index = monsterID - ?;
+	}
+	else if (monsterID < 20) {
+		type = "Venus_Blue"; index = monsterID - ?;
+	}
+	else if (monsterID < 25) {
+		type = "Flower_Fairy"; index = monsterID - ?;
+	}
+	else if (monsterID == 25) {			// 보스 몬스터
+		type = "Venus_Blue"; index = monsterID - ?;
+	}
+	else {
+		OutputDebugStringA("[ERROR] Invalid Monster ID!\n");
+		return;
+	}
+
+	// 도전 몬스터랑 동일...
+}
+
 void ClientNetwork::ProcessItemDrop(char* buffer)
 {
 	SC_Packet_DropItem* pkt = reinterpret_cast<SC_Packet_DropItem*>(buffer);
@@ -420,6 +459,7 @@ void ClientNetwork::ProcessInventory(char* buffer)
 	}
 }
 
+// [개발중] 해당 클라의 장비창에 해당 아이템을 장착하기
 void ClientNetwork::ProcessInventory2Equip(char* buffer)
 {
 	SC_Packet_SelectItem* pkt = reinterpret_cast<SC_Packet_SelectItem*>(buffer);
@@ -584,7 +624,21 @@ void ClientNetwork::ProcessAnimation(char* buffer)
 			}
 		}
 		break;
+	case 7: // 전사 기본 공격
+
+		break;
+	case 8: // 마법사 기본 공격
+
+		break;
 	}
+}
+
+// [개발중] 전사, 마법사 기본 공격 및 스킬 공격 이펙트 부분
+void ClientNetwork::ProcessAttackEffect(char* buffer)
+{
+	SC_Packet_AttackEffect* pkt = reinterpret_cast<SC_Packet_AttackEffect*>(buffer);
+	pkt->targetID;				// 어떤 플레이어가 쓰는거임?  스킬 이펙트가 나오는 위치도 targetID로 알수있어
+	pkt->skill;					// 무슨 스킬??
 }
 
 void ClientNetwork::ProcessZenithState(char* buffer)
@@ -636,6 +690,7 @@ void ClientNetwork::ProcessZenithStage(char* buffer)
 	}
 }
 
+// [개발중] 도전스테이지에서 누구 쳐다보고있어?
 void ClientNetwork::ProcessCMonsterTarget(char* buffer)
 {
 	SC_Packet_CMonsterTarget* pkt = reinterpret_cast<SC_Packet_CMonsterTarget*>(buffer);
@@ -643,13 +698,7 @@ void ClientNetwork::ProcessCMonsterTarget(char* buffer)
 	pkt->targetID;
 }
 
-void ClientNetwork::ProcessZMonsterTarget(char* buffer)
-{
-	SC_Packet_ZMonsterTarget* pkt = reinterpret_cast<SC_Packet_ZMonsterTarget*>(buffer);
-	pkt->monsterID;
-	pkt->targetID;
-}
-
+// [개발중] 도전, 정점에서 피가 0이 되면 다시 태어나는 곳 지정해주기
 void ClientNetwork::ProcessRespone(char* buffer)
 {
 	SC_Packet_Respone* pkt = reinterpret_cast<SC_Packet_Respone*>(buffer);
@@ -668,3 +717,36 @@ void ClientNetwork::ProcessZMonsterMove(char* buffer)
 	gGameFramework->ZmonstersCoord[pkt->monsterID].y = pkt->y;
 	gGameFramework->ZmonstersCoord[pkt->monsterID].z = pkt->z;
 }
+
+// [개발중] HP바와 실제 체력 연동
+void ClientNetwork::ProcessPlayerHP(char* buffer)
+{
+	SC_Packet_PlayerHP* pkt = reinterpret_cast<SC_Packet_PlayerHP*>(buffer);
+	pkt->hp;
+}
+
+
+
+// [서버 개발 완료 -> 클라쪽에서 진행할 목록]
+// 밑에 패킷이라고 되어 있는건 클라에서 서버에 패킷을 보내야 되는 거 적어놓은거야.
+// "패킷 : X " 는 이미 다 처리되어 있으니까 서버에서 보낸 패킷가지고 정보 갖고 노는거야. 
+// 서버에 패킷 전달하는 방식은 전이랑 동일하고 프로토콜화 다 해놨으니까 pkt.치면 뭐 보내야는지 다 나와.
+// "패킷 : ~ " 는 클라에서 서버에 보내줘야하는게 있으니까 해결해야함 이거야~
+// 
+// 
+// 1. 정점 몬스터 렌더링 수정					/    패킷 : X					   /    예상 결과 : 모든 플레이어가 동일한 위치의 정점 몬스터가 보임
+// ->  ProcessZenithMonster함수에서 정점 몬스터 초기 좌표 받아오는 곳이야.
+// 2. ProcessZMonsterHP함수 패킷 처리			/	 패킷 : X					   /	예상 결과 : 정점 몬스터 체력 동기화, 피 깎이면 모든 플레이어가 보기에 다 깎이는게 보임
+// 3. ProcessPlayerHP함수 패킷 처리				/	 패킷 : X					   /    예상 결과 : HP바와 실제 체력 연동
+// 4. ProcessRespone함수 패킷 처리				/	 패킷 : X					   /    예상 결과 : HP가 0이 되면 시작 지점으로 이동
+// 5. 떨어져있는 힐팩 먹었을때					/    패킷 : CS_Packet_HealPack     /    예상 결과 : HP 증가
+// 6. 플레이어 스킬 이펙트						/    패킷 : CS_Packet_AttackEffect /    예상 결과 : 서버에 어떤 플레이어가 이런 스킬 썼으니까 그 자리에 이펙트좀 넣어줘라고 주문넣음 
+// -> skill(0 ~ 3)                // 0. 전사 기본 공격 이펙트 1. 전사 스킬 공격 이펙트 2. 마법사 기본 공격 이펙트 3. 마법사 스킬 공격 이펙트
+// 7. ProcessAttackEffect함수 패킷 처리			/	 패킷 : X					   /	예상 결과 : 타 플레이어의 스킬 및 기본 공격 이펙트가 보임
+// 8. ProcessCMonsterTarrget함수 패킷 처리		/    패킷 : X					   /	예상 결과 : 도전 몬스터가 가장 가까운 플레이어를 쳐다봄
+// 9. 
+// 
+//
+// 개발하다가 생각나는거 있음 더 정리해놓을게
+// [개발중]이라고 되어있는게 있을텐데 그건 서버에서 보낸 패킷 처리만 하면 되는거야
+// 졸작 마무리 화이팅!

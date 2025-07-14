@@ -27,16 +27,6 @@ ClientInfo::~ClientInfo()
 {
 }
 
-//void ClientInfo::SetRoomNum(const int room_id)
-//{
-//    m_roomNum = room_id;
-//}
-
-//void ClientInfo::SetRoomIdx(const int room_idx)
-//{
-//    m_roomidx = room_idx;
-//}
-
 void ClientInfo::SetSpawnCoord(int idx)
 {
 	switch (idx) {
@@ -192,6 +182,7 @@ void ClientInfo::AddHP(int heal)
 		m_ingameInfo.hp += heal;
 	if (m_ingameInfo.hp > 100) // 피100이 넘으면
 		m_ingameInfo.hp = 100;
+	g_network.SendPlayerHP(GetID());
 }
 
 int ClientInfo::MinusHP(int damage, int gamemode)
@@ -200,6 +191,8 @@ int ClientInfo::MinusHP(int damage, int gamemode)
 		m_ingameInfo.hp -= damage;
 	if (m_ingameInfo.hp < 0) { // 피0이 되면
 		m_ingameInfo.hp = 100;
+		g_network.SendPlayerHP(GetID());
+
 		if (gamemode == 1) {
 			// 클라에서 죽는 애니메이션 나온 뒤 3초뒤에 부활
 			m_ingameInfo.x = -172.79f;
@@ -215,5 +208,7 @@ int ClientInfo::MinusHP(int damage, int gamemode)
 			return 1;
 		}
 	}
+
+	g_network.SendPlayerHP(GetID());
 	return 0;
 }

@@ -16,13 +16,15 @@ constexpr int NAME_SIZE = 20;				// 이름 글자 수
 #define CS_PACKET_INGAMEREADY		 6			// 게임 시작 후 입장 완료
 #define CS_PACKET_STARTZENITH		 7			// 정점 스테이지 입장 버튼
 #define CS_PACKET_ZENITHREADY		 8			// 정점 스테이지 입장 완료
-#define CS_PACKET_MONSTERHP			 9			// 몬스터 HP
-#define CS_PACKET_CHAT				 10			// 인게임 속 채팅
-#define CS_PACKET_ITEMSTATE			 11			// 장비창에서 강화
-#define CS_PACKET_INVENTORY			 12			// 인벤토리에서 아이템 선택
-#define CS_PACKET_DEBUGGOLD			 13			// 디버깅용 골드 추가
-#define CS_PACKET_DEBUGITEM			 14			// 디버깅용 아이템 추가
-#define CS_PACKET_ANIMATION			 15			// 애니메이션
+#define CS_PACKET_MONSTERHP			 9			// 도전 몬스터 HP
+#define CS_PACKET_ZMONSTERHP		 10			// 정점 몬스터 HP
+#define CS_PACKET_CHAT				 11			// 인게임 속 채팅
+#define CS_PACKET_ITEMSTATE			 12			// 장비창에서 강화
+#define CS_PACKET_INVENTORY			 13			// 인벤토리에서 아이템 선택
+#define CS_PACKET_DEBUGGOLD			 14			// 디버깅용 골드 추가
+#define CS_PACKET_DEBUGITEM			 15			// 디버깅용 아이템 추가
+#define CS_PACKET_ANIMATION			 16			// 애니메이션
+#define CS_PACKET_ATTACKEFFECT		 17			// 스킬, 기본 공격 이펙트(전사, 마법사)
 
 #define CS_PACKET_SKIPCHALLENGE		 99			// 도전스테이지 스킵
 #define CS_PACKET_LOGOUT			 100		// 로그아웃
@@ -40,20 +42,23 @@ constexpr int NAME_SIZE = 20;				// 이름 글자 수
 #define SC_PACKET_ZENITHSTAGE		 110		// 도전 -> 정점
 #define SC_PACKET_INITMONSTER		 111		// 도전 몬스터 초기 설정
 #define SC_PACKET_ZENITHMONSTER		 112		// 정점 몬스터 초기 설정
-#define SC_PACKET_MONSTERHP			 113		// 몬스터 HP
-#define SC_PACKET_DROPITEM			 114		// 몬스터 드랍 아이템
-#define SC_PACKET_GOLD				 115		// 골드 현 상황 갱신
-#define SC_PACKET_INVENTORY			 116		// 인벤토리 현재 상황
-#define SC_PACKET_SELECTITEM		 117		// 인벤토리에서 무기 or 전직서 결정
-#define SC_PACKET_ITEMSTATE			 118		// 무기 강화 성공 여부
-#define SC_PACKET_CHAT				 119		// 인게임 속 채팅
-#define SC_PACKET_DEBUGITEM			 120		// 디버깅용 아이템 추가
-#define SC_PACKET_ANIMATION			 121		// 애니메이션
-#define SC_PACKET_CMONSTERTARGET	 122		// 도전스테이지 몬스터가 바라보는 방향
-#define SC_PACKET_ZMONSTERTARGET	 123		// 정점스테이지 몬스터가 바라보는 방향
-#define SC_PACKET_RESPONE			 124		// 도전or정점 죽은 후 리스폰
-#define SC_PACKET_ZMONSTERMOVE		 125		// 정점 스테이지 몬스터의 이동
-#define SC_PACKET_ZMONSTERATTACK	 126	// 정점 스테이지 몬스터의 공격
+#define SC_PACKET_MONSTERHP			 113		// 도전 몬스터 HP
+#define SC_PACKET_ZMONSTERHP         114		// 정점 몬스터 HP
+#define SC_PACKET_DROPITEM			 115		// 몬스터 드랍 아이템
+#define SC_PACKET_GOLD				 116		// 골드 현 상황 갱신
+#define SC_PACKET_INVENTORY			 117		// 인벤토리 현재 상황
+#define SC_PACKET_SELECTITEM		 118		// 인벤토리에서 무기 or 전직서 결정
+#define SC_PACKET_ITEMSTATE			 119		// 무기 강화 성공 여부
+#define SC_PACKET_CHAT				 120		// 인게임 속 채팅
+#define SC_PACKET_DEBUGITEM			 121		// 디버깅용 아이템 추가
+#define SC_PACKET_ANIMATION			 122		// 애니메이션
+#define SC_PACKET_CMONSTERTARGET	 123		// 도전스테이지 몬스터가 바라보는 방향
+#define SC_PACKET_ZMONSTERTARGET	 124		// 정점스테이지 몬스터가 바라보는 방향
+#define SC_PACKET_RESPONE			 125		// 도전or정점 죽은 후 리스폰
+#define SC_PACKET_ZMONSTERMOVE		 126		// 정점 스테이지 몬스터의 이동
+#define SC_PACKET_ZMONSTERATTACK	 127		// 정점 스테이지 몬스터의 공격
+#define SC_PACKET_ATTACKEFFECT		 128		// 스킬, 기본 공격 이펙트(전사, 마법사)
+#define SC_PACKET_PLAYERHP			 129		// 플레이어 체력 업데이트
 
 #define SC_PACKET_SKIPCHALLENGE		 998		// 도전스테이지 스킵
 #define SC_PACKET_LOGOUT			 999		// 로그아웃
@@ -136,6 +141,14 @@ struct CS_Packet_MonsterHP
 	int		damage;
 };
 
+struct CS_Packet_ZMonsterHP
+{
+	char	type;
+	int		size;
+	int		monsterID;
+	int		damage;
+};
+
 struct CS_Packet_Inventory
 {
 	char	type;
@@ -171,6 +184,13 @@ struct CS_Packet_Animaition
 	int animation;
 };
 
+struct CS_Packet_AttackEffect
+{
+	char	type;
+	int		size;
+	int		skill;   // 0. 전사 기본 공격 이펙트,    1. 전사 스킬 공격 이펙트,    2. 마법사 기본 공격 이펙트,    3. 마법사 스킬 공격 이펙트
+};
+
 struct CS_Packet_Logout
 {
 	char	type;
@@ -191,7 +211,7 @@ struct CS_Packet_Damaged
 	int		monsterID;
 };
 
-//---------------------------------------
+//--------------------------------------------------------------------------------------------------------------------------------------
 
 struct SC_Packet_LoginResponse
 {
@@ -310,6 +330,14 @@ struct SC_Packet_MonsterHP
 	int		monsterHP;
 };
 
+struct SC_Packet_ZMonsterHP
+{
+	char	type;
+	int		size;
+	int		monsterID;
+	int		monsterHP;
+};
+
 struct SC_Packet_DropItem
 {
 	char	type;
@@ -366,6 +394,14 @@ struct SC_Packet_Animaition
 	int		animation;
 };
 
+struct SC_Packet_AttackEffect
+{
+	char	type;
+	int		size;
+	int		targetID;
+	int		skill;		// 0. 전사 기본 공격 이펙트,    1. 전사 스킬 공격 이펙트,    2. 마법사 기본 공격 이펙트,    3. 마법사 스킬 공격 이펙트
+};
+
 struct SC_Packet_Chat
 {
 	char	type;
@@ -410,6 +446,13 @@ struct SC_Packet_ZMonsterAttack
 	char	type;
 	int		size;
 	bool	attack;
+};
+
+struct SC_Packet_PlayerHP
+{
+	char	type;
+	int		size;
+	int		hp;
 };
 
 #pragma pack(pop)

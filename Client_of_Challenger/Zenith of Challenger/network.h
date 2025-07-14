@@ -34,6 +34,7 @@ public:
 	void		ProcessChat(char* buffer);
 	void		ProcessStartRepairTime(char* buffer);
 	void		ProcessMonsterHP(char* buffer);
+	void		ProcessZMonsterHP(char* buffer);
 	void		ProcessItemDrop(char* buffer);
 	void		ProcessGold(char* buffer);
 	void		ProcessInventory(char* buffer);
@@ -41,12 +42,13 @@ public:
 	void		ProcessDebugItem(char* buffer);
 	void		ProcessItemState(char* buffer);
 	void		ProcessAnimation(char* buffer);
+	void		ProcessAttackEffect(char* buffer);
 	void		ProcessZenithState(char* buffer);
 	void		ProcessZenithStage(char* buffer);
 	void		ProcessCMonsterTarget(char* buffer);
-	void		ProcessZMonsterTarget(char* buffer);
 	void		ProcessRespone(char* buffer);
 	void		ProcessZMonsterMove(char* buffer);
+	void		ProcessPlayerHP(char* buffer);
 
 public:
 	SOCKET			m_clientsocket = INVALID_SOCKET;

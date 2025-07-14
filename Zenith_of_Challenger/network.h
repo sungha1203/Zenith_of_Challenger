@@ -26,12 +26,14 @@ public:
 	static void		ProcessZenithStartButton(int client_id);							// 정점 스테이지 입장 준비 완료 버튼 누른 직후
 	static void		ProcessZenithReady(int client_id, char * buffer, int length);		// 정점 스테이지 입장 성공 여부
 	static void		ProcessChat(int client_id, char * buffer, int length);				// 인게임 속 채팅
-	static void		ProcessMonsterHP(int client_id, char * buffer, int length);			// 몬스터 HP 업데이트
+	static void		ProcessMonsterHP(int client_id, char * buffer, int length);			// 도전 몬스터 HP 업데이트
+	static void		ProcessZMonsterHP(int client_id, char* buffer, int length);			// 정점 몬스터 HP 업데이트
 	static void		ProcessInventorySelcet(int client_id, char * buffer, int length);	// 인벤토리 무기 및 전직서 선택
 	static void		ProcessItemState(int client_id, char * buffer, int length);			// 강화 및 전직 설정(장비창)
 	static void		ProcessDebugGold(int client_id, char * buffer, int length);			// 디버깅용 골드 추가
 	static void		ProcessDebugItem(int client_id, char * buffer, int length);			// 디버깅용 무기 및 전직서 추가
 	static void		ProcessAnimation(int client_id, char * buffer, int length);			// 애니메이션
+	static void		ProcessAttackEffect(int client_id, char* buffer, int length);		// 스킬, 기본 공격 이펙트(전사, 마법사)
 	static void		ProcessEatHealPack(int client_id, char* buffer, int length);		// 힐팩먹기
 	static void		ProcessDamaged(int client_id, char* buffer, int length);			// 몬스터한테 피해 입었을 때
 
@@ -46,6 +48,7 @@ public:
 	static void		SendStartRepairTime(const std::vector<int> & client_id);			// 정비 시간(8분 지나고 시작의 땅으로 이동)
 	static void		SendStartZenithStage(const std::vector<int> & client_id);			// 도전 -> 정점 스테이지
 	static void		SendUpdateGold(const std::vector<int> & client_id);					// 골드 업데이트
+	static void     SendPlayerHP(int client_id);										// 플레이어 체력 업데이트				
 	static void		SendInitMonster(const std::vector<int> & client_id, const std::array<Monster, 50> & monsters);	// 도전 몬스터 초기 좌표 설정
 	static void		SendZenithMonster(const std::vector<int> & client_id, const std::array<Monster, 26> & monsters);	// 정점 몬스터 초기 좌표 설정
 

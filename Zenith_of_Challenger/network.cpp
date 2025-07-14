@@ -450,7 +450,7 @@ void Network::ProcessChat(int client_id, char * buffer, int length){
 	}
 }
 
-// 몬스터 HP 업데이트 (임시)
+// 도전 몬스터 HP 업데이트
 void Network::ProcessMonsterHP(int client_id, char * buffer, int length){
 	CS_Packet_MonsterHP * pkt = reinterpret_cast<CS_Packet_MonsterHP *>( buffer );
 
@@ -469,6 +469,7 @@ void Network::ProcessMonsterHP(int client_id, char * buffer, int length){
 		g_network.clients[other_id].do_send(pkt2);
 	}
 
+	// 도전 몬스터 잡으면 나오는 드랍 아이템
 	if(room.GetCMonster(pkt->monsterID).GetHP() == 0){
 		int dropItem = static_cast<int>( room.GetCMonster(pkt->monsterID).DropWHAT() );
 
@@ -502,6 +503,27 @@ void Network::ProcessMonsterHP(int client_id, char * buffer, int length){
 		room.AddGold(uid1(dre));
 	}
 
+}
+
+// 정점 몬스터 HP 업데이트
+void Network::ProcessZMonsterHP(int client_id, char* buffer, int length)
+{
+	CS_Packet_ZMonsterHP* pkt = reinterpret_cast<CS_Packet_ZMonsterHP*>(buffer);
+
+	int room_id = g_room_manager.GetRoomID(client_id);
+	Room& room = g_room_manager.GetRoom(room_id);
+	const auto& client = room.GetClients();
+
+	room.GetZMonster(pkt->monsterID).TakeDamage(pkt->damage);
+
+	SC_Packet_ZMonsterHP pkt2;
+	pkt2.type = SC_PACKET_ZMONSTERHP;
+	pkt2.monsterID = pkt->monsterID;
+	pkt2.monsterHP = room.GetCMonsters(pkt->monsterID).GetHP();
+	pkt2.size = sizeof(SC_Packet_ZMonsterHP);
+	for (int other_id : client) {
+		g_network.clients[other_id].do_send(pkt2);
+	}
 }
 
 // 인벤토리 무기 및 전직서 선택
@@ -629,7 +651,7 @@ void Network::ProcessAnimation(int client_id, char * buffer, int length){
 	SC_Packet_Animaition pkt2;
 	pkt2.type = SC_PACKET_ANIMATION;
 	pkt2.client_id = client_id;
-	if (pkt->animation == 4 ) { // 0 : 기본, 1 : 걷기, 2 : 달리기, 3 : 기본 공격, 4 : 직업스킬
+	if (pkt->animation == 4 ) { // 0 : 기본, 1 : 걷기, 2 : 달리기, 3 : 도전자 기본 공격, 4 : 직업스킬, 5 : 직업 기본 공격
 		if (job == 0) {			// 도전자
 			pkt2.animation = 3;
 		}
@@ -643,12 +665,49 @@ void Network::ProcessAnimation(int client_id, char * buffer, int length){
 			pkt2.animation = 6;
 		}
 	}
+	else if (pkt->animation == 5) {
+		if (job == 0) {			// 도전자
+			pkt2.animation = 3;
+		}
+		else if (job == 1) {	// 전사
+			pkt2.animation = 7;
+		}
+		else if (job == 2) {	// 마법사
+			pkt2.animation = 8;
+		}
+		else if (job == 3) {	// 힐탱커
+			//pkt2.animation = 6;
+		}
+	}
 	else {
 		pkt2.animation = pkt->animation;
 	}
 	pkt2.size = sizeof(pkt2);
 
 	for(int other_id : client){
+		g_network.clients[other_id].do_send(pkt2);
+	}
+}
+
+// 스킬, 기본 공격 이펙트(전사, 마법사)
+void Network::ProcessAttackEffect(int client_id, char* buffer, int length)
+{
+	CS_Packet_AttackEffect* pkt = reinterpret_cast<CS_Packet_AttackEffect*>(buffer);
+
+	int room_id = g_room_manager.GetRoomID(client_id);
+	Room& room = g_room_manager.GetRoom(room_id);
+	const auto& client = room.GetClients();
+
+	// 자신을 제외한 타 클라한테 투사체 혹은 스킬 이펙트 보여줌
+	SC_Packet_AttackEffect pkt2;
+	pkt2.type = SC_PACKET_ATTACKEFFECT;
+	pkt2.size = sizeof(pkt2);
+	pkt2.targetID = client_id;
+	pkt2.skill = pkt->skill;
+
+	for (int other_id : client) {
+		if (other_id == client_id)
+			continue;
 		g_network.clients[other_id].do_send(pkt2);
 	}
 }
@@ -662,6 +721,7 @@ void Network::ProcessEatHealPack(int client_id, char* buffer, int length)
 	}
 }
 
+// 플레이어 데미지
 void Network::ProcessDamaged(int client_id, char* buffer, int length)
 {
 	CS_Packet_Damaged* pkt = reinterpret_cast<CS_Packet_Damaged*>(buffer);
@@ -904,4 +964,15 @@ void Network::SendZenithMonster(const std::vector<int>& client_id, const std::ar
 			g_network.clients[id].do_send(packet);
 		}
 	}
+}
+
+// 플레이어 체력 업데이트
+void Network::SendPlayerHP(int client_id)
+{
+	SC_Packet_PlayerHP pkt;
+	pkt.type = SC_PACKET_PLAYERHP;
+	pkt.hp = g_client[client_id].GetHP();
+	pkt.size = sizeof(pkt);
+
+	g_network.clients[client_id].do_send(pkt);
 }

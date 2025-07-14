@@ -17,7 +17,7 @@ struct Weapon
 
 struct Player
 {
-	int				clientID = -1;				// 아이디
+	int				clientID = -1;			// 아이디
 	Classtype		classtype;				// 직업 
 	Weapon			weapon;					// 무기
 	int				clothes[3] = {0,0,0};	// 옷종류
@@ -73,4 +73,5 @@ public:
 	int		GetAttack() const { return m_ingameInfo.attack; }				// 캐릭터 공격력 반환
 	int		GetSpeed() const { return m_ingameInfo.speed; }					// 캐릭터 이동속도 반환
 	int		GetAttackSpeed() const { return m_ingameInfo.attackspeed; }		// 캐릭터 공격속도 반환
+	int		GetID() const { return m_ingameInfo.clientID; }					// 캐릭터 게임 아이디 반환
 };
