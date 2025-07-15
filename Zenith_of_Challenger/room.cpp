@@ -138,6 +138,14 @@ void Room::ZenithTimerThread()
 		UpdateMonsterTargetList();
 		UpdateMonsterAggroList();
 	}
+
+	if (m_timer.joinable()) {
+		m_timer.join();
+	}
+	if (m_ZmonsterPosTimer.joinable()) {
+		m_ZmonsterPosTimer.join();
+	}
+
 	EndGame();
 }
 
@@ -173,9 +181,6 @@ void Room::RepairTime()
 
 void Room::EndGame()
 {
-	if (m_timer.joinable()) {
-		m_timer.join();
-	}
 	m_IsGaming = false;
 	m_RoomState = Stage::LOBBY;
 
