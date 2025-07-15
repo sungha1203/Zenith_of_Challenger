@@ -307,6 +307,7 @@ void ClientNetwork::ProcessStartRepairTime(char* buffer)
 	}
 	//gameScene->m_ZenithEnabled = !m_ZenithEnabled;
 	gameScene->SetZenithEnabled();
+	gameScene->ActivateZenithStageMonsters();
 }
 
 void ClientNetwork::ProcessMonsterHP(char* buffer)
@@ -393,19 +394,19 @@ void ClientNetwork::ProcessZMonsterHP(char* buffer)
 	}
 	else if (monsterID < 10) {
 
-		type = "FrightFly"; index = monsterID - ?;
+		type = "FrightFly"; index = monsterID;
 	}
 	else if (monsterID < 15) {
-		type = "Plant_Dionaea"; index = monsterID - ?;
+		type = "Plant_Dionaea"; index = monsterID;
 	}
 	else if (monsterID < 20) {
-		type = "Venus_Blue"; index = monsterID - ?;
+		type = "Venus_Blue"; index = monsterID;
 	}
 	else if (monsterID < 25) {
-		type = "Flower_Fairy"; index = monsterID - ?;
+		type = "Flower_Fairy"; index = monsterID;
 	}
 	else if (monsterID == 25) {			// 보스 몬스터
-		type = "Venus_Blue"; index = monsterID - ?;
+		type = "Venus_Blue"; index = monsterID;
 	}
 	else {
 		OutputDebugStringA("[ERROR] Invalid Monster ID!\n");
