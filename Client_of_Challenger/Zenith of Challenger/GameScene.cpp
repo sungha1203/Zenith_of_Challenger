@@ -317,6 +317,13 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
         FireMagicBall();
     }
 
+    if (GetAsyncKeyState('P') & 0x8000)
+    {
+        XMFLOAT3 playerPos = m_player->GetPosition();
+        playerPos.y += 10.0f;
+        SpawnHealingEffect(playerPos);
+    }
+
 }
 
 void GameScene::Update(FLOAT timeElapsed)
@@ -732,7 +739,17 @@ void GameScene::Update(FLOAT timeElapsed)
         m_effects.end());
 
 
+    for (auto it = m_healingEffects.begin(); it != m_healingEffects.end(); )
+    {
+        auto& effect = *it;
 
+        effect->Update(timeElapsed, m_camera); // 빌보드 처리 + 위치 유지
+
+        if (effect->GetElapsed() > effect->GetLifetime())
+            it = m_healingEffects.erase(it);
+        else
+            ++it;
+    }
 
 }
 
@@ -909,6 +926,12 @@ void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) con
         effect->Render(commandList);
     }
 
+    for (const auto& Heffect : m_healingEffects)
+    {
+        Heffect->SetShader(m_shaders.at("HealingEffect"));
+        Heffect->Render(commandList);
+    }
+
     // 디버그용 그림자맵 시각화
     if (m_debugShadowShader && m_ShadowMapEnabled)
     {
@@ -1007,6 +1030,8 @@ void GameScene::BuildShaders(const ComPtr<ID3D12Device>& device,
     auto ImpactShader = make_shared<MagicImpactShader>(device, rootSignature);
     m_shaders.insert({ "Impact", ImpactShader });
 
+    auto HealEffectShader = make_shared<HealingEffectShader>(device, rootSignature);
+    m_shaders.insert({ "HealingEffect", HealEffectShader });
 }
 
 void GameScene::BuildMeshes(const ComPtr<ID3D12Device>& device,
@@ -1189,6 +1214,17 @@ void GameScene::BuildMeshes(const ComPtr<ID3D12Device>& device,
             m_meshLibrary["MagicBall"] = meshes[0];
         }
     }
+
+    auto HealingEffect = make_shared<FBXLoader>();
+    if (HealingEffect->LoadFBXModel("Model/Skill/Quad1.fbx", XMMatrixIdentity()))
+    {
+        auto meshes = HealingEffect->GetMeshes();
+        if (!meshes.empty())
+        {
+            m_meshLibrary["HealingEffect"] = meshes[0];
+        }
+    }
+
 
 
 }
@@ -2139,6 +2175,19 @@ void GameScene::SpawnMagicImpactEffect(const XMFLOAT3& pos)
     effect->SetPosition(pos);
 
     m_effects.push_back(effect);
+}
+
+void GameScene::SpawnHealingEffect(const XMFLOAT3& pos)
+{
+    auto effect = make_shared<HealingEffectObject>(m_device);
+    effect->SetMesh(m_meshLibrary["HealingEffect"]);
+    effect->SetShader(m_shaders["HealingEffect"]);
+    effect->SetLifetime(1.0f);
+    effect->SetPosition(pos);
+    // 타겟을 Player로 설정
+    effect->SetFollowTarget(m_player);
+
+    m_healingEffects.push_back(effect);
 }
 
 void GameScene::ActivateZenithStageMonsters()

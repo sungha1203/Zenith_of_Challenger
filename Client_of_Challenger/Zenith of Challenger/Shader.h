@@ -123,6 +123,14 @@ public:
 	~MagicImpactShader() override = default;
 };
 
+class HealingEffectShader : public Shader
+{
+public:
+	HealingEffectShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSignature);
+	~HealingEffectShader() override = default;
+};
+
+
 class ShadowSkinnedShader : public Shader {
 public:
 	ShadowSkinnedShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSignature);

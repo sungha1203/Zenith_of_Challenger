@@ -167,6 +167,7 @@
     <ClInclude Include="FBXLoader.h" />
     <ClInclude Include="GameFramework.h" />
     <ClInclude Include="GameScene.h" />
+    <ClInclude Include="HealingEffectObject.h" />
     <ClInclude Include="HealingObject.h" />
     <ClInclude Include="Instance.h" />
     <ClInclude Include="Lighting.h" />
@@ -212,6 +213,7 @@
     </ClCompile>
     <ClCompile Include="GameFramework.cpp" />
     <ClCompile Include="GameScene.cpp" />
+    <ClCompile Include="HealingEffectObject.cpp" />
     <ClCompile Include="HealingObject.cpp" />
     <ClCompile Include="Instance.cpp" />
     <ClCompile Include="Lighting.cpp" />
@@ -269,6 +271,12 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="HealingEffectShader.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="HealthBarShader.hlsl">
