@@ -59,6 +59,7 @@ constexpr int NAME_SIZE = 20;				// 이름 글자 수
 #define SC_PACKET_ZMONSTERATTACK	 127		// 정점 스테이지 몬스터의 공격
 #define SC_PACKET_ATTACKEFFECT		 128		// 스킬, 기본 공격 이펙트(전사, 마법사)
 #define SC_PACKET_PLAYERHP			 129		// 플레이어 체력 업데이트
+#define SC_PACKET_ENDGAME			 130		// 게임 종료
 
 #define SC_PACKET_SKIPCHALLENGE		 998		// 도전스테이지 스킵
 #define SC_PACKET_LOGOUT			 999		// 로그아웃
@@ -400,6 +401,7 @@ struct SC_Packet_AttackEffect
 	int		size;
 	int		targetID;
 	int		skill;		// 0. 전사 기본 공격 이펙트,    1. 전사 스킬 공격 이펙트,    2. 마법사 기본 공격 이펙트,    3. 마법사 스킬 공격 이펙트
+	float	angle;
 };
 
 struct SC_Packet_Chat
@@ -453,6 +455,13 @@ struct SC_Packet_PlayerHP
 	char	type;
 	int		size;
 	int		hp;
+};
+
+struct SC_Packet_EndGame
+{
+	char	type;
+	int		size;
+	int		time;
 };
 
 #pragma pack(pop)

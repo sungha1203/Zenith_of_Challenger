@@ -104,7 +104,7 @@ void Monster::UpdateAggroList(const std::vector<PlayerInfo>& players)
 	float mindist = FLT_MAX;
 	int nearID = -1;
 
-	for (const auto& p : players) {
+	for (const auto& p : players) { 
 		float dx = m_x - p.x;	// 플레이어와 몬스터 x차이
 		float dz = m_z - p.z;	// 플레이어와 몬스터 z차이
 		float dist = sqrtf(dx * dx + dz * dz);

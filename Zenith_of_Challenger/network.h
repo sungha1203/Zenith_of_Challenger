@@ -51,6 +51,7 @@ public:
 	static void     SendPlayerHP(int client_id);										// 플레이어 체력 업데이트				
 	static void		SendInitMonster(const std::vector<int> & client_id, const std::array<Monster, 50> & monsters);	// 도전 몬스터 초기 좌표 설정
 	static void		SendZenithMonster(const std::vector<int> & client_id, const std::array<Monster, 26> & monsters);	// 정점 몬스터 초기 좌표 설정
+	static void		SendEndGame(const std::vector<int>& client_id, int time);			// 게임 종료
 
 public:
 	SOCKET										m_client;								// 클라이언트 소켓

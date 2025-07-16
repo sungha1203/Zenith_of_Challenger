@@ -63,6 +63,8 @@ private:
 	int					m_playerNum = 0;			// 게임 시작하는 총 플레이어 인원수
 	int					m_enterClientNum = 0;		// 도전 스테이지에 입장한 클라이언트 명수 (다 들어와야지 타이머 시작)
 	int					m_enterZenithNum = 0;		// 정점스테이지 입장 대기 명수 (다 들어와야지 타이머 시작)
+	bool				m_bossDie = false;			// 보스 몬스터 처치
+	int					m_clearTime = 0;			// 보스 몬스터 클리어 타임
 
 	std::mutex			m_PlayerMx;
 	std::mutex			m_inventoryMx;
@@ -108,6 +110,7 @@ public:
 	void	SetStopTimer(bool check);
 	void	SetSkipTimer(bool check);
 	void	SetSkipButton(bool check);
+	void	SetClearBoss();
 
 	int		GetClientsNum() const { return m_clients.size(); }								// 이 방에 몇명있어?
 	int		GetRoomMasterID() const { return m_clients.empty() ? -1 : m_clients.front(); }	// 방장 누구야?
@@ -117,7 +120,7 @@ public:
 	bool	GetSkipButton() const { return m_skipButton;  }									// 스킵 버튼 눌렀어 안눌렀어?
 	int		GetMode() const { return (int)m_RoomState; }									// 지금 무슨 스테이지야?
 	int		GetGold() const { return m_inventory.gold; }									// 골드 얼마있어?
-	int		GetWeaponTypeNum(int num) const { return m_inventory.JobWeapons.at(static_cast<JobWeapon>(num-1));}		// 해당 무기 몇개 있어?
+	int		GetWeaponTypeNum(int num) const { return m_inventory.JobWeapons.at(static_cast<JobWeapon>(num-1));}			// 해당 무기 몇개 있어?
 	int		GetJobTypeNum(int num) const { return m_inventory.JobDocuments.at(static_cast<JobDocument>(num-4));}		// 해당 전직서 몇개 있어?
 
 	const std::vector<int>& GetClients() const { return m_clients; }						// 게임 중인 모든 클라이언트

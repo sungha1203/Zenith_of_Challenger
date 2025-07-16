@@ -38,7 +38,7 @@ float4 PSMain(PSInput input) : SV_TARGET
     float glow = saturate(1.0f - dist * dist);
 
     float pulse = 0.95f + 0.15f * sin(g_totalTime * 8.0f);
-    float3 baseColor = float3(0.3f, 1.0f, 0.3f); // ÃÊ·Ïºû
+    float3 baseColor = float3(0.1f, 1.0f, 0.1f); // ÃÊ·Ïºû
 
     float3 color = baseColor * glow * pulse * 2.0f;
 
