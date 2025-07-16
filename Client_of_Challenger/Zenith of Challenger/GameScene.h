@@ -62,12 +62,12 @@ public:
     //스킬
     void SpawnHealingObject(int num);
     void FireMagicBall(int num); //마법사 평타
-    void AddTrailObject(const std::shared_ptr<GameObject>& obj);
+    void AddTrailObject(const shared_ptr<GameObject>& obj);
     void SpawnMagicImpactEffect(const XMFLOAT3& pos);
     void SpawnHealingEffect(const XMFLOAT3& playerPos);
     void ActivateZenithStageMonsters();// 몬스터 렌더 여부 활성화
     void CheckHealingCollision();
-
+    void FireUltimateBulletRain(int num); //마법사 스킬
 private:
     shared_ptr<FBXLoader> m_fbxLoader; // FBX 로더 추가
     shared_ptr<FBXLoader> m_ZenithLoader; // FBX 로더 추가

@@ -22,29 +22,37 @@ void MagicBall::Update(FLOAT timeElapsed)
     m_aliveTime += timeElapsed;
     if (IsDead()) return;
 
-    // ----------------------------
-    // 1. 위치 이동 + 흔들림
     XMFLOAT3 pos = GetPosition();
+
+    // 기본 이동
     pos.x += m_direction.x * m_speed * timeElapsed;
     pos.y += m_direction.y * m_speed * timeElapsed;
     pos.z += m_direction.z * m_speed * timeElapsed;
 
-    float waveX = sinf(m_aliveTime * 10.0f + m_waveOffsetX);
-    float waveY = cosf(m_aliveTime * 7.0f + m_waveOffsetY);
-    float waveAmp = 0.25f;
-
-    pos.x += waveX * waveAmp;
-    pos.y += waveY * waveAmp;
+    // ---------------------------
+    // 평타(기본): 흔들림 추가
+    if (m_type == MagicBallType::Normal)
+    {
+        float waveX = sinf(m_aliveTime * 10.0f + m_waveOffsetX);
+        float waveY = cosf(m_aliveTime * 7.0f + m_waveOffsetY);
+        float waveAmp = 0.25f;
+        pos.x += waveX * waveAmp;
+        pos.y += waveY * waveAmp;
+    }
 
     SetPosition(pos);
 
-    // ----------------------------
-    // 2. 회전
-    float yaw = XMConvertToRadians(m_aliveTime * 360.0f);
-    XMMATRIX rot = XMMatrixRotationY(yaw);
+    // ---------------------------
+    // 회전: 평타만 회전
+    XMMATRIX rot = XMMatrixIdentity();
+    if (m_type == MagicBallType::Normal)
+    {
+        float yaw = XMConvertToRadians(m_aliveTime * 360.0f);
+        rot = XMMatrixRotationY(yaw);
+    }
 
-    // ----------------------------
-    // 3. 스케일 진동
+    // ---------------------------
+    // 스케일 진동
     float pulseX = 1.0f + m_scaleAmpX * sinf(m_aliveTime * m_scaleFreqX);
     float pulseY = 1.0f + m_scaleAmpY * cosf(m_aliveTime * m_scaleFreqY);
     float pulseZ = 1.0f + m_scaleAmpZ * sinf(m_aliveTime * m_scaleFreqZ);
@@ -55,13 +63,10 @@ void MagicBall::Update(FLOAT timeElapsed)
         pulseZ * m_scale.z
     );
 
-    // ----------------------------
-    // 4. 최종 변환
     XMMATRIX trn = XMMatrixTranslation(pos.x, pos.y, pos.z);
     SetWorldMatrix(scl * rot * trn);
 
-    // ----------------------------
-    // 5. 트레일 생성
+    // 트레일
     m_trailElapsed += timeElapsed;
     if (m_trailElapsed >= m_trailInterval)
     {
