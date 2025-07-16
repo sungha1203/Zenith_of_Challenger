@@ -19,11 +19,18 @@ void Room::ResetRoom()
 	m_playerNum = 0;
 	m_enterClientNum = 0;
 	m_enterZenithNum = 0;
+	m_bossDie = false;
+
+	m_stopMonsterPosThread = false;
 
 	for (auto& monster : m_Cmonsters)
 		monster.Reset();
+
 	m_CMonsterNum = 0;
-	m_timer.join();
+	m_ZMonsterNum = 0;
+	m_clearTime = 0;
+
+	m_PlayerCoord.clear();
 }
 
 void Room::AddClient(int client_id)
@@ -135,15 +142,11 @@ void Room::ZenithTimerThread()
 	for (int i = 0; i < ZENITH_TIME; ++i) {
 		std::this_thread::sleep_for(std::chrono::seconds(1));
 		if (m_stopTimer) return;
+		if (m_bossDie = true) {
+			m_clearTime = i;
+		}
 		UpdateMonsterTargetList();
 		UpdateMonsterAggroList();
-	}
-
-	if (m_timer.joinable()) {
-		m_timer.join();
-	}
-	if (m_ZmonsterPosTimer.joinable()) {
-		m_ZmonsterPosTimer.join();
 	}
 
 	EndGame();
@@ -182,7 +185,10 @@ void Room::RepairTime()
 void Room::EndGame()
 {
 	m_IsGaming = false;
-	m_RoomState = Stage::LOBBY;
+	m_stopMonsterPosThread = true;
+
+	ResetRoom();
+	g_network.SendEndGame(GetClients(), m_clearTime);
 
 	std::cout << "[INFO][" << m_room_id << "]방 게임을 종료하였습니다!\n";
 	// TODO
@@ -279,6 +285,11 @@ void Room::SetSkipTimer(bool check)
 void Room::SetSkipButton(bool check)
 {
 	m_skipButton = check;
+}
+
+void Room::SetClearBoss()
+{
+	m_bossDie = true;
 }
 
 

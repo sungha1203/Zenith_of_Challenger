@@ -640,6 +640,7 @@ void ClientNetwork::ProcessAttackEffect(char* buffer)
 	SC_Packet_AttackEffect* pkt = reinterpret_cast<SC_Packet_AttackEffect*>(buffer);
 	pkt->targetID;				// 어떤 플레이어가 쓰는거임?  스킬 이펙트가 나오는 위치도 targetID로 알수있어
 	pkt->skill;					// 무슨 스킬??
+	pkt->angle;
 }
 
 void ClientNetwork::ProcessZenithState(char* buffer)
@@ -726,6 +727,16 @@ void ClientNetwork::ProcessPlayerHP(char* buffer)
 	pkt->hp;
 }
 
+// [개발중] 보스 잡고 난 후 게임 종료
+void ClientNetwork::ProcessEndGame(char* buffer)
+{
+	SC_Packet_EndGame* pkt = reinterpret_cast<SC_Packet_EndGame*>(buffer);
+	pkt->time;		
+	// 클리어 시간 몇초인지, 만약 300초로 왔으면 실패, 300초 안으로 들어왔으면 성공
+	// 씬 전환하지말고 그냥 우리 장비창 처럼 사진으로 하고 클리어 초만 넣어두면 될거같아.
+	// 그리고 10초 뒤에 자동으로 방 선택 창으로 돌아가게 씬 전환
+}
+
 
 
 // [서버 개발 완료 -> 클라쪽에서 진행할 목록]
@@ -735,17 +746,17 @@ void ClientNetwork::ProcessPlayerHP(char* buffer)
 // "패킷 : ~ " 는 클라에서 서버에 보내줘야하는게 있으니까 해결해야함 이거야~
 // 
 // 
-// 1. 정점 몬스터 렌더링 수정					/    패킷 : X					   /    예상 결과 : 모든 플레이어가 동일한 위치의 정점 몬스터가 보임
+// 1. 정점 몬스터 렌더링 수정 [O]				/    패킷 : X					   /    예상 결과 : 모든 플레이어가 동일한 위치의 정점 몬스터가 보임
 // ->  ProcessZenithMonster함수에서 정점 몬스터 초기 좌표 받아오는 곳이야.
-// 2. ProcessZMonsterHP함수 패킷 처리			/	 패킷 : X					   /	예상 결과 : 정점 몬스터 체력 동기화, 피 깎이면 모든 플레이어가 보기에 다 깎이는게 보임
-// 3. ProcessPlayerHP함수 패킷 처리				/	 패킷 : X					   /    예상 결과 : HP바와 실제 체력 연동
-// 4. ProcessRespone함수 패킷 처리				/	 패킷 : X					   /    예상 결과 : HP가 0이 되면 시작 지점으로 이동
-// 5. 떨어져있는 힐팩 먹었을때					/    패킷 : CS_Packet_HealPack     /    예상 결과 : HP 증가
-// 6. 플레이어 스킬 이펙트						/    패킷 : CS_Packet_AttackEffect /    예상 결과 : 서버에 어떤 플레이어가 이런 스킬 썼으니까 그 자리에 이펙트좀 넣어줘라고 주문넣음 
+// 2. ProcessZMonsterHP함수 패킷 처리 []		/	 패킷 : X					   /	예상 결과 : 정점 몬스터 체력 동기화, 피 깎이면 모든 플레이어가 보기에 다 깎이는게 보임
+// 3. ProcessPlayerHP함수 패킷 처리	 []			/	 패킷 : X					   /    예상 결과 : HP바와 실제 체력 연동
+// 4. ProcessRespone함수 패킷 처리	[]			/	 패킷 : X					   /    예상 결과 : HP가 0이 되면 시작 지점으로 이동
+// 5. 떨어져있는 힐팩 먹었을때	[]				/    패킷 : CS_Packet_HealPack     /    예상 결과 : HP 증가
+// 6. 플레이어 스킬 이펙트	[]					/    패킷 : CS_Packet_AttackEffect /    예상 결과 : 서버에 어떤 플레이어가 이런 스킬 썼으니까 그 자리에 이펙트좀 넣어줘라고 주문넣음 
 // -> skill(0 ~ 3)                // 0. 전사 기본 공격 이펙트 1. 전사 스킬 공격 이펙트 2. 마법사 기본 공격 이펙트 3. 마법사 스킬 공격 이펙트
-// 7. ProcessAttackEffect함수 패킷 처리			/	 패킷 : X					   /	예상 결과 : 타 플레이어의 스킬 및 기본 공격 이펙트가 보임
-// 8. ProcessCMonsterTarrget함수 패킷 처리		/    패킷 : X					   /	예상 결과 : 도전 몬스터가 가장 가까운 플레이어를 쳐다봄
-// 9. 
+// 7. ProcessAttackEffect함수 패킷 처리	[]		/	 패킷 : X					   /	예상 결과 : 타 플레이어의 스킬 및 기본 공격 이펙트가 보임
+// 8. ProcessCMonsterTarrget함수 패킷 처리	[]	/    패킷 : X					   /	예상 결과 : 도전 몬스터가 가장 가까운 플레이어를 쳐다봄
+// 9. ProcessEndGame함수 패킷 처리	[]			/    패킷 : X					   /	예상 결과 : 보스 몬스터를 잡았을 때 혹은 300초가 지나면 게임 클리어 현황 나오고 10초 뒤에 자동으로 방 선택창으로 돌아감.
 // 
 //
 // 개발하다가 생각나는거 있음 더 정리해놓을게

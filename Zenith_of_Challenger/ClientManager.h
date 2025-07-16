@@ -73,4 +73,5 @@ public:
 	int		GetAttack() const { return m_ingameInfo.attack; }				// 캐릭터 공격력 반환
 	int		GetSpeed() const { return m_ingameInfo.speed; }					// 캐릭터 이동속도 반환
 	int		GetAttackSpeed() const { return m_ingameInfo.attackspeed; }		// 캐릭터 공격속도 반환
+	float	GetAngle() const { return m_ingameInfo.angle; }					// 캐릭터 방향 반환
 };

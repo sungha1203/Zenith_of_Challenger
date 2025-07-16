@@ -524,6 +524,10 @@ void Network::ProcessZMonsterHP(int client_id, char* buffer, int length)
 	for (int other_id : client) {
 		g_network.clients[other_id].do_send(pkt2);
 	}
+
+	if (pkt->monsterID = 25 && room.GetCMonsters(pkt->monsterID).GetHP() == 0) {
+		room.SetClearBoss();
+	}
 }
 
 // 인벤토리 무기 및 전직서 선택
@@ -704,6 +708,7 @@ void Network::ProcessAttackEffect(int client_id, char* buffer, int length)
 	pkt2.size = sizeof(pkt2);
 	pkt2.targetID = client_id;
 	pkt2.skill = pkt->skill;
+	pkt2.angle = g_client[client_id].GetAngle();
 
 	for (int other_id : client) {
 		if (other_id == client_id)
@@ -975,4 +980,18 @@ void Network::SendPlayerHP(int client_id)
 	pkt.size = sizeof(pkt);
 
 	g_network.clients[client_id].do_send(pkt);
+}
+
+// 결과 보고 및 게임 종료
+void Network::SendEndGame(const std::vector<int>& client_id, int time)
+{
+	SC_Packet_EndGame pkt;
+	pkt.size = sizeof(pkt);
+	pkt.time = time;
+
+	for (int id : client_id) {
+		if (g_network.clients[id].m_used) {
+			g_network.clients[id].do_send(pkt);
+		}
+	}
 }
