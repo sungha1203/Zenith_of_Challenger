@@ -119,8 +119,6 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
                 if (monster) monster->SetDrawBoundingBox(m_debugDrawEnabled);
             }
         }
-
-        OutputDebugStringA(m_debugDrawEnabled ? "[Debug] AABB ON\n" : "[Debug] AABB OFF\n");
     }
 
     if (GetAsyncKeyState(VK_F2) & 0x0001) {
@@ -292,14 +290,19 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
             // 
         }
         else if (m_job == 2) { // 너가 마법사라면
-            //
+            FireMagicBall(2);
+            {
+                CS_Packet_Animaition pkt;
+                pkt.type = CS_PACKET_ANIMATION;
+                pkt.animation = 8;
+                pkt.size = sizeof(pkt);
+
+                gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
+            }
         }
         else if (m_job == 3) { // 너가 힐탱커라면
             SpawnHealingObject(2);
         }
-
-        //SpawnHealingObject(2);
-
         // 다른 플레이어들한테 내가 스킬 뭐 쓰는지 보내주기
         {
             CS_Packet_Animaition pkt;
@@ -314,14 +317,14 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
 
     if (GetAsyncKeyState('C') & 0x0001)
     {
-        FireMagicBall();
+        FireMagicBall(2);
     }
 
     if (GetAsyncKeyState('P') & 0x8000)
     {
-        XMFLOAT3 playerPos = m_player->GetPosition();
-        playerPos.y += 10.0f;
-        SpawnHealingEffect(playerPos);
+        //XMFLOAT3 playerPos = m_player->GetPosition();
+        //playerPos.y += 10.0f;
+        //SpawnHealingEffect(playerPos);
     }
 
 }
@@ -715,7 +718,6 @@ void GameScene::Update(FLOAT timeElapsed)
 
                 if (intersectX && intersectY && intersectZ)
                 {
-                    OutputDebugStringA("[Collision] MagicBall <-> Monster\n");
 
                     monster->ApplyDamage(1.0f); // 데미지 지정
 
@@ -728,7 +730,7 @@ void GameScene::Update(FLOAT timeElapsed)
         }
     }
 
-    //평타 이펙트
+    //마법사 평타 이펙트
     for (auto& effect : m_effects)
     {
         if (effect->IsActive())
@@ -750,6 +752,8 @@ void GameScene::Update(FLOAT timeElapsed)
         else
             ++it;
     }
+
+    CheckHealingCollision();
 
 }
 
@@ -2095,6 +2099,8 @@ void GameScene::SpawnHealingObject(int num)
         auto playerPos = m_player->GetPosition();
         playerPos.y += 10.f; // 지면 위로 살짝 띄움
         healing->SetPosition(playerPos);
+        healing->m_ownerJob = m_job; // 내 직업 저장
+
     }
     else {  // 다른 플레이어
         auto playerPos = otherpos[num];
@@ -2106,10 +2112,15 @@ void GameScene::SpawnHealingObject(int num)
     healing->SetScale(XMFLOAT3(0.05f, 0.05f, 0.05f));
     healing->SetRotationY(0.0f);
 
+    BoundingBox healingBox;
+    healingBox.Center = XMFLOAT3{ 0.f, 0.0f, 0.f };
+    healingBox.Extents = { 3.0f, 10.0f, 3.0f }; // 스케일링된 값
+    healing->SetBoundingBox(healingBox);
+
     m_healingObjects.push_back(healing);
 }
 
-void GameScene::FireMagicBall()
+void GameScene::FireMagicBall(int num)
 {
     if (m_meshLibrary.find("MagicBall") == m_meshLibrary.end()) return;
 
@@ -2117,10 +2128,23 @@ void GameScene::FireMagicBall()
     const float maxAngleOffset = XMConvertToRadians(3.0f); // 최대 ±3도 퍼짐
     const float speed = 50.0f;
 
-    XMFLOAT3 playerPos = m_player->GetPosition();
-    playerPos.y += 8.0f;
+    // 발사 기준 위치
+    XMFLOAT3 playerPos;
+    XMFLOAT3 forward;
 
-    XMFLOAT3 forward = Vector3::Normalize(m_player->GetForward());
+    if (num == 2) // 본인
+    {
+        playerPos = m_player->GetPosition();
+        forward = Vector3::Normalize(m_player->GetForward());
+    }
+    else // 다른 플레이어
+    {
+        playerPos = otherpos[num];
+        forward = { 0.f, 0.f, 1.f }; // 다른 플레이어가 바라보는 방향 정보 필요
+    }
+
+    playerPos.y += 8.0f; // 발사 높이
+
     XMVECTOR forwardVec = XMLoadFloat3(&forward);
 
     for (int i = 0; i < numShots; ++i)
@@ -2144,7 +2168,6 @@ void GameScene::FireMagicBall()
         float offsetX = Random::Range(0.0f, XM_2PI);
         float offsetY = Random::Range(0.0f, XM_2PI);
         ball->SetWaveOffsets(offsetX, offsetY);
-
 
         float freqX = Random::Range(5.0f, 8.0f);
         float freqY = Random::Range(6.0f, 9.0f);
@@ -2174,20 +2197,24 @@ void GameScene::SpawnMagicImpactEffect(const XMFLOAT3& pos)
     effect->SetLifetime(0.5f);
     effect->SetPosition(pos);
 
-    m_effects.push_back(effect);
+	m_effects.push_back(effect);
 }
 
-void GameScene::SpawnHealingEffect(const XMFLOAT3& pos)
+void GameScene::SpawnHealingEffect(const XMFLOAT3& playerPos)
 {
-    auto effect = make_shared<HealingEffectObject>(m_device);
-    effect->SetMesh(m_meshLibrary["HealingEffect"]);
-    effect->SetShader(m_shaders["HealingEffect"]);
-    effect->SetLifetime(1.0f);
-    effect->SetPosition(pos);
-    // 타겟을 Player로 설정
-    effect->SetFollowTarget(m_player);
+	for (int i = 0; i < 10; ++i) {
 
-    m_healingEffects.push_back(effect);
+		auto effect = make_shared<HealingEffectObject>(m_device);
+		effect->SetMesh(m_meshLibrary["HealingEffect"]);
+		effect->SetShader(m_shaders["HealingEffect"]);
+		effect->SetLifetime(1.0f);
+		effect->SetFollowTarget(m_player);
+
+		effect->SetPosition(XMFLOAT3(playerPos.x, playerPos.y + 10.f, playerPos.z));
+		effect->InitializeParticles();
+
+		m_healingEffects.push_back(effect);
+	}
 }
 
 void GameScene::ActivateZenithStageMonsters()
@@ -2203,6 +2230,96 @@ void GameScene::ActivateZenithStageMonsters()
     for (auto& boss : m_bossMonsters)
     {
         boss->SetActive(true);
+    }
+}
+
+void GameScene::CheckHealingCollision()
+{
+    const BoundingBox& playerBox = m_player->GetBoundingBox();
+    const XMFLOAT3& playerCenter = playerBox.Center;
+    const XMFLOAT3& playerExtent = playerBox.Extents;
+    XMFLOAT3 playerPos = m_player->GetPosition();
+
+    XMFLOAT3 playerCenterWorld = {
+        playerCenter.x,
+        playerCenter.y,
+        playerCenter.z
+    };
+
+    for (auto it = m_healingObjects.begin(); it != m_healingObjects.end(); )
+    {
+        const auto& healing = *it;
+        const BoundingBox& healBox = healing->GetBoundingBox();
+        const XMFLOAT3& healCenter = healBox.Center;
+        const XMFLOAT3& healExtent = healBox.Extents;
+        XMFLOAT3 healPos = healing->GetPosition();
+
+        XMFLOAT3 healCenterWorld = {
+            healPos.x + healCenter.x,
+            healPos.y + healCenter.y,
+            healPos.z + healCenter.z
+        };
+
+        bool intersectX = abs(playerCenterWorld.x - healCenterWorld.x) <= (playerExtent.x + healExtent.x);
+        bool intersectY = abs(playerCenterWorld.y - healCenterWorld.y) <= (playerExtent.y + healExtent.y);
+        bool intersectZ = abs(playerCenterWorld.z - healCenterWorld.z) <= (playerExtent.z + healExtent.z);
+
+        bool isSelfCollision = intersectX && intersectY && intersectZ;
+
+        // === [2] OtherPlayer 충돌 검사 ===
+        bool isOtherCollision = false;
+        for (int i = 0; i < 2; ++i)
+        {
+            if (!m_Otherplayer[i]) continue;
+
+            const BoundingBox& otherBox = m_Otherplayer[i]->GetBoundingBox();
+            const XMFLOAT3& otherCenter = otherBox.Center;
+            const XMFLOAT3& otherExtent = otherBox.Extents;
+            XMFLOAT3 otherPos = m_Otherplayer[i]->GetPosition();
+
+            XMFLOAT3 otherCenterWorld = {
+                otherCenter.x,
+                otherCenter.y,
+                otherCenter.z
+            };
+
+            bool oX = abs(otherCenterWorld.x - healCenterWorld.x) <= (otherExtent.x + healExtent.x);
+            bool oY = abs(otherCenterWorld.y - healCenterWorld.y) <= (otherExtent.y + healExtent.y);
+            bool oZ = abs(otherCenterWorld.z - healCenterWorld.z) <= (otherExtent.z + healExtent.z);
+
+            if (oX && oY && oZ)
+            {
+                isOtherCollision = true;
+
+                // 내가 힐탱커고 힐팩도 힐탱커가 만든 거라면 → 내 화면에서 이펙트만 생성
+                if (m_job == 3 && healing->m_ownerJob == 3)
+                {
+                    SpawnHealingEffect(otherPos); // 내가 안 먹어도 이펙트만 생성
+                }
+
+                it = m_healingObjects.erase(it);
+                goto next_heal; // 바깥 반복으로 이동
+            }
+        }
+
+        // 본인 충돌 처리
+        if (isSelfCollision)
+        {
+            // 내가 힐탱커고, 힐팩도 힐탱커가 만든 거라면 무시
+            if (m_job == 3 && healing->m_ownerJob == 3)
+            {
+                ++it;
+                continue;
+            }
+            SpawnHealingEffect(m_player->GetPosition());
+            it = m_healingObjects.erase(it);
+        }
+        else
+        {
+            ++it;
+        }
+
+    next_heal:;
     }
 }
 
