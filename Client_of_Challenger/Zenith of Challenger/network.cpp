@@ -629,7 +629,23 @@ void ClientNetwork::ProcessAnimation(char* buffer)
 
 		break;
 	case 8: // 마법사 기본 공격
+		auto currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
+		auto gameScene = std::dynamic_pointer_cast<GameScene>(currentScene);
 
+		if (!gameScene) break;
+
+		// 플레이어 0
+		if (pkt->client_id == currentScene->otherid[0])
+		{
+			currentScene->m_Otherplayer[0]->m_CurrentAnim = pkt->animation;
+			gameScene->FireMagicBall(0); //0번 플레이어 기준 발사
+		}
+		// 플레이어 1
+		else if (pkt->client_id == currentScene->otherid[1])
+		{
+			currentScene->m_Otherplayer[1]->m_CurrentAnim = pkt->animation;
+			gameScene->FireMagicBall(1); //1번 플레이어 기준 발사
+		}
 		break;
 	}
 }

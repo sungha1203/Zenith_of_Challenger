@@ -61,11 +61,12 @@ public:
 
     //스킬
     void SpawnHealingObject(int num);
-    void FireMagicBall(); //마법사 평타
+    void FireMagicBall(int num); //마법사 평타
     void AddTrailObject(const std::shared_ptr<GameObject>& obj);
     void SpawnMagicImpactEffect(const XMFLOAT3& pos);
-    void SpawnHealingEffect(const XMFLOAT3& pos);
+    void SpawnHealingEffect(const XMFLOAT3& playerPos);
     void ActivateZenithStageMonsters();// 몬스터 렌더 여부 활성화
+    void CheckHealingCollision();
 
 private:
     shared_ptr<FBXLoader> m_fbxLoader; // FBX 로더 추가
@@ -151,8 +152,9 @@ private:
 
     //스킬
     vector<shared_ptr<GameObject>> m_healingObjects; //힐링 아이템 오브젝트
+    vector<shared_ptr<HealingEffectObject>> m_healingEffects; //힐팩 습득 시 이펙트
+
     vector<shared_ptr<MagicBall>> m_magicBalls; // 마법사 평타 구체
     vector<shared_ptr<GameObject>> m_trailObjects; //마법사 평타 트레일
     vector<shared_ptr<GameObject>> m_effects; //마법사 스킬, 평타 피격시 이펙트
-    vector<shared_ptr<HealingEffectObject>> m_healingEffects; //힐팩 습득 시 이펙트
 };

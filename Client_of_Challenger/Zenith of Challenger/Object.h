@@ -161,6 +161,10 @@ public:
 	void MarkDead() { m_isDead = true; }
 	bool IsDead() const { return m_isDead; }
 
+	BoundingBox GetWorldBoundingBox() const;
+
+	int m_ownerJob = 0;
+
 protected:
 	shared_ptr<MeshBase> m_mesh;
 	shared_ptr<Texture> m_texture;

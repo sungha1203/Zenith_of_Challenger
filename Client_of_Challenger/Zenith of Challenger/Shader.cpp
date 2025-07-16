@@ -889,9 +889,9 @@ MagicImpactShader::MagicImpactShader(const ComPtr<ID3D12Device>& device, const C
 HealingEffectShader::HealingEffectShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSignature)
 {
 	std::vector<D3D12_INPUT_ELEMENT_DESC> inputLayout = {
-	{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,  D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-	{ "NORMAL",   0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-	{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,    0, 24, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,  D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "NORMAL",   0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,    0, 24, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
 	};
 
 #if defined(_DEBUG)
@@ -901,13 +901,9 @@ HealingEffectShader::HealingEffectShader(const ComPtr<ID3D12Device>& device, con
 #endif
 
 	ComPtr<ID3DBlob> vs, ps, errors;
-
-	HRESULT hr1 = D3DCompileFromFile(
-		TEXT("HealingEffectShader.hlsl"), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE,
+	HRESULT hr1 = D3DCompileFromFile(TEXT("HealingEffectShader.hlsl"), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE,
 		"VSMain", "vs_5_1", compileFlags, 0, &vs, &errors);
-
-	HRESULT hr2 = D3DCompileFromFile(
-		TEXT("HealingEffectShader.hlsl"), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE,
+	HRESULT hr2 = D3DCompileFromFile(TEXT("HealingEffectShader.hlsl"), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE,
 		"PSMain", "ps_5_1", compileFlags, 0, &ps, &errors);
 
 	// ¾ËÆÄ ºí·»µù ¼³Á¤
@@ -921,13 +917,19 @@ HealingEffectShader::HealingEffectShader(const ComPtr<ID3D12Device>& device, con
 	blendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
 	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
 
+	// ±íÀÌ ½ºÅÙ½Ç ¼³Á¤ (Z-Write ²û)
+	D3D12_DEPTH_STENCIL_DESC depthStencilDesc = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
+	depthStencilDesc.DepthEnable = TRUE; // ±íÀÌ Å×½ºÆ®´Â À¯Áö
+	depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO; // ±íÀÌ ±â·Ï X
+	depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS;
+
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC desc{};
 	desc.InputLayout = { inputLayout.data(), (UINT)inputLayout.size() };
 	desc.pRootSignature = rootSignature.Get();
 	desc.VS = { vs->GetBufferPointer(), vs->GetBufferSize() };
 	desc.PS = { ps->GetBufferPointer(), ps->GetBufferSize() };
 	desc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
-	desc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
+	desc.DepthStencilState = depthStencilDesc;
 	desc.BlendState = blendDesc;
 	desc.SampleMask = UINT_MAX;
 	desc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;

@@ -597,6 +597,18 @@ void GameObject::RenderBoundingBoxWithoutScale(const ComPtr<ID3D12GraphicsComman
     m_debugBoxMesh->Render(commandList);
 }
 
+BoundingBox GameObject::GetWorldBoundingBox() const
+{
+    BoundingBox worldBox = m_boundingBox;
+    XMFLOAT3 pos = m_position;
+
+    worldBox.Center.x += pos.x;
+    worldBox.Center.y += pos.y;
+    worldBox.Center.z += pos.z;
+
+    return worldBox;
+}
+
 
 RotatingObject::RotatingObject() : InstanceObject()
 {
