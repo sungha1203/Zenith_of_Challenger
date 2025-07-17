@@ -460,11 +460,12 @@ void ClientNetwork::ProcessInventory(char* buffer)
 	}
 }
 
-// [개발중] 해당 클라의 장비창에 해당 아이템을 장착하기
+// [개발중] 해당 클라의 장비창에 해당 아이템을 장착하기 / 상대방 직업 및 장착 무기 패킷
 void ClientNetwork::ProcessInventory2Equip(char* buffer)
 {
 	SC_Packet_SelectItem* pkt = reinterpret_cast<SC_Packet_SelectItem*>(buffer);
-	pkt->item;
+	pkt->clientID;			// 내껀지 다른 사람껀지
+	pkt->item;				// 전직서인지 무기인지
 }
 
 void ClientNetwork::ProcessDebugItem(char* buffer)

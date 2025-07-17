@@ -370,6 +370,7 @@ struct SC_Packet_SelectItem
 	char	type;
 	int		size;
 	int		item;
+	int		clientID;
 };
 
 struct SC_Packet_ItemState
