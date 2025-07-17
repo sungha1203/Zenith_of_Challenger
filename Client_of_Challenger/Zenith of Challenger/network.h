@@ -26,6 +26,7 @@ public:
 	void		ProcessLogin(char* buffer);
 	void		ProcessRoomjoin(char* buffer);
 	void		ProcessWhoismyteam(char* buffer);
+	void		ProcessCustomize(char* buffer);
 	void		ProcessGamestart(char* buffer);
 	void		ProcessInitialstate(char* buffer);
 	void		ProcessInitMonster(char* buffer);

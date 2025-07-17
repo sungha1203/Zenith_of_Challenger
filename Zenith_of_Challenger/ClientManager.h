@@ -20,7 +20,7 @@ struct Player
 	int				clientID = -1;			// 아이디
 	Classtype		classtype;				// 직업 
 	Weapon			weapon;					// 무기
-	int				clothes[3] = {0,0,0};	// 옷종류
+	int				clothes = 0;			// 옷종류
 	int				hp;						// 체력
 	int				attack;					// 공격력
 	int				speed;					// 이동 속도
@@ -46,7 +46,7 @@ public:
 	ClientInfo(int client_id);		// 초기 캐릭터 설정
 	~ClientInfo();
 
-	void	SetClothes(const int clothes[3]);								// 옷 선택
+	void	SetClothes(const int clothes);								// 옷 선택
 	void	SetJobType(int JobNum);											// 직업 선택
 	void	SetWeapon(int weaponNum);										// 무기 선택
 	void	SetWeaponGrade();												// 무기 강화

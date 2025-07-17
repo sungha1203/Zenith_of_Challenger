@@ -344,8 +344,21 @@ void Network::ProcessRoomJoin(int client_id, char* buffer, int length) {
 
 // 커스터 마이징
 void Network::ProcessCustomize(int client_id, char* buffer, int length) {
+	int room_id = g_room_manager.GetRoomID(client_id);
+	Room& room = g_room_manager.GetRoom(room_id);
+	const auto& client = room.GetClients();
+
 	CS_Packet_Customize* pkt = reinterpret_cast<CS_Packet_Customize*>(buffer);
 	g_client[client_id].SetClothes(pkt->clothes);
+
+	SC_Packet_Customize pkt2;
+	pkt2.type = SC_PACKET_CUSTOMIZE;
+	pkt2.clientID = client_id;
+	pkt2.clothes = pkt->clothes;
+
+	for (int other_id : client) {
+		g_network.clients[other_id].do_send(pkt2);
+	}
 }
 
 // 인게임 내 플레이어들한테 업데이트
@@ -950,12 +963,6 @@ void Network::SendInitMonster(const std::vector<int>& client_id, const std::arra
 			g_network.clients[id].do_send(packet);
 		}
 	}
-	//for(int monster_id = 0; monster_id < monsters.size(); ++monster_id){
-	//	std::cout << monster_id << ": " <<
-	//		packet.monsters[monster_id].x << ", " <<
-	//		packet.monsters[monster_id].y << ", " <<
-	//		packet.monsters[monster_id].z << std::endl;
-	//}
 }
 
 // 정점 몬스터 좌표 초기 설정

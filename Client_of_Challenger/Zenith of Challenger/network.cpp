@@ -83,6 +83,9 @@ void ClientNetwork::Receive() {
 			case SC_PACKET_WHOISMYTEAM:
 				ProcessWhoismyteam(currentBuffer);
 				break;
+			case SC_PACKET_CUSTOMIZE:
+				ProcessCustomize(currentBuffer);
+				break;
 			case SC_PACKET_GAMESTART:
 				ProcessGamestart(currentBuffer);
 				break;
@@ -186,6 +189,14 @@ void ClientNetwork::ProcessWhoismyteam(char* buffer)
 				gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[1] = pkt->teamID[i];
 		}
 	}
+}
+
+// [개발중] 커스터마이징
+void ClientNetwork::ProcessCustomize(char* buffer)
+{
+	SC_Packet_Customize* pkt = reinterpret_cast<SC_Packet_Customize*>(buffer);
+	pkt->clientID;				// 내 옷이야? 니 옷이야?
+	pkt->clothes;				// 무슨 옷인지
 }
 
 void ClientNetwork::ProcessGamestart(char* buffer)
@@ -763,19 +774,21 @@ void ClientNetwork::ProcessEndGame(char* buffer)
 // "패킷 : ~ " 는 클라에서 서버에 보내줘야하는게 있으니까 해결해야함 이거야~
 // 
 // 
-// 1. 정점 몬스터 렌더링 수정 [O]				/    패킷 : X					   /    예상 결과 : 모든 플레이어가 동일한 위치의 정점 몬스터가 보임
+// 1.  정점 몬스터 렌더링 수정				[O]	/    패킷 : X					   /    예상 결과 : 모든 플레이어가 동일한 위치의 정점 몬스터가 보임
 // ->  ProcessZenithMonster함수에서 정점 몬스터 초기 좌표 받아오는 곳이야.
-// 2. ProcessZMonsterHP함수 패킷 처리 []		/	 패킷 : X					   /	예상 결과 : 정점 몬스터 체력 동기화, 피 깎이면 모든 플레이어가 보기에 다 깎이는게 보임
-// 3. ProcessPlayerHP함수 패킷 처리	 []			/	 패킷 : X					   /    예상 결과 : HP바와 실제 체력 연동
-// 4. ProcessRespone함수 패킷 처리	[]			/	 패킷 : X					   /    예상 결과 : HP가 0이 되면 시작 지점으로 이동
-// 5. 떨어져있는 힐팩 먹었을때	[]				/    패킷 : CS_Packet_HealPack     /    예상 결과 : HP 증가
-// 6. 플레이어 스킬 이펙트	[]					/    패킷 : CS_Packet_AttackEffect /    예상 결과 : 서버에 어떤 플레이어가 이런 스킬 썼으니까 그 자리에 이펙트좀 넣어줘라고 주문넣음 
-// -> skill(0 ~ 3)                // 0. 전사 기본 공격 이펙트 1. 전사 스킬 공격 이펙트 2. 마법사 기본 공격 이펙트 3. 마법사 스킬 공격 이펙트
-// 7. ProcessAttackEffect함수 패킷 처리	[]		/	 패킷 : X					   /	예상 결과 : 타 플레이어의 스킬 및 기본 공격 이펙트가 보임
-// 8. ProcessCMonsterTarrget함수 패킷 처리	[]	/    패킷 : X					   /	예상 결과 : 도전 몬스터가 가장 가까운 플레이어를 쳐다봄
-// 9. ProcessEndGame함수 패킷 처리	[]			/    패킷 : X					   /	예상 결과 : 보스 몬스터를 잡았을 때 혹은 300초가 지나면 게임 클리어 현황 나오고 10초 뒤에 자동으로 방 선택창으로 돌아감.
-// 
+// 2.  ProcessZMonsterHP함수 패킷 처리		[X]	/	 패킷 : X					   /	예상 결과 : 정점 몬스터 체력 동기화, 피 깎이면 모든 플레이어가 보기에 다 깎이는게 보임
+// 3.  ProcessPlayerHP함수 패킷 처리		[X]	/	 패킷 : X					   /    예상 결과 : HP바와 실제 체력 연동
+// 4.  ProcessRespone함수 패킷 처리			[X]	/	 패킷 : X					   /    예상 결과 : HP가 0이 되면 시작 지점으로 이동
+// 5.  떨어져있는 힐팩 먹었을때				[X]	/    패킷 : CS_Packet_HealPack     /    예상 결과 : HP 증가
+// 6.  플레이어 스킬 이펙트					[X]	/    패킷 : CS_Packet_AttackEffect /    예상 결과 : 서버에 어떤 플레이어가 이런 스킬 썼으니까 그 자리에 이펙트좀 넣어줘라고 주문넣음 
+// ->  skill(0 ~ 3)       // 0. 전사 기본 공격 이펙트 1. 전사 스킬 공격 이펙트 2. 마법사 기본 공격 이펙트 3. 마법사 스킬 공격 이펙트
+// 7.  ProcessAttackEffect함수 패킷 처리	[X]	/	 패킷 : X					   /	예상 결과 : 타 플레이어의 스킬 및 기본 공격 이펙트가 보임
+// 8.  ProcessCMonsterTarrget함수 패킷 처리	[X]	/    패킷 : X					   /	예상 결과 : 도전 몬스터가 가장 가까운 플레이어를 쳐다봄
+// 9.  ProcessEndGame함수 패킷 처리			[X]	/    패킷 : X					   /	예상 결과 : 보스 몬스터를 잡았을 때 혹은 300초가 지나면 게임 클리어 현황 나오고 10초 뒤에 자동으로 방 선택창으로 돌아감.
+// 10. 서버에 뭐 입을건지 패킷 보내주기		[X]	/    패킷 : CS_Packet_Customize	   /	예상 결과 : 내가 무슨 옷을 입을건지 클릭하면 서버에 보내짐.
+// 11. ProcessCustomize함수 패킷 처리		[X] /    패킷 : X					   /	예상 결과 : 각자 커스터마이징한 옷 입음.
 //
+// 
 // 개발하다가 생각나는거 있음 더 정리해놓을게
 // [개발중]이라고 되어있는게 있을텐데 그건 서버에서 보낸 패킷 처리만 하면 되는거야
 // 졸작 마무리 화이팅!
