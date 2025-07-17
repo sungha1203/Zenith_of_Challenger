@@ -230,25 +230,36 @@ void GameObject::UpdateShaderVariable(const ComPtr<ID3D12GraphicsCommandList>& c
 {
     ObjectData buffer;
 
+    // [1] 행렬
     XMMATRIX matrix = overrideMatrix ? XMLoadFloat4x4(overrideMatrix) : XMLoadFloat4x4(&m_worldMatrix);
     XMStoreFloat4x4(&buffer.worldMatrix, XMMatrixTranspose(matrix));
+
+    // [2] 기본 데이터
     buffer.baseColor = m_baseColor;
     buffer.useTexture = m_useTexture;
     buffer.textureIndex = m_textureIndex;
     buffer.isHovered = m_isHovered ? 1 : 0;
     buffer.fillAmount = m_fillAmount;
+
     buffer.customUV = m_customUV;
     buffer.useCustomUV = m_useCustomUV;
     buffer.totalTime = gGameFramework->GetTotalTime();
+    buffer.padding = XMFLOAT2(0.f, 0.f);
+
+    // [3] 디졸브
+    buffer.dissolveAxis = m_dissolveAxis;
+    buffer.dissolveAmount = m_dissolveAmount;
+    buffer.dissolveOrigin = m_dissolveOrigin;
+    buffer.dissolvePadding = 0.f;
+    buffer.padding2 = XMFLOAT3(0.f, 0.f, 0.f);
 
     m_constantBuffer->Copy(buffer);
     m_constantBuffer->UpdateRootConstantBuffer(commandList);
 
     bool isShadow = m_shader && m_shader->IsShadowShader();
-
     if (!isShadow)
     {
-        if (m_texture) m_texture->UpdateShaderVariable(commandList, m_textureIndex);
+        if (m_texture)  m_texture->UpdateShaderVariable(commandList, m_textureIndex);
         if (m_material) m_material->UpdateShaderVariable(commandList);
     }
 }

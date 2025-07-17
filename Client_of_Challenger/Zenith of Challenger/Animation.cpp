@@ -162,7 +162,7 @@ XMMATRIX AnimationClip::GetBoneTransform(const BoneAnimation& boneAnim, float ti
 		char dbg[256];
 		sprintf_s(dbg, "[경고] %.4f 초에서 '%s'의 keyframe 시간 차이 매우 작음 → a=%.4f, b=%.4f\n",
 			time, boneAnim.boneName.c_str(), a.time, b.time);
-		OutputDebugStringA(dbg);
+		//OutputDebugStringA(dbg);
 		return InterpolateKeyframes(a, a, 0.0f, boneAnim.boneName, time);
 	}
 	else

@@ -91,6 +91,10 @@ public:
 	void SetActive(bool active) { m_isActive = active; }
 	bool IsActive() const { return m_isActive; }
 
+	//디졸브 셰이더 전용
+	void StartDissolve();
+	bool IsDissolving() const { return m_isDissolving; }
+
 private:
 
 	std::unordered_map<std::string, int> m_boneNameToIndex;
@@ -119,7 +123,10 @@ private:
 	//몬스터 그림자 용
 	bool m_isActive = true; // 기본값은 활성
 
-
+	//몬스터 디졸브 셰이더 전용
+	bool m_isDissolving = false;
+	float m_dissolveTimer = 0.0f;
+	float m_dissolveDuration = 10.f; // 몇 초에 걸쳐 사라질지
 	//-------------------------인게임 정보-------------------------
 
 

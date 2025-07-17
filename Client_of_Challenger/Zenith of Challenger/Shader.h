@@ -73,6 +73,13 @@ public:
 	~FrightFlyShader() override = default;
 };
 
+class BossDissolveShader : public Shader
+{
+public:
+	BossDissolveShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSignature);
+	~BossDissolveShader() override = default;
+};
+
 class DebugLineShader : public Shader
 {
 public:

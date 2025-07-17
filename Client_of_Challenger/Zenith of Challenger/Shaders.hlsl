@@ -8,18 +8,38 @@
 // GameObject: b0, space0
 cbuffer GameObject : register(b0)
 {
-    matrix g_worldMatrix : packoffset(c0); // c0~c3 (16 x 4 = 64 byte)
-    float4 g_baseColor : packoffset(c4); // c4 (16 byte)
+    // c0~c3
+    matrix g_worldMatrix : packoffset(c0);
+
+    // c4
+    float4 g_baseColor : packoffset(c4);
+
+    // c5
     int g_useTexture : packoffset(c5.x);
     int g_textureIndex : packoffset(c5.y);
     int g_isHovered : packoffset(c5.z);
     float g_fillAmount : packoffset(c5.w);
 
-    float4 g_customUV : packoffset(c6); // 추가 (c6 전체 16byte 차지)
+    // c6
+    float4 g_customUV : packoffset(c6);
+
+    // c7
     int g_useCustomUV : packoffset(c7.x);
     float g_totalTime : packoffset(c7.y);
-    
-};
+    float2 g_padding1 : packoffset(c7.z); // 정렬용
+
+    // c8
+    float3 g_dissolveAxis : packoffset(c8.x);
+    float g_dissolveAmount : packoffset(c8.w);
+
+    // c9
+    float3 g_dissolveOrigin : packoffset(c9.x);
+    float g_dissolvePadding : packoffset(c9.w); // 정렬용
+
+    // c10
+    float3 g_padding2 : packoffset(c10.x); // 남은 정렬용 공간
+    float dummy : packoffset(c10.w); // 총 16바이트 정렬
+}
 
 // Camera: b1, space0
 cbuffer Camera : register(b1)

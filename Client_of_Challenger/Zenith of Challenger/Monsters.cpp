@@ -139,6 +139,25 @@ void Monsters::Update(FLOAT timeElapsed)
 
 	GameObject::Update(timeElapsed);
 
+	if (m_isDissolving)
+	{
+		m_dissolveTimer += timeElapsed;
+
+		float t = m_dissolveTimer / m_dissolveDuration;
+		t = std::clamp(t, 0.0f, 1.0f);
+		SetDissolveAmount(t);
+
+		OutputDebugStringA(("Boss dissolveAmount: " + std::to_string(t) + "\n").c_str());
+
+		if (t >= 1.0f)
+		{
+			m_isDissolving = false;
+			m_isDead = true;
+			m_isActive = false; // 완전 제거
+		}
+	}
+
+
 	if (m_healthBar)
 	{
 		m_healthBar->SetPosition(XMFLOAT3(m_position.x, m_position.y + 11.0f, m_position.z));
@@ -324,10 +343,11 @@ void Monsters::SetHP(int hp)
 void Monsters::ApplyDamage(float damage)
 {
 	m_currentHP -= damage;
-	if (m_currentHP <= 0.f)
+	if (m_currentHP <= 0.f && !m_isDead)
 	{
 		m_currentHP = 0.f;
-		m_isDead = true;
+		//m_isDead = true;
+		StartDissolve(); // 디졸브 시작
 	}
 }
 
@@ -418,6 +438,21 @@ void Monsters::PlayAnimationWithBlend(const std::string& newAnim, float blendDur
 	m_blendDuration = blendDuration;
 	m_blendTime = 0.f;
 	m_isBlending = true;
+}
+
+void Monsters::StartDissolve()
+{
+	m_isDissolving = true;
+	m_dissolveTimer = 0.0f;
+
+	// 디졸브 기준축: Y축 (아래 → 위)
+	SetDissolveAxis(Vector3::Normalize({ 0.f, 1.f, 0.f }));
+
+	// 현재 위치를 기준점으로 설정
+	SetDissolveOrigin(GetPosition());
+
+	// 초기 디졸브 진행도
+	SetDissolveAmount(0.f);
 }
 
 

@@ -16,7 +16,7 @@ bool FBXLoader::LoadFBXModel(const std::string& filename, const XMMATRIX& rootTr
 	{
 		std::string errorMsg = "[Assimp] Load Failed: ";
 		errorMsg += importer.GetErrorString();  
-		OutputDebugStringA(errorMsg.c_str());
+		//OutputDebugStringA(errorMsg.c_str());
 		return false;
 	}
 
@@ -137,7 +137,7 @@ void FBXLoader::PrintBoneHierarchy(aiNode* node, int depth)
 	for (int i = 0; i < depth; ++i)
 		OutputDebugStringA("  ");
 
-	OutputDebugStringA(("[Node] " + std::string(node->mName.C_Str()) + "\n").c_str());
+	//OutputDebugStringA(("[Node] " + std::string(node->mName.C_Str()) + "\n").c_str());
 
 	for (UINT i = 0; i < node->mNumChildren; ++i)
 	{
@@ -373,7 +373,7 @@ void FixQuaternionSequenceSigns(std::vector<Keyframe>& keyframes)
 		{
 			char msg[256];
 			sprintf_s(msg, "[FixQuat] Flip at frame %zu → dot=%.4f\n", i, dot);
-			OutputDebugStringA(msg);
+			//OutputDebugStringA(msg);
 			currQuat.x = -currQuat.x;
 			currQuat.y = -currQuat.y;
 			currQuat.z = -currQuat.z;
