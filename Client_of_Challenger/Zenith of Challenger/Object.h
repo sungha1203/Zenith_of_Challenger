@@ -73,20 +73,26 @@ protected:
 
 struct ObjectData : public BufferBase
 {
-	XMFLOAT4X4 worldMatrix;   // 64 bytes (c0~c3)
-	XMFLOAT4 baseColor;       // 16 bytes (c4)
+	XMFLOAT4X4 worldMatrix;    // c0~c3
+	XMFLOAT4   baseColor;      // c4
 
-	UINT useTexture;          // 4 bytes (c5.x)
-	UINT textureIndex;        // 4 bytes (c5.y)
-	UINT isHovered;           // 4 bytes (c5.z)
-	FLOAT fillAmount;         // 4 bytes (c5.w)
+	UINT       useTexture;     // c5.x
+	UINT       textureIndex;   // c5.y
+	UINT       isHovered;      // c5.z
+	FLOAT      fillAmount;     // c5.w
 
-	XMFLOAT4 customUV;        // 16 bytes (c6)
+	XMFLOAT4   customUV;       // c6
+	UINT       useCustomUV;    // c7.x
+	FLOAT      totalTime;      // c7.y
+	XMFLOAT2   padding;        // c7.z~w 정렬용
 
-	UINT useCustomUV;         // 4 bytes (c7.x)
-	FLOAT totalTime;          // 4 bytes (c7.y)
+	XMFLOAT3   dissolveAxis;   // c8.x~z
+	FLOAT      dissolveAmount; // c8.w
 
-	XMFLOAT2 padding;         // 8 bytes → 총 16바이트 정렬 맞춤
+	XMFLOAT3   dissolveOrigin; // c9.x~z
+	FLOAT      dissolvePadding; // c9.w (정렬)
+
+	XMFLOAT3   padding2;       // c10.x~z (총 16바이트 정렬용)
 };
 
 class GameObject : public Object
@@ -165,6 +171,15 @@ public:
 
 	int m_ownerJob = 0;
 
+	// 디졸브 셰이더용 설정 함수
+	void SetDissolveAxis(XMFLOAT3 axis) { m_dissolveAxis = axis; }
+	void SetDissolveOrigin(XMFLOAT3 origin) { m_dissolveOrigin = origin; }
+	void SetDissolveAmount(float amount) { m_dissolveAmount = amount; }
+
+	XMFLOAT3 GetDissolveAxis() const { return m_dissolveAxis; }
+	XMFLOAT3 GetDissolveOrigin() const { return m_dissolveOrigin; }
+	float GetDissolveAmount() const { return m_dissolveAmount; }
+
 protected:
 	shared_ptr<MeshBase> m_mesh;
 	shared_ptr<Texture> m_texture;
@@ -199,6 +214,12 @@ protected:
 
 	bool m_isActive = true; // 기본값은 true
 	bool m_isDead = false;
+
+
+	//디졸브 셰이더를 위한 상수 버퍼 값
+	XMFLOAT3 m_dissolveAxis{ 0.f, 1.f, 0.f };   // 기본은 Y축
+	float    m_dissolveAmount = 0.f;
+	XMFLOAT3 m_dissolveOrigin{ 0.f, 0.f, 0.f };
 
 };
 

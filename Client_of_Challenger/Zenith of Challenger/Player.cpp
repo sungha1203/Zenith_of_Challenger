@@ -368,13 +368,13 @@ void Player::UploadBoneMatricesToShader(const std::vector<XMMATRIX>& boneTransfo
     // 디버그 로그
     char dbg[256];
     sprintf_s(dbg, "[Frame %d] AnimTime = %.4f, Anim = %s\n", frameIndex, m_animTime, m_currentAnim.c_str());
-    OutputDebugStringA(dbg);
+    //OutputDebugStringA(dbg);
 
     for (int i = 0; i < 5 && i < finalMatrices.size(); ++i) {
         const XMMATRIX& m = finalMatrices[i];
         sprintf_s(dbg, "Bone[%d]: %.2f %.2f %.2f %.2f\n", i,
             m.r[0].m128_f32[0], m.r[3].m128_f32[0], m.r[3].m128_f32[1], m.r[3].m128_f32[2]);
-        OutputDebugStringA(dbg);
+        //OutputDebugStringA(dbg);
     }
 }
 

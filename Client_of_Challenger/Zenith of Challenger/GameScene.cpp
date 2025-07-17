@@ -168,6 +168,17 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
     if (GetAsyncKeyState(VK_F4) & 0x0001) { // F4 키 단일 입력
         m_OutLine = !m_OutLine;
     }
+    if (GetAsyncKeyState(VK_F6) & 0x0001) // 한 번만
+    {
+        if (!m_bossMonsters.empty())
+        {
+            auto& boss = m_bossMonsters[0];
+            if (boss && !boss->IsDissolving())
+            {
+                boss->StartDissolve(); // 디버그용 디졸브 트리거
+            }
+        }
+    }
 
     if (GetAsyncKeyState(VK_OEM_PLUS) & 0x0001) // = 키
     {
@@ -280,7 +291,7 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
     if ((m_ZenithEnabled == true) && GetAsyncKeyState('I') & 0x0001)
     {
         m_showReinforcedWindow = !m_showReinforcedWindow;
-        OutputDebugStringA(m_showReinforcedWindow ? "[UI] Reinforced ON\n" : "[UI] Reinforced OFF\n");
+        //OutputDebugStringA(m_showReinforcedWindow ? "[UI] Reinforced ON\n" : "[UI] Reinforced OFF\n");
     }
 
 
@@ -822,7 +833,7 @@ void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) con
         for (const auto& boss : m_bossMonsters)
         {
             if (!boss || !boss->IsActive()) continue;
-            boss->SetShader(m_shaders.at("FrightFly")); // 셰이더 필요시 따로 지정 가능
+            boss->SetShader(m_shaders.at("BossShader")); // 셰이더 필요시 따로 지정 가능
             boss->Render(commandList);
         }
 
@@ -1039,6 +1050,9 @@ void GameScene::BuildShaders(const ComPtr<ID3D12Device>& device,
 
     auto HealEffectShader = make_shared<HealingEffectShader>(device, rootSignature);
     m_shaders.insert({ "HealingEffect", HealEffectShader });
+
+    auto BossShader = make_shared<BossDissolveShader>(device, rootSignature);
+    m_shaders.insert({ "BossShader", BossShader });
 }
 
 void GameScene::BuildMeshes(const ComPtr<ID3D12Device>& device,
@@ -1099,7 +1113,7 @@ void GameScene::BuildMeshes(const ComPtr<ID3D12Device>& device,
 		}
 		else
 		{
-			OutputDebugStringA("[FBXLoader] Flower_Fairy 메쉬 없음\n");
+			//OutputDebugStringA("[FBXLoader] Flower_Fairy 메쉬 없음\n");
 		}
 	}
 	// Mushroom_Dark FBX 메쉬 저장
@@ -1124,7 +1138,7 @@ void GameScene::BuildMeshes(const ComPtr<ID3D12Device>& device,
 		}
 		else
 		{
-			OutputDebugStringA("[FBXLoader] Mushroom_Dark 메쉬 없음\n");
+			//OutputDebugStringA("[FBXLoader] Mushroom_Dark 메쉬 없음\n");
 		}
 	}
 	// Venus_Blue FBX 메쉬 저장
@@ -1856,12 +1870,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
         metalonGroup[0]->SetActive(false);
         m_bossMonsters.push_back(metalonGroup[0]); // 첫 번째 보스만 따로 저장
     }
-
-
-
-
 }
-
 void GameScene::AddCubeCollider(const XMFLOAT3& position, const XMFLOAT3& extents, const FLOAT& rotate)
 {
     auto cube = make_shared<GameObject>(gGameFramework->GetDevice());
@@ -1889,8 +1898,6 @@ void GameScene::AddCubeCollider(const XMFLOAT3& position, const XMFLOAT3& extent
 
     m_objects.push_back(cube); // 오브젝트 등록
 }
-
-//그림자 렌더링
 void GameScene::RenderShadowPass(const ComPtr<ID3D12GraphicsCommandList>& commandList)
 {
     if (!m_player) return;
@@ -1943,7 +1950,7 @@ void GameScene::RenderShadowPass(const ComPtr<ID3D12GraphicsCommandList>& comman
     {
         char buf[256];
         sprintf_s(buf, "[ShadowPass] PlayerAnim = %s, Time = %.4f\n", m_player->GetCurrentAnim().c_str(), m_player->GetAnimTime());
-        OutputDebugStringA(buf);
+        //OutputDebugStringA(buf);
 
         m_player->SetShader(m_shaders.at("SHADOWCHARSKINNED"));
         m_player->Render(commandList);
@@ -1981,8 +1988,6 @@ void GameScene::RenderShadowPass(const ComPtr<ID3D12GraphicsCommandList>& comman
     }
 
 }
-
-
 void GameScene::HandleMouseClick(int mouseX, int mouseY)
 {
     bool isFull = gGameFramework->GetIsFullScreen(); // m_isFullScreen 접근용 함수
@@ -2083,7 +2088,6 @@ void GameScene::UpdateEnhanceDigits()
         }
     }
 }
-
 void GameScene::SpawnHealingObject(int num)
 {
     auto device = gGameFramework->GetDevice();
@@ -2122,7 +2126,6 @@ void GameScene::SpawnHealingObject(int num)
 
     m_healingObjects.push_back(healing);
 }
-
 void GameScene::FireMagicBall(int num)
 {
     if (m_meshLibrary.find("MagicBall") == m_meshLibrary.end()) return;
@@ -2185,12 +2188,10 @@ void GameScene::FireMagicBall(int num)
         m_magicBalls.push_back(ball);
     }
 }
-
 void GameScene::AddTrailObject(const shared_ptr<GameObject>& obj)
 {
     m_trailObjects.push_back(obj);
 }
-
 void GameScene::SpawnMagicImpactEffect(const XMFLOAT3& pos)
 {
     auto effect = make_shared<MagicImpactEffect>(m_device);
@@ -2202,7 +2203,6 @@ void GameScene::SpawnMagicImpactEffect(const XMFLOAT3& pos)
 
 	m_effects.push_back(effect);
 }
-
 void GameScene::SpawnHealingEffect(const XMFLOAT3& playerPos)
 {
 	for (int i = 0; i < 10; ++i) {
@@ -2323,7 +2323,6 @@ void GameScene::CheckHealingCollision()
     next_heal:;
     }
 }
-
 void GameScene::FireUltimateBulletRain(int num)
 {
     if (m_meshLibrary.find("MagicBall") == m_meshLibrary.end()) return;

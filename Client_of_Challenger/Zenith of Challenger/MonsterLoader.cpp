@@ -254,7 +254,7 @@ void LoadAllMonsters(
         monster->SetCamera(camera);
         monster->SetTexture(textures.at("Metalon"));
         monster->SetTextureIndex(textures.at("Metalon")->GetTextureIndex());
-        monster->SetShader(shaders.at("FrightFly"));
+        monster->SetShader(shaders.at("BossShader"));
         monster->SetDebugLineShader(shaders.at("DebugLineShader"));
         monster->m_scale = XMFLOAT3{ 0.2, 0.2, 0.2 };
         monster->SetScale(monster->m_scale);
