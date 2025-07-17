@@ -1,6 +1,12 @@
 #pragma once
 #include "Object.h"
 
+enum class MagicBallType
+{
+    Normal,
+    Ultimate
+};
+
 class MagicBall : public GameObject
 {
 public:
@@ -32,8 +38,11 @@ public:
     }
 
     void CreateTrail();
+    void SetBallType(MagicBallType type) { m_type = type; }
 
 private:
+    MagicBallType m_type = MagicBallType::Normal;
+
     float m_aliveTime = 0.0f;       // 누적 생존 시간
     float m_lifetime = 3.0f;        // 최대 생존 시간
     float m_speed = 15.0f;          // 이동 속도

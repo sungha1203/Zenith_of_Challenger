@@ -314,6 +314,10 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
         }
     }
 
+    if (GetAsyncKeyState('M') & 0x0001) // 궁극기 키
+    {
+        FireUltimateBulletRain(2); // 본인 기준
+    }
 
     if (GetAsyncKeyState('C') & 0x0001)
     {
@@ -322,9 +326,8 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
 
     if (GetAsyncKeyState('P') & 0x8000)
     {
-        //XMFLOAT3 playerPos = m_player->GetPosition();
-        //playerPos.y += 10.0f;
-        //SpawnHealingEffect(playerPos);
+        XMFLOAT3 playerPos = m_player->GetPosition();
+        SpawnHealingEffect(playerPos);
     }
 
 }
@@ -1381,8 +1384,8 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
     m_playerLoader = make_shared<FBXLoader>();
     cout << "캐릭터 로드 중!!!!" << endl;
 	
-	//if (m_playerLoader->LoadFBXModel("Model/Player/ExportCharacter_AddJab.fbx", XMMatrixIdentity()))
-	if (m_playerLoader->LoadFBXModel("Model/Player/ExportCharacter_AddHook.fbx", XMMatrixIdentity()))
+	//if (m_playerLoader->LoadFBXModel("Model/Player/ExportCharacter_AddHook.fbx", XMMatrixIdentity()))
+	if (m_playerLoader->LoadFBXModel("Model/Player/ExportCharacter_fixtalmoheadWeightPaintSubstract.fbx", XMMatrixIdentity()))
 	{
 		auto& meshes = m_playerLoader->GetMeshes();
 		if (meshes.empty()) {
@@ -2216,7 +2219,6 @@ void GameScene::SpawnHealingEffect(const XMFLOAT3& playerPos)
 		m_healingEffects.push_back(effect);
 	}
 }
-
 void GameScene::ActivateZenithStageMonsters()
 {
     for (auto& [type, group] : m_BossStageMonsters)
@@ -2232,7 +2234,6 @@ void GameScene::ActivateZenithStageMonsters()
         boss->SetActive(true);
     }
 }
-
 void GameScene::CheckHealingCollision()
 {
     const BoundingBox& playerBox = m_player->GetBoundingBox();
@@ -2323,3 +2324,57 @@ void GameScene::CheckHealingCollision()
     }
 }
 
+void GameScene::FireUltimateBulletRain(int num)
+{
+    if (m_meshLibrary.find("MagicBall") == m_meshLibrary.end()) return;
+
+    const int numShots = 10;                  // 전체 발사 수
+    const float angleRange = XMConvertToRadians(30.0f); // 부채꼴 각도 (±15도)
+    const float shotInterval = angleRange / (numShots - 1); // 탄 간격
+    const float speed = 80.0f;
+
+    // 발사 기준 위치
+    XMFLOAT3 casterPos;
+    XMFLOAT3 forward;
+
+    if (num == 2) // 본인
+    {
+        casterPos = m_player->GetPosition();
+        forward = Vector3::Normalize(m_player->GetForward());
+    }
+    else // 다른 플레이어
+    {
+        casterPos = otherpos[num];
+        forward = { 0.f, 0.f, 1.f }; // 고정 방향 (or 다른 플레이어 회전값 기반으로 확장 가능)
+    }
+
+    casterPos.y += 5.0f;
+
+    XMVECTOR forwardVec = XMLoadFloat3(&forward);
+
+    for (int i = 0; i < numShots; ++i)
+    {
+        float angleOffset = -angleRange * 0.5f + shotInterval * i;
+        XMMATRIX rot = XMMatrixRotationY(angleOffset);
+        XMVECTOR shotDir = XMVector3TransformNormal(forwardVec, rot);
+
+        XMFLOAT3 dir;
+        XMStoreFloat3(&dir, shotDir);
+        dir = Vector3::Normalize(dir);
+
+        auto ball = make_shared<MagicBall>(m_device);
+        ball->SetMesh(m_meshLibrary["MagicBall"]);
+        ball->SetShader(m_shaders["MagicBall"]);
+        ball->SetPosition(casterPos);
+        ball->SetDirection(dir);
+        ball->SetSpeed(speed);
+        ball->SetLifetime(1.5f);
+
+        ball->SetBallType(MagicBallType::Ultimate);
+
+        ball->SetWaveOffsets(0.f, 0.f);
+        ball->SetScaleAnimation(0.f, 0.f, 0.f, 0.f, 0.f, 0.f); // scale pulse 제거
+
+        m_magicBalls.push_back(ball);
+    }
+}
