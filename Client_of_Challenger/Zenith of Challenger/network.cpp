@@ -786,7 +786,7 @@ void ClientNetwork::ProcessEndGame(char* buffer)
 // 8.  ProcessCMonsterTarrget함수 패킷 처리	[X]	/    패킷 : X					   /	예상 결과 : 도전 몬스터가 가장 가까운 플레이어를 쳐다봄
 // 9.  ProcessEndGame함수 패킷 처리			[X]	/    패킷 : X					   /	예상 결과 : 보스 몬스터를 잡았을 때 혹은 300초가 지나면 게임 클리어 현황 나오고 10초 뒤에 자동으로 방 선택창으로 돌아감.
 // 10. 서버에 뭐 입을건지 패킷 보내주기		[X]	/    패킷 : CS_Packet_Customize	   /	예상 결과 : 내가 무슨 옷을 입을건지 클릭하면 서버에 보내짐.
-// 11. ProcessCustomize함수 패킷 처리		[X] /    패킷 : X					   /	예상 결과 : 각자 커스터마이징한 옷 입음.
+// 99. ProcessCustomize함수 패킷 처리		[X] /    패킷 : X					   /	예상 결과 : 각자 커스터마이징한 옷 입음.
 //
 // 
 // 개발하다가 생각나는거 있음 더 정리해놓을게

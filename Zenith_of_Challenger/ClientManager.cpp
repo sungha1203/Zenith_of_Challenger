@@ -210,3 +210,18 @@ int ClientInfo::MinusHP(int damage, int gamemode)
 	g_network.SendPlayerHP(GetID());
 	return 0;
 }
+
+bool ClientInfo::CanUseSkill()
+{
+	auto now = std::chrono::steady_clock::now();
+
+	if (m_lastSkillTime.time_since_epoch().count() == 0) return true;
+
+	const auto cooldown = std::chrono::seconds(4);
+	return now - m_lastSkillTime >= cooldown;
+}
+
+void ClientInfo::StartCoolTime()
+{
+	m_lastSkillTime = std::chrono::steady_clock::now();
+}
