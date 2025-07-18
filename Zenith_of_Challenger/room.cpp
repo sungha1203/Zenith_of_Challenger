@@ -454,7 +454,7 @@ void Room::InitZenithMonsters()
 	}
 	// Flower Fairy 
 	{
-		m_Zmonsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FlowerFairy, 469.f, 44.f,	-2.f);
+		m_Zmonsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FlowerFairy, 469.f, 44.f, -2.f);
 		m_Zmonsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FlowerFairy, 165.f, 44.f, 167.f);
 		m_Zmonsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FlowerFairy, 117.0f, 44.f, 97.0f);
 		m_Zmonsters[++monsterID].SetMonster(monsterID, NormalMonsterType::FlowerFairy, -49.0f, 44.f, -95.0f);
@@ -506,10 +506,10 @@ void Room::InitZMonsterFirstLastCoord()
 	}
 	// Flower Fairy
 	{
-		m_Zmonsters[++monsterID].SetFristLastCoord(	469.f, -2.f, 396.f, .0f);
-		m_Zmonsters[++monsterID].SetFristLastCoord(	165.f, 167.f, 264.f, 173.f);
-		m_Zmonsters[++monsterID].SetFristLastCoord( 117.0f, 97.0f, -4.0f, -152.0f);
-		m_Zmonsters[++monsterID].SetFristLastCoord( -49.0f, -95.0f, -132.0f, -42.0f);
+		m_Zmonsters[++monsterID].SetFristLastCoord(469.f, -2.f, 396.f, .0f);
+		m_Zmonsters[++monsterID].SetFristLastCoord(165.f, 167.f, 264.f, 173.f);
+		m_Zmonsters[++monsterID].SetFristLastCoord(117.0f, 97.0f, -4.0f, -152.0f);
+		m_Zmonsters[++monsterID].SetFristLastCoord(-49.0f, -95.0f, -132.0f, -42.0f);
 		m_Zmonsters[++monsterID].SetFristLastCoord(-86.0f, 126.0f, -227.f, 153.f);
 	}
 }
@@ -525,9 +525,35 @@ void Room::BroadcastMonsterPosition(int idx)
 		pkt.y = m_Zmonsters[idx].GetY();
 		pkt.z = m_Zmonsters[idx].GetZ();
 
+		switch (m_Zmonsters[idx].GetState()) {
+		case 0:		// 직선 왕복운동
+			if (m_Zmonsters[idx].GetDirection()) {		// 정방향
+				pkt.targetX = m_Zmonsters[idx].GetFirstLastCoord(1, 0);
+				pkt.targetZ = m_Zmonsters[idx].GetFirstLastCoord(1, 1);
+			}
+			else {										// 역방향
+				pkt.targetX = m_Zmonsters[idx].GetFirstLastCoord(0, 0);
+				pkt.targetZ = m_Zmonsters[idx].GetFirstLastCoord(0, 1);
+			}
+			break;
+		case 1:		// 플레이어 어그로
+			pkt.targetX = g_client[m_Zmonsters[idx].GetAggroPlayer()].GetX();
+			pkt.targetZ = g_client[m_Zmonsters[idx].GetAggroPlayer()].GetY();
+			break;
+		case 2:		// 시작 지점으로 복귀
+			pkt.targetX = m_Zmonsters[idx].GetFirstLastCoord(0, 0);
+			pkt.targetZ = m_Zmonsters[idx].GetFirstLastCoord(0, 1);
+			break;
+		case 3:		// 공격
+			pkt.targetX = g_client[m_Zmonsters[idx].GetAggroPlayer()].GetX();
+			pkt.targetZ = g_client[m_Zmonsters[idx].GetAggroPlayer()].GetY();
+			break;
+		}
+
+		pkt.targetY = m_Zmonsters[idx].GetY();
+
 		for (int id : m_clients)
 			if (g_network.clients[id].m_used)
 				g_network.clients[id].do_send(pkt);
-
 	}
 }

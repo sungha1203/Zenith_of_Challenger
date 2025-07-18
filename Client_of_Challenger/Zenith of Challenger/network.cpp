@@ -739,6 +739,7 @@ void ClientNetwork::ProcessRespone(char* buffer)
 	// ProcessWhoisMyteam()부분보고 하면 돼. id랑 xyz값 넘겨주니까 그걸로 상대방 위치 보내주면 돼.
 }
 
+// [개발중] 정점 몬스터 바라보는 방향의 좌표
 void ClientNetwork::ProcessZMonsterMove(char* buffer)
 {
 	SC_Packet_ZMonsterMove* pkt = reinterpret_cast<SC_Packet_ZMonsterMove*>(buffer);
@@ -746,6 +747,9 @@ void ClientNetwork::ProcessZMonsterMove(char* buffer)
 	gGameFramework->ZmonstersCoord[pkt->monsterID].x = pkt->x;
 	gGameFramework->ZmonstersCoord[pkt->monsterID].y = pkt->y;
 	gGameFramework->ZmonstersCoord[pkt->monsterID].z = pkt->z;
+	pkt->targetX;
+	pkt->targetY;
+	pkt->targetZ;
 }
 
 // [개발중] HP바와 실제 체력 연동

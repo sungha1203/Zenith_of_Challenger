@@ -450,6 +450,7 @@ struct SC_Packet_ZMonsterMove
 	int		size;
 	int		monsterID;
 	float	x, y, z;
+	float   targetX, targetY, targetZ;
 };
 
 struct SC_Packet_ZMonsterAttack
