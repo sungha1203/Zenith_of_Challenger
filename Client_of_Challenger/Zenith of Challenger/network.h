@@ -51,6 +51,7 @@ public:
 	void		ProcessZMonsterMove(char* buffer);
 	void		ProcessPlayerHP(char* buffer);
 	void		ProcessEndGame(char* buffer);
+	void		ProcessZMonsterAttackAnimation(char* buffer);
 
 public:
 	SOCKET			m_clientsocket = INVALID_SOCKET;

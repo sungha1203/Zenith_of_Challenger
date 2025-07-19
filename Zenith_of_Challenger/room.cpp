@@ -167,6 +167,18 @@ void Room::m_ZmonsterPosTimerThread()
 			{
 				m_Zmonsters[i].Move();
 				// 몬스터 좌표 클라이언트에 전송
+
+				if (m_Zmonsters[i].AttackAnimation()) {  // 몬스터가 공격을 시작하면
+					SC_Packet_ZMonsterAttack pkt;
+					pkt.type = SC_PACKET_ZMONSTERATTACK;
+					pkt.size = sizeof(pkt);
+					pkt.monsterID = i;
+
+					for (int id : m_clients)
+						if (g_network.clients[id].m_used)
+							g_network.clients[id].do_send(pkt);
+				}
+
 				BroadcastMonsterPosition(i);
 			}
 		}

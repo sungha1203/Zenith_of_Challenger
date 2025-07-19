@@ -769,6 +769,13 @@ void ClientNetwork::ProcessEndGame(char* buffer)
 	// 그리고 10초 뒤에 자동으로 방 선택 창으로 돌아가게 씬 전환
 }
 
+// [개발중] 정점 몬스터 공격 시작 애니메이션
+void ClientNetwork::ProcessZMonsterAttackAnimation(char* buffer)
+{
+	SC_Packet_ZMonsterAttack* pkt = reinterpret_cast<SC_Packet_ZMonsterAttack*>(buffer);
+	pkt->monsterID;
+}
+
 
 
 // [서버 개발 완료 -> 클라쪽에서 진행할 목록]
