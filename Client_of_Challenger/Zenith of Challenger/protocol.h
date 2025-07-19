@@ -16,53 +16,53 @@ constexpr int NAME_SIZE = 20;				// 이름 글자 수
 #define CS_PACKET_INGAMEREADY		 6			// 게임 시작 후 입장 완료
 #define CS_PACKET_STARTZENITH		 7			// 정점 스테이지 입장 버튼
 #define CS_PACKET_ZENITHREADY		 8			// 정점 스테이지 입장 완료
-#define CS_PACKET_MONSTERHP			 9			// 도전 몬스터 HP
-#define CS_PACKET_ZMONSTERHP		 10			// 정점 몬스터 HP
-#define CS_PACKET_CHAT				 11			// 인게임 속 채팅
-#define CS_PACKET_ITEMSTATE			 12			// 장비창에서 강화
-#define CS_PACKET_INVENTORY			 13			// 인벤토리에서 아이템 선택
-#define CS_PACKET_DEBUGGOLD			 14			// 디버깅용 골드 추가
-#define CS_PACKET_DEBUGITEM			 15			// 디버깅용 아이템 추가
-#define CS_PACKET_ANIMATION			 16			// 애니메이션
-#define CS_PACKET_ATTACKEFFECT		 17			// 스킬, 기본 공격 이펙트(전사, 마법사)
+#define CS_PACKET_SKIPCHALLENGE		 9			// 도전스테이지 스킵
+#define CS_PACKET_MONSTERHP			 10			// 도전 몬스터 HP
+#define CS_PACKET_ZMONSTERHP		 11			// 정점 몬스터 HP
+#define CS_PACKET_CHAT				 12			// 인게임 속 채팅
+#define CS_PACKET_ITEMSTATE			 13			// 장비창에서 강화
+#define CS_PACKET_INVENTORY			 14			// 인벤토리에서 아이템 선택
+#define CS_PACKET_DEBUGGOLD			 15			// 디버깅용 골드 추가
+#define CS_PACKET_DEBUGITEM			 16			// 디버깅용 아이템 추가
+#define CS_PACKET_ANIMATION			 17			// 애니메이션
+#define CS_PACKET_ATTACKEFFECT		 18			// 스킬, 기본 공격 이펙트(전사, 마법사)
 
-#define CS_PACKET_SKIPCHALLENGE		 99			// 도전스테이지 스킵
 #define CS_PACKET_LOGOUT			 100		// 로그아웃
 
 // 패킷 타입 정의 (서버 -> 클라)
 #define SC_PACKET_LOGIN_RESPONSE	 101		// 로그인 응답
 #define SC_PACKET_ROOM_RESPONSE		 102		// 게임방 응답
-#define SC_PACKET_ROOMLIST			 103		// 게임방 인원수 갱신
-#define SC_PACKET_WHOISMYTEAM		 104		// 팀에 누구 있는지 말해줄게
-#define SC_PACKET_INITIALSTATE		 105		// 도전 - 다른 플레이어들한테 내 초기 상태
-#define SC_PACKET_ZENITHSTATE		 106		// 정점 - 다른 플레이어들한테 내 초기 상태
-#define SC_PACKET_UPDATE2PLAYER		 107		// 다른 플레이어들한테 바뀐 좌표 갱신
-#define SC_PACKET_GAMESTART			 108		// 게임 시작
-#define SC_PACKET_REPAIRTIME		 109		// 정비 시간
-#define SC_PACKET_ZENITHSTAGE		 110		// 도전 -> 정점
-#define SC_PACKET_INITMONSTER		 111		// 도전 몬스터 초기 설정
-#define SC_PACKET_ZENITHMONSTER		 112		// 정점 몬스터 초기 설정
-#define SC_PACKET_MONSTERHP			 113		// 도전 몬스터 HP
-#define SC_PACKET_ZMONSTERHP         114		// 정점 몬스터 HP
-#define SC_PACKET_DROPITEM			 115		// 몬스터 드랍 아이템
-#define SC_PACKET_GOLD				 116		// 골드 현 상황 갱신
-#define SC_PACKET_INVENTORY			 117		// 인벤토리 현재 상황
-#define SC_PACKET_SELECTITEM		 118		// 인벤토리에서 무기 or 전직서 결정
-#define SC_PACKET_ITEMSTATE			 119		// 무기 강화 성공 여부
-#define SC_PACKET_CHAT				 120		// 인게임 속 채팅
-#define SC_PACKET_DEBUGITEM			 121		// 디버깅용 아이템 추가
-#define SC_PACKET_ANIMATION			 122		// 애니메이션
-#define SC_PACKET_CMONSTERTARGET	 123		// 도전스테이지 몬스터가 바라보는 방향
-#define SC_PACKET_ZMONSTERTARGET	 124		// 정점스테이지 몬스터가 바라보는 방향
-#define SC_PACKET_RESPONE			 125		// 도전or정점 죽은 후 리스폰
-#define SC_PACKET_ZMONSTERMOVE		 126		// 정점 스테이지 몬스터의 이동
-#define SC_PACKET_ZMONSTERATTACK	 127		// 정점 스테이지 몬스터의 공격
-#define SC_PACKET_ATTACKEFFECT		 128		// 스킬, 기본 공격 이펙트(전사, 마법사)
-#define SC_PACKET_PLAYERHP			 129		// 플레이어 체력 업데이트
-#define SC_PACKET_ENDGAME			 130		// 게임 종료
+#define SC_PACKET_CUSTOMIZE			 103		// 커스터마이징
+#define SC_PACKET_ROOMLIST			 104		// 게임방 인원수 갱신
+#define SC_PACKET_WHOISMYTEAM		 105		// 팀에 누구 있는지 말해줄게
+#define SC_PACKET_INITIALSTATE		 106		// 도전 - 다른 플레이어들한테 내 초기 상태
+#define SC_PACKET_ZENITHSTATE		 107		// 정점 - 다른 플레이어들한테 내 초기 상태
+#define SC_PACKET_UPDATE2PLAYER		 108		// 다른 플레이어들한테 바뀐 좌표 갱신
+#define SC_PACKET_GAMESTART			 109		// 게임 시작
+#define SC_PACKET_REPAIRTIME		 110		// 정비 시간
+#define SC_PACKET_ZENITHSTAGE		 111		// 도전 -> 정점
+#define SC_PACKET_INITMONSTER		 112		// 도전 몬스터 초기 설정
+#define SC_PACKET_ZENITHMONSTER		 113		// 정점 몬스터 초기 설정
+#define SC_PACKET_MONSTERHP			 114		// 도전 몬스터 HP
+#define SC_PACKET_ZMONSTERHP         115		// 정점 몬스터 HP
+#define SC_PACKET_DROPITEM			 116		// 몬스터 드랍 아이템
+#define SC_PACKET_GOLD				 117		// 골드 현 상황 갱신
+#define SC_PACKET_INVENTORY			 118		// 인벤토리 현재 상황
+#define SC_PACKET_SELECTITEM		 119		// 인벤토리에서 무기 or 전직서 결정
+#define SC_PACKET_ITEMSTATE			 120		// 무기 강화 성공 여부
+#define SC_PACKET_CHAT				 121		// 인게임 속 채팅
+#define SC_PACKET_DEBUGITEM			 122		// 디버깅용 아이템 추가
+#define SC_PACKET_ANIMATION			 123		// 애니메이션
+#define SC_PACKET_CMONSTERTARGET	 124		// 도전스테이지 몬스터가 바라보는 방향
+#define SC_PACKET_ZMONSTERTARGET	 125		// 정점스테이지 몬스터가 바라보는 방향
+#define SC_PACKET_RESPONE			 126		// 도전or정점 죽은 후 리스폰
+#define SC_PACKET_ZMONSTERMOVE		 127		// 정점 스테이지 몬스터의 이동
+#define SC_PACKET_ZMONSTERATTACK	 128		// 정점 스테이지 몬스터의 공격
+#define SC_PACKET_ATTACKEFFECT		 129		// 스킬, 기본 공격 이펙트(전사, 마법사)
+#define SC_PACKET_PLAYERHP			 130		// 플레이어 체력 업데이트
+#define SC_PACKET_ENDGAME			 131		// 게임 종료
 
-#define SC_PACKET_SKIPCHALLENGE		 998		// 도전스테이지 스킵
-#define SC_PACKET_LOGOUT			 999		// 로그아웃
+#define SC_PACKET_LOGOCHUT			 999		// 로그아웃
 
 //---------------------------------------
 struct CS_Packet_Login
@@ -83,7 +83,7 @@ struct CS_Packet_Customize
 {
 	char	type;
 	int		size;
-	int		clothes[3];
+	int		clothes;
 };
 
 struct CS_Packet_UPDATECOORD
@@ -228,6 +228,14 @@ struct SC_Packet_RoomResponse
 	int	size;
 	bool	success;			// 게임방 입장 성공 여부
 	int		room_id;			// 방번호
+};
+
+struct SC_Packet_Customize
+{
+	char	type;
+	int		size;
+	int		clientID;
+	int		clothes;
 };
 
 struct SC_Packet_Logout
@@ -442,6 +450,7 @@ struct SC_Packet_ZMonsterMove
 	int		size;
 	int		monsterID;
 	float	x, y, z;
+	float   targetX, targetY, targetZ;
 };
 
 struct SC_Packet_ZMonsterAttack
@@ -449,6 +458,7 @@ struct SC_Packet_ZMonsterAttack
 	char	type;
 	int		size;
 	bool	attack;
+	int		monsterID;
 };
 
 struct SC_Packet_PlayerHP

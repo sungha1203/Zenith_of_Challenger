@@ -11,9 +11,7 @@ ClientInfo::ClientInfo(int client_id)
 	m_ingameInfo.classtype = Classtype::CHALLENGER;     // 초기 직업 : 도전자
 	m_ingameInfo.weapon.type = 0;                       // 기본 무기 : 맨손
 	m_ingameInfo.weapon.level = 0;                      // 무기 레벨 : 0
-	m_ingameInfo.clothes[0] = 0;                        // 기본 머리 : X
-	m_ingameInfo.clothes[1] = 0;                        // 기본 하의 : X
-	m_ingameInfo.clothes[2] = 0;                        // 기본 하의 : X
+	m_ingameInfo.clothes = 0;                        // 기본 머리 : X
 	m_ingameInfo.hp = 50;                               // 도전자 체력       : 50
 	m_ingameInfo.attack = 20;                           // 도전자 공격력     : 20
 	m_ingameInfo.speed = 1;                             // 도전자 이동 속도  : 1
@@ -117,9 +115,9 @@ void ClientInfo::SetAngle(float angle)
 	m_ingameInfo.angle = angle;
 }
 
-void ClientInfo::SetClothes(const int clothes[3])
+void ClientInfo::SetClothes(const int clothes)
 {
-	memcpy(m_ingameInfo.clothes, clothes, sizeof(int) * 3);
+	m_ingameInfo.clothes = clothes;
 }
 
 void ClientInfo::SetJobType(int JobNum)
@@ -211,4 +209,19 @@ int ClientInfo::MinusHP(int damage, int gamemode)
 
 	g_network.SendPlayerHP(GetID());
 	return 0;
+}
+
+bool ClientInfo::CanUseSkill()
+{
+	auto now = std::chrono::steady_clock::now();
+
+	if (m_lastSkillTime.time_since_epoch().count() == 0) return true;
+
+	const auto cooldown = std::chrono::seconds(4);
+	return now - m_lastSkillTime >= cooldown;
+}
+
+void ClientInfo::StartCoolTime()
+{
+	m_lastSkillTime = std::chrono::steady_clock::now();
 }

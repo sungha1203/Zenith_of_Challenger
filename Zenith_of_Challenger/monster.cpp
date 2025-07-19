@@ -158,15 +158,21 @@ void Monster::Move()
 		float dz2 = m_FirstLastCoord[0][1] - m_z;
 		float dist2 = sqrtf(dx2 * dx2 + dz2 * dz2);
 
-		if (dist > 45.0f) {			// 어그로에 끌린 플레이어가 일정 거리 떨어지면 복귀
+		if (dist > 45.0f) {						// 어그로에 끌린 플레이어가 일정 거리 떨어지면 복귀
 			m_state = MonsterState::ReturnStart;
 			m_aggroplayer = -1;
+			return;
 		}
-		else if (dist2 > 60.0f) {	// 몬스터가 플레이어를 일정 거리 따라가면 복귀
+		else if (dist2 > 60.0f) {				// 몬스터가 플레이어를 일정 거리 따라가면 복귀
 			m_state = MonsterState::ReturnStart;
 			m_aggroplayer = -1;
+			return;
 		}
-		else						// 플레이어 따라가자!
+		else if (dist < m_attackrange) {		// 공격 사거리에 들어왔을 때 공격
+			m_state = MonsterState::Attack;
+			return;
+		}
+		else									// 플레이어 따라가자!
 			RealMove(m_x, m_z, targetX, targetZ);
 		break;
 	}
@@ -187,6 +193,28 @@ void Monster::Move()
 	}
 	case MonsterState::Attack:
 	{
+		if (m_aggroplayer == -1) {
+			m_state = MonsterState::ReturnStart;
+			return;
+		}
+
+		auto now = std::chrono::steady_clock::now();
+		float elapsed = std::chrono::duration<float>(now - m_lastAttackTime).count();
+
+		if (!m_attackInProgress) {				// 공격 애니메이션 진행중이 아니라면
+			m_attackInProgress = true;			// 공격 애니메이션 진행중
+			m_lastAttackTime = now;
+			m_attackJustStart = true;			// 지금 공격 시작했음 모든 클라한테 이 상황 보내줘
+		}
+		else if(elapsed >= m_attackCoolTime) {	// 공격 애니메이션 끝난 후 검사 후 몬스터가 어디로 이동해야하는지
+			m_attackInProgress = false;			// 공격 애니메이션 종료
+			if (m_AggroList.empty()) {			// 어그로 리스트에 아무도 없을 때 시작 지점으로 복귀
+				m_state = MonsterState::ReturnStart;
+			}
+			else {
+				m_state = MonsterState::Aggro;	// 어그로 리스트에 사람이 있으면 계속 따라가셈
+			}
+		}
 		break;
 	}
 	default:
@@ -232,6 +260,15 @@ void Monster::SetFristLastCoord(float x1, float z1, float x2, float z2)
 	m_FirstLastCoord[0][1] = z1;
 	m_FirstLastCoord[1][0] = x2;
 	m_FirstLastCoord[1][1] = z2;
+}
+
+bool Monster::AttackAnimation()
+{
+	if (m_attackJustStart) {
+		m_attackJustStart = false;
+		return true;
+	}
+	return false;
 }
 
 DropItemType Monster::DropWHAT()

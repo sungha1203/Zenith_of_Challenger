@@ -20,7 +20,7 @@ struct Player
 	int				clientID = -1;			// 아이디
 	Classtype		classtype;				// 직업 
 	Weapon			weapon;					// 무기
-	int				clothes[3] = {0,0,0};	// 옷종류
+	int				clothes = 0;			// 옷종류
 	int				hp;						// 체력
 	int				attack;					// 공격력
 	int				speed;					// 이동 속도
@@ -41,12 +41,14 @@ class ClientInfo
 private:
 	Player	m_ingameInfo;			// 인게임 정보 (1.직업 / 2.무기 / 3.옷종류 / 4.체력 / 5.공격력 / 6.이동속도 / 7.공격속도 / 8.좌표)
 
+	std::chrono::steady_clock::time_point m_lastSkillTime;
+
 public:
 	ClientInfo();
 	ClientInfo(int client_id);		// 초기 캐릭터 설정
 	~ClientInfo();
 
-	void	SetClothes(const int clothes[3]);								// 옷 선택
+	void	SetClothes(const int clothes);									// 옷 선택
 	void	SetJobType(int JobNum);											// 직업 선택
 	void	SetWeapon(int weaponNum);										// 무기 선택
 	void	SetWeaponGrade();												// 무기 강화
@@ -74,4 +76,7 @@ public:
 	int		GetSpeed() const { return m_ingameInfo.speed; }					// 캐릭터 이동속도 반환
 	int		GetAttackSpeed() const { return m_ingameInfo.attackspeed; }		// 캐릭터 공격속도 반환
 	float	GetAngle() const { return m_ingameInfo.angle; }					// 캐릭터 방향 반환
+
+	bool	CanUseSkill();													// 스킬 쿨타임이 찼는지
+	void	StartCoolTime();												// 스킬 쿨타임 돌리기
 };

@@ -26,6 +26,7 @@ public:
 	void		ProcessLogin(char* buffer);
 	void		ProcessRoomjoin(char* buffer);
 	void		ProcessWhoismyteam(char* buffer);
+	void		ProcessCustomize(char* buffer);
 	void		ProcessGamestart(char* buffer);
 	void		ProcessInitialstate(char* buffer);
 	void		ProcessInitMonster(char* buffer);
@@ -50,6 +51,7 @@ public:
 	void		ProcessZMonsterMove(char* buffer);
 	void		ProcessPlayerHP(char* buffer);
 	void		ProcessEndGame(char* buffer);
+	void		ProcessZMonsterAttackAnimation(char* buffer);
 
 public:
 	SOCKET			m_clientsocket = INVALID_SOCKET;

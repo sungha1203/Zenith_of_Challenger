@@ -344,8 +344,21 @@ void Network::ProcessRoomJoin(int client_id, char* buffer, int length) {
 
 // 커스터 마이징
 void Network::ProcessCustomize(int client_id, char* buffer, int length) {
+	int room_id = g_room_manager.GetRoomID(client_id);
+	Room& room = g_room_manager.GetRoom(room_id);
+	const auto& client = room.GetClients();
+
 	CS_Packet_Customize* pkt = reinterpret_cast<CS_Packet_Customize*>(buffer);
 	g_client[client_id].SetClothes(pkt->clothes);
+
+	SC_Packet_Customize pkt2;
+	pkt2.type = SC_PACKET_CUSTOMIZE;
+	pkt2.clientID = client_id;
+	pkt2.clothes = pkt->clothes;
+
+	for (int other_id : client) {
+		g_network.clients[other_id].do_send(pkt2);
+	}
 }
 
 // 인게임 내 플레이어들한테 업데이트
@@ -664,32 +677,25 @@ void Network::ProcessAnimation(int client_id, char* buffer, int length) {
 	SC_Packet_Animaition pkt2;
 	pkt2.type = SC_PACKET_ANIMATION;
 	pkt2.client_id = client_id;
-	if (pkt->animation == 4) { // 0 : 기본, 1 : 걷기, 2 : 달리기, 3 : 도전자 기본 공격, 4 : 직업스킬, 5 : 직업 기본 공격
-		if (job == 0) {			// 도전자
-			pkt2.animation = 3;
+
+	// 0 : 기본      1 : 걷기      2 : 달리기      3 : 도전자 기본 공격      4 : 직업스킬      5 : 직업 기본 공격
+	if (pkt->animation == 4) {		
+		if (!g_client[client_id].CanUseSkill()) return;		// 스킬 쿨타임이면 무시
+
+		switch (job) {
+		case 0: pkt2.animation = 3; break;		// 도전자 스킬(기본공격)
+		case 1: pkt2.animation = 4; break;		// 전  사 스킬
+		case 2: pkt2.animation = 5; break;		// 마법사 스킬
+		case 3: pkt2.animation = 6; break;		// 힐탱커 스킬
 		}
-		else if (job == 1) {	// 전사
-			pkt2.animation = 4;
-		}
-		else if (job == 2) {	// 마법사
-			pkt2.animation = 5;
-		}
-		else if (job == 3) {	// 힐탱커
-			pkt2.animation = 6;
-		}
+		g_client[client_id].StartCoolTime();	// 마지막 스킬 사용 시점
 	}
 	else if (pkt->animation == 5) {
-		if (job == 0) {			// 도전자
-			pkt2.animation = 3;
-		}
-		else if (job == 1) {	// 전사
-			pkt2.animation = 7;
-		}
-		else if (job == 2) {	// 마법사
-			pkt2.animation = 8;
-		}
-		else if (job == 3) {	// 힐탱커
-			//pkt2.animation = 6;
+		switch (job) {
+		case 0: pkt2.animation = 3; break;		// 도전자 기본공격
+		case 1: pkt2.animation = 7; break;		// 전  사 기본공격
+		case 2: pkt2.animation = 8; break;		// 마법사 기본공격
+		case 3: return;							// 힐탱커 기본공격 X
 		}
 	}
 	else {
@@ -950,12 +956,6 @@ void Network::SendInitMonster(const std::vector<int>& client_id, const std::arra
 			g_network.clients[id].do_send(packet);
 		}
 	}
-	//for(int monster_id = 0; monster_id < monsters.size(); ++monster_id){
-	//	std::cout << monster_id << ": " <<
-	//		packet.monsters[monster_id].x << ", " <<
-	//		packet.monsters[monster_id].y << ", " <<
-	//		packet.monsters[monster_id].z << std::endl;
-	//}
 }
 
 // 정점 몬스터 좌표 초기 설정
