@@ -8,6 +8,7 @@
 #include "HealingObject.h"
 #include "MagicBall.h"
 #include "HealingEffectObject.h"
+#include "DissolveDustEffectObject.h"
 
 class FBXLoader; // 전방 선언 추가
 
@@ -68,6 +69,11 @@ public:
     void ActivateZenithStageMonsters();// 몬스터 렌더 여부 활성화
     void CheckHealingCollision();
     void FireUltimateBulletRain(int num); //마법사 스킬
+    //타 클라 직업 판정
+    int m_otherPlayerJobs[2] = { 0, 0 }; // 1: 전사, 2: 마법사, 3: 힐탱커
+
+    void SpawnDustEffect(const XMFLOAT3& pos);
+
 private:
     shared_ptr<FBXLoader> m_fbxLoader; // FBX 로더 추가
     shared_ptr<FBXLoader> m_ZenithLoader; // FBX 로더 추가
@@ -157,4 +163,9 @@ private:
     vector<shared_ptr<MagicBall>> m_magicBalls; // 마법사 평타 구체
     vector<shared_ptr<GameObject>> m_trailObjects; //마법사 평타 트레일
     vector<shared_ptr<GameObject>> m_effects; //마법사 스킬, 평타 피격시 이펙트
+
+
+    //보스 죽고 먼지 효과
+    vector<shared_ptr<DissolveDustEffectObject>> m_dustEffects;
+
 };

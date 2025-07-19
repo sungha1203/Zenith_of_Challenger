@@ -94,6 +94,8 @@ public:
 	//디졸브 셰이더 전용
 	void StartDissolve();
 	bool IsDissolving() const { return m_isDissolving; }
+	float m_dustSpawnTimer = 0.0f;           // 누적 타이머
+	float m_dustSpawnInterval = 0.1f;        // 먼지 생성 주기 (초당 10번)
 
 private:
 

@@ -147,13 +147,24 @@ void Monsters::Update(FLOAT timeElapsed)
 		t = std::clamp(t, 0.0f, 1.0f);
 		SetDissolveAmount(t);
 
-		OutputDebugStringA(("Boss dissolveAmount: " + std::to_string(t) + "\n").c_str());
+		//먼지 주기적 생성 처리
+		m_dustSpawnTimer += timeElapsed;
+		if (m_dustSpawnTimer >= m_dustSpawnInterval)
+		{
+			m_dustSpawnTimer = 0.0f;
 
+			if (auto gameScene = dynamic_cast<GameScene*>(gGameFramework->GetSceneManager()->GetCurrentScene().get()))
+			{
+				gameScene->SpawnDustEffect(GetPosition());  // 30개씩 생성됨
+			}
+		}
+
+		// 디졸브 완료 시 상태 종료
 		if (t >= 1.0f)
 		{
 			m_isDissolving = false;
 			m_isDead = true;
-			m_isActive = false; // 완전 제거
+			m_isActive = false;
 		}
 	}
 
@@ -346,7 +357,6 @@ void Monsters::ApplyDamage(float damage)
 	if (m_currentHP <= 0.f && !m_isDead)
 	{
 		m_currentHP = 0.f;
-		//m_isDead = true;
 		StartDissolve(); // 디졸브 시작
 	}
 }

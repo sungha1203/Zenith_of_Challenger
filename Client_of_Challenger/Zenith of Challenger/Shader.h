@@ -80,6 +80,13 @@ public:
 	~BossDissolveShader() override = default;
 };
 
+class DustEffectShader : public Shader
+{
+public:
+	DustEffectShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSignature);
+	~DustEffectShader() override = default;
+};
+
 class DebugLineShader : public Shader
 {
 public:

@@ -466,6 +466,18 @@ void ClientNetwork::ProcessInventory2Equip(char* buffer)
 	SC_Packet_SelectItem* pkt = reinterpret_cast<SC_Packet_SelectItem*>(buffer);
 	pkt->clientID;			// 내껀지 다른 사람껀지
 	pkt->item;				// 전직서인지 무기인지
+
+	shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
+	GameScene* gameScene = dynamic_cast<GameScene*>(currentScene.get());
+
+	if (gameScene && pkt->item == 6) // 힐탱커
+	{
+		// otherid[0] 또는 otherid[1] 에 매칭되는지 확인
+		if (pkt->clientID == gameScene->otherid[0])
+			gameScene->m_otherPlayerJobs[0] = 3;
+		else if (pkt->clientID == gameScene->otherid[1])
+			gameScene->m_otherPlayerJobs[1] = 3;
+	}
 }
 
 void ClientNetwork::ProcessDebugItem(char* buffer)

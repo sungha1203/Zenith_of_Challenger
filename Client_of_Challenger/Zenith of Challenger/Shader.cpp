@@ -1001,3 +1001,62 @@ BossDissolveShader::BossDissolveShader(const ComPtr<ID3D12Device>& device, const
 	else
 		std::cout << "BossDissolveShader PSO 생성 성공!!" << std::endl;
 }
+
+DustEffectShader::DustEffectShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSignature)
+{
+	std::vector<D3D12_INPUT_ELEMENT_DESC> inputLayout = {
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,  D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "NORMAL",   0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,    0, 24, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+	};
+
+#if defined(_DEBUG)
+	UINT compileFlags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
+#else
+	UINT compileFlags = 0;
+#endif
+
+	ComPtr<ID3DBlob> vs, ps, err;
+	D3DCompileFromFile(TEXT("DustEffectShader.hlsl"), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE,
+		"VSMain", "vs_5_1", compileFlags, 0, &vs, &err);
+	D3DCompileFromFile(TEXT("DustEffectShader.hlsl"), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE,
+		"PSMain", "ps_5_1", compileFlags, 0, &ps, &err);
+
+	// 알파 블렌딩 설정 (HealingEffect 동일)
+	D3D12_BLEND_DESC blendDesc = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+	blendDesc.RenderTarget[0].BlendEnable = TRUE;
+	blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+	blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
+	blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+	blendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
+	blendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
+	blendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
+	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+
+	// 깊이 테스트 ON, 기록 OFF
+	D3D12_DEPTH_STENCIL_DESC depthStencilDesc = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
+	depthStencilDesc.DepthEnable = TRUE;
+	depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
+	depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS;
+
+	// CullMode 제거: 빌보드 평면이 뒤집힐 수 있으므로 Cull 없음
+	D3D12_RASTERIZER_DESC rasterizerDesc = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+	rasterizerDesc.CullMode = D3D12_CULL_MODE_NONE;
+
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC desc = {};
+	desc.InputLayout = { inputLayout.data(), (UINT)inputLayout.size() };
+	desc.pRootSignature = rootSignature.Get();
+	desc.VS = { vs->GetBufferPointer(), vs->GetBufferSize() };
+	desc.PS = { ps->GetBufferPointer(), ps->GetBufferSize() };
+	desc.RasterizerState = rasterizerDesc;
+	desc.BlendState = blendDesc;
+	desc.DepthStencilState = depthStencilDesc;
+	desc.SampleMask = UINT_MAX;
+	desc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+	desc.NumRenderTargets = 1;
+	desc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+	desc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
+	desc.SampleDesc.Count = 1;
+
+	device->CreateGraphicsPipelineState(&desc, IID_PPV_ARGS(&m_pipelineState));
+}

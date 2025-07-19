@@ -60,6 +60,9 @@
     <Filter Include="소스 파일\Object\Skill">
       <UniqueIdentifier>{c2181a3b-1b35-470a-b4bc-ca54c7e794f9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\Object\Impact">
+      <UniqueIdentifier>{94fd3517-c7ef-41e1-b8d7-073ec7d52061}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameFramework.h">
@@ -178,6 +181,9 @@
     <ClInclude Include="HealingEffectObject.h">
       <Filter>소스 파일\Object\Skill</Filter>
     </ClInclude>
+    <ClInclude Include="DissolveDustEffectObject.h">
+      <Filter>소스 파일\Object\Impact</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Zenith of Challenger.cpp">
@@ -282,6 +288,9 @@
     <ClCompile Include="HealingEffectObject.cpp">
       <Filter>소스 파일\Object\Skill</Filter>
     </ClCompile>
+    <ClCompile Include="DissolveDustEffectObject.cpp">
+      <Filter>소스 파일\Object\Impact</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Zenith of Challenger.rc">
@@ -355,6 +364,9 @@
       <Filter>셰이더 파일</Filter>
     </FxCompile>
     <FxCompile Include="BossDissolve.hlsl">
+      <Filter>셰이더 파일</Filter>
+    </FxCompile>
+    <FxCompile Include="DustEffectShader.hlsl">
       <Filter>셰이더 파일</Filter>
     </FxCompile>
   </ItemGroup>

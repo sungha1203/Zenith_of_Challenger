@@ -173,11 +173,17 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
         if (!m_bossMonsters.empty())
         {
             auto& boss = m_bossMonsters[0];
+            //boss->SetCurrentAnimation("Polygonal_Metalon_Purple|Polygonal_Metalon_Purple|Die|Animation Base Layer");
             if (boss && !boss->IsDissolving())
             {
                 boss->StartDissolve(); // 디버그용 디졸브 트리거
             }
         }
+    }
+
+    if (GetAsyncKeyState('L') & 0x0001) // F7 키 눌렀을 때 한 번만
+    {
+        SpawnDustEffect(m_player->GetPosition());
     }
 
     if (GetAsyncKeyState(VK_OEM_PLUS) & 0x0001) // = 키
@@ -767,6 +773,18 @@ void GameScene::Update(FLOAT timeElapsed)
             ++it;
     }
 
+    //먼지 효과 업데이트
+    for (auto it = m_dustEffects.begin(); it != m_dustEffects.end(); )
+    {
+        auto& dust = *it;
+        dust->Update(timeElapsed, m_camera);
+
+        if (dust->IsFinished())
+            it = m_dustEffects.erase(it);
+        else
+            ++it;
+    }
+
     CheckHealingCollision();
 
 }
@@ -786,8 +804,6 @@ void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) con
 
     XMMATRIX lightView = XMMatrixLookAtLH(lightPos, lightTarget, lightUp);
     XMMATRIX lightProj = XMMatrixOrthographicLH(1000.0f, 1000.0f, 1.0f, 1000.0f);
-
-    //m_camera->UploadShadowMatrix(commandList, lightView, lightProj);
 
     m_camera->UpdateShaderVariable(commandList);
     m_lightSystem->UpdateShaderVariable(commandList);
@@ -950,6 +966,13 @@ void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) con
         Heffect->Render(commandList);
     }
 
+    //보스 처치 후 먼지 효과
+    for (const auto& dust : m_dustEffects)
+    {
+        dust->SetShader(m_shaders.at("DustEffect"));
+        dust->Render(commandList);
+    }
+
     // 디버그용 그림자맵 시각화
     if (m_debugShadowShader && m_ShadowMapEnabled)
     {
@@ -1053,6 +1076,9 @@ void GameScene::BuildShaders(const ComPtr<ID3D12Device>& device,
 
     auto BossShader = make_shared<BossDissolveShader>(device, rootSignature);
     m_shaders.insert({ "BossShader", BossShader });
+
+    auto dustShader = make_shared<DustEffectShader>(device, rootSignature);
+    m_shaders.insert({ "DustEffect", dustShader });
 }
 
 void GameScene::BuildMeshes(const ComPtr<ID3D12Device>& device,
@@ -1367,6 +1393,11 @@ void GameScene::BuildTextures(const ComPtr<ID3D12Device>& device,
         TEXT("Image/Monsters/Polygonal_Metalon_Purple.dds"), RootParameter::Texture);
     MetalonTexture->CreateShaderVariable(device, true);
     m_textures.insert({ "Metalon", MetalonTexture });
+
+    auto DustTexture = make_shared<Texture>(device, commandList,
+        TEXT("Textures/Dust.dds"), RootParameter::Texture);
+    DustTexture->CreateShaderVariable(device, true);
+    m_textures.insert({ "DUST", DustTexture });
 }
 
 void GameScene::BuildMaterials(const ComPtr<ID3D12Device>& device,
@@ -2239,13 +2270,8 @@ void GameScene::CheckHealingCollision()
     const BoundingBox& playerBox = m_player->GetBoundingBox();
     const XMFLOAT3& playerCenter = playerBox.Center;
     const XMFLOAT3& playerExtent = playerBox.Extents;
-    XMFLOAT3 playerPos = m_player->GetPosition();
 
-    XMFLOAT3 playerCenterWorld = {
-        playerCenter.x,
-        playerCenter.y,
-        playerCenter.z
-    };
+    XMFLOAT3 playerCenterWorld = playerCenter;
 
     for (auto it = m_healingObjects.begin(); it != m_healingObjects.end(); )
     {
@@ -2267,8 +2293,7 @@ void GameScene::CheckHealingCollision()
 
         bool isSelfCollision = intersectX && intersectY && intersectZ;
 
-        // === [2] OtherPlayer 충돌 검사 ===
-        bool isOtherCollision = false;
+        // === [2] 타 플레이어 충돌 검사 ===
         for (int i = 0; i < 2; ++i)
         {
             if (!m_Otherplayer[i]) continue;
@@ -2278,11 +2303,7 @@ void GameScene::CheckHealingCollision()
             const XMFLOAT3& otherExtent = otherBox.Extents;
             XMFLOAT3 otherPos = m_Otherplayer[i]->GetPosition();
 
-            XMFLOAT3 otherCenterWorld = {
-                otherCenter.x,
-                otherCenter.y,
-                otherCenter.z
-            };
+            XMFLOAT3 otherCenterWorld = otherCenter;
 
             bool oX = abs(otherCenterWorld.x - healCenterWorld.x) <= (otherExtent.x + healExtent.x);
             bool oY = abs(otherCenterWorld.y - healCenterWorld.y) <= (otherExtent.y + healExtent.y);
@@ -2290,28 +2311,33 @@ void GameScene::CheckHealingCollision()
 
             if (oX && oY && oZ)
             {
-                isOtherCollision = true;
+                // 타 플레이어도 힐탱커고 힐팩도 힐탱커가 만든 거면 무시
+                if (m_otherPlayerJobs[i] == 3 && healing->m_ownerJob == 3)
+                {
+                    ++it;
+                    goto next_heal;
+                }
 
-                // 내가 힐탱커고 힐팩도 힐탱커가 만든 거라면 → 내 화면에서 이펙트만 생성
+                // 내가 힐탱커일 경우 → 힐팩은 못 먹어도 이펙트는 보여줌
                 if (m_job == 3 && healing->m_ownerJob == 3)
                 {
-                    SpawnHealingEffect(otherPos); // 내가 안 먹어도 이펙트만 생성
+                    SpawnHealingEffect(otherPos);
                 }
 
                 it = m_healingObjects.erase(it);
-                goto next_heal; // 바깥 반복으로 이동
+                goto next_heal;
             }
         }
 
-        // 본인 충돌 처리
+        // === [3] 본인 충돌 ===
         if (isSelfCollision)
         {
-            // 내가 힐탱커고, 힐팩도 힐탱커가 만든 거라면 무시
             if (m_job == 3 && healing->m_ownerJob == 3)
             {
                 ++it;
                 continue;
             }
+
             SpawnHealingEffect(m_player->GetPosition());
             it = m_healingObjects.erase(it);
         }
@@ -2375,5 +2401,17 @@ void GameScene::FireUltimateBulletRain(int num)
         ball->SetScaleAnimation(0.f, 0.f, 0.f, 0.f, 0.f, 0.f); // scale pulse 제거
 
         m_magicBalls.push_back(ball);
+    }
+}
+
+void GameScene::SpawnDustEffect(const XMFLOAT3& position)
+{
+    for (int i = 0; i < 30; ++i) {
+        auto dust = make_shared<DissolveDustEffectObject>(m_device);
+        dust->SetMesh(m_meshLibrary["HealingEffect"]);
+        dust->SetShader(m_shaders["DustEffect"]); // DustEffect → HealingEffect 방식 셰이더 사용
+
+        dust->Spawn(position, 1); // 중심 위치에서 30개의 먼지 파티클 생성
+        m_dustEffects.push_back(dust);
     }
 }
