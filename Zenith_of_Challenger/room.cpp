@@ -163,12 +163,12 @@ void Room::m_ZmonsterPosTimerThread()
 
 		for (int i = 0; i < m_ZMonsterNum; ++i)
 		{
-			if (m_Cmonsters[i].GetLived())  // 살아있을때
+			if (m_Zmonsters[i].GetLived() && i != 25)			// 살아있을때 && 정점 몬스터
 			{
 				m_Zmonsters[i].Move();
 				// 몬스터 좌표 클라이언트에 전송
 
-				if (m_Zmonsters[i].AttackAnimation()) {  // 몬스터가 공격을 시작하면
+				if (m_Zmonsters[i].AttackAnimation()) {			// 몬스터가 공격을 시작하면
 					SC_Packet_ZMonsterAttack pkt;
 					pkt.type = SC_PACKET_ZMONSTERATTACK;
 					pkt.size = sizeof(pkt);
@@ -180,6 +180,9 @@ void Room::m_ZmonsterPosTimerThread()
 				}
 
 				BroadcastMonsterPosition(i);
+			}
+			else if (m_Zmonsters[i].GetLived() && i == 25) {	// 살아있을때 && 정점 보스 몬스터
+				m_Zmonsters[i].BossMove();
 			}
 		}
 	}
@@ -276,8 +279,8 @@ void Room::UpdateMonsterAggroList()
 		m_PlayerCoord.push_back({ id, x, z });
 	}
 
-	// 몬스터에 플레이어 좌표 업데이트 리스트 전달
-	for (int i = 0; i < m_Zmonsters.size(); ++i) {
+	// 몬스터에 플레이어 좌표 업데이트 리스트 전달  // 보스 몬스터 제외 (idx : 25)
+	for (int i = 0; i < m_Zmonsters.size() - 1; ++i) {
 		if (m_Zmonsters[i].GetLived() == false)
 			continue;
 		m_Zmonsters[i].UpdateAggroList(m_PlayerCoord);

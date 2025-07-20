@@ -70,6 +70,7 @@ public:
 	void			SetMonster(int id, NormalMonsterType type, float x, float y, float z);
 	void			TakeDamage(int dmg);
 	void			Move();
+	void			BossMove();
 	int				UpdateTargetList();
 	void			UpdateAggroList(const std::vector<PlayerInfo>& players);
 	void			RealMove(const float x, const float z, const float X, const float Z);

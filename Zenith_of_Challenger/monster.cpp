@@ -104,7 +104,7 @@ void Monster::UpdateAggroList(const std::vector<PlayerInfo>& players)
 	float mindist = FLT_MAX;
 	int nearID = -1;
 
-	for (const auto& p : players) { 
+	for (const auto& p : players) {
 		float dx = m_x - p.x;	// 플레이어와 몬스터 x차이
 		float dz = m_z - p.z;	// 플레이어와 몬스터 z차이
 		float dist = sqrtf(dx * dx + dz * dz);
@@ -206,7 +206,7 @@ void Monster::Move()
 			m_lastAttackTime = now;
 			m_attackJustStart = true;			// 지금 공격 시작했음 모든 클라한테 이 상황 보내줘
 		}
-		else if(elapsed >= m_attackCoolTime) {	// 공격 애니메이션 끝난 후 검사 후 몬스터가 어디로 이동해야하는지
+		else if (elapsed >= m_attackCoolTime) {	// 공격 애니메이션 끝난 후 검사 후 몬스터가 어디로 이동해야하는지
 			m_attackInProgress = false;			// 공격 애니메이션 종료
 			if (m_AggroList.empty()) {			// 어그로 리스트에 아무도 없을 때 시작 지점으로 복귀
 				m_state = MonsterState::ReturnStart;
@@ -215,6 +215,34 @@ void Monster::Move()
 				m_state = MonsterState::Aggro;	// 어그로 리스트에 사람이 있으면 계속 따라가셈
 			}
 		}
+		break;
+	}
+	default:
+	{
+		break;
+	}
+	}
+}
+
+void Monster::BossMove()
+{
+	switch (m_state)
+	{
+	case MonsterState::Idle:		// 기본 왕복 운동
+	{
+		
+	}
+	case MonsterState::Aggro:		// 타겟 플레이어 어그로
+	{
+		
+	}
+	case MonsterState::ReturnStart:	// 어그로 해제 및 시작 왕복 장소로 이동
+	{
+		
+	}
+	case MonsterState::Attack:
+	{
+		
 		break;
 	}
 	default:
@@ -254,6 +282,7 @@ void Monster::FirstMove()
 		m_direction = !m_direction;
 }
 
+// 기본 루트 초기화
 void Monster::SetFristLastCoord(float x1, float z1, float x2, float z2)
 {
 	m_FirstLastCoord[0][0] = x1;
@@ -262,6 +291,7 @@ void Monster::SetFristLastCoord(float x1, float z1, float x2, float z2)
 	m_FirstLastCoord[1][1] = z2;
 }
 
+// 모든 클라에 공격 애니메이션
 bool Monster::AttackAnimation()
 {
 	if (m_attackJustStart) {
