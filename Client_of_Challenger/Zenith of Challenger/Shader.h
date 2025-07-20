@@ -87,6 +87,20 @@ public:
 	~DustEffectShader() override = default;
 };
 
+class AttackRangeShader : public Shader
+{
+public:
+	AttackRangeShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSignature);
+	~AttackRangeShader() override = default;
+};
+
+class ShockwaveRangeShader : public Shader
+{
+public:
+	ShockwaveRangeShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSignature);
+	~ShockwaveRangeShader() override = default;
+};
+
 class DebugLineShader : public Shader
 {
 public:
@@ -143,6 +157,7 @@ public:
 	HealingEffectShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSignature);
 	~HealingEffectShader() override = default;
 };
+
 
 
 class ShadowSkinnedShader : public Shader {

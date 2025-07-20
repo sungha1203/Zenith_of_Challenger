@@ -6,7 +6,7 @@ DissolveDustEffectObject::DissolveDustEffectObject(const ComPtr<ID3D12Device>& d
     : GameObject(device)
 {
     SetUseTexture(false);
-    SetBaseColor({ 0.85f, 0.85f, 0.85f, 1.0f });
+    SetBaseColor({ 0.6f, 0.2f, 0.8f, 1.0f });
     SetScale({ 1.f, 1.f, 1.f });
 }
 
@@ -89,7 +89,7 @@ void DissolveDustEffectObject::Render(const ComPtr<ID3D12GraphicsCommandList>& c
     for (const auto& p : m_particles)
     {
         SetWorldMatrix(XMLoadFloat4x4(&p.worldMatrix));
-        SetBaseColor({ 0.85f, 0.85f, 0.85f, p.alpha });
+        SetBaseColor({ 0.6f, 0.2f, 0.8f, p.alpha });
         UpdateShaderVariable(commandList, &p.worldMatrix);
         GameObject::Render(commandList);
     }

@@ -23,11 +23,15 @@ public:
 
 	void SetPosition(XMFLOAT3 position);
 	XMFLOAT3 GetPosition() const;
+	XMFLOAT3 GetRotation() const { return m_rotation; }
 
 	void UpdateWorldMatrix();
 	void SetRotationY(float yaw);
 	void SetRotationZ(float pitch);
 	void SetRotationX(float Roll);
+	float GetRotationX() const { return m_rotation.x; }
+	float GetRotationY() const { return m_rotation.y; }
+	float GetRotationZ() const { return m_rotation.z; }
 
 	void PlusRotationY(float yaw);
 	void PlusRotationZ(float pitch);

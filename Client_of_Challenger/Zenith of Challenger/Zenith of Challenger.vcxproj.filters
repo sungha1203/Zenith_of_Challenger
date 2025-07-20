@@ -184,6 +184,9 @@
     <ClInclude Include="DissolveDustEffectObject.h">
       <Filter>소스 파일\Object\Impact</Filter>
     </ClInclude>
+    <ClInclude Include="AttackRangeIndicator.h">
+      <Filter>소스 파일\Object\Impact</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Zenith of Challenger.cpp">
@@ -291,6 +294,9 @@
     <ClCompile Include="DissolveDustEffectObject.cpp">
       <Filter>소스 파일\Object\Impact</Filter>
     </ClCompile>
+    <ClCompile Include="AttackRangeIndicator.cpp">
+      <Filter>소스 파일\Object\Impact</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Zenith of Challenger.rc">
@@ -367,6 +373,12 @@
       <Filter>셰이더 파일</Filter>
     </FxCompile>
     <FxCompile Include="DustEffectShader.hlsl">
+      <Filter>셰이더 파일</Filter>
+    </FxCompile>
+    <FxCompile Include="AttackRangeShader.hlsl">
+      <Filter>셰이더 파일</Filter>
+    </FxCompile>
+    <FxCompile Include="ShockwaveRangeShader.hlsl">
       <Filter>셰이더 파일</Filter>
     </FxCompile>
   </ItemGroup>

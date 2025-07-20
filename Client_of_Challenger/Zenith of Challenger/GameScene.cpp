@@ -181,6 +181,43 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
         }
     }
 
+    if (GetAsyncKeyState(VK_F7) & 0x0001)
+    {
+        //XMFLOAT3 pos = m_player->GetPosition();
+        ////OutputDebugStringFormat(L"[Spawn] Player Pos = (%.2f, %.2f, %.2f)\n", pos.x, pos.y, pos.z);
+        //if (m_player) {
+        //    SpawnDashWarning(pos, m_player->GetRotationY());
+        //}
+        if (!m_bossMonsters.empty())
+        {
+            auto& boss = m_bossMonsters[0];
+            //boss->SetCurrentAnimation("Polygonal_Metalon_Purple|Polygonal_Metalon_Purple|Die|Animation Base Layer");
+            if (boss)
+            {
+                XMFLOAT3 pos = boss->GetPosition();
+                SpawnDashWarning(pos, boss->GetRotationY());
+            }
+        }
+
+    }
+
+    if (GetAsyncKeyState(VK_OEM_2) & 0x0001) // '/' 키 (VK_OEM_2)
+    {
+        if (m_bossMonsters[0])
+        {
+            float yaw = m_bossMonsters[0]->GetRotationY(); // 라디안 값 기준
+            yaw += 90.0f;  
+            m_bossMonsters[0]->SetRotationY(yaw);          // 회전 적용
+        }
+    }
+
+    if (GetAsyncKeyState(VK_F8) & 0x0001)
+    {
+        if (m_bossMonsters[0]) {
+            SpawnShockwaveWarning(m_bossMonsters[0]->GetPosition());
+        }
+    }
+
     if (GetAsyncKeyState('L') & 0x0001) // F7 키 눌렀을 때 한 번만
     {
         SpawnDustEffect(m_player->GetPosition());
@@ -785,6 +822,16 @@ void GameScene::Update(FLOAT timeElapsed)
             ++it;
     }
 
+    for (auto it = m_attackIndicators.begin(); it != m_attackIndicators.end(); )
+    {
+        (*it)->Update(timeElapsed);
+        if ((*it)->IsExpired())
+            it = m_attackIndicators.erase(it);
+        else
+            ++it;
+    }
+
+
     CheckHealingCollision();
 
 }
@@ -973,6 +1020,10 @@ void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) con
         dust->Render(commandList);
     }
 
+    for (auto& warning : m_attackIndicators)
+    {
+        warning->Render(commandList);
+    }
     // 디버그용 그림자맵 시각화
     if (m_debugShadowShader && m_ShadowMapEnabled)
     {
@@ -1079,6 +1130,12 @@ void GameScene::BuildShaders(const ComPtr<ID3D12Device>& device,
 
     auto dustShader = make_shared<DustEffectShader>(device, rootSignature);
     m_shaders.insert({ "DustEffect", dustShader });
+
+    auto attackShader = make_shared<AttackRangeShader>(device, rootSignature);
+    m_shaders.insert({ "AttackRange", attackShader });
+
+    auto attackShader2 = make_shared<ShockwaveRangeShader>(device, rootSignature);
+    m_shaders.insert({ "AttackRange2", attackShader2 });
 }
 
 void GameScene::BuildMeshes(const ComPtr<ID3D12Device>& device,
@@ -1272,7 +1329,15 @@ void GameScene::BuildMeshes(const ComPtr<ID3D12Device>& device,
         }
     }
 
-
+    auto AttackRange = make_shared<FBXLoader>();
+    if (AttackRange->LoadFBXModel("Model/Skill/AttackRange.fbx", XMMatrixIdentity()))
+    {
+        auto meshes = AttackRange->GetMeshes();
+        if (!meshes.empty())
+        {
+            m_meshLibrary["AttackRange"] = meshes[0];
+        }
+    }
 
 }
 
@@ -2403,7 +2468,6 @@ void GameScene::FireUltimateBulletRain(int num)
         m_magicBalls.push_back(ball);
     }
 }
-
 void GameScene::SpawnDustEffect(const XMFLOAT3& position)
 {
     for (int i = 0; i < 30; ++i) {
@@ -2414,4 +2478,56 @@ void GameScene::SpawnDustEffect(const XMFLOAT3& position)
         dust->Spawn(position, 1); // 중심 위치에서 30개의 먼지 파티클 생성
         m_dustEffects.push_back(dust);
     }
+}
+
+void GameScene::SpawnDashWarning(const XMFLOAT3& pos, float yaw)
+{
+    auto obj = std::make_shared<AttackRangeIndicator>(m_device);
+
+    obj->SetMesh(m_meshLibrary["AttackRange"]);
+    obj->SetScale({ 0.5f, 1.0f, 2.0f }); // 크기
+
+    obj->SetRotationY(yaw); // 회전 먼저 적용
+
+    // 회전된 forward(Z+) 벡터 구하기
+    XMMATRIX rot = XMMatrixRotationY(XMConvertToRadians(yaw));
+    XMVECTOR forward = XMVector3TransformNormal(
+        XMVectorSet(0, 0, 1, 0), // 기본 forward = Z+
+        rot
+    );
+
+    float distance = -100.0f; // 보스와의 거리
+    XMVECTOR posVec = XMLoadFloat3(&pos);
+    XMVECTOR offset = XMVectorScale(forward, distance);
+    XMVECTOR finalPos = XMVectorAdd(posVec, offset);
+
+    XMFLOAT3 spawnPos;
+    XMStoreFloat3(&spawnPos, finalPos);
+    spawnPos.y += 1.1f;
+
+    obj->SetPosition(spawnPos); // 위치 반영
+    obj->SetFillAmount(0.0f);
+    obj->SetShader(m_shaders["AttackRange"]);
+    obj->SetLifetime(2.0f);
+    m_attackIndicators.push_back(obj);
+}
+
+
+void GameScene::SpawnShockwaveWarning(const XMFLOAT3& pos)
+{
+    auto obj = std::make_shared<AttackRangeIndicator>(m_device);
+
+    obj->SetMesh(m_meshLibrary["AttackRange"]); // 정사각형 메시
+
+    obj->SetScale({ 2.0f, 1.0f, 2.0f }); // 반지름 3m 원형 효과 (수동 조절)
+
+    XMFLOAT3 adjustedPos = pos;
+    adjustedPos.y += 1.1f;
+    obj->SetPosition(adjustedPos);
+
+    obj->SetFillAmount(0.0f);
+    obj->SetShader(m_shaders["AttackRange2"]);
+    obj->SetLifetime(2.0f); // 채워질 시간
+
+    m_attackIndicators.push_back(obj);
 }

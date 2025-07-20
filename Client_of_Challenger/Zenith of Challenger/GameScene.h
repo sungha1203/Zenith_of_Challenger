@@ -9,6 +9,7 @@
 #include "MagicBall.h"
 #include "HealingEffectObject.h"
 #include "DissolveDustEffectObject.h"
+#include "AttackRangeIndicator.h"
 
 class FBXLoader; // 전방 선언 추가
 
@@ -73,6 +74,8 @@ public:
     int m_otherPlayerJobs[2] = { 0, 0 }; // 1: 전사, 2: 마법사, 3: 힐탱커
 
     void SpawnDustEffect(const XMFLOAT3& pos);
+    void SpawnDashWarning(const XMFLOAT3& pos, float yaw); //보스 대쉬 공격 범위
+    void SpawnShockwaveWarning(const XMFLOAT3& pos); //보스 점프 공격 범위
 
 private:
     shared_ptr<FBXLoader> m_fbxLoader; // FBX 로더 추가
@@ -165,7 +168,7 @@ private:
     vector<shared_ptr<GameObject>> m_effects; //마법사 스킬, 평타 피격시 이펙트
 
 
-    //보스 죽고 먼지 효과
-    vector<shared_ptr<DissolveDustEffectObject>> m_dustEffects;
-
+	//보스 죽고 먼지 효과
+	vector<shared_ptr<DissolveDustEffectObject>> m_dustEffects;
+    vector<shared_ptr<AttackRangeIndicator>> m_attackIndicators;
 };
