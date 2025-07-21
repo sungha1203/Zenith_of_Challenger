@@ -253,6 +253,7 @@ void Monster::Move()
 	}
 }
 
+// 보스 몬스터 행동트리
 void Monster::BossMove()
 {
 	switch (m_state)
@@ -284,8 +285,8 @@ void Monster::BossMove()
 	}
 	case MonsterState::ReturnStart:	// 보스 첫 위치로 이동
 	{
-		float StartX = 0.0f;
-		float StartZ = 0.0f;
+		float StartX = 0.f;
+		float StartZ = -23.f;
 		float dx = StartX - m_x;
 		float dz = StartZ - m_z;
 		float dist = sqrtf(dx * dx + dz * dz);
