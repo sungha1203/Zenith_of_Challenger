@@ -296,7 +296,15 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
         m_AttackCollision = true;
         //m_player->SetCurrentAnimation("Punch.001");
         //m_player->SetCurrentAnimation("Hook");
-        m_player->SetCurrentAnimation("Kick");
+        if(m_job==0)
+        {
+            m_player->SetCurrentAnimation("Kick");
+        }
+        else
+        {
+            m_player->SetCurrentAnimation("Slash");
+        }
+
         m_player->isPunching=true;
         {
             CS_Packet_Animaition pkt;
@@ -400,10 +408,37 @@ void GameScene::Update(FLOAT timeElapsed)
         {
             camDir = Vector3::Normalize(camDir);
             float yaw = atan2f(camDir.x, camDir.z);
-            m_player->SetRotationY(XMConvertToDegrees(yaw) + 180.f);
+            //m_player->SetRotationY(XMConvertToDegrees(yaw) + 180.f);
         }
     }
 
+    //칼에 플레이어 손 행렬 곱해주기
+    if(m_job == 1)
+    {
+        // 칼의 원래 로컬 행렬 (즉, 생성 시 초기 위치 → 플레이어 중심에 있어야 함)
+        XMMATRIX swordOffset = XMMatrixTranslation(-3000.0f, 2000.0f, -1000.0f); // 칼이 손에서 약간 오른쪽에 있는 형태로 수정 가능        
+        // 현재 애니메이션 클립 기준 본 행렬 계산
+        const auto& clip = m_player->m_animationClips.at(m_player->m_currentAnim); 
+        float time = fmod(m_player->m_animTime, clip.duration); 
+
+        auto boneIt = m_player->m_boneNameToIndex.find("mixamorig:RightHand"); 
+        if (boneIt != m_player->m_boneNameToIndex.end()) 
+        {
+            int boneIndex = boneIt->second; 
+            auto boneTransforms = clip.GetBoneTransforms(  
+                time, m_player->m_boneNameToIndex, m_player->m_boneHierarchy,  
+                m_player->m_boneOffsets, m_player->m_nodeNameToLocalTransform);  
+
+            XMMATRIX boneMat = boneTransforms[boneIndex]; 
+            XMMATRIX playerMat = XMLoadFloat4x4(&m_player->GetWorldMatrix()); 
+
+            //순서 중요!
+            XMMATRIX weaponMat = swordOffset * boneMat  * playerMat;
+            m_weopons[0]->SetWorldMatrix(weaponMat); 
+            //m_weopons[0]->m_scale=(XMFLOAT3{ 10.f, 10.f, 10.f }); 
+
+        }
+    }
 
     m_player->Update(timeElapsed);
     m_sun->Update(timeElapsed);
@@ -909,6 +944,12 @@ void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) con
                 monster->SetShader(m_shaders.at("FrightFly")); // 필요 시 타입별 셰이더 적용
                 monster->Render(commandList);
             }
+
+        for (const auto& weopon : m_weopons)//캐릭터 무기
+        {
+            weopon->SetShader(m_shaders.at("FBX"));
+            weopon->Render(commandList);
+        }
     }
 
     //캐릭터
@@ -951,6 +992,7 @@ void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) con
             object->Render(commandList);
         }
     }
+    
 
     for (const auto& digit : m_goldDigits)
     {
@@ -1341,6 +1383,16 @@ void GameScene::BuildMeshes(const ComPtr<ID3D12Device>& device,
         }
     }
 
+    auto SwordLoader = make_shared<FBXLoader>(); 
+    if (SwordLoader->LoadFBXModel("Model/Weapon/SwordOnly.fbx", XMMatrixIdentity())) 
+    {
+        auto meshes = SwordLoader->GetMeshes(); 
+        if (!meshes.empty())
+        {
+            m_meshLibrary["Sword"] = meshes[0];
+        }
+    }
+
     auto AttackRange = make_shared<FBXLoader>();
     if (AttackRange->LoadFBXModel("Model/Skill/AttackRange.fbx", XMMatrixIdentity()))
     {
@@ -1350,7 +1402,6 @@ void GameScene::BuildMeshes(const ComPtr<ID3D12Device>& device,
             m_meshLibrary["AttackRange"] = meshes[0];
         }
     }
-
 }
 
 void GameScene::BuildTextures(const ComPtr<ID3D12Device>& device,
@@ -1475,6 +1526,11 @@ void GameScene::BuildTextures(const ComPtr<ID3D12Device>& device,
         TEXT("Image/Monsters/Polygonal_Metalon_Purple.dds"), RootParameter::Texture);
     MetalonTexture->CreateShaderVariable(device, true);
     m_textures.insert({ "Metalon", MetalonTexture });
+    
+    auto SwordTexture = make_shared<Texture>(device, commandList,
+            TEXT("Image/Sword1_Albedo_Silver.dds"), RootParameter::Texture);
+    SwordTexture->CreateShaderVariable(device, true);
+    m_textures.insert({ "Sword", SwordTexture }); 
 
     auto DustTexture = make_shared<Texture>(device, commandList,
         TEXT("Textures/Dust.dds"), RootParameter::Texture);
@@ -1511,8 +1567,8 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
     m_playerLoader = make_shared<FBXLoader>();
     cout << "캐릭터 로드 중!!!!" << endl;
 	
-	//if (m_playerLoader->LoadFBXModel("Model/Player/ExportCharacter_AddHook.fbx", XMMatrixIdentity()))
 	if (m_playerLoader->LoadFBXModel("Model/Player/ExportCharacter_fixtalmoheadWeightPaintSubstract.fbx", XMMatrixIdentity()))
+	//if (m_playerLoader->LoadFBXModel("Model/Player/TestWithoutSword.fbx", XMMatrixIdentity()))
 	{
 		auto& meshes = m_playerLoader->GetMeshes();
 		if (meshes.empty()) {
@@ -1525,6 +1581,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 
 
         player->SetScale(XMFLOAT3{ 0.0005,0.0005,0.0005}); // 기본값 확정
+        //player->SetScale(XMFLOAT3{ 0.005,0.005,0.005}); // 기본값 확정
         player->SetRotationY(0.f);                  // 정면을 보게 초기화
 
         player->SetPosition(gGameFramework->g_pos);
@@ -1599,6 +1656,24 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
         m_Otherplayer[1]->SetPosition(m_Otherplayer[1]->m_position);
         m_Otherplayer[1]->SetScale(XMFLOAT3{ 0.0005,0.0005,0.0005 });
     }
+
+	
+	auto swordMeshes = m_meshLibrary["Sword"];
+
+	auto swordObject = make_shared<Sword>(device);
+	swordObject->SetMesh(swordMeshes);
+	swordObject->SetShader(m_shaders["FBX"]);  // FBX 전용 셰이더 사용 
+	swordObject->SetTexture(m_textures["Sword"]); // 텍스처는 적절한 걸 할당 
+	swordObject->SetTextureIndex(m_textures["Sword"]->GetTextureIndex()); // 텍스처는 적절한 걸 할당 
+    swordObject->SetUseTexture(true); 
+	// 보기 좋게 위치 및 크기 조정 (원한다면)	
+	swordObject->SetPosition(XMFLOAT3{ -172.0f, 5.1f, 77.0f });
+
+	m_weopons.push_back(swordObject); // 또는 m_weaponPreviewObject 등으로 따로 저장해도 됨 
+
+
+
+
 
     //맵의 오브젝트들 바운딩 박스
 
@@ -2100,6 +2175,7 @@ void GameScene::RenderShadowPass(const ComPtr<ID3D12GraphicsCommandList>& comman
 
     // GPU에 Shadow 행렬 업로드 (b4)
     m_camera->UploadShadowMatrix(commandList, lightView, lightProj);
+    m_player->SetCamera(m_camera);
 
     // ===== 기존 그림자 렌더링 흐름 유지 =====
     if (m_ZenithEnabled) {
@@ -2242,6 +2318,72 @@ void GameScene::SetJobSlotUV(int type)
 
     m_jobSlotIcon->SetCustomUV(u0, 0.f, u1, 1.f);
     m_jobSlotIcon->SetVisible(true);
+
+    if (type == 0)
+    {
+        if (m_playerLoader->LoadFBXModel("Model/Player/TestWithoutSword.fbx", XMMatrixIdentity()))            
+        {
+            auto& meshes = m_playerLoader->GetMeshes();
+            if (meshes.empty()) {
+                OutputDebugStringA("[ERROR] FBX에서 메시를 찾을 수 없습니다.\n");
+                return;
+            }
+
+            // [3] Player 객체 생성
+            auto player = make_shared<Player>(gGameFramework->GetDevice());
+
+
+            player->SetScale(XMFLOAT3{ 0.0005,0.0005,0.0005 }); // 기본값 확정
+            //player->SetScale(XMFLOAT3{ 0.005,0.005,0.005}); // 기본값 확정
+            player->SetRotationY(0.f);                  // 정면을 보게 초기화
+
+            player->SetPosition(XMFLOAT3(-580.f, 44.f, -13.f));
+            //player->SetPosition(XMFLOAT3{ 0.0, 5.0, 0.0 });
+
+            // [5] FBX 메시 전부 등록
+            for (int i = 0; i < meshes.size(); ++i)
+            {
+                player->AddMesh(meshes[i]);
+            }
+
+            // [6] 애니메이션 클립 및 본 정보 설정
+            player->SetAnimationClips(m_playerLoader->GetAnimationClips());
+            player->SetCurrentAnimation("Idle");
+            player->SetBoneOffsets(m_playerLoader->GetBoneOffsets());
+            player->SetBoneNameToIndex(m_playerLoader->GetBoneNameToIndex());
+            player->SetBoneHierarchy(m_playerLoader->GetBoneHierarchy());
+            player->SetstaticNodeTransforms(m_playerLoader->GetStaticNodeTransforms());
+            player->SetNodeNameToGlobalTransform(m_playerLoader->GetNodeNameToGlobalTransform());
+
+            // [7] 텍스처, 머티리얼 설정
+            player->SetTexture(m_textures["CHARACTER"]);
+            player->SetTextureIndex(m_textures["CHARACTER"]->GetTextureIndex());
+            player->SetMaterial(m_materials["CHARACTER"]); // 없으면 생성 필요
+            player->SetShader(m_shaders["CHARACTER"]); // 없으면 생성 필요
+            player->SetDebugLineShader(m_shaders["DebugLineShader"]);
+
+            // m_player 생성 이후 위치
+            BoundingBox playerBox;
+            playerBox.Center = XMFLOAT3{ 0.f, 4.5f, 0.f };
+            playerBox.Extents = { 1.0f, 4.2f, 1.0f }; // 스케일링된 값
+            player->SetPlayerBoundingBox(playerBox);
+
+            BoundingBox playerAttBox;
+            playerAttBox.Center = XMFLOAT3{ 0.f, 0.0f, 0.f };
+            playerAttBox.Extents = { 2.0f, 4.0f, 2.0f };
+            player->SetAttBoundingBox(playerAttBox);
+
+            // [8] 본 행렬 StructuredBuffer용 SRV 생성
+            auto [cpuHandle, gpuHandle] = gGameFramework->AllocateDescriptorHeapSlot();
+            player->CreateBoneMatrixSRV(gGameFramework->GetDevice(), cpuHandle, gpuHandle);
+
+            // [9] Player 등록 및 GameScene 내부에 저장
+            gGameFramework->SetPlayer(player);
+            m_player = gGameFramework->GetPlayer();
+        }
+    }
+    m_player->SetCamera(m_camera);
+
 }
 void GameScene::UpdateEnhanceDigits()
 {

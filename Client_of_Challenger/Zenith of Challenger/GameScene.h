@@ -8,6 +8,7 @@
 #include "HealingObject.h"
 #include "MagicBall.h"
 #include "HealingEffectObject.h"
+#include"Sword.h"
 #include "DissolveDustEffectObject.h"
 #include "AttackRangeIndicator.h"
 
@@ -169,6 +170,8 @@ private:
     vector<shared_ptr<MagicBall>> m_magicBalls; // 마법사 평타 구체
     vector<shared_ptr<GameObject>> m_trailObjects; //마법사 평타 트레일
     vector<shared_ptr<GameObject>> m_effects; //마법사 스킬, 평타 피격시 이펙트
+    //무기
+    vector<shared_ptr<GameObject>> m_weopons;
 
 
 	//보스 죽고 먼지 효과

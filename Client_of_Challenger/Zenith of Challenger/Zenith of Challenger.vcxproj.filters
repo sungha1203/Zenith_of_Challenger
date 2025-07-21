@@ -60,6 +60,9 @@
     <Filter Include="소스 파일\Object\Skill">
       <UniqueIdentifier>{c2181a3b-1b35-470a-b4bc-ca54c7e794f9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\Object\Weapons">
+      <UniqueIdentifier>{102d9041-dbfd-41d1-83e1-b2fb5b9835cf}</UniqueIdentifier>
+    </Filter>
     <Filter Include="소스 파일\Object\Impact">
       <UniqueIdentifier>{94fd3517-c7ef-41e1-b8d7-073ec7d52061}</UniqueIdentifier>
     </Filter>
@@ -187,6 +190,9 @@
     <ClInclude Include="AttackRangeIndicator.h">
       <Filter>소스 파일\Object\Impact</Filter>
     </ClInclude>
+    <ClInclude Include="Sword.h">
+      <Filter>소스 파일\Object\Weapons</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Zenith of Challenger.cpp">
@@ -296,6 +302,9 @@
     </ClCompile>
     <ClCompile Include="AttackRangeIndicator.cpp">
       <Filter>소스 파일\Object\Impact</Filter>
+    </ClCompile>
+    <ClCompile Include="Sword.cpp">
+      <Filter>소스 파일\Object\Weapons</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
