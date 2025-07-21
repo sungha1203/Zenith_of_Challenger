@@ -166,7 +166,6 @@ void Room::m_ZmonsterPosTimerThread()
 			if (m_Zmonsters[i].GetLived() && i != 25)			// 살아있을때 && 정점 몬스터
 			{
 				m_Zmonsters[i].Move();
-				// 몬스터 좌표 클라이언트에 전송
 
 				if (m_Zmonsters[i].AttackAnimation()) {			// 몬스터가 공격을 시작하면
 					SC_Packet_ZMonsterAttack pkt;
@@ -178,12 +177,25 @@ void Room::m_ZmonsterPosTimerThread()
 						if (g_network.clients[id].m_used)
 							g_network.clients[id].do_send(pkt);
 				}
-
-				BroadcastMonsterPosition(i);
 			}
 			else if (m_Zmonsters[i].GetLived() && i == 25) {	// 살아있을때 && 정점 보스 몬스터
 				m_Zmonsters[i].BossMove();
+
+				if (m_Zmonsters[i].AttackAnimation()) {			// 보스 몬스터가 공격을 시작하면
+					SC_Packet_ZMonsterAttack pkt;
+					pkt.type = SC_PACKET_ZMONSTERATTACK;
+					pkt.size = sizeof(pkt);
+					pkt.monsterID = i;
+					//pkt.bossmonsterSkill = ?
+
+					for (int id : m_clients)
+						if (g_network.clients[id].m_used)
+							g_network.clients[id].do_send(pkt);
+				}
 			}
+
+			// 몬스터 좌표 클라이언트에 전송
+			BroadcastMonsterPosition(i);
 		}
 	}
 }
@@ -279,11 +291,14 @@ void Room::UpdateMonsterAggroList()
 		m_PlayerCoord.push_back({ id, x, z });
 	}
 
-	// 몬스터에 플레이어 좌표 업데이트 리스트 전달  // 보스 몬스터 제외 (idx : 25)
-	for (int i = 0; i < m_Zmonsters.size() - 1; ++i) {
+	// 몬스터에 플레이어 좌표 업데이트 리스트 전달
+	for (int i = 0; i < m_Zmonsters.size(); ++i) {
 		if (m_Zmonsters[i].GetLived() == false)
 			continue;
-		m_Zmonsters[i].UpdateAggroList(m_PlayerCoord);
+		if (i != 25)			// 정점 일반 몬스터
+			m_Zmonsters[i].UpdateAggroList(m_PlayerCoord);
+		else					// 정점 보스 몬스터
+			m_Zmonsters[i].UpdateBossAggroList(m_PlayerCoord);
 	}
 }
 
@@ -540,29 +555,53 @@ void Room::BroadcastMonsterPosition(int idx)
 		pkt.y = m_Zmonsters[idx].GetY();
 		pkt.z = m_Zmonsters[idx].GetZ();
 
-		switch (m_Zmonsters[idx].GetState()) {
-		case 0:		// 직선 왕복운동
-			if (m_Zmonsters[idx].GetDirection()) {		// 정방향
-				pkt.targetX = m_Zmonsters[idx].GetFirstLastCoord(1, 0);
-				pkt.targetZ = m_Zmonsters[idx].GetFirstLastCoord(1, 1);
-			}
-			else {										// 역방향
+
+		// 바라보는 방향
+		if (idx != 25) {// 정점 일반 몬스터
+			switch (m_Zmonsters[idx].GetState()) {
+			case 0:		// 직선 왕복운동
+				if (m_Zmonsters[idx].GetDirection()) {		// 정방향
+					pkt.targetX = m_Zmonsters[idx].GetFirstLastCoord(1, 0);
+					pkt.targetZ = m_Zmonsters[idx].GetFirstLastCoord(1, 1);
+				}
+				else {										// 역방향
+					pkt.targetX = m_Zmonsters[idx].GetFirstLastCoord(0, 0);
+					pkt.targetZ = m_Zmonsters[idx].GetFirstLastCoord(0, 1);
+				}
+				break;
+			case 1:		// 플레이어 어그로
+				pkt.targetX = g_client[m_Zmonsters[idx].GetAggroPlayer()].GetX();
+				pkt.targetZ = g_client[m_Zmonsters[idx].GetAggroPlayer()].GetY();
+				break;
+			case 2:		// 시작 지점으로 복귀
 				pkt.targetX = m_Zmonsters[idx].GetFirstLastCoord(0, 0);
 				pkt.targetZ = m_Zmonsters[idx].GetFirstLastCoord(0, 1);
+				break;
+			case 3:		// 공격
+				pkt.targetX = g_client[m_Zmonsters[idx].GetAggroPlayer()].GetX();
+				pkt.targetZ = g_client[m_Zmonsters[idx].GetAggroPlayer()].GetY();
+				break;
 			}
-			break;
-		case 1:		// 플레이어 어그로
-			pkt.targetX = g_client[m_Zmonsters[idx].GetAggroPlayer()].GetX();
-			pkt.targetZ = g_client[m_Zmonsters[idx].GetAggroPlayer()].GetY();
-			break;
-		case 2:		// 시작 지점으로 복귀
-			pkt.targetX = m_Zmonsters[idx].GetFirstLastCoord(0, 0);
-			pkt.targetZ = m_Zmonsters[idx].GetFirstLastCoord(0, 1);
-			break;
-		case 3:		// 공격
-			pkt.targetX = g_client[m_Zmonsters[idx].GetAggroPlayer()].GetX();
-			pkt.targetZ = g_client[m_Zmonsters[idx].GetAggroPlayer()].GetY();
-			break;
+		}
+		else {			// 정점 보스 몬스터
+			switch (m_Zmonsters[idx].GetState()) {
+			case 0:		// 보스 몬스터 처음 위치
+				pkt.targetX = 1.0f;
+				pkt.targetZ = 1.0f;
+				break;
+			case 1:		// 플레이어 어그로
+				pkt.targetX = g_client[m_Zmonsters[idx].GetAggroPlayer()].GetX();
+				pkt.targetZ = g_client[m_Zmonsters[idx].GetAggroPlayer()].GetY();
+				break;
+			case 2:		// 시작 지점으로 복귀
+				pkt.targetX = 0.0f;
+				pkt.targetZ = 0.0f;
+				break;
+			case 3:		// 공격
+				pkt.targetX = g_client[m_Zmonsters[idx].GetAggroPlayer()].GetX();
+				pkt.targetZ = g_client[m_Zmonsters[idx].GetAggroPlayer()].GetY();
+				break;
+			}
 		}
 
 		pkt.targetY = m_Zmonsters[idx].GetY();
