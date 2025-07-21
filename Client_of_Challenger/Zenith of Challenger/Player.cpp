@@ -123,16 +123,16 @@ void Player::KeyboardEvent(FLOAT timeElapsed)
     if (keyStates[VK_NEXT])  moveDirection = Vector3::Add(moveDirection, { 0.f, -1.f, 0.f });
 
     // 쿼터뷰 회전 방향 계산
-    if (isQuarter)
-    {
+    //if (isQuarter)
+    //{
         if (keyStates['W']) faceDirection = Vector3::Add(faceDirection, front);
         if (keyStates['S']) faceDirection = Vector3::Add(faceDirection, Vector3::Negate(front));
         if (keyStates['A']) faceDirection = Vector3::Add(faceDirection, Vector3::Negate(right));
         if (keyStates['D']) faceDirection = Vector3::Add(faceDirection, right);
-    }
+   // }
 
     // 속도 적용
-	if (!Vector3::IsZero(moveDirection))
+	if (!Vector3::IsZero(moveDirection)) 
 	{
 		XMFLOAT3 normalized = Vector3::Normalize(moveDirection);
 		if (isRunning)
@@ -153,7 +153,7 @@ void Player::KeyboardEvent(FLOAT timeElapsed)
     }
 
     // 쿼터뷰 회전 적용
-    if (isQuarter && !Vector3::IsZero(faceDirection))
+    if (/*isQuarter &&*/ !Vector3::IsZero(faceDirection))
     {
         faceDirection = Vector3::Normalize(faceDirection);
         float angle = atan2f(faceDirection.x, faceDirection.z);
