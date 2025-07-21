@@ -62,6 +62,8 @@ private:
 	float				m_BossAttackCoolTime = 3.0f;			// 보스 스킬 애니메이션 끝까지 걸리는 시간
 	bool				m_attackJustStart = false;				// 모든 클라에 몬스터 공격 브로드캐스트 체크
 	bool				m_bossSkillType = false;				// 보스 스킬 유형 (false : 스킬1   true : 스킬2)
+	bool				m_bossSkillCharging = false;			// 보스 몬스터 스킬 범위 차징중
+	bool				m_bossSkillAnimation = false;			// 보스 몬스터 스킬 애니메이션 진행중
 	std::chrono::steady_clock::time_point m_lastAttackTime;		// 스킬공격 마지막 시간 체크
 
 public:
@@ -95,4 +97,5 @@ public:
 	bool					GetDirection() const { return m_direction; }
 	float					GetFirstLastCoord(int FL, int XZ) const { return m_FirstLastCoord[FL][XZ]; }
 	int						GetAggroPlayer() const { return m_aggroplayer; }
+	bool					GetBossSkillType() const { return m_bossSkillType; }
 };

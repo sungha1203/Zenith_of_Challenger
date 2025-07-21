@@ -788,6 +788,20 @@ void ClientNetwork::ProcessZMonsterAttackAnimation(char* buffer)
 	pkt->monsterID;
 }
 
+// [개발중] 정점 몬스터 공격  -  패킷 받자마자 해당 몬스터 공격 애니메이션 시작(방향은 그냥 바라보는 곳)
+void ClientNetwork::ProcessZMonsterAttack(char* buffer)
+{
+	SC_Packet_ZMonsterAttack* pkt = reinterpret_cast<SC_Packet_ZMonsterAttack*>(buffer);
+
+	if (pkt->monsterID != 25) {  // 정점 일반 몬스터 (1초동안 스킬 애니메이션)
+		pkt->monsterID;
+	}
+	else {						 // 정점 보스 몬스터 (2초동안 예고 범위 보여주고 1초동안 스킬 애니메이션)
+		pkt->monsterID;
+		pkt->bossmonsterSkill;	// false = 스킬1    true = 스킬2
+	}
+}
+
 
 
 // [서버 개발 완료 -> 클라쪽에서 진행할 목록]
