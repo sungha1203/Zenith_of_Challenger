@@ -8,9 +8,12 @@ void Room::Init(int room_id)
 
 void Room::ResetRoom()
 {
+	if (m_timer.joinable()) m_timer.detach();
+	if (m_ZmonsterPosTimer.joinable()) m_ZmonsterPosTimer.detach();
+
 	m_IsGaming = false;
-	m_RoomState = Stage::LOBBY;         // 초기 상태로
-	m_clients.clear();                  // 클라이언트 목록 제거
+	m_RoomState = Stage::LOBBY;
+	m_clients.clear();
 	m_inventory = InventoryItem();
 
 	SetStopTimer(false);
@@ -20,17 +23,19 @@ void Room::ResetRoom()
 	m_enterClientNum = 0;
 	m_enterZenithNum = 0;
 	m_bossDie = false;
-
 	m_stopMonsterPosThread = false;
 
-	for (auto& monster : m_Cmonsters)
-		monster.Reset();
+	m_UpdatelastAggro = std::chrono::steady_clock::now();
+
+	for (auto& monster : m_Cmonsters) monster.Reset();
+	for (auto& monster : m_Zmonsters) monster.Reset();
 
 	m_CMonsterNum = 0;
 	m_ZMonsterNum = 0;
 	m_clearTime = 0;
-
 	m_PlayerCoord.clear();
+
+	InitZMonsterFirstLastCoord();  // 보스 몬스터 이동 좌표 초기화
 }
 
 void Room::AddClient(int client_id)
