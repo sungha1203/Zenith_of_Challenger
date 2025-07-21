@@ -457,8 +457,8 @@ struct SC_Packet_ZMonsterAttack
 {
 	char	type;
 	int		size;
-	bool	attack;
 	int		monsterID;
+	bool	bossmonsterSkill;
 };
 
 struct SC_Packet_PlayerHP
