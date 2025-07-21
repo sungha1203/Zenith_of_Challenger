@@ -831,6 +831,7 @@ void GameScene::Update(FLOAT timeElapsed)
             ++it;
     }
 
+    UpdateGameTimeDigits();
 
     CheckHealingCollision();
 
@@ -1020,10 +1021,21 @@ void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) con
         dust->Render(commandList);
     }
 
+    //보스 몬스터 공격 범위 렌더
     for (auto& warning : m_attackIndicators)
     {
         warning->Render(commandList);
     }
+
+    //
+    for (const auto& digit : m_timeDigits) {
+        digit->Render(commandList);
+    }
+
+    for (const auto& Colon : m_ColonDigit) {
+        Colon->Render(commandList);
+    }
+
     // 디버그용 그림자맵 시각화
     if (m_debugShadowShader && m_ShadowMapEnabled)
     {
@@ -1427,6 +1439,11 @@ void GameScene::BuildTextures(const ComPtr<ID3D12Device>& device,
         TEXT("Image/InGameUI/Item_num.dds"), RootParameter::Texture);
     Item_numTexture->CreateShaderVariable(device, true);
     m_textures.insert({ "Item_num", Item_numTexture });
+
+    auto ColonTexture = make_shared<Texture>(device, commandList,
+        TEXT("Image/InGameUI/Colon.dds"), RootParameter::Texture);
+    ColonTexture->CreateShaderVariable(device, true);
+    m_textures.insert({ "Colon", ColonTexture });
 
     auto reinforcedTexture = make_shared<Texture>(device, commandList,
         TEXT("Image/InGameUI/reinforced_window1.dds"), RootParameter::Texture);
@@ -1966,6 +1983,69 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
         metalonGroup[0]->SetActive(false);
         m_bossMonsters.push_back(metalonGroup[0]); // 첫 번째 보스만 따로 저장
     }
+
+
+    XMFLOAT3 startPos = { -1.05f, 0.7f, 0.99f };
+    float spacing = 0.07f;
+    float colonGap = 0.05f; // 가운데 콜론 간격 추가
+
+    for (int i = 0; i < 4; ++i) // 숫자 4자리만
+    {
+        auto digitObj = std::make_shared<GameObject>(device);
+        digitObj->SetTexture(m_textures["Item_num"]);
+        digitObj->SetTextureIndex(m_textures["Item_num"]->GetTextureIndex());
+        digitObj->SetShader(m_shaders["UI"]);
+        digitObj->SetUseTexture(true);
+        digitObj->SetuseCustomUV(1);
+
+        float u0 = 0.0f;
+        float u1 = 0.3f;
+
+        digitObj->SetCustomUV(u0, 0.0f, u1, 1.0f);
+        digitObj->SetMesh(CreateScreenQuadWithCustomUV(
+            device, gGameFramework->GetCommandList(),
+            0.03f, 0.06f, 0.98f, u0, 0.0f, u1, 1.0f));
+        digitObj->SetScale({ 2.5f, 2.3f, 1.0f });
+
+        // 가운데 콜론 이후 자리는 살짝 더 멀리 배치
+        float xOffset = i * spacing;
+        if (i >= 2) xOffset += colonGap;
+
+        digitObj->SetPosition({ startPos.x + xOffset, startPos.y, startPos.z });
+
+        m_timeDigits.push_back(digitObj);
+    }
+
+    // ':' 따로 출력
+    auto ColonDigit = std::make_shared<GameObject>(device);
+
+    ColonDigit->SetTexture(m_textures["Colon"]); // Gold_Score 텍스처 적용
+    ColonDigit->SetTextureIndex(m_textures["Colon"]->GetTextureIndex());
+    ColonDigit->SetShader(m_shaders["UI"]); // UI용 셰이더 사용
+    ColonDigit->SetUseTexture(true);
+    ColonDigit->SetuseCustomUV(1); // customUV 사용 설정
+
+    u0 = 0.0f;
+    u1 = 1.1f;
+    ColonDigit->SetCustomUV(u0, 0.0f, u1, 1.0f);
+
+    // 처음 메쉬 설정 (0 숫자용 UV 기준)
+    ColonDigit->SetMesh(CreateScreenQuadWithCustomUV(
+        device,
+        gGameFramework->GetCommandList(),
+        0.15f,   // 너비
+        0.15f,    // 높이
+        0.99f,   // 깊이
+        u0, 0.0f, u1, 1.0f // UV 좌표
+    ));
+
+    // 오른쪽 상단에 배치 (NDC 좌표계 기준)
+    ColonDigit->SetPosition(XMFLOAT3(-0.905f, 0.7f, 0.99f));
+    ColonDigit->SetScale(XMFLOAT3(1.0f, 0.7f, 1.0f));
+    ColonDigit->SetBaseColor(XMFLOAT4(1, 1, 1, 1));
+
+    m_ColonDigit.push_back(ColonDigit);
+
 }
 void GameScene::AddCubeCollider(const XMFLOAT3& position, const XMFLOAT3& extents, const FLOAT& rotate)
 {
@@ -2530,4 +2610,30 @@ void GameScene::SpawnShockwaveWarning(const XMFLOAT3& pos)
     obj->SetLifetime(2.0f); // 채워질 시간
 
     m_attackIndicators.push_back(obj);
+}
+
+void GameScene::UpdateGameTimeDigits()
+{
+    int totalSeconds = static_cast<int>(gGameFramework->GetTotalTime());
+    int minutes = totalSeconds / 60;
+    int seconds = totalSeconds % 60;
+
+    char buffer[5];
+    sprintf_s(buffer, "%02d%02d", minutes, seconds); // "0945" 형식
+
+    for (int i = 0; i < 4; ++i)
+    {
+        if (!isdigit(buffer[i])) continue;
+
+        int digit = buffer[i] - '0';
+
+        //숫자 하나당 UV 폭 0.3을 사용하는 너의 텍스처 기준
+        float u0 = digit * 0.1f;
+        float u1 = u0 + 0.31f;
+
+        if (i < m_timeDigits.size())
+        {
+            m_timeDigits[i]->SetCustomUV(u0, 0.0f, u1, 1.0f);
+        }
+    }
 }

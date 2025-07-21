@@ -77,6 +77,8 @@ public:
     void SpawnDashWarning(const XMFLOAT3& pos, float yaw); //보스 대쉬 공격 범위
     void SpawnShockwaveWarning(const XMFLOAT3& pos); //보스 점프 공격 범위
 
+    void UpdateGameTimeDigits();
+
 private:
     shared_ptr<FBXLoader> m_fbxLoader; // FBX 로더 추가
     shared_ptr<FBXLoader> m_ZenithLoader; // FBX 로더 추가
@@ -145,6 +147,7 @@ private:
 
     int m_upgradeScore = 0;
     vector<shared_ptr<GameObject>> m_forcedDigits;
+    vector<shared_ptr<GameObject>> m_ColonDigit;
 
     //툰 렌더링 외곽선 토글키
     bool m_OutLine = false;
@@ -171,4 +174,8 @@ private:
 	//보스 죽고 먼지 효과
 	vector<shared_ptr<DissolveDustEffectObject>> m_dustEffects;
     vector<shared_ptr<AttackRangeIndicator>> m_attackIndicators;
+
+    //시간 표시 텍스트
+    vector<shared_ptr<GameObject>> m_timeDigits;
+
 };
