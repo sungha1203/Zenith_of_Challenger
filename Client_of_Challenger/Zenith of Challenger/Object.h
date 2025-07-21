@@ -38,6 +38,8 @@ public:
 	virtual XMFLOAT3 GetScale() const;
 	XMFLOAT3			m_prevPosition;
 	XMFLOAT3            m_scale;
+	//XMFLOAT4X4 GetWorldMatrix() { return m_worldMatrix; }
+	//void SetWorldMatrix(XMFLOAT4X4 mat) { m_worldMatrix = mat;}
 protected:
 	XMFLOAT4X4			m_worldMatrix;
 
@@ -164,8 +166,10 @@ public:
 	BoundingBox GetWorldBoundingBox() const;
 
 	int m_ownerJob = 0;
-
+	void SetTempWorldMatrix(const XMMATRIX& mat) { m_tempWorldMatrix = mat; } 
+	const XMMATRIX& GetTempWorldMatrix() const { return m_tempWorldMatrix; }
 protected:
+	XMMATRIX m_tempWorldMatrix = XMMatrixIdentity(); 
 	shared_ptr<MeshBase> m_mesh;
 	shared_ptr<Texture> m_texture;
 	shared_ptr<Material> m_material;

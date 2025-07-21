@@ -57,12 +57,6 @@ public:
 
 	XMFLOAT3 GetForward() const;
 
-private:
-	shared_ptr<Camera> m_camera;
-	//공격충돌체크 용
-	BoundingBox m_AttboundingBox;
-	FLOAT m_speed;
-
 	// 애니메이션 상태 관리
 	std::unordered_map<std::string, AnimationClip> m_animationClips;
 	std::string m_currentAnim = "Idle";
@@ -74,9 +68,16 @@ private:
 	ComPtr<ID3D12Resource> m_boneMatrixUploadBuffer[2];       // 업로드용 버퍼
 	D3D12_GPU_DESCRIPTOR_HANDLE m_boneMatrixSRV = {};      // 셰이더에서 접근할 핸들
 	unordered_map<string, string> m_boneHierarchy;			//뼈 계층구조
+	unordered_map<int, XMMATRIX> m_boneOffsets;
+private:
+	shared_ptr<Camera> m_camera;
+	//공격충돌체크 용
+	BoundingBox m_AttboundingBox;
+	FLOAT m_speed;
+
+
 
 	std::vector<std::shared_ptr<MeshBase>> m_meshes;
-	unordered_map<int, XMMATRIX> m_boneOffsets;
 
 	//-------------------------인게임 정보-------------------------
 

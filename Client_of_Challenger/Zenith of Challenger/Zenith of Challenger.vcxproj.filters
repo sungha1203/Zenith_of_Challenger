@@ -60,6 +60,9 @@
     <Filter Include="소스 파일\Object\Skill">
       <UniqueIdentifier>{c2181a3b-1b35-470a-b4bc-ca54c7e794f9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\Object\Weapons">
+      <UniqueIdentifier>{102d9041-dbfd-41d1-83e1-b2fb5b9835cf}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameFramework.h">
@@ -178,6 +181,9 @@
     <ClInclude Include="HealingEffectObject.h">
       <Filter>소스 파일\Object\Skill</Filter>
     </ClInclude>
+    <ClInclude Include="Sword.h">
+      <Filter>소스 파일\Object\Weapons</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Zenith of Challenger.cpp">
@@ -281,6 +287,9 @@
     </ClCompile>
     <ClCompile Include="HealingEffectObject.cpp">
       <Filter>소스 파일\Object\Skill</Filter>
+    </ClCompile>
+    <ClCompile Include="Sword.cpp">
+      <Filter>소스 파일\Object\Weapons</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
