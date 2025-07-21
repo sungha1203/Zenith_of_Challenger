@@ -1816,7 +1816,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
     m_terrain->SetTextureIndex(m_textures["TERRAIN"]->GetTextureIndex());
     m_terrain->SetTexture(m_textures["TERRAIN"]);
     m_terrain->SetShader(m_shaders["DETAIL"]);
-    m_terrain->SetScale(XMFLOAT3{ 4.0f, 1.f, 4.0f });
+    m_terrain->SetScale(XMFLOAT3{ 7.0f, 1.f, 7.0f });
     m_terrain->SetPosition(XMFLOAT3{ 0.f, 29.0f, 0.f });
     m_terrain->SetRotationY(180.0f);
 
