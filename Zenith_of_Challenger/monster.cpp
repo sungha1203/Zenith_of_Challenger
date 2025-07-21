@@ -129,6 +129,35 @@ void Monster::UpdateAggroList(const std::vector<PlayerInfo>& players)
 	}
 }
 
+// 보스 몬스터 어그로 리스트
+void Monster::UpdateBossAggroList(const std::vector<PlayerInfo>& players)
+{
+	m_AggroList.clear();
+	for (const auto& p : players) {
+		float dx = 0.0f - p.x;	// 플레이어와 보스 몬스터 처음 위치 x차이
+		float dz = 0.0f - p.z;	// 플레이어와 보스 몬스터 처음 위치 z차이
+		float dist = sqrtf(dx * dx + dz * dz);
+
+		if (dist <= m_bossAggroRange)
+		{
+			float dx2 = m_x - p.x;	// 플레이어와 보스 몬스터 x차이
+			float dz2 = m_z - p.z;	// 플레이어와 보스 몬스터 z차이
+			float dist2 = sqrtf(dx2 * dx2 + dz2 * dz2);
+			m_AggroList.push_back({ p.clientID, dist2 });
+
+			std::sort(m_AggroList.begin(), m_AggroList.end(), [](const AggroInfo& a, const AggroInfo& b) { return a.distance < b.distance; });
+		}
+	}
+
+	if (m_AggroList.size() == 0)
+		m_aggroplayer = -1;
+	else {
+		m_aggroplayer = m_AggroList[0].playerID;		// 현재 보스 몬스터에 어그로 끌린 플레이어
+		//m_state = MonsterState::Aggro;
+	}
+
+}
+
 // 호출 타겟 플레이어가 이동하면 최종 도착지를 변경하기 위함.
 void Monster::Move()
 {
@@ -228,21 +257,71 @@ void Monster::BossMove()
 {
 	switch (m_state)
 	{
-	case MonsterState::Idle:		// 기본 왕복 운동
+	case MonsterState::Idle:		// 첫 위치에 가만히 있기
 	{
-		
+		break;
 	}
-	case MonsterState::Aggro:		// 타겟 플레이어 어그로
+	case MonsterState::Aggro:		// 
 	{
-		
+		if (m_aggroplayer == -1) {
+			m_state = MonsterState::ReturnStart;
+			return;
+		}
+		float targetX = g_client[m_aggroplayer].GetX();
+		float targetZ = g_client[m_aggroplayer].GetZ();
+
+		// 플레이어와 몬스터의 거리
+		float dx = targetX - m_x;
+		float dz = targetZ - m_z;
+		float dist = sqrtf(dx * dx + dz * dz);
+
+		if (dist < m_bossAttackRange) {
+			m_state = MonsterState::Attack;
+			return;
+		}
+
+		RealMove(m_x, m_z, targetX, targetZ);
 	}
-	case MonsterState::ReturnStart:	// 어그로 해제 및 시작 왕복 장소로 이동
+	case MonsterState::ReturnStart:	// 보스 첫 위치로 이동
 	{
-		
+		float StartX = 0.0f;
+		float StartZ = 0.0f;
+		float dx = StartX - m_x;
+		float dz = StartZ - m_z;
+		float dist = sqrtf(dx * dx + dz * dz);
+
+		if (dist < 1.0f) {
+			m_state = MonsterState::Idle;
+		}
+		else
+			RealMove(m_x, m_z, StartX, StartZ);
+		break;
 	}
 	case MonsterState::Attack:
 	{
-		
+		if (m_aggroplayer == -1) {
+			m_state = MonsterState::ReturnStart;
+			return;
+		}
+
+		auto now = std::chrono::steady_clock::now();
+		float elapsed = std::chrono::duration<float>(now - m_lastAttackTime).count();
+
+		if (!m_attackInProgress) {				// 공격 애니메이션 진행중이 아니라면
+			m_attackInProgress = true;			// 공격 애니메이션 진행중
+			m_lastAttackTime = now;
+			m_bossSkillType = true;
+			m_attackJustStart = true;			// 지금 공격 시작했음 모든 클라한테 이 상황 보내줘
+		}
+		else if (elapsed >= m_attackCoolTime) {	// 공격 애니메이션 끝난 후 검사 후 몬스터가 어디로 이동해야하는지
+			m_attackInProgress = false;			// 공격 애니메이션 종료
+			if (m_AggroList.empty()) {			// 어그로 리스트에 아무도 없을 때 시작 지점으로 복귀
+				m_state = MonsterState::ReturnStart;
+			}
+			else {
+				m_state = MonsterState::Aggro;	// 어그로 리스트에 사람이 있으면 계속 따라가셈
+			}
+		}
 		break;
 	}
 	default:
