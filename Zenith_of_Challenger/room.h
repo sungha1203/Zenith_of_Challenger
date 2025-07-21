@@ -98,7 +98,7 @@ public:
 	void	PlusPlayerZenithReadyNum();					// 정점 스테이지 입장 대기 명수 ++1
 	void    ChallengeTimerThread();						// 도전 스테이지 타이머 스레드
 	void	ZenithTimerThread();						// 정점 스테이지 타이머 스레드
-	void	m_ZmonsterPosTimerThread();						// 정점 스테이지 몬스터 좌표 갱신 스레드
+	void	m_ZmonsterPosTimerThread();					// 정점 스테이지 몬스터 좌표 갱신 스레드
 	void	StartGame();								// 로비			-> 도전스테이지
 	void	RepairTime();								// 도전 스테이지 내 재정비 시간
 	void	StartZenithStage();							// 도전 스테이지 -> 정점스테이지
