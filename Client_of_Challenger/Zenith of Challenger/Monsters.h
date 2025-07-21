@@ -86,7 +86,7 @@ public:
 	bool m_isBlending = false;
 	bool m_didDamageThisAnim = false;
 	float m_prevAnimTime = -1.0f;
-
+	bool StopDie = false;
 	shared_ptr<HealthBarObject> GetHealthBar() const { return m_healthBar; }
 	void SetActive(bool active) { m_isActive = active; }
 	bool IsActive() const { return m_isActive; }

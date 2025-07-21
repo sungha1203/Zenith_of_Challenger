@@ -105,7 +105,7 @@ void OtherPlayer::Update(FLOAT timeElapsed)
             const auto& clip = m_animationClips.at(m_currentAnim);
             m_animTime += timeElapsed * clip.ticksPerSecond * 2.0f;
            
-            while (m_animTime >= clip.duration)
+            if (m_animTime >= clip.duration)
                 m_animTime -= clip.duration;
             
         }

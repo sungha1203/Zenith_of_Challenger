@@ -173,7 +173,7 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
         if (!m_bossMonsters.empty())
         {
             auto& boss = m_bossMonsters[0];
-            //boss->SetCurrentAnimation("Polygonal_Metalon_Purple|Polygonal_Metalon_Purple|Die|Animation Base Layer");
+            boss->SetCurrentAnimation("Die");
             if (boss && !boss->IsDissolving())
             {
                 boss->StartDissolve(); // 디버그용 디졸브 트리거
@@ -1288,7 +1288,7 @@ void GameScene::BuildMeshes(const ComPtr<ID3D12Device>& device,
 
     // Metalon FBX 메쉬 저장
     auto Metalon = make_shared<FBXLoader>();
-    if (Metalon->LoadFBXModel("Model/Monsters/Metalon/BossBlender.fbx", XMMatrixIdentity()))//scale 0.1     
+    if (Metalon->LoadFBXModel("Model/Monsters/Metalon/ExportBoss.fbx", XMMatrixIdentity()))//scale 0.1     
     {
         auto meshes = Metalon->GetMeshes();
         if (!meshes.empty())
