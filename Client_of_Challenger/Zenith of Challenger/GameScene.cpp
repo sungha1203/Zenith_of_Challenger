@@ -512,27 +512,8 @@ void GameScene::Update(FLOAT timeElapsed)
                 {
                     if(!monster->isAttacking)
                     {
-						monster->isAttacking = true;
-                        if (type == "Mushroom_Dark")
-                        {
-                            monster->PlayAnimationWithBlend("Polygonal_Mushroom_Dark__1_|Punch|Animation Base Layer", 0.2f);
-                        }
-                        else if (type == "FrightFly")
-                        {
-                            monster->PlayAnimationWithBlend("Polygonal_Frightfly_01__2_|Bite Attack High|Animation Base Laye", 0.2f);
-                        }
-                        else if (type == "Plant_Dionaea")
-                        {
-                            monster->PlayAnimationWithBlend("Polygonal_Plant_Dionaea_Green|Bite Attack|Animation Base Layer", 0.2f);
-                        }
-                        else if (type == "Venus_Blue")
-                        {
-                            monster->PlayAnimationWithBlend("Polygonal_Plant_Venus_Blue|Bite Attack|Animation Base Layer", 0.2f);
-                        }
-                        else if (type == "Flower_Fairy")
-                        {
-                            monster->PlayAnimationWithBlend("Polygonal_Flower_Fairy_Yellow|Projectile Attack|Animation Base ", 0.2f);
-                        }                       
+						monster->isAttacking = true;                       
+                        monster->PlayAnimationWithBlend("Attack", 0.2f);                                            
                     }
                     float time = monster->m_animTime;
                     float duration = monster->m_animationClips.at(monster->m_currentAnim).duration;
@@ -574,27 +555,22 @@ void GameScene::Update(FLOAT timeElapsed)
                     if (type == "Mushroom_Dark")
                     {
                         offset = 0;
-                       // monster->PlayAnimationWithBlend("Polygonal_Mushroom_Dark__1_|Punch|Animation Base Layer", 0.2f);
                     }
                     else if (type == "FrightFly")
                     {
                         offset = 10;
-                       // monster->PlayAnimationWithBlend("Polygonal_Frightfly_01__2_|Bite Attack High|Animation Base Laye", 0.2f);
                     }
                     else if (type == "Plant_Dionaea")
                     {
                         offset = 20;
-                       // monster->PlayAnimationWithBlend("Polygonal_Plant_Dionaea_Green|Bite Attack|Animation Base Layer", 0.2f);
                     }
                     else if (type == "Venus_Blue")
                     {
                         offset = 30;
-                       // monster->PlayAnimationWithBlend("Polygonal_Plant_Venus_Blue|Bite Attack|Animation Base Layer", 0.2f);
                     }
                     else if (type == "Flower_Fairy")
                     {
-                        offset = 40;
-                      //  monster->PlayAnimationWithBlend("Polygonal_Flower_Fairy_Yellow|Projectile Attack|Animation Base ", 0.2f);
+                        offset = 40;                      
                     }
                     if (getAttackCollision())
                     {
@@ -610,26 +586,9 @@ void GameScene::Update(FLOAT timeElapsed)
                 }
                 else if(monster->isAttacking&& !monster->AttackRange.Intersects(m_player->GetBoundingBox()))
                 {
-                    if (type == "Mushroom_Dark")
-                    {                      
-                        monster->PlayAnimationWithBlend("Polygonal_Mushroom_Dark__1_|Idle|Animation Base Layer.001", 0.2f);
-                    }
-                    else if (type == "FrightFly")
-                    {                              
-                        monster->PlayAnimationWithBlend("Polygonal_Frightfly_01__2_|Idle|Animation Base Layer", 0.2f);
-                    }
-                    else if (type == "Plant_Dionaea")
-                    {                      
-                        monster->PlayAnimationWithBlend("Polygonal_Plant_Dionaea_Green|Idle|Animation Base Layer", 0.2f); 
-                    }
-                    else if (type == "Venus_Blue" )
-                    {                       
-                        monster->PlayAnimationWithBlend("Polygonal_Plant_Venus_Blue|Idle|Animation Base Layer", 0.2f);
-                    }
-                    else if (type == "Flower_Fairy")
-                    {                        
-                        monster->PlayAnimationWithBlend("Polygonal_Flower_Fairy_Yellow|Idle|Animation Base Layer", 0.2f);
-                    }
+                                         
+                    monster->PlayAnimationWithBlend("Idle", 0.2f);
+                   
                     monster->SetBaseColor(XMFLOAT4(1.f, 1.f, 1.f, 1.f)); // 기본 흰색
                     monster->isAttacking = false;
                 }
@@ -1209,7 +1168,7 @@ void GameScene::BuildMeshes(const ComPtr<ID3D12Device>& device,
     //if (frightflyLoader->LoadFBXModel("Model/Monsters/Frightfly/Frightfly_01.fbx", XMMatrixIdentity()))
     //if (frightflyLoader->LoadFBXModel("Model/Monsters/Frightfly/Polygonal Frightfly 09.fbx", XMMatrixIdentity()))
     //if (frightflyLoader->LoadFBXModel("Model/Monsters/Frightfly/FrightFlyBlend.fbx", XMMatrixIdentity()))
-    if (frightflyLoader->LoadFBXModel("Model/Monsters/Frightfly/FrightFly0625.fbx", XMMatrixIdentity()))
+    if (frightflyLoader->LoadFBXModel("Model/Monsters/Frightfly/ExportFrightFlyWithMove.fbx", XMMatrixIdentity()))
     {
         auto meshes = frightflyLoader->GetMeshes();
         if (!meshes.empty())
@@ -1231,7 +1190,7 @@ void GameScene::BuildMeshes(const ComPtr<ID3D12Device>& device,
 	// Flower_Fairy FBX 메쉬 저장
 	auto flowerFairyLoader = make_shared<FBXLoader>();
 	//if (flowerFairyLoader->LoadFBXModel("Model/Monsters/Flower_Fairy/FlowerFairyBlender.fbx", XMMatrixIdentity()))//scale 0.1 
-	if (flowerFairyLoader->LoadFBXModel("Model/Monsters/Flower_Fairy/ExportFairy.fbx", XMMatrixIdentity()))//scale 0.1 
+	if (flowerFairyLoader->LoadFBXModel("Model/Monsters/Flower_Fairy/ExportFairyWithMove.fbx", XMMatrixIdentity()))//scale 0.1 
 	{
 		auto meshes = flowerFairyLoader->GetMeshes();
 		if (!meshes.empty())
@@ -1255,7 +1214,7 @@ void GameScene::BuildMeshes(const ComPtr<ID3D12Device>& device,
 	}
 	// Mushroom_Dark FBX 메쉬 저장
 	auto mushroomDarkLoader = make_shared<FBXLoader>();
-	if (mushroomDarkLoader->LoadFBXModel("Model/Monsters/Mushroom_Dark/ExportMushroom.fbx", XMMatrixIdentity()))//scale 0.1 
+	if (mushroomDarkLoader->LoadFBXModel("Model/Monsters/Mushroom_Dark/ExportMushroomWithMove.fbx", XMMatrixIdentity()))//scale 0.1 
 	//if (mushroomDarkLoader->LoadFBXModel("Model/Monsters/Mushroom_Dark/Polygonal Mushroom Dark2.fbx", XMMatrixIdentity()))//scale 0.1 
 	{
 		auto meshes = mushroomDarkLoader->GetMeshes();
@@ -1280,7 +1239,7 @@ void GameScene::BuildMeshes(const ComPtr<ID3D12Device>& device,
 	}
 	// Venus_Blue FBX 메쉬 저장
 	auto venusBlueLoader = make_shared<FBXLoader>();
-	if (venusBlueLoader->LoadFBXModel("Model/Monsters/Venus_Blue/ExportVenus_Blue.fbx", XMMatrixIdentity()))//scale 0.1 
+	if (venusBlueLoader->LoadFBXModel("Model/Monsters/Venus_Blue/ExportVenus_BlueWithMove.fbx", XMMatrixIdentity()))//scale 0.1 
 	{
 		auto meshes = venusBlueLoader->GetMeshes();
 		if (!meshes.empty())
@@ -1304,7 +1263,7 @@ void GameScene::BuildMeshes(const ComPtr<ID3D12Device>& device,
 	}
 	// Plant_Dionaea FBX 메쉬 저장
 	auto Plant_DionaeaLoader = make_shared<FBXLoader>();
-	if (Plant_DionaeaLoader->LoadFBXModel("Model/Monsters/Plant_Dionaea/ExportPlant_Dionaea.fbx", XMMatrixIdentity()))//scale 0.1     
+	if (Plant_DionaeaLoader->LoadFBXModel("Model/Monsters/Plant_Dionaea/ExportPlant_DionaeaWithMove.fbx", XMMatrixIdentity()))//scale 0.1     
 	{
 		auto meshes = Plant_DionaeaLoader->GetMeshes();
 		if (!meshes.empty())
@@ -2544,6 +2503,7 @@ void GameScene::ActivateZenithStageMonsters()
         for (auto& monster : group)
         {
             monster->SetActive(true);
+            monster->PlayAnimationWithBlend("Move", 0.2f);
         }
     }
 
