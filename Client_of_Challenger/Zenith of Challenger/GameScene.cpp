@@ -40,7 +40,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device,
 
     // 정점맵 파일 로드
     m_ZenithLoader = make_shared<FBXLoader>();
-    if (m_ZenithLoader->LoadFBXModel("Model/Map/ZenithObject.fbx",
+    if (m_ZenithLoader->LoadFBXModel("Model/Map/ZenithObject3.fbx",
         XMMatrixScaling(1.0f, 1.0f, 1.0f)))
     {
         m_ZenithMeshes = m_ZenithLoader->GetMeshes();
