@@ -37,7 +37,7 @@ public:
     XMFLOAT3 g_pos3;
     std::unordered_map<int, XMFLOAT3> CmonstersCoord;
     std::unordered_map<int, XMFLOAT3> ZmonstersCoord;
-    std::unordered_map<int, std::string> ZmonstersCurrentAnimation; 
+    std::unordered_map<int, bool> ZmonstersPlayAttack; 
     std::unordered_map<int, float> ZmonstersToward;
     XMFLOAT3 BossCoord;
     float BossToward;

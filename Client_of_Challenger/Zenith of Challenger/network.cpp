@@ -846,7 +846,7 @@ void ClientNetwork::ProcessZMonsterAttackAnimation(char* buffer)
 	}
 	else
 	{
-		gGameFramework->ZmonstersCurrentAnimation[pkt->monsterID] = "Attack";
+		gGameFramework->ZmonstersPlayAttack[pkt->monsterID] = true;
 	}
 }
 

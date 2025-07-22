@@ -681,7 +681,11 @@ void GameScene::Update(FLOAT timeElapsed)
                 if (idx < gGameFramework->ZmonstersCoord.size()) {
                     monster->SetPosition(XMFLOAT3(gGameFramework->ZmonstersCoord[idx].x, gGameFramework->ZmonstersCoord[idx].y, gGameFramework->ZmonstersCoord[idx].z));
                     monster->SetRotationY(gGameFramework->ZmonstersToward[idx]);
-                    monster->m_currentAnim = gGameFramework->ZmonstersCurrentAnimation[idx];
+                    if (gGameFramework->ZmonstersPlayAttack[idx])
+                    {
+                        monster->PlayAnimationWithBlend("Attack", 2.0f);
+                        gGameFramework->ZmonstersPlayAttack[idx] = false;
+                    }
                     ++idx;
                 }
             }

@@ -166,7 +166,7 @@ void Room::m_ZmonsterPosTimerThread()
 	{
 		std::this_thread::sleep_for(std::chrono::milliseconds(30));
 
-		for (int i = 0; i <= m_ZMonsterNum+1; ++i)
+		for (int i = 0; i <= m_ZMonsterNum; ++i)
 		{
 			// 살아있을때 && 정점 몬스터
 			if (m_Zmonsters[i].GetLived() && i != 25)			
