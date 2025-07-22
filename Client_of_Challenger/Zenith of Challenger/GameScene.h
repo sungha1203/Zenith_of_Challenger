@@ -80,6 +80,7 @@ public:
 
     void UpdateGameTimeDigits();
 
+    vector<shared_ptr<Monsters>> m_bossMonsters; //보스 몬스터 
 private:
     shared_ptr<FBXLoader> m_fbxLoader; // FBX 로더 추가
     shared_ptr<FBXLoader> m_ZenithLoader; // FBX 로더 추가
@@ -101,7 +102,6 @@ private:
     unordered_map<string, vector<shared_ptr<Monsters>>> m_monsterGroups;
     unordered_map<string, shared_ptr<MeshBase>> m_meshLibrary;
 
-    vector<shared_ptr<Monsters>> m_bossMonsters; //보스 몬스터
 
     //정점 스테이지 몬스터 관리 변수
     unordered_map<string, vector<shared_ptr<Monsters>>> m_BossStageMonsters; //정점 스테이지에서 쓰이는 몬스터 10마리

@@ -264,26 +264,26 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
 
 	if (GetAsyncKeyState(VK_SPACE) & 0x8000)
 	{
-		if (m_monsterGroups["FrightFly"][0]->GetCurrentAnimation() == "Polygonal_Frightfly_01__2_|Idle|Animation Base Layer")
+		if (m_monsterGroups["FrightFly"][0]->GetCurrentAnimation() == "Idle")
 		{
 			for (int i = 0; i < m_monsterGroups["FrightFly"].size(); i++)
 			{
-				m_monsterGroups["FrightFly"][i]->PlayAnimationWithBlend("Polygonal_Frightfly_01__2_|Bite Attack High|Animation Base Laye",0.2f);
-				m_monsterGroups["Flower_Fairy"][i]->PlayAnimationWithBlend("Polygonal_Flower_Fairy_Yellow|Projectile Attack|Animation Base ", 0.2f);
-				m_monsterGroups["Mushroom_Dark"][i]->PlayAnimationWithBlend("Polygonal_Mushroom_Dark__1_|Punch|Animation Base Layer", 0.2f);
-				m_monsterGroups["Plant_Dionaea"][i]->PlayAnimationWithBlend("Polygonal_Plant_Dionaea_Green|Bite Attack|Animation Base Layer", 0.2f);
-				m_monsterGroups["Venus_Blue"][i]->PlayAnimationWithBlend("Polygonal_Plant_Venus_Blue|Bite Attack|Animation Base Layer", 0.2f);
+				m_monsterGroups["FrightFly"][i]->PlayAnimationWithBlend("Attack",0.2f);
+				m_monsterGroups["Flower_Fairy"][i]->PlayAnimationWithBlend("Attack", 0.2f);
+				m_monsterGroups["Mushroom_Dark"][i]->PlayAnimationWithBlend("Attack", 0.2f);
+				m_monsterGroups["Plant_Dionaea"][i]->PlayAnimationWithBlend("Attack", 0.2f);
+				m_monsterGroups["Venus_Blue"][i]->PlayAnimationWithBlend("Attack", 0.2f);
 			}
 		}
 		else
 		{
 			for (int i = 0; i < m_monsterGroups["FrightFly"].size(); i++)
 			{
-				m_monsterGroups["FrightFly"][i]->PlayAnimationWithBlend("Polygonal_Frightfly_01__2_|Idle|Animation Base Layer", 0.2f);
-                m_monsterGroups["Flower_Fairy"][i]->PlayAnimationWithBlend("Polygonal_Flower_Fairy_Yellow|Idle|Animation Base Layer", 0.2f);
-                m_monsterGroups["Mushroom_Dark"][i]->PlayAnimationWithBlend("Polygonal_Mushroom_Dark__1_|Idle|Animation Base Layer.001", 0.2f);
-                m_monsterGroups["Plant_Dionaea"][i]->PlayAnimationWithBlend("Polygonal_Plant_Dionaea_Green|Idle|Animation Base Layer", 0.2f);
-                m_monsterGroups["Venus_Blue"][i]->PlayAnimationWithBlend("Polygonal_Plant_Venus_Blue|Idle|Animation Base Layer", 0.2f);
+				m_monsterGroups["FrightFly"][i]->PlayAnimationWithBlend("Idle", 0.2f);
+                m_monsterGroups["Flower_Fairy"][i]->PlayAnimationWithBlend("Idle", 0.2f);
+                m_monsterGroups["Mushroom_Dark"][i]->PlayAnimationWithBlend("Idle", 0.2f);
+                m_monsterGroups["Plant_Dionaea"][i]->PlayAnimationWithBlend("Idle", 0.2f);
+                m_monsterGroups["Venus_Blue"][i]->PlayAnimationWithBlend("Idle", 0.2f);
 
 			}
 		}
@@ -681,6 +681,7 @@ void GameScene::Update(FLOAT timeElapsed)
                 if (idx < gGameFramework->ZmonstersCoord.size()) {
                     monster->SetPosition(XMFLOAT3(gGameFramework->ZmonstersCoord[idx].x, gGameFramework->ZmonstersCoord[idx].y, gGameFramework->ZmonstersCoord[idx].z));
                     monster->SetRotationY(gGameFramework->ZmonstersToward[idx]);
+                    monster->m_currentAnim = gGameFramework->ZmonstersCurrentAnimation[idx];
                     ++idx;
                 }
             }
@@ -692,7 +693,8 @@ void GameScene::Update(FLOAT timeElapsed)
             if (boss)
             {
                 boss->Update(timeElapsed);
-                boss->SetPosition(XMFLOAT3(gGameFramework->BossCoord.x, gGameFramework->BossCoord.y, gGameFramework->BossCoord.z));
+                boss->SetPosition(XMFLOAT3(gGameFramework->BossCoord.x, gGameFramework->BossCoord.y, gGameFramework->BossCoord.z)); 
+                boss->SetRotationY(gGameFramework->BossToward); 
             }
         }
 
