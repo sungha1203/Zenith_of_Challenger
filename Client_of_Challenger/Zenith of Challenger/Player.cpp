@@ -192,7 +192,8 @@ void Player::Update(FLOAT timeElapsed)
             m_animTime += timeElapsed * clip.ticksPerSecond * 2.0f;
             if (m_animTime > clip.duration)
             {
-            	m_animTime = fmod(m_animTime, clip.duration);
+            	//m_animTime = fmod(m_animTime, clip.duration);
+                m_animTime -= clip.duration;
             }
         }
     }
@@ -232,7 +233,7 @@ void Player::Update(FLOAT timeElapsed)
         //m_currentAnim = "Walking";
         XMFLOAT3 AttBoundingExtents = {3.0f,4.0f,3.0f};
         m_boundingBox.Extents = AttBoundingExtents;
-        if (m_animTime > m_animationClips.at(m_currentAnim).duration - 1.0)
+        if (m_animTime > m_animationClips.at(m_currentAnim).duration - 5.0)
         {
             isPunching = false;
             isMoving = false;

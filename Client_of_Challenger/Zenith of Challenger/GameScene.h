@@ -80,6 +80,7 @@ public:
 
     void UpdateGameTimeDigits();
 
+    vector<shared_ptr<Monsters>> m_bossMonsters; //보스 몬스터 
 private:
     shared_ptr<FBXLoader> m_fbxLoader; // FBX 로더 추가
     shared_ptr<FBXLoader> m_ZenithLoader; // FBX 로더 추가
@@ -101,7 +102,6 @@ private:
     unordered_map<string, vector<shared_ptr<Monsters>>> m_monsterGroups;
     unordered_map<string, shared_ptr<MeshBase>> m_meshLibrary;
 
-    vector<shared_ptr<Monsters>> m_bossMonsters; //보스 몬스터
 
     //정점 스테이지 몬스터 관리 변수
     unordered_map<string, vector<shared_ptr<Monsters>>> m_BossStageMonsters; //정점 스테이지에서 쓰이는 몬스터 10마리
@@ -182,12 +182,13 @@ private:
 
     //시간 표시 텍스트
     vector<shared_ptr<GameObject>> m_timeDigits;
-
-    //전직 별 직업 매쉬 정보
-    array<shared_ptr<Player>, 3> m_jobPlayers; // 0=전사, 1=마법사, 2=힐탱커
-
     vector<shared_ptr<GameObject>> m_skillIcons;
     vector<float> m_skillCooldowns = { 0.f, 0.f, 0.f }; // 남은 쿨타임
     vector<float> m_skillMaxCooldowns = { 8.f, 10.f, 6.f }; // 최대 쿨타임
+    public:
+    //전직 별 직업 매쉬 정보
+    array<shared_ptr<Player>, 3> m_jobPlayers; // 0=전사, 1=마법사, 2=힐탱커
 
+
+    array<shared_ptr<OtherPlayer>, 3> m_jobOtherPlayers; // 0=전사, 1=마법사, 2=힐탱커
 };

@@ -480,7 +480,24 @@ void ClientNetwork::ProcessInventory2Equip(char* buffer)
 
 	shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
 	GameScene* gameScene = dynamic_cast<GameScene*>(currentScene.get());
-
+	if (gameScene && pkt->item == 4) // 전사
+	{
+		// otherid[0] 또는 otherid[1] 에 매칭되는지 확인
+		if (pkt->clientID == gameScene->otherid[0])
+		{
+			gameScene->m_otherPlayerJobs[0] = 1;
+			gameScene->m_Otherplayer[0] = gameScene->m_jobOtherPlayers[0];
+			gameScene->m_Otherplayer[0]->m_id = gameScene->otherid[0];
+			gameScene->m_Otherplayer[0]->SetPosition(gameScene->m_Otherplayer[0]->m_position);
+		}
+		else if (pkt->clientID == gameScene->otherid[1])
+		{
+			gameScene->m_otherPlayerJobs[1] = 1;
+			gameScene->m_Otherplayer[1] = gameScene->m_jobOtherPlayers[0];
+			gameScene->m_Otherplayer[1]->m_id = gameScene->otherid[1];
+			gameScene->m_Otherplayer[1]->SetPosition(gameScene->m_Otherplayer[1]->m_position);
+		}
+	}
 	if (gameScene && pkt->item == 6) // 힐탱커
 	{
 		// otherid[0] 또는 otherid[1] 에 매칭되는지 확인
@@ -755,13 +772,39 @@ void ClientNetwork::ProcessRespone(char* buffer)
 void ClientNetwork::ProcessZMonsterMove(char* buffer)
 {
 	SC_Packet_ZMonsterMove* pkt = reinterpret_cast<SC_Packet_ZMonsterMove*>(buffer);
+	if (pkt->monsterID == 25)
+	{	
+		gGameFramework->BossCoord.x = pkt->x;
+		gGameFramework->BossCoord.y = pkt->y;
+		gGameFramework->BossCoord.z = pkt->z;
+		XMFLOAT3 toWard = {
+			pkt->targetX - pkt->x,
+			0.f, // Y축 회전이므로 높이 무시
+			pkt->targetZ - pkt->z
+		};
+		toWard = Vector3::Normalize(toWard);
+		// [3] 회전 각도 계산 (Z 기준)
+		float angle = atan2f(toWard.x, toWard.z); // x/z
+		float degrees = XMConvertToDegrees(angle);
+		gGameFramework->BossToward = degrees + 180;
+	}
+	else
+	{
+		gGameFramework->ZmonstersCoord[pkt->monsterID].x = pkt->x;
+		gGameFramework->ZmonstersCoord[pkt->monsterID].y = pkt->y;
+		gGameFramework->ZmonstersCoord[pkt->monsterID].z = pkt->z;
+		XMFLOAT3 toWard = {
+			pkt->targetX - pkt->x,
+			0.f, // Y축 회전이므로 높이 무시
+			pkt->targetZ - pkt->z
+		};
+		toWard = Vector3::Normalize(toWard);
+		// [3] 회전 각도 계산 (Z 기준)
+		float angle = atan2f(toWard.x, toWard.z); // x/z
+		float degrees = XMConvertToDegrees(angle);
+		gGameFramework->ZmonstersToward[pkt->monsterID] = degrees+180;		
+	}
 
-	gGameFramework->ZmonstersCoord[pkt->monsterID].x = pkt->x;
-	gGameFramework->ZmonstersCoord[pkt->monsterID].y = pkt->y;
-	gGameFramework->ZmonstersCoord[pkt->monsterID].z = pkt->z;
-	pkt->targetX;
-	pkt->targetY;
-	pkt->targetZ;
 }
 
 // [개발중] HP바와 실제 체력 연동
@@ -786,6 +829,39 @@ void ClientNetwork::ProcessZMonsterAttackAnimation(char* buffer)
 {
 	SC_Packet_ZMonsterAttack* pkt = reinterpret_cast<SC_Packet_ZMonsterAttack*>(buffer);
 	pkt->monsterID;
+
+	shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
+	GameScene* gameScene = dynamic_cast<GameScene*>(currentScene.get());
+
+	if (pkt->monsterID == 25)
+	{
+		if (pkt->bossmonsterSkill)//점프
+		{
+			gameScene->SpawnShockwaveWarning(gameScene->m_bossMonsters[0]->GetPosition());
+		}
+		else//돌진
+		{			
+			gameScene->SpawnDashWarning(gameScene->m_bossMonsters[0]->GetPosition(), gGameFramework->BossToward);
+		}
+	}
+	else
+	{
+		gGameFramework->ZmonstersPlayAttack[pkt->monsterID] = true;
+	}
+}
+
+// [개발중] 정점 몬스터 공격  -  패킷 받자마자 해당 몬스터 공격 애니메이션 시작(방향은 그냥 바라보는 곳)
+void ClientNetwork::ProcessZMonsterAttack(char* buffer)
+{
+	SC_Packet_ZMonsterAttack* pkt = reinterpret_cast<SC_Packet_ZMonsterAttack*>(buffer);
+
+	if (pkt->monsterID != 25) {  // 정점 일반 몬스터 (1초동안 스킬 애니메이션)
+		pkt->monsterID;
+	}
+	else {						 // 정점 보스 몬스터 (2초동안 예고 범위 보여주고 1초동안 스킬 애니메이션)
+		pkt->monsterID;
+		pkt->bossmonsterSkill;	// false = 스킬1    true = 스킬2
+	}
 }
 
 

@@ -87,7 +87,8 @@ shared_ptr<OtherPlayer> FBXLoader::LoadOtherPlayer(const ComPtr<ID3D12Device>& d
 
 	//if (otherPlayer->LoadFBXModel("Model/Player/ExportCharacter_AddRunning.fbx", XMMatrixIdentity()))
 	//if (otherPlayer->LoadFBXModel("Model/Player/ExportCharacter_AddKick.fbx", XMMatrixIdentity()))
-	if (otherPlayer->LoadFBXModel("Model/Player/ExportCharacter_AddHook.fbx", XMMatrixIdentity()))
+	//if (otherPlayer->LoadFBXModel("Model/Player/ExportCharacter_AddHook.fbx", XMMatrixIdentity()))
+	if (otherPlayer->LoadFBXModel("Model/Player/ExportCharacter_fixtalmoheadWeightPaintSubstract.fbx", XMMatrixIdentity()))
 	{
 		auto& meshes = otherPlayer->GetMeshes();
 
@@ -129,6 +130,7 @@ shared_ptr<OtherPlayer> FBXLoader::LoadOtherPlayer(const ComPtr<ID3D12Device>& d
 	{
 		OutputDebugStringA("[ERROR]\n");
 	}
+	
 
 }
 

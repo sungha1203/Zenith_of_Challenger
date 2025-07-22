@@ -79,12 +79,22 @@ void Monsters::Update(FLOAT timeElapsed)
 	}
 	else
 	{
-		if (m_animationClips.contains(m_currentAnim))
+		if (m_animationClips.contains(m_currentAnim)&& !StopDie)
 		{
 			const auto& clip = m_animationClips.at(m_currentAnim);
 			m_animTime += timeElapsed * clip.ticksPerSecond;			
-			while (m_animTime >= clip.duration)
-				m_animTime -= clip.duration;		
+			if(m_animTime >= clip.duration)
+			{
+				if (m_currentAnim == "Die")
+				{
+					StopDie = true;
+					m_animTime -= 1.0;
+				}
+				else
+				{
+					m_animTime -= clip.duration;
+				}
+			}
 		}		
 	}
 

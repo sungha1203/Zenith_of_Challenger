@@ -173,7 +173,7 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
         if (!m_bossMonsters.empty())
         {
             auto& boss = m_bossMonsters[0];
-            //boss->SetCurrentAnimation("Polygonal_Metalon_Purple|Polygonal_Metalon_Purple|Die|Animation Base Layer");
+            boss->SetCurrentAnimation("Die");
             if (boss && !boss->IsDissolving())
             {
                 boss->StartDissolve(); // 디버그용 디졸브 트리거
@@ -273,26 +273,26 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
 
 	if (GetAsyncKeyState(VK_SPACE) & 0x8000)
 	{
-		if (m_monsterGroups["FrightFly"][0]->GetCurrentAnimation() == "Polygonal_Frightfly_01__2_|Idle|Animation Base Layer")
+		if (m_monsterGroups["FrightFly"][0]->GetCurrentAnimation() == "Idle")
 		{
 			for (int i = 0; i < m_monsterGroups["FrightFly"].size(); i++)
 			{
-				m_monsterGroups["FrightFly"][i]->PlayAnimationWithBlend("Polygonal_Frightfly_01__2_|Bite Attack High|Animation Base Laye",0.2f);
-				m_monsterGroups["Flower_Fairy"][i]->PlayAnimationWithBlend("Polygonal_Flower_Fairy_Yellow|Projectile Attack|Animation Base ", 0.2f);
-				m_monsterGroups["Mushroom_Dark"][i]->PlayAnimationWithBlend("Polygonal_Mushroom_Dark__1_|Punch|Animation Base Layer", 0.2f);
-				m_monsterGroups["Plant_Dionaea"][i]->PlayAnimationWithBlend("Polygonal_Plant_Dionaea_Green|Bite Attack|Animation Base Layer", 0.2f);
-				m_monsterGroups["Venus_Blue"][i]->PlayAnimationWithBlend("Polygonal_Plant_Venus_Blue|Bite Attack|Animation Base Layer", 0.2f);
+				m_monsterGroups["FrightFly"][i]->PlayAnimationWithBlend("Attack",0.2f);
+				m_monsterGroups["Flower_Fairy"][i]->PlayAnimationWithBlend("Attack", 0.2f);
+				m_monsterGroups["Mushroom_Dark"][i]->PlayAnimationWithBlend("Attack", 0.2f);
+				m_monsterGroups["Plant_Dionaea"][i]->PlayAnimationWithBlend("Attack", 0.2f);
+				m_monsterGroups["Venus_Blue"][i]->PlayAnimationWithBlend("Attack", 0.2f);
 			}
 		}
 		else
 		{
 			for (int i = 0; i < m_monsterGroups["FrightFly"].size(); i++)
 			{
-				m_monsterGroups["FrightFly"][i]->PlayAnimationWithBlend("Polygonal_Frightfly_01__2_|Idle|Animation Base Layer", 0.2f);
-                m_monsterGroups["Flower_Fairy"][i]->PlayAnimationWithBlend("Polygonal_Flower_Fairy_Yellow|Idle|Animation Base Layer", 0.2f);
-                m_monsterGroups["Mushroom_Dark"][i]->PlayAnimationWithBlend("Polygonal_Mushroom_Dark__1_|Idle|Animation Base Layer.001", 0.2f);
-                m_monsterGroups["Plant_Dionaea"][i]->PlayAnimationWithBlend("Polygonal_Plant_Dionaea_Green|Idle|Animation Base Layer", 0.2f);
-                m_monsterGroups["Venus_Blue"][i]->PlayAnimationWithBlend("Polygonal_Plant_Venus_Blue|Idle|Animation Base Layer", 0.2f);
+				m_monsterGroups["FrightFly"][i]->PlayAnimationWithBlend("Idle", 0.2f);
+                m_monsterGroups["Flower_Fairy"][i]->PlayAnimationWithBlend("Idle", 0.2f);
+                m_monsterGroups["Mushroom_Dark"][i]->PlayAnimationWithBlend("Idle", 0.2f);
+                m_monsterGroups["Plant_Dionaea"][i]->PlayAnimationWithBlend("Idle", 0.2f);
+                m_monsterGroups["Venus_Blue"][i]->PlayAnimationWithBlend("Idle", 0.2f);
 
 			}
 		}
@@ -690,6 +690,12 @@ void GameScene::Update(FLOAT timeElapsed)
                 monster->Update(timeElapsed);
                 if (idx < gGameFramework->ZmonstersCoord.size()) {
                     monster->SetPosition(XMFLOAT3(gGameFramework->ZmonstersCoord[idx].x, gGameFramework->ZmonstersCoord[idx].y, gGameFramework->ZmonstersCoord[idx].z));
+                    monster->SetRotationY(gGameFramework->ZmonstersToward[idx]);
+                    if (gGameFramework->ZmonstersPlayAttack[idx])
+                    {
+                        monster->PlayAnimationWithBlend("Attack", 2.0f);
+                        gGameFramework->ZmonstersPlayAttack[idx] = false;
+                    }
                     ++idx;
                 }
             }
@@ -701,6 +707,8 @@ void GameScene::Update(FLOAT timeElapsed)
             if (boss)
             {
                 boss->Update(timeElapsed);
+                boss->SetPosition(XMFLOAT3(gGameFramework->BossCoord.x, gGameFramework->BossCoord.y, gGameFramework->BossCoord.z)); 
+                boss->SetRotationY(gGameFramework->BossToward); 
             }
         }
 
@@ -1332,7 +1340,7 @@ void GameScene::BuildMeshes(const ComPtr<ID3D12Device>& device,
 
     // Metalon FBX 메쉬 저장
     auto Metalon = make_shared<FBXLoader>();
-    if (Metalon->LoadFBXModel("Model/Monsters/Metalon/BossBlender.fbx", XMMatrixIdentity()))//scale 0.1     
+    if (Metalon->LoadFBXModel("Model/Monsters/Metalon/ExportBoss.fbx", XMMatrixIdentity()))//scale 0.1     
     {
         auto meshes = Metalon->GetMeshes();
         if (!meshes.empty())
@@ -1717,7 +1725,40 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
             m_jobPlayers[i] = player;
         }
     }
+    for (int i = 0; i < 1; ++i) {
+        auto loader = make_shared<FBXLoader>();
+        if (loader->LoadFBXModel(modelPaths[i], XMMatrixIdentity())) {
+            auto Otherplayer = make_shared<OtherPlayer>(device);
+            for (auto& mesh : loader->GetMeshes())
+                Otherplayer->AddMesh(mesh);
 
+            Otherplayer->SetScale(XMFLOAT3{ 0.0005, 0.0005, 0.0005 }); // 기본값 확정
+            Otherplayer->SetRotationY(0.f);                  // 정면을 보게 초기화
+
+            Otherplayer->SetAnimationClips(loader->GetAnimationClips());
+            Otherplayer->SetCurrentAnimation("Idle");
+            Otherplayer->SetBoneOffsets(loader->GetBoneOffsets());
+            Otherplayer->SetBoneNameToIndex(loader->GetBoneNameToIndex());
+            Otherplayer->SetBoneHierarchy(loader->GetBoneHierarchy());
+            Otherplayer->SetstaticNodeTransforms(loader->GetStaticNodeTransforms());
+            Otherplayer->SetNodeNameToGlobalTransform(loader->GetNodeNameToGlobalTransform());
+
+            Otherplayer->SetTexture(m_textures["CHARACTER"]);
+            Otherplayer->SetTextureIndex(m_textures["CHARACTER"]->GetTextureIndex());
+            Otherplayer->SetShader(m_shaders["CHARACTER"]);
+            Otherplayer->SetDebugLineShader(m_shaders["DebugLineShader"]);
+
+            BoundingBox playerBox;
+            playerBox.Center = XMFLOAT3{ 0.f, 4.0f, 0.f };
+            playerBox.Extents = { 1.0f, 4.0f, 1.0f };
+            Otherplayer->SetBoundingBox(playerBox);
+
+            auto [cpu, gpu] = gGameFramework->AllocateDescriptorHeapSlot();
+            Otherplayer->CreateBoneMatrixSRV(device, cpu, gpu);
+
+            m_jobOtherPlayers[i] = Otherplayer;
+        }
+    }
 
 	auto swordMeshes = m_meshLibrary["Sword"];
 

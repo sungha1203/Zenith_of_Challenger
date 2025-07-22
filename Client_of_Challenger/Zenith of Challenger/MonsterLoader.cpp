@@ -268,7 +268,7 @@ void LoadAllMonsters(
         monster->SetHealthBarShader(shaders.at("HealthBarShader"));
 
         monster->SetAnimationClips(clips);
-        monster->SetCurrentAnimation("Polygonal_Metalon_Purple|Polygonal_Metalon_Purple|Idle|Animation Base Layer");
+        monster->SetCurrentAnimation("Idle");
         //monster->SetCurrentAnimation("Polygonal_Metalon_Purple.001|Polygonal_Metalon_Purple.001|Idle|Animation Base Layer");
         //monster->SetCurrentAnimation("Die");
         monster->SetBoneOffsets(boneOffsetLibrary.at("Metalon"));

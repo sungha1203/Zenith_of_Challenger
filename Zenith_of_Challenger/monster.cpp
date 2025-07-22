@@ -22,7 +22,6 @@ void Monster::SetMonster(int id, NormalMonsterType type, float x, float y, float
 	m_x = x;
 	m_y = y;
 	m_z = z;
-	m_attackrange = 2.0f;
 
 	switch (type) {
 	case NormalMonsterType::Mushroom:
@@ -53,6 +52,12 @@ void Monster::SetMonster(int id, NormalMonsterType type, float x, float y, float
 		m_hp = 50;
 		m_attack = 5;
 		m_speed = 6;
+		m_attackspeed = 1;
+		break;
+	case NormalMonsterType::BossMonster:
+		m_hp = 100;
+		m_attack = 10;
+		m_speed = 5;
 		m_attackspeed = 1;
 		break;
 	default:
@@ -100,6 +105,7 @@ int Monster::UpdateTargetList()
 // 어그로 리스트(누구 쫒아갈건지 정해주는..)
 void Monster::UpdateAggroList(const std::vector<PlayerInfo>& players)
 {
+	if (m_state == MonsterState::Attack) return;
 	m_AggroList.clear();
 	float mindist = FLT_MAX;
 	int nearID = -1;
@@ -132,6 +138,7 @@ void Monster::UpdateAggroList(const std::vector<PlayerInfo>& players)
 // 보스 몬스터 어그로 리스트
 void Monster::UpdateBossAggroList(const std::vector<PlayerInfo>& players)
 {
+	if (m_state == MonsterState::Attack) return;
 	m_AggroList.clear();
 	for (const auto& p : players) {
 		float dx = 0.0f - p.x;	// 플레이어와 보스 몬스터 처음 위치 x차이
@@ -153,7 +160,7 @@ void Monster::UpdateBossAggroList(const std::vector<PlayerInfo>& players)
 		m_aggroplayer = -1;
 	else {
 		m_aggroplayer = m_AggroList[0].playerID;		// 현재 보스 몬스터에 어그로 끌린 플레이어
-		//m_state = MonsterState::Aggro;
+		m_state = MonsterState::Aggro;
 	}
 
 }
@@ -282,6 +289,7 @@ void Monster::BossMove()
 		}
 
 		RealMove(m_x, m_z, targetX, targetZ);
+		break;
 	}
 	case MonsterState::ReturnStart:	// 보스 첫 위치로 이동
 	{
@@ -292,6 +300,7 @@ void Monster::BossMove()
 		float dist = sqrtf(dx * dx + dz * dz);
 
 		if (dist < 1.0f) {
+			std::cout << "[INFO] 보스몬스터 시작 지점 복귀 완료" << std::endl;
 			m_state = MonsterState::Idle;
 		}
 		else
@@ -310,17 +319,33 @@ void Monster::BossMove()
 
 		if (!m_attackInProgress) {				// 공격 애니메이션 진행중이 아니라면
 			m_attackInProgress = true;			// 공격 애니메이션 진행중
-			m_lastAttackTime = now;
-			m_bossSkillType = true;
 			m_attackJustStart = true;			// 지금 공격 시작했음 모든 클라한테 이 상황 보내줘
+			m_lastAttackTime = now;
+			m_bossSkillCharging = true;
+			std::cout << "[INFO] 보스몬스터 스킬" << (int)m_bossSkillType << " 예고 시작" << std::endl;
 		}
-		else if (elapsed >= m_attackCoolTime) {	// 공격 애니메이션 끝난 후 검사 후 몬스터가 어디로 이동해야하는지
-			m_attackInProgress = false;			// 공격 애니메이션 종료
-			if (m_AggroList.empty()) {			// 어그로 리스트에 아무도 없을 때 시작 지점으로 복귀
+		else if (m_bossSkillCharging && elapsed >= 2.0f) {		// 스킬 범위시전 2초 지난 후 실제 스킬 사용 시점
+			std::cout << "[INFO] 보스몬스터 스킬" << (int)m_bossSkillType << " 예고 끝" << std::endl;
+			m_bossSkillCharging = false;
+			m_bossSkillAnimation = true;
+			m_lastAttackTime = now;
+			std::cout << "[INFO] 보스몬스터 스킬" << (int)m_bossSkillType << " 사용" << std::endl;
+		}
+		else if (m_bossSkillAnimation && elapsed >= 1.0f) {		// 스킬 사용 끝난 직후
+			std::cout << "[INFO] 보스몬스터 스킬" << (int)m_bossSkillType << " 끝" << std::endl;
+			m_attackInProgress = false;
+			m_bossSkillAnimation = false;
+
+			// [코드] 실제 데미지 체크
+
+			m_bossSkillType = !m_bossSkillType;
+
+			if (m_AggroList.empty()) {
 				m_state = MonsterState::ReturnStart;
 			}
 			else {
-				m_state = MonsterState::Aggro;	// 어그로 리스트에 사람이 있으면 계속 따라가셈
+				m_state = MonsterState::Aggro;
+				std::cout << "[INFO] 보스몬스터 플레이어 따라감" << std::endl;
 			}
 		}
 		break;
