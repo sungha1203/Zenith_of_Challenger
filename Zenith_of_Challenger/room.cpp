@@ -166,7 +166,7 @@ void Room::m_ZmonsterPosTimerThread()
 	{
 		std::this_thread::sleep_for(std::chrono::milliseconds(30));
 
-		for (int i = 0; i < m_ZMonsterNum; ++i)
+		for (int i = 0; i <= m_ZMonsterNum+1; ++i)
 		{
 			if (m_Zmonsters[i].GetLived() && i != 25)			// 살아있을때 && 정점 몬스터
 			{
@@ -576,7 +576,7 @@ void Room::BroadcastMonsterPosition(int idx)
 				break;
 			case 1:		// 플레이어 어그로
 				pkt.targetX = g_client[m_Zmonsters[idx].GetAggroPlayer()].GetX();
-				pkt.targetZ = g_client[m_Zmonsters[idx].GetAggroPlayer()].GetY();
+				pkt.targetZ = g_client[m_Zmonsters[idx].GetAggroPlayer()].GetZ();
 				break;
 			case 2:		// 시작 지점으로 복귀
 				pkt.targetX = m_Zmonsters[idx].GetFirstLastCoord(0, 0);
@@ -584,7 +584,7 @@ void Room::BroadcastMonsterPosition(int idx)
 				break;
 			case 3:		// 공격
 				pkt.targetX = g_client[m_Zmonsters[idx].GetAggroPlayer()].GetX();
-				pkt.targetZ = g_client[m_Zmonsters[idx].GetAggroPlayer()].GetY();
+				pkt.targetZ = g_client[m_Zmonsters[idx].GetAggroPlayer()].GetZ();
 				break;
 			}
 		}
@@ -596,7 +596,7 @@ void Room::BroadcastMonsterPosition(int idx)
 				break;
 			case 1:		// 플레이어 어그로
 				pkt.targetX = g_client[m_Zmonsters[idx].GetAggroPlayer()].GetX();
-				pkt.targetZ = g_client[m_Zmonsters[idx].GetAggroPlayer()].GetY();
+				pkt.targetZ = g_client[m_Zmonsters[idx].GetAggroPlayer()].GetZ();
 				break;
 			case 2:		// 시작 지점으로 복귀
 				pkt.targetX = 0.0f;
@@ -604,7 +604,7 @@ void Room::BroadcastMonsterPosition(int idx)
 				break;
 			case 3:		// 공격
 				pkt.targetX = g_client[m_Zmonsters[idx].GetAggroPlayer()].GetX();
-				pkt.targetZ = g_client[m_Zmonsters[idx].GetAggroPlayer()].GetY();
+				pkt.targetZ = g_client[m_Zmonsters[idx].GetAggroPlayer()].GetZ();
 				break;
 			}
 		}

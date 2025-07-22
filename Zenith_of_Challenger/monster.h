@@ -46,7 +46,7 @@ private:
 	int					m_speed;								// 이동속도
 	int					m_attackspeed;							// 공격속도
 	float				m_attackrange;							// 공격범위
-	float				m_bossAttackRange = 20.f;				// 보스 공격 범위
+	float				m_bossAttackRange = 40.f;				// 보스 공격 범위
 	int					m_targetplayer;							// 어그로X, 그냥 바라보고있는 방향(플레이어)
 	MonsterState		m_state = MonsterState::Idle;			// 왕복 직선 운동
 

@@ -37,6 +37,9 @@ public:
     XMFLOAT3 g_pos3;
     std::unordered_map<int, XMFLOAT3> CmonstersCoord;
     std::unordered_map<int, XMFLOAT3> ZmonstersCoord;
+    std::unordered_map<int, float> ZmonstersToward;
+    XMFLOAT3 BossCoord;
+    float BossToward;
 
     void OnCreate(HINSTANCE hInstance, HWND hMainWnd);
     void OnDestroy();

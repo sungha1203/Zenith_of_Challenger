@@ -180,7 +180,8 @@ private:
 
     //시간 표시 텍스트
     vector<shared_ptr<GameObject>> m_timeDigits;
-
+    public:
     //전직 별 직업 매쉬 정보
     array<shared_ptr<Player>, 3> m_jobPlayers; // 0=전사, 1=마법사, 2=힐탱커
+    array<shared_ptr<OtherPlayer>, 3> m_jobOtherPlayers; // 0=전사, 1=마법사, 2=힐탱커
 };

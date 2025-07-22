@@ -680,6 +680,7 @@ void GameScene::Update(FLOAT timeElapsed)
                 monster->Update(timeElapsed);
                 if (idx < gGameFramework->ZmonstersCoord.size()) {
                     monster->SetPosition(XMFLOAT3(gGameFramework->ZmonstersCoord[idx].x, gGameFramework->ZmonstersCoord[idx].y, gGameFramework->ZmonstersCoord[idx].z));
+                    monster->SetRotationY(gGameFramework->ZmonstersToward[idx]);
                     ++idx;
                 }
             }
@@ -691,6 +692,7 @@ void GameScene::Update(FLOAT timeElapsed)
             if (boss)
             {
                 boss->Update(timeElapsed);
+                boss->SetPosition(XMFLOAT3(gGameFramework->BossCoord.x, gGameFramework->BossCoord.y, gGameFramework->BossCoord.z));
             }
         }
 
@@ -1654,7 +1656,40 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
             m_jobPlayers[i] = player;
         }
     }
+    for (int i = 0; i < 1; ++i) {
+        auto loader = make_shared<FBXLoader>();
+        if (loader->LoadFBXModel(modelPaths[i], XMMatrixIdentity())) {
+            auto Otherplayer = make_shared<OtherPlayer>(device);
+            for (auto& mesh : loader->GetMeshes())
+                Otherplayer->AddMesh(mesh);
 
+            Otherplayer->SetScale(XMFLOAT3{ 0.0005, 0.0005, 0.0005 }); // 기본값 확정
+            Otherplayer->SetRotationY(0.f);                  // 정면을 보게 초기화
+
+            Otherplayer->SetAnimationClips(loader->GetAnimationClips());
+            Otherplayer->SetCurrentAnimation("Idle");
+            Otherplayer->SetBoneOffsets(loader->GetBoneOffsets());
+            Otherplayer->SetBoneNameToIndex(loader->GetBoneNameToIndex());
+            Otherplayer->SetBoneHierarchy(loader->GetBoneHierarchy());
+            Otherplayer->SetstaticNodeTransforms(loader->GetStaticNodeTransforms());
+            Otherplayer->SetNodeNameToGlobalTransform(loader->GetNodeNameToGlobalTransform());
+
+            Otherplayer->SetTexture(m_textures["CHARACTER"]);
+            Otherplayer->SetTextureIndex(m_textures["CHARACTER"]->GetTextureIndex());
+            Otherplayer->SetShader(m_shaders["CHARACTER"]);
+            Otherplayer->SetDebugLineShader(m_shaders["DebugLineShader"]);
+
+            BoundingBox playerBox;
+            playerBox.Center = XMFLOAT3{ 0.f, 4.0f, 0.f };
+            playerBox.Extents = { 1.0f, 4.0f, 1.0f };
+            Otherplayer->SetBoundingBox(playerBox);
+
+            auto [cpu, gpu] = gGameFramework->AllocateDescriptorHeapSlot();
+            Otherplayer->CreateBoneMatrixSRV(device, cpu, gpu);
+
+            m_jobOtherPlayers[i] = Otherplayer;
+        }
+    }
 
 	auto swordMeshes = m_meshLibrary["Sword"];
 

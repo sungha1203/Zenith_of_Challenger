@@ -55,6 +55,12 @@ void Monster::SetMonster(int id, NormalMonsterType type, float x, float y, float
 		m_speed = 6;
 		m_attackspeed = 1;
 		break;
+	case NormalMonsterType::BossMonster:
+		m_hp = 100;
+		m_attack = 10;
+		m_speed = 5;
+		m_attackspeed = 1;
+		break;
 	default:
 		m_hp = 10;
 		m_attack = 1;
@@ -153,7 +159,7 @@ void Monster::UpdateBossAggroList(const std::vector<PlayerInfo>& players)
 		m_aggroplayer = -1;
 	else {
 		m_aggroplayer = m_AggroList[0].playerID;		// 현재 보스 몬스터에 어그로 끌린 플레이어
-		//m_state = MonsterState::Aggro;
+		m_state = MonsterState::Aggro;
 	}
 
 }
@@ -282,6 +288,7 @@ void Monster::BossMove()
 		}
 
 		RealMove(m_x, m_z, targetX, targetZ);
+		break;
 	}
 	case MonsterState::ReturnStart:	// 보스 첫 위치로 이동
 	{
