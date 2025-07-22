@@ -112,11 +112,15 @@ public:
 	virtual void UpdateShaderVariable(const ComPtr<ID3D12GraphicsCommandList>& commandList, const XMFLOAT4X4* overrideMatrix = nullptr) const;
 
 	void SetMesh(const shared_ptr<MeshBase>& mesh);
+	shared_ptr<MeshBase> GetMesh() const { return m_mesh; }
+
 	void SetTexture(const shared_ptr<Texture>& texture);
 	void SetMaterial(const shared_ptr<Material>& material);
 	void SetShader(const shared_ptr<Shader>& shader);
 	void SetBaseColor(const XMFLOAT4& color);            // 추가
 	void SetUseTexture(bool use);                        // 추가
+	const XMFLOAT4& GetBaseColor() const { return m_baseColor; }
+
 
 	void SetTextureIndex(int index) { m_textureIndex = index; }
 

@@ -220,7 +220,8 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
 
     if (GetAsyncKeyState('L') & 0x0001) // F7 키 눌렀을 때 한 번만
     {
-        SpawnDustEffect(m_player->GetPosition());
+        //SpawnDustEffect(m_player->GetPosition());
+        ActivateSwordAuraSkill();
     }
 
     if (GetAsyncKeyState(VK_OEM_PLUS) & 0x0001) // = 키
@@ -311,7 +312,7 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
         }
         else
         {
-            m_player->SetCurrentAnimation("Slash");
+            m_player->SetCurrentAnimation("Goong");
         }
 
         m_player->isPunching=true;
@@ -448,8 +449,8 @@ void GameScene::Update(FLOAT timeElapsed)
             //m_weopons[0]->m_scale=(XMFLOAT3{ 10.f, 10.f, 10.f }); 
 
         }
+        UpdateSwordAuraSkill(timeElapsed); //전사 스킬 업데이트
     }
-
     m_player->Update(timeElapsed);
     m_sun->Update(timeElapsed);
 
@@ -953,7 +954,21 @@ void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) con
                 break;
             }
         }
+
 	}
+
+    if (m_isSwordSkillActive)
+    {
+        for (const auto& aura : m_swordAuraObjects)
+        {
+            aura->Render(commandList);
+        }
+    }
+
+    for (auto& trail : m_swordAuraTrailList)
+    {
+        trail.obj->Render(commandList);
+    }
 
 	//캐릭터
 	if (m_player)
@@ -1201,6 +1216,10 @@ void GameScene::BuildShaders(const ComPtr<ID3D12Device>& device,
 
     auto attackShader2 = make_shared<ShockwaveRangeShader>(device, rootSignature);
     m_shaders.insert({ "AttackRange2", attackShader2 });
+
+    auto SwordauraShader = make_shared<SwordAuraShader>(device, rootSignature);
+    m_shaders.insert({ "SwordAura", SwordauraShader });
+
 }
 
 void GameScene::BuildMeshes(const ComPtr<ID3D12Device>& device,
@@ -1401,6 +1420,16 @@ void GameScene::BuildMeshes(const ComPtr<ID3D12Device>& device,
         if (!meshes.empty())
         {
             m_meshLibrary["Sword"] = meshes[0];
+        }
+    }
+
+    auto SwordLoader1 = make_shared<FBXLoader>();
+    if (SwordLoader1->LoadFBXModel("Model/Weapon/SwordOnly2.fbx", XMMatrixIdentity())) //Sword2_FBX
+    {
+        auto meshes = SwordLoader1->GetMeshes();
+        if (!meshes.empty())
+        {
+            m_meshLibrary["Sword1"] = meshes[0];
         }
     }
 
@@ -2763,6 +2792,86 @@ void GameScene::FireUltimateBulletRain(int num)
         ball->SetScaleAnimation(0.f, 0.f, 0.f, 0.f, 0.f, 0.f); // scale pulse 제거
 
         m_magicBalls.push_back(ball);
+    }
+}
+void GameScene::ActivateSwordAuraSkill()
+{
+    if (m_isSwordSkillActive) return; // 중복 발동 방지
+
+    auto aura = make_shared<SwordAuraObject>(gGameFramework->GetDevice());
+    aura->SetMesh(m_meshLibrary["Sword1"]); // 전사 검 메시 공유
+    aura->SetShader(m_shaders.at("SwordAura"));
+    aura->SetVisible(true);
+    aura->SetScale(XMFLOAT3(5.f, 5.f, 5.f));
+    m_swordAuraObjects.push_back(aura);
+    m_isSwordSkillActive = true;
+    m_swordSkillDuration = 0.0f;
+}
+void GameScene::UpdateSwordAuraSkill(float timeElapsed)
+{
+    if (!m_isSwordSkillActive) return;
+
+    m_swordSkillDuration += timeElapsed;
+
+    if (m_swordSkillDuration >= MAX_SWORD_SKILL_DURATION)
+    {
+        m_isSwordSkillActive = false;
+        m_swordAuraObjects.clear();
+        m_swordAuraTrailList.clear();
+        return;
+    }
+
+    // 오라 위치 동기화
+    for (auto& aura : m_swordAuraObjects)
+    {
+        aura->Update(timeElapsed);
+
+        if (!m_weopons.empty())
+        {
+            XMMATRIX weaponMatrix = XMLoadFloat4x4(&m_weopons[0]->GetWorldMatrix());
+            aura->SetWorldMatrix(weaponMatrix);
+        }
+    }
+
+    // --- 트레일 생성 ---
+    m_trailTimer += timeElapsed;
+    if (m_trailTimer >= TRAIL_SPAWN_INTERVAL)
+    {
+        m_trailTimer = 0.0f;
+
+        if (!m_weopons.empty())
+        {
+            XMFLOAT4X4 mat = m_weopons[0]->GetWorldMatrix();
+
+            auto trail = std::make_shared<SwordAuraObject>(m_device);
+            trail->SetMesh(m_meshLibrary["Sword1"]);
+            trail->SetShader(m_shaders["SwordAura"]);
+            trail->SetWorldMatrix(XMLoadFloat4x4(&mat));
+            trail->SetUseTexture(false);
+            trail->SetBaseColor(XMFLOAT4(0.2f, 1.f, 1.f, 1.0f)); // 밝은 시안색
+            trail->SetVisible(true);
+
+            m_swordAuraTrailList.push_back({ trail, 0.0f });
+        }
+    }
+
+    // --- 트레일 잔상 페이드 및 제거 ---
+    for (auto it = m_swordAuraTrailList.begin(); it != m_swordAuraTrailList.end(); )
+    {
+        it->life += timeElapsed;
+        float alpha = 1.0f - (it->life / TRAIL_LIFETIME);
+
+        if (alpha <= 0.0f)
+        {
+            it = m_swordAuraTrailList.erase(it);
+        }
+        else
+        {
+            XMFLOAT4 color = it->obj->GetBaseColor();
+            color.w = alpha;
+            it->obj->SetBaseColor(color);
+            ++it;
+        }
     }
 }
 void GameScene::SpawnDustEffect(const XMFLOAT3& position)

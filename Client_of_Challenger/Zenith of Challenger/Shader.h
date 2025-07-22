@@ -158,7 +158,12 @@ public:
 	~HealingEffectShader() override = default;
 };
 
-
+class SwordAuraShader : public Shader
+{
+public:
+	SwordAuraShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSignature);
+	~SwordAuraShader() override = default;
+};
 
 class ShadowSkinnedShader : public Shader {
 public:

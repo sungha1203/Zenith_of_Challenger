@@ -1182,3 +1182,53 @@ ShockwaveRangeShader::ShockwaveRangeShader(const ComPtr<ID3D12Device>& device, c
 
 	device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_pipelineState));
 }
+
+SwordAuraShader::SwordAuraShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSignature)
+{
+	std::vector<D3D12_INPUT_ELEMENT_DESC> inputLayout = {
+		   { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,  D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		   { "NORMAL",   0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		   { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,    0, 24, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+	};
+
+#if defined(_DEBUG)
+	UINT compileFlags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
+#else
+	UINT compileFlags = 0;
+#endif
+
+	ComPtr<ID3DBlob> vs, ps, errors;
+	HRESULT hr1 = D3DCompileFromFile(TEXT("SwordAuraShader.hlsl"), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE,
+		"VSMain", "vs_5_1", compileFlags, 0, &vs, &errors);
+	HRESULT hr2 = D3DCompileFromFile(TEXT("SwordAuraShader.hlsl"), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE,
+		"PSMain", "ps_5_1", compileFlags, 0, &ps, &errors);
+
+	D3D12_BLEND_DESC blendDesc = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+	blendDesc.RenderTarget[0].BlendEnable = TRUE;
+	blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+	blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
+	blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+	blendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
+	blendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
+	blendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
+	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC desc{};
+	desc.InputLayout = { inputLayout.data(), (UINT)inputLayout.size() };
+	desc.pRootSignature = rootSignature.Get();
+	desc.VS = { vs->GetBufferPointer(), vs->GetBufferSize() };
+	desc.PS = { ps->GetBufferPointer(), ps->GetBufferSize() };
+	desc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+	desc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
+	desc.BlendState = blendDesc;
+	desc.SampleMask = UINT_MAX;
+	desc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+	desc.NumRenderTargets = 1;
+	desc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+	desc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
+	desc.SampleDesc.Count = 1;
+	desc.DepthStencilState.DepthEnable = FALSE;
+	desc.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
+
+	device->CreateGraphicsPipelineState(&desc, IID_PPV_ARGS(&m_pipelineState));
+}
