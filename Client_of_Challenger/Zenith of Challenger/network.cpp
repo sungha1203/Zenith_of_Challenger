@@ -146,6 +146,9 @@ void ClientNetwork::Receive() {
 			case SC_PACKET_ZMONSTERMOVE:
 				ProcessZMonsterMove(currentBuffer);
 				break;
+			case SC_PACKET_ZMONSTERATTACK:
+				ProcessZMonsterAttack(currentBuffer);
+				break;
 			default:
 				break;
 			}
@@ -824,43 +827,26 @@ void ClientNetwork::ProcessEndGame(char* buffer)
 	// 그리고 10초 뒤에 자동으로 방 선택 창으로 돌아가게 씬 전환
 }
 
-// [개발중] 정점 몬스터 공격 시작 애니메이션
-void ClientNetwork::ProcessZMonsterAttackAnimation(char* buffer)
-{
-	SC_Packet_ZMonsterAttack* pkt = reinterpret_cast<SC_Packet_ZMonsterAttack*>(buffer);
-	pkt->monsterID;
-
-	shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
-	GameScene* gameScene = dynamic_cast<GameScene*>(currentScene.get());
-
-	if (pkt->monsterID == 25)
-	{
-		if (pkt->bossmonsterSkill)//점프
-		{
-			gameScene->SpawnShockwaveWarning(gameScene->m_bossMonsters[0]->GetPosition());
-		}
-		else//돌진
-		{			
-			gameScene->SpawnDashWarning(gameScene->m_bossMonsters[0]->GetPosition(), gGameFramework->BossToward);
-		}
-	}
-	else
-	{
-		gGameFramework->ZmonstersPlayAttack[pkt->monsterID] = true;
-	}
-}
-
 // [개발중] 정점 몬스터 공격  -  패킷 받자마자 해당 몬스터 공격 애니메이션 시작(방향은 그냥 바라보는 곳)
 void ClientNetwork::ProcessZMonsterAttack(char* buffer)
 {
 	SC_Packet_ZMonsterAttack* pkt = reinterpret_cast<SC_Packet_ZMonsterAttack*>(buffer);
 
-	if (pkt->monsterID != 25) {  // 정점 일반 몬스터 (1초동안 스킬 애니메이션)
-		pkt->monsterID;
+	shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
+	GameScene* gameScene = dynamic_cast<GameScene*>(currentScene.get());
+
+	if (pkt->monsterID != 25) {				// 정점 일반 몬스터 (1초동안 스킬 애니메이션)
+		gGameFramework->ZmonstersPlayAttack[pkt->monsterID] = true;
 	}
-	else {						 // 정점 보스 몬스터 (2초동안 예고 범위 보여주고 1초동안 스킬 애니메이션)
-		pkt->monsterID;
-		pkt->bossmonsterSkill;	// false = 스킬1    true = 스킬2
+	else {									// 정점 보스 몬스터 (2초동안 예고 범위 보여주고 1초동안 스킬 애니메이션)
+		if (pkt->bossmonsterSkill == 2)									//점프
+		{
+			gameScene->SpawnShockwaveWarning(gameScene->m_bossMonsters[0]->GetPosition());
+		}
+		else if(pkt->bossmonsterSkill == 1)								//돌진
+		{
+			gameScene->SpawnDashWarning(gameScene->m_bossMonsters[0]->GetPosition(), gGameFramework->BossToward);
+		}
 	}
 }
 

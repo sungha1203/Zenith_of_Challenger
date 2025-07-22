@@ -322,23 +322,26 @@ void Monster::BossMove()
 			m_attackJustStart = true;			// 지금 공격 시작했음 모든 클라한테 이 상황 보내줘
 			m_lastAttackTime = now;
 			m_bossSkillCharging = true;
-			std::cout << "[INFO] 보스몬스터 스킬" << (int)m_bossSkillType << " 예고 시작" << std::endl;
+			std::cout << "[INFO] 보스몬스터 스킬" << m_bossSkillType << " 예고 시작" << std::endl;
 		}
 		else if (m_bossSkillCharging && elapsed >= 2.0f) {		// 스킬 범위시전 2초 지난 후 실제 스킬 사용 시점
-			std::cout << "[INFO] 보스몬스터 스킬" << (int)m_bossSkillType << " 예고 끝" << std::endl;
+			std::cout << "[INFO] 보스몬스터 스킬" << m_bossSkillType << " 예고 끝" << std::endl;
 			m_bossSkillCharging = false;
 			m_bossSkillAnimation = true;
 			m_lastAttackTime = now;
-			std::cout << "[INFO] 보스몬스터 스킬" << (int)m_bossSkillType << " 사용" << std::endl;
+			std::cout << "[INFO] 보스몬스터 스킬" << m_bossSkillType << " 사용" << std::endl;
 		}
 		else if (m_bossSkillAnimation && elapsed >= 1.0f) {		// 스킬 사용 끝난 직후
-			std::cout << "[INFO] 보스몬스터 스킬" << (int)m_bossSkillType << " 끝" << std::endl;
+			std::cout << "[INFO] 보스몬스터 스킬" << m_bossSkillType << " 끝" << std::endl;
 			m_attackInProgress = false;
 			m_bossSkillAnimation = false;
 
 			// [코드] 실제 데미지 체크
 
-			m_bossSkillType = !m_bossSkillType;
+			if(m_bossSkillType == 1)
+				m_bossSkillType = 2;
+			else if(m_bossSkillType == 2)
+				m_bossSkillType = 1;
 
 			if (m_AggroList.empty()) {
 				m_state = MonsterState::ReturnStart;
@@ -404,6 +407,11 @@ bool Monster::AttackAnimation()
 		return true;
 	}
 	return false;
+}
+
+void Monster::SetAttackJustStart(bool check)
+{
+	m_attackJustStart = false;
 }
 
 DropItemType Monster::DropWHAT()
