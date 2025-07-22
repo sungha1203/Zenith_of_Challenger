@@ -242,6 +242,15 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
         pkt.size = sizeof(pkt);
 
         gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
+        m_ZenithStartGame = true;
+    }
+    if (GetAsyncKeyState(VK_OEM_PERIOD) & 0x0001)
+    {
+        m_job += 1;
+
+        if (m_job == 4) {
+            m_job = 1;
+        }
     }
 
     if (GetAsyncKeyState(VK_LEFT) & 0x8000)
@@ -384,6 +393,7 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
     if (GetAsyncKeyState('C') & 0x0001)
     {
         FireMagicBall(2);
+        m_skillCooldowns = m_skillMaxCooldowns;
     }
 
     if (GetAsyncKeyState('P') & 0x8000)
@@ -694,6 +704,14 @@ void GameScene::Update(FLOAT timeElapsed)
             }
         }
 
+        //스킬 아이콘
+        for (int i = 0; i < m_skillIcons.size(); ++i)
+        {
+            m_skillCooldowns[i] = std::max(0.f, m_skillCooldowns[i] - timeElapsed);
+
+            bool isReady = (m_skillCooldowns[i] <= 0.f);
+            m_skillIcons[i]->SetHovered(isReady); // 내부에서 m_isHovered = 1 또는 0
+        }
     }
 
     //힐탱커 스킬 업데이트
@@ -907,12 +925,30 @@ void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) con
         for (const auto& weopon : m_weopons)//캐릭터 무기
         {
             weopon->SetShader(m_shaders.at("FBX"));
-            weopon->Render(commandList);
-        }
-    }
+			weopon->Render(commandList);
+		}
 
-    //캐릭터
-    if (m_player)
+        if (m_ZenithStartGame) {
+            //스킬 아이콘
+            switch (m_job)
+            {
+            case 1: // 전사
+                m_skillIcons[2]->Render(commandList);
+                break;
+            case 2: // 마법사
+                m_skillIcons[0]->Render(commandList);
+                break;
+            case 3: // 탱커
+                m_skillIcons[1]->Render(commandList);
+                break;
+            default:
+                break;
+            }
+        }
+	}
+
+	//캐릭터
+	if (m_player)
     {
         m_player->SetShader(m_shaders.at("CHARACTER"));
         m_player->Render(commandList);
@@ -933,13 +969,19 @@ void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) con
 
         float healthRatio = 1.0f /*m_player->GetCurrentHP() / m_player->GetMaxHP()*/;
 
-        for (const auto& ui : m_uiObjects)
+        for (size_t i = 0; i < m_uiObjects.size(); ++i)
         {
-            // b1 슬롯에 체력비율 전달 (셰이더에서 g_fillAmount로 사용됨)
-            //commandList->SetGraphicsRoot32BitConstants(
-            //   /* RootParameterIndex::UIFillAmount */ 1, 1, &healthRatio, 0);
-
-            ui->Render(commandList);
+            // Zenith 게임 시작 상태일 경우, index 1만 렌더
+            if (m_ZenithStartGame)
+            {
+                if (i == 1 && m_uiObjects[i])
+                    m_uiObjects[i]->Render(commandList);
+            }
+            else
+            {
+                if (m_uiObjects[i])
+                    m_uiObjects[i]->Render(commandList);
+            }
         }
     }
 
@@ -951,17 +993,18 @@ void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) con
             object->Render(commandList);
         }
     }
-    
 
-    for (const auto& digit : m_goldDigits)
-    {
-        digit->Render(commandList); // 숫자 각각 렌더
-    }
+	if (!m_ZenithStartGame) {
+		for (const auto& digit : m_goldDigits)
+		{
+			digit->Render(commandList); // 숫자 각각 렌더
+		}
 
-    for (const auto& digit : m_inventoryDigits)
-    {
-        digit->Render(commandList);
-    }
+		for (const auto& digit : m_inventoryDigits)
+		{
+			digit->Render(commandList);
+		}
+	}
 
     //파티클 그려주기
     if (m_particleManager)
@@ -1036,6 +1079,7 @@ void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) con
     for (const auto& Colon : m_ColonDigit) {
         Colon->Render(commandList);
     }
+
 
     // 디버그용 그림자맵 시각화
     if (m_debugShadowShader && m_ShadowMapEnabled)
@@ -1361,6 +1405,9 @@ void GameScene::BuildMeshes(const ComPtr<ID3D12Device>& device,
             m_meshLibrary["AttackRange"] = meshes[0];
         }
     }
+
+    m_meshLibrary["SkillIcon"] = CreateScreenQuad(device, commandList, 1.15f, 1.15f, 0.99f);
+
 }
 
 void GameScene::BuildTextures(const ComPtr<ID3D12Device>& device,
@@ -1495,6 +1542,22 @@ void GameScene::BuildTextures(const ComPtr<ID3D12Device>& device,
         TEXT("Textures/Dust.dds"), RootParameter::Texture);
     DustTexture->CreateShaderVariable(device, true);
     m_textures.insert({ "DUST", DustTexture });
+
+    auto Wizard_SkillTexture = make_shared<Texture>(device, commandList,
+        TEXT("Image/InGameUI/Wizard_Skill_Icon.dds"), RootParameter::Texture);
+    Wizard_SkillTexture->CreateShaderVariable(device, true);
+    m_textures.insert({ "Wizard_Skill_Icon", Wizard_SkillTexture });
+
+    auto Heal_SkillTexture = make_shared<Texture>(device, commandList,
+        TEXT("Image/InGameUI/Heal_Skill_Icon.dds"), RootParameter::Texture);
+    Heal_SkillTexture->CreateShaderVariable(device, true);
+    m_textures.insert({ "Heal_Skill_Icon", Heal_SkillTexture });
+
+    auto Sword_SkillTexture = make_shared<Texture>(device, commandList,
+        TEXT("Image/InGameUI/Sword_Skill_Icon.dds"), RootParameter::Texture);
+    Sword_SkillTexture->CreateShaderVariable(device, true);
+    m_textures.insert({ "Sword_Skill_Icon", Sword_SkillTexture });
+
 }
 
 void GameScene::BuildMaterials(const ComPtr<ID3D12Device>& device,
@@ -2119,6 +2182,34 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 
     m_ColonDigit.push_back(ColonDigit);
 
+    auto icon1 = make_shared<GameObject>(device);
+    icon1->SetMesh(m_meshLibrary["SkillIcon"]);
+    icon1->SetTexture(m_textures["Wizard_Skill_Icon"]); //마법사
+    icon1->SetTextureIndex(m_textures["Wizard_Skill_Icon"]->GetTextureIndex());
+    icon1->SetShader(m_shaders["UI"]);
+    icon1->SetPosition({ 0.9f, -0.65f, 0.99f }); // NDC 좌표 기준
+    icon1->SetScale({ 0.25f, 0.25f, 1.0f });
+
+    auto icon2 = make_shared<GameObject>(device);
+    icon2->SetMesh(m_meshLibrary["SkillIcon"]);
+    icon2->SetTexture(m_textures["Heal_Skill_Icon"]); //힐러
+    icon2->SetTextureIndex(m_textures["Heal_Skill_Icon"]->GetTextureIndex());
+    icon2->SetShader(m_shaders["UI"]);
+    icon2->SetPosition({ 0.9f, -0.65f, 0.99f });
+    icon2->SetScale({ 0.25f, 0.25f, 1.0f });
+
+    auto icon3 = make_shared<GameObject>(device);
+    icon3->SetMesh(m_meshLibrary["SkillIcon"]);
+    icon3->SetTexture(m_textures["Sword_Skill_Icon"]); //전사
+    icon3->SetTextureIndex(m_textures["Sword_Skill_Icon"]->GetTextureIndex());
+    icon3->SetShader(m_shaders["UI"]);
+    icon3->SetPosition({ 0.9f, -0.65f, 0.99f });
+    icon3->SetScale({ 0.25f, 0.25f, 1.0f });
+
+    // 저장
+    m_skillIcons = { icon1, icon2, icon3 };
+
+
 }
 void GameScene::AddCubeCollider(const XMFLOAT3& position, const XMFLOAT3& extents, const FLOAT& rotate)
 {
@@ -2319,11 +2410,13 @@ void GameScene::SetJobSlotUV(int type)
     m_jobSlotIcon->SetCustomUV(u0, 0.f, u1, 1.f);
     m_jobSlotIcon->SetVisible(true);
 
-    // 전직 처리: 그냥 포인터 교체
-    m_player = m_jobPlayers[type];
-    gGameFramework->SetPlayer(m_player);
-    m_player->SetCamera(m_camera);
-    m_job = type + 1;
+	// 전직 처리: 그냥 포인터 교체
+	if (type == 0) {
+		m_player = m_jobPlayers[type];
+		gGameFramework->SetPlayer(m_player);
+		m_player->SetCamera(m_camera);
+		m_job = type + 1;
+	}
 }
 void GameScene::UpdateEnhanceDigits()
 {
