@@ -693,6 +693,7 @@ void GameScene::Update(FLOAT timeElapsed)
             {
                 boss->Update(timeElapsed);
                 boss->SetPosition(XMFLOAT3(gGameFramework->BossCoord.x, gGameFramework->BossCoord.y, gGameFramework->BossCoord.z));
+                boss->SetRotationY(gGameFramework->BossToward);
             }
         }
 
