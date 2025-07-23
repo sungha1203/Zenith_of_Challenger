@@ -78,7 +78,7 @@ public:
     void ActivateZenithStageMonsters();// 몬스터 렌더 여부 활성화
     void CheckHealingCollision();
     void FireUltimateBulletRain(int num); //마법사 스킬
-    void ActivateSwordAuraSkill(); //전사 스킬
+    void ActivateSwordAuraSkill(int num); //전사 스킬
     void UpdateSwordAuraSkill(float timeElapsed);
     //타 클라 직업 판정
     int m_otherPlayerJobs[2] = { 0, 0 }; // 1: 전사, 2: 마법사, 3: 힐탱커
@@ -100,8 +100,11 @@ public:
     vector<shared_ptr<Monsters>> m_bossMonsters; //보스 몬스터 
 
     void ChangeJob(int index);
-
+    void SetOtherJob1(int num) { m_OtherJobNum[0] = num; };
+    void SetOtherJob2(int num) { m_OtherJobNum[1] = num; };
 private:
+    int m_OtherJobNum[2] = {99,99};
+
     shared_ptr<FBXLoader> m_fbxLoader; // FBX 로더 추가
     shared_ptr<FBXLoader> m_ZenithLoader; // FBX 로더 추가
     shared_ptr<FBXLoader> m_playerLoader;
@@ -194,6 +197,8 @@ private:
     vector<shared_ptr<GameObject>> m_effects; //마법사 스킬, 평타 피격시 이펙트
 
     vector<SwordAuraTrail> m_swordAuraTrailList;
+    int m_SwordNum = 99; //어떤 클라의 검 스킬이 발동됬는지
+
     float m_trailTimer = 0.0f;
     const float TRAIL_SPAWN_INTERVAL = 0.01f; // 50프레임/초 생성 주기
     const float TRAIL_LIFETIME = 0.3f;        // 0.3초 후 사라짐

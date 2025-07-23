@@ -248,8 +248,14 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
 
 	if (GetAsyncKeyState('L') & 0x0001) // F7 키 눌렀을 때 한 번만
 	{
-		//SpawnDustEffect(m_player->GetPosition());
-		ActivateSwordAuraSkill();
+		ActivateSwordAuraSkill(0);
+
+		CS_Packet_Animaition pkt;
+		pkt.type = CS_PACKET_ANIMATION;
+		pkt.animation = 4;
+		pkt.size = sizeof(pkt);
+
+		gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
 	}
 
 	if (GetAsyncKeyState(VK_OEM_PLUS) & 0x0001) // = 키
@@ -790,6 +796,10 @@ void GameScene::Update(FLOAT timeElapsed)
 		}
 
 		EndingSceneUpdate(timeElapsed);
+
+		if(m_OtherJobNum[0] == 0) ChangeJob(0);
+		if(m_OtherJobNum[1] == 1) ChangeJob(1);
+
 	}
 
 	m_skybox->SetPosition(m_camera->GetEye());
@@ -1851,6 +1861,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 			m_jobPlayers[i] = player;
 		}
 	}
+
 	for (int i = 1; i < 3; ++i) {
 		auto loader = make_shared<FBXLoader>();
 		if (loader->LoadFBXModel(modelPaths[i], XMMatrixIdentity())) {
@@ -1882,7 +1893,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 			auto [cpu, gpu] = gGameFramework->AllocateDescriptorHeapSlot(); 
 			Otherplayer->CreateBoneMatrixSRV(device, cpu, gpu); 
 
-			m_jobOtherPlayers[i-1] = Otherplayer;
+			m_jobOtherPlayers[i - 1] = Otherplayer;
 		}
 	}
 
@@ -2950,7 +2961,7 @@ void GameScene::FireUltimateBulletRain(int num)
 		m_magicBalls.push_back(ball);
 	}
 }
-void GameScene::ActivateSwordAuraSkill()
+void GameScene::ActivateSwordAuraSkill(int num) //0 = 타 클라1 / 1 = 타 클라2 / 2 = 본인
 {
 	if (m_isSwordSkillActive) return; // 중복 발동 방지
 
@@ -2962,6 +2973,7 @@ void GameScene::ActivateSwordAuraSkill()
 	m_swordAuraObjects.push_back(aura);
 	m_isSwordSkillActive = true;
 	m_swordSkillDuration = 0.0f;
+	m_SwordNum = num;
 }
 void GameScene::UpdateSwordAuraSkill(float timeElapsed)
 {
@@ -2974,6 +2986,7 @@ void GameScene::UpdateSwordAuraSkill(float timeElapsed)
 		m_isSwordSkillActive = false;
 		m_swordAuraObjects.clear();
 		m_swordAuraTrailList.clear();
+		m_SwordNum = 99;
 		return;
 	}
 
@@ -2982,9 +2995,9 @@ void GameScene::UpdateSwordAuraSkill(float timeElapsed)
 	{
 		aura->Update(timeElapsed);
 
-		if (!m_weopons.empty())
+		if (!m_weopons.empty() && m_SwordNum != 99)
 		{
-			XMMATRIX weaponMatrix = XMLoadFloat4x4(&m_weopons[0]->GetWorldMatrix());
+			XMMATRIX weaponMatrix = XMLoadFloat4x4(&m_weopons[m_SwordNum]->GetWorldMatrix());
 			aura->SetWorldMatrix(weaponMatrix);
 		}
 	}
@@ -2995,9 +3008,9 @@ void GameScene::UpdateSwordAuraSkill(float timeElapsed)
 	{
 		m_trailTimer = 0.0f;
 
-		if (!m_weopons.empty())
+		if (!m_weopons.empty() && m_SwordNum != 99)
 		{
-			XMFLOAT4X4 mat = m_weopons[0]->GetWorldMatrix();
+			XMFLOAT4X4 mat = m_weopons[m_SwordNum]->GetWorldMatrix();
 
 			auto trail = std::make_shared<SwordAuraObject>(m_device);
 			trail->SetMesh(m_meshLibrary["Sword1"]);
@@ -3115,7 +3128,6 @@ void GameScene::UpdateGameTimeDigits()
 		}
 	}
 }
-
 void GameScene::EndingSceneUpdate(float timeElapsed)
 {
 	if (m_bossDied && !m_showEndingSequence)
@@ -3229,7 +3241,6 @@ void GameScene::EndingSceneUpdate(float timeElapsed)
 
 
 }
-
 void GameScene::SetCameraToggle()
 {
 	if (m_currentCameraMode == CameraMode::QuarterView)
@@ -3270,15 +3281,18 @@ void GameScene::SetCameraToggle()
 	m_camera->SetLens(0.25f * XM_PI, gGameFramework->GetAspectRatio(), 0.1f, 1000.f);
 	m_player->SetCamera(m_camera); // 카메라 바뀐 후 플레이어에도 재등록
 }
-
 void GameScene::ChangeJob(int index)
 {
 	gGameFramework->WaitForGpuComplete();
-	m_jobOtherPlayers[index]->SetPosition(otherpos[index]); 
+	//m_jobOtherPlayers[index]->SetPosition(otherpos[index]); 
 	m_jobOtherPlayers[index]->oldPos = otherpos[index];  
 	m_otherPlayerJobs[index] = 1;
 	m_Otherplayer[index] = m_jobOtherPlayers[index]; //전사 player
 	m_Otherplayer[index]->m_id = otherid[index];
+	m_Otherplayer[index]->SetPosition(otherpos[index]);
 	//auto [cpu, gpu] = gGameFramework->AllocateDescriptorHeapSlot();
 	//m_Otherplayer[index]->CreateBoneMatrixSRV(gGameFramework->GetDevice(), cpu, gpu);
+	if (index == 0) m_OtherJobNum[0] = 99;
+	if (index == 1) m_OtherJobNum[1] = 99;
+
 }

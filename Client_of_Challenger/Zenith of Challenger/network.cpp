@@ -497,11 +497,11 @@ void ClientNetwork::ProcessInventory2Equip(char* buffer)
 		// otherid[0] 또는 otherid[1] 에 매칭되는지 확인
 		if (pkt->clientID == gameScene->otherid[0])
 		{			
-			gameScene->ChangeJob(0);
+			gameScene->SetOtherJob1(0);
 		}
 		else if (pkt->clientID == gameScene->otherid[1])
 		{						
-			gameScene->ChangeJob(1);
+			gameScene->SetOtherJob2(1);
 		}
 	}
 	if (gameScene && pkt->item == 6) // 힐탱커
@@ -627,11 +627,15 @@ void ClientNetwork::ProcessAnimation(char* buffer)
 		{
 			shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
 			currentScene->m_Otherplayer[0]->m_CurrentAnim = pkt->animation;
+			auto gameScene = dynamic_cast<GameScene*>(gGameFramework->GetSceneManager()->GetCurrentScene().get());
+			gameScene->ActivateSwordAuraSkill(1);
 		}
 		else if (pkt->client_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[1])
 		{
 			shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
 			currentScene->m_Otherplayer[1]->m_CurrentAnim = pkt->animation;
+			auto gameScene = dynamic_cast<GameScene*>(gGameFramework->GetSceneManager()->GetCurrentScene().get());
+			gameScene->ActivateSwordAuraSkill(2);
 		}
 		break;
 	case 5: // 법사
