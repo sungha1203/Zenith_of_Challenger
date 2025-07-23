@@ -52,11 +52,11 @@ float4 PSMain(PSInput input) : SV_TARGET
     // Hover »óÅÂÀÌ¸é ¹à±â °­È­
     if (g_isHovered == 1)
     {
-        color.rgb *= 1.3f; // »ìÂ¦ ºû³ª´Â ´À³¦
+        color.rgb *= 1.1f; // »ìÂ¦ ºû³ª´Â ´À³¦
     }
     else
     {
-        color.rgb *= 0.8f;
+        color.rgb *= 0.6f;
     }
     if (g_fillAmount <= 1.0 && input.TexCoord.x > g_fillAmount)
         discard;

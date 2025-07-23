@@ -97,7 +97,34 @@ void GameScene::MouseEvent(HWND hWnd, FLOAT timeElapsed)
             gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
         }
 
-        //FireMagicBall();
+        // --- 평타 공격 처리 ---
+        if (m_ZenithStartGame && !m_player->isPunching)
+        {
+            m_AttackCollision = true;
+
+            if (m_job == 1) // 전사
+            {
+                m_player->SetCurrentAnimation("Slash"); // 또는 다른 힐탱커용 평타 애니메이션
+            }
+            else if (m_job == 2) // 마법사
+            {
+                FireMagicBall(2);
+            }
+            else if (m_job == 3) // 힐탱커
+            {
+            }
+
+            m_player->isPunching = true;
+
+            // 네트워크 패킷 전송
+            CS_Packet_Animaition pkt;
+            pkt.type = CS_PACKET_ANIMATION;
+            pkt.animation = 3;
+            pkt.size = sizeof(pkt);
+            gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
+        }
+
+        
     }
 }
 
@@ -312,7 +339,7 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
         }
         else
         {
-            m_player->SetCurrentAnimation("Goong");
+            m_player->SetCurrentAnimation("Slash"); //Goong
         }
 
         m_player->isPunching=true;
@@ -1981,7 +2008,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
     healthBarZeroUI->SetScale(XMFLOAT3(1.2f, 1.2f, 1.2f));
     healthBarZeroUI->SetUseTexture(true);
     healthBarZeroUI->SetBaseColor(XMFLOAT4(1, 1, 1, 1));
-
+    healthBarZeroUI->SetHovered(true);
     m_uiObjects.push_back(healthBarZeroUI);
 
     auto healthBarUI = make_shared<GameObject>(device);
@@ -1995,7 +2022,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
     healthBarUI->SetScale(XMFLOAT3(1.2f, 1.2f, 1.2f));
     healthBarUI->SetUseTexture(true);
     healthBarUI->SetBaseColor(XMFLOAT4(1, 1, 1, 1));
-
+    healthBarUI->SetHovered(true);
     m_uiObjects.push_back(healthBarUI);
 
     auto Inventory = make_shared<GameObject>(device);
@@ -2006,7 +2033,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
     Inventory->SetPosition(XMFLOAT3(0.8f, -0.55f, 0.97f));
     Inventory->SetUseTexture(true);
     Inventory->SetBaseColor(XMFLOAT4(1, 1, 1, 1));
-
+    Inventory->SetHovered(true);
     m_uiObjects.push_back(Inventory);
 
 
@@ -2018,7 +2045,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
     Portrait->SetPosition(XMFLOAT3(-0.9f, -0.4f, 0.98f));
     Portrait->SetUseTexture(true);
     Portrait->SetBaseColor(XMFLOAT4(1, 1, 1, 1));
-
+    Portrait->SetHovered(true);
     m_uiObjects.push_back(Portrait);
 
     auto Gold = make_shared<GameObject>(device);
@@ -2029,7 +2056,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
     Gold->SetPosition(XMFLOAT3(0.75f, 0.7f, 0.98f));
     Gold->SetUseTexture(true);
     Gold->SetBaseColor(XMFLOAT4(1, 1, 1, 1));
-
+    Gold->SetHovered(true);
     m_uiObjects.push_back(Gold);
 
     // Gold 점수 3자리 숫자 UI 생성
@@ -2042,7 +2069,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
         digitUI->SetShader(m_shaders["UI"]); // UI용 셰이더 사용
         digitUI->SetUseTexture(true);
         digitUI->SetuseCustomUV(1); // customUV 사용 설정
-
+        digitUI->SetHovered(true);
         // 처음에는 모두 0으로 보여야 하니까
         float u0 = 0.0f;
         float u1 = 1.0f;
@@ -2084,7 +2111,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
         digitUI->SetShader(m_shaders["UI"]);
         digitUI->SetUseTexture(true);
         digitUI->SetuseCustomUV(1);
-
+        digitUI->SetHovered(true);
         float u0 = 0.0f;
         float u1 = 1.0f;
 
@@ -2107,7 +2134,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
     m_reinforcedWindowUI->SetPosition(XMFLOAT3(-0.73f, 0.28f, 0.97f));  // 정중앙
     m_reinforcedWindowUI->SetUseTexture(true);
     m_reinforcedWindowUI->SetBaseColor(XMFLOAT4(1, 1, 1, 1));
-
+    m_reinforcedWindowUI->SetHovered(true);
 
     //무기 아이콘 슬롯
     m_weaponSlotIcon = make_shared<GameObject>(device);
@@ -2126,7 +2153,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
     m_weaponSlotIcon->SetBaseColor(XMFLOAT4(1, 1, 1, 1));
     m_weaponSlotIcon->SetShader(m_shaders.at("UI"));
     m_weaponSlotIcon->SetTextureIndex(m_textures["weapon"]->GetTextureIndex());
-
+    m_weaponSlotIcon->SetHovered(true);
     // 직업 아이콘 슬롯
     m_jobSlotIcon = make_shared<GameObject>(device);
     m_jobSlotIcon->SetMesh(CreateScreenQuadWithCustomUV(
@@ -2144,7 +2171,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
     m_jobSlotIcon->SetBaseColor(XMFLOAT4(1, 1, 1, 1));
     m_jobSlotIcon->SetShader(m_shaders.at("UI"));
     m_jobSlotIcon->SetTextureIndex(m_textures["job"]->GetTextureIndex());
-
+    m_jobSlotIcon->SetHovered(true);
     //'+'아이콘 이미지
     m_plusIcon = make_shared<GameObject>(device);
     m_plusIcon->SetMesh(CreateScreenQuad(device, gGameFramework->GetCommandList(), 0.1f, 0.1f, 0.97f));
@@ -2152,7 +2179,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
     m_plusIcon->SetTextureIndex(m_textures["plus"]->GetTextureIndex());
     m_plusIcon->SetPosition(XMFLOAT3(-0.6f, 0.05f, 0.97f));
     m_plusIcon->SetUseTexture(true);
-
+    m_plusIcon->SetHovered(true);
 
     auto forcedDigit = std::make_shared<GameObject>(device);
 
@@ -2161,7 +2188,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
     forcedDigit->SetShader(m_shaders["UI"]); // UI용 셰이더 사용
     forcedDigit->SetUseTexture(true);
     forcedDigit->SetuseCustomUV(1); // customUV 사용 설정
-
+    forcedDigit->SetHovered(true);
     float u0 = 0.0f;
     float u1 = 0.32f;
     forcedDigit->SetCustomUV(u0, 0.0f, u1, 1.0f);
@@ -2203,6 +2230,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
         digitObj->SetShader(m_shaders["UI"]);
         digitObj->SetUseTexture(true);
         digitObj->SetuseCustomUV(1);
+        digitObj->SetHovered(true);
 
         float u0 = 0.0f;
         float u1 = 0.3f;
@@ -2230,7 +2258,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
     ColonDigit->SetShader(m_shaders["UI"]); // UI용 셰이더 사용
     ColonDigit->SetUseTexture(true);
     ColonDigit->SetuseCustomUV(1); // customUV 사용 설정
-
+    ColonDigit->SetHovered(true);
     u0 = 0.0f;
     u1 = 1.1f;
     ColonDigit->SetCustomUV(u0, 0.0f, u1, 1.0f);
@@ -2534,6 +2562,7 @@ void GameScene::SpawnHealingObject(int num)
         auto playerPos = otherpos[num];
         playerPos.y += 10.f; // 지면 위로 살짝 띄움
         healing->SetPosition(playerPos);
+        healing->m_ownerJob = 3;
     }
 
     // 크기/회전 조정
