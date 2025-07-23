@@ -45,15 +45,15 @@ private:
 	int					m_attack;								// 공격력
 	int					m_speed;								// 이동속도
 	int					m_attackspeed;							// 공격속도
-	float				m_attackrange		= 5.0f;				// 공격범위
-	float				m_bossAttackRange	= 70.f;				// 보스 공격 범위
+	float				m_attackrange = 5.0f;					// 공격범위
+	float				m_bossAttackRange = 70.f;				// 보스 공격 범위
 	int					m_targetplayer;							// 어그로X, 그냥 바라보고있는 방향(플레이어)
 	MonsterState		m_state = MonsterState::Idle;			// 왕복 직선 운동
 
 	std::vector<AggroInfo> m_AggroList;							// 어그로 리스트
 	bool				m_aggro = false;						// 어그로 됐는지(정점스테이지에서만 사용)
-	float				m_aggroRange		= 50.f;				// 어그로 범위 40
-	float				m_bossAggroRange	= 180.f;			// 보스 어그로 범위 180
+	float				m_aggroRange = 50.f;					// 어그로 범위 40
+	float				m_bossAggroRange = 180.f;				// 보스 어그로 범위 180
 	int					m_aggroplayer = -1;						// 현재 어그로 끌린 플레이어의 id
 	float				m_FirstLastCoord[2][2];					// 기본 돌아다니는 처음과 끝 좌표
 	bool				m_direction = true;						// 기본 이동 루트 방향    // true : 정방향, false : 역방향
@@ -63,6 +63,13 @@ private:
 	int					m_bossSkillType = 1;					// 보스 스킬 유형 (1 : 스킬1   2 : 스킬2)
 	bool				m_bossSkillCharging = false;			// 보스 몬스터 스킬 범위 차징중
 	bool				m_bossSkillAnimation = false;			// 보스 몬스터 스킬 애니메이션 진행중
+	float				m_baseY = 0;							// 보스 몬스터 초기 y값
+	float				m_skillStartX;							// 보스 몬스터 스킬 사용 시작 X위치
+	float				m_skillStartZ;							// 보스 몬스터 스킬 사용 시작 Z위치 
+	float				m_skillTargetX;							// 보스 몬스터 스킬 방향 타겟 X위치
+	float				m_skillTargetZ;							// 보스 몬스터 스킬 방향 타겟 Z위치
+	float				m_skillDashDistance = 150.f;			// 보스 몬스터 스킬1(돌진) 범위
+	float				m_skillJumpHeight	= 400.f;			// 보스 몬스터 스킬2(점프) 범위
 	std::chrono::steady_clock::time_point m_lastAttackTime;		// 스킬공격 마지막 시간 체크
 
 public:
@@ -98,4 +105,7 @@ public:
 	float					GetFirstLastCoord(int FL, int XZ) const { return m_FirstLastCoord[FL][XZ]; }
 	int						GetAggroPlayer() const { return m_aggroplayer; }
 	int						GetBossSkillType() const { return m_bossSkillType; }
+	bool					GetBossSkillAnimation() const { return m_bossSkillAnimation; }
+	float					GetSkillTargetX() const { return m_skillTargetX; }
+	float					GetSkillTargetZ() const { return m_skillTargetZ; }
 };

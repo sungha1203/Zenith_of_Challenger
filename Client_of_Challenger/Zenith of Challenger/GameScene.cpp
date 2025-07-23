@@ -194,6 +194,7 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
 	}
 	if (GetAsyncKeyState(VK_F4) & 0x0001) { // F4 키 단일 입력
 		m_OutLine = !m_OutLine;
+		m_bossDied = true;
 	}
 	if (GetAsyncKeyState(VK_F6) & 0x0001) // 한 번만
 	{
@@ -271,6 +272,7 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
 
 		gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
 		m_ZenithStartGame = true;
+		SetCameraToggle();
 	}
 	if (GetAsyncKeyState(VK_OEM_PERIOD) & 0x0001)
 	{
@@ -328,36 +330,30 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
 
 	bool isFPressed = (GetAsyncKeyState('F') & 0x8000) != 0;
 
-    if (!m_player->isPunching && isFPressed && !wasKeyPressedF)
-    {
-        m_AttackCollision = true;
-        //m_player->SetCurrentAnimation("Punch.001");
-        //m_player->SetCurrentAnimation("Hook");
-        if(m_job==0)
-        {
-            m_player->SetCurrentAnimation("Kick");
-
-			CS_Packet_Animaition pkt;
-			pkt.type = CS_PACKET_ANIMATION;
-			pkt.animation = 3;
-			pkt.size = sizeof(pkt);
-			gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
-        }
-        else
-        {
-            m_player->SetCurrentAnimation("Slash"); //Goong        
-
-
-			CS_Packet_Animaition pkt;
-			pkt.type = CS_PACKET_ANIMATION;
-			pkt.animation = 4;
-			pkt.size = sizeof(pkt);
-			gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
+	if (!m_player->isPunching && isFPressed && !wasKeyPressedF)
+	{
+		m_AttackCollision = true;
+		//m_player->SetCurrentAnimation("Punch.001");
+		//m_player->SetCurrentAnimation("Hook");
+		if (m_job == 0)
+		{
+			m_player->SetCurrentAnimation("Kick");
+		}
+		else
+		{
+			m_player->SetCurrentAnimation("Slash"); //Goong
 		}
 
-		m_player->isPunching = true;
-	}
 
+		CS_Packet_Animaition pkt;
+		pkt.type = CS_PACKET_ANIMATION;
+		pkt.animation = 4;
+		pkt.size = sizeof(pkt);
+		gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
+
+		m_player->isPunching = true;
+
+	}
 	wasKeyPressedF = isFPressed;
 
 
@@ -489,8 +485,6 @@ void GameScene::Update(FLOAT timeElapsed)
 
 	for (auto& object : m_objects)
 		object->Update(timeElapsed);
-
-	m_skybox->SetPosition(m_camera->GetEye());
 
 	// 플레이어 위치 가져오기
 	if (gGameFramework->GetPlayer())
@@ -761,7 +755,11 @@ void GameScene::Update(FLOAT timeElapsed)
 			bool isReady = (m_skillCooldowns[i] <= 0.f);
 			m_skillIcons[i]->SetHovered(isReady); // 내부에서 m_isHovered = 1 또는 0
 		}
+
+		EndingSceneUpdate(timeElapsed);
 	}
+
+	m_skybox->SetPosition(m_camera->GetEye());
 
 	//힐탱커 스킬 업데이트
 	for (const auto& healing : m_healingObjects)
@@ -892,7 +890,7 @@ void GameScene::Update(FLOAT timeElapsed)
 			++it;
 	}
 
-	UpdateGameTimeDigits();
+	if(!m_bossDied) UpdateGameTimeDigits();
 
 	CheckHealingCollision();
 
@@ -993,6 +991,14 @@ void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) con
 			default:
 				break;
 			}
+		}
+
+		for (const auto& Banner : m_uiEndingBanner) {
+			if(Banner->IsVisible()) Banner->Render(commandList);
+		}
+
+		for (const auto& Press : m_uiPressOn) {
+			if(Press->IsVisible()) Press->Render(commandList);
 		}
 
 	}
@@ -1260,6 +1266,8 @@ void GameScene::BuildShaders(const ComPtr<ID3D12Device>& device,
 	auto SwordauraShader = make_shared<SwordAuraShader>(device, rootSignature);
 	m_shaders.insert({ "SwordAura", SwordauraShader });
 
+	auto RestartShader = make_shared<RestartHintShader>(device, rootSignature);
+	m_shaders.insert({ "RestartShader", RestartShader });
 }
 
 void GameScene::BuildMeshes(const ComPtr<ID3D12Device>& device,
@@ -1635,6 +1643,20 @@ void GameScene::BuildTextures(const ComPtr<ID3D12Device>& device,
 	Sword_SkillTexture->CreateShaderVariable(device, true);
 	m_textures.insert({ "Sword_Skill_Icon", Sword_SkillTexture });
 
+	auto Result_ClearTexture = make_shared<Texture>(device, commandList,
+		TEXT("Image/InGameUI/Result_Clear.dds"), RootParameter::Texture);
+	Result_ClearTexture->CreateShaderVariable(device, true);
+	m_textures.insert({ "Result_Clear", Result_ClearTexture });
+
+	auto Result_FailTexture = make_shared<Texture>(device, commandList,
+		TEXT("Image/InGameUI/Result_Fail.dds"), RootParameter::Texture);
+	Result_FailTexture->CreateShaderVariable(device, true);
+	m_textures.insert({ "Result_Fail", Result_FailTexture });
+
+	auto Press_on_restartTexture = make_shared<Texture>(device, commandList,
+		TEXT("Image/InGameUI/Press_on_restart.dds"), RootParameter::Texture);
+	Press_on_restartTexture->CreateShaderVariable(device, true);
+	m_textures.insert({ "Press_on_restart", Press_on_restartTexture });
 }
 
 void GameScene::BuildMaterials(const ComPtr<ID3D12Device>& device,
@@ -1984,6 +2006,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 	m_skybox->SetTextureIndex(m_textures["SKYBOX"]->GetTextureIndex());
 	m_skybox->SetTexture(m_textures["SKYBOX"]);
 	m_skybox->SetShader(m_shaders["SKYBOX"]);
+	m_skybox->SetPosition(m_camera->GetEye());
 
 	//터레인
 	m_terrain = make_shared<Terrain>(device);
@@ -2321,6 +2344,42 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 
 	// 저장
 	m_skillIcons = { icon1, icon2, icon3 };
+
+	//승리UI
+	auto Banner_Clear = make_shared<GameObject>(device);
+	Banner_Clear->SetMesh(m_meshLibrary["SkillIcon"]);
+	Banner_Clear->SetTexture(m_textures["Result_Clear"]);
+	Banner_Clear->SetTextureIndex(m_textures["Result_Clear"]->GetTextureIndex());
+	Banner_Clear->SetShader(m_shaders["UI"]);
+	Banner_Clear->SetPosition({ 0.69f, -0.22f, 0.98f });
+	Banner_Clear->SetScale({ 0.6f, 0.6f, 1.0f });
+	Banner_Clear->SetHovered(true);
+	Banner_Clear->SetVisible(false);
+	m_uiEndingBanner.push_back(Banner_Clear);
+
+	//패배UI
+	auto Banner_Fail = make_shared<GameObject>(device);
+	Banner_Fail->SetMesh(m_meshLibrary["SkillIcon"]);
+	Banner_Fail->SetTexture(m_textures["Result_Fail"]);
+	Banner_Fail->SetTextureIndex(m_textures["Result_Fail"]->GetTextureIndex());
+	Banner_Fail->SetShader(m_shaders["UI"]);
+	Banner_Fail->SetPosition({ 0.69f, -0.22f, 0.98f });
+	Banner_Fail->SetScale({ 0.6f, 0.6f, 1.0f });
+	Banner_Fail->SetHovered(true);
+	Banner_Fail->SetVisible(false);
+	m_uiEndingBanner.push_back(Banner_Fail);
+
+	//Press on UI
+	auto PressOn = make_shared<GameObject>(device);
+	PressOn->SetMesh(m_meshLibrary["SkillIcon"]);
+	PressOn->SetTexture(m_textures["Press_on_restart"]);
+	PressOn->SetTextureIndex(m_textures["Press_on_restart"]->GetTextureIndex());
+	PressOn->SetShader(m_shaders["RestartShader"]);
+	PressOn->SetPosition({ 0.0f, 0.6f, 0.99f });
+	PressOn->SetScale({ 2.0f, 0.25f, 1.0f });
+	PressOn->SetHovered(true);
+	PressOn->SetVisible(false);
+	m_uiPressOn.push_back(PressOn);
 
 
 }
@@ -3002,6 +3061,161 @@ void GameScene::UpdateGameTimeDigits()
 			m_timeDigits[i]->SetCustomUV(u0, 0.0f, u1, 1.0f);
 		}
 	}
+}
+
+void GameScene::EndingSceneUpdate(float timeElapsed)
+{
+	if (m_bossDied && !m_showEndingSequence)
+	{
+		m_showEndingSequence = true;
+		m_endingTimer = 0.f;
+
+		m_uiObjects[1]->SetVisible(false);
+
+		for (int i = 0; i < 3; ++i) {
+			m_skillIcons[i]->SetVisible(false);
+		}
+		// 플레이어 위치 → 도착 목표
+		m_player->SetPosition({ 570.f, 44.f, 6.5f }); // 예시 위치
+
+		// 시간 UI 이동 시작
+		m_moveTimeUI = true;
+		m_timeUIMoveTimer = 0.f;
+
+
+		// [1] 콜론 이동 거리 계산
+		m_colonStartPos = m_ColonDigit[0]->GetPosition();
+		m_colonTargetPos = { 0.7f, -0.4f, 0.99f }; // 원하는 최종 위치
+
+		XMFLOAT3 moveOffset = {
+			m_colonTargetPos.x - m_colonStartPos.x,
+			m_colonTargetPos.y - m_colonStartPos.y,
+			m_colonTargetPos.z - m_colonStartPos.z
+		};
+
+		// [2] 숫자들: 시작 위치 저장 및 동일한 오프셋 적용
+		m_timeDigitStartPos.clear();
+		m_timeDigitTargetPos.clear();
+
+		for (auto& digit : m_timeDigits)
+		{
+			XMFLOAT3 cur = digit->GetPosition();
+			m_timeDigitStartPos.push_back(cur);
+
+			XMFLOAT3 target = {
+				cur.x + moveOffset.x,
+				cur.y + moveOffset.y,
+				cur.z + moveOffset.z
+			};
+			m_timeDigitTargetPos.push_back(target);
+		}
+	}
+
+	if (m_showEndingSequence)
+	{
+		m_endingTimer += timeElapsed;
+
+		XMFLOAT3 playerPos = m_player->GetPosition();
+		m_player->SetRotationY(225.f);
+		XMFLOAT3 forward = m_player->GetForward();
+
+		XMFLOAT3 camPos = {
+			playerPos.x + forward.x * 20.f,
+			playerPos.y + 12.f,
+			playerPos.z + forward.z * 20.f
+		};
+
+		XMFLOAT3 lookAt = {
+			playerPos.x,
+			playerPos.y + 5.f,
+			playerPos.z
+		};
+
+		// 승리 연출용 카메라 고정
+		m_camera->SetPosition(camPos);
+		m_camera->SetLookAt(lookAt);
+
+		// UI 띄우기
+		if (m_endingTimer >= MAX_ENDING_TIME)
+		{
+			m_uiEndingBanner[0]->SetVisible(true); // 승리 UI 표시
+			m_uiPressOn[0]->SetVisible(true);
+			//m_uiEndingBanner[1]->SetVisible(true); // 패배 UI 표시
+		}
+	}
+
+	if (m_moveTimeUI)
+	{
+		m_timeUIMoveTimer += timeElapsed;
+		float t = std::clamp(m_timeUIMoveTimer / MAX_TIMEUI_MOVE_DURATION, 0.0f, 1.0f);
+
+		for (int i = 0; i < m_timeDigits.size(); ++i)
+		{
+			XMFLOAT3 start = m_timeDigitStartPos[i];
+			XMFLOAT3 end = m_timeDigitTargetPos[i];
+
+			XMFLOAT3 lerpPos = {
+				start.x + (end.x - start.x) * t,
+				start.y + (end.y - start.y) * t,
+				0.99f,
+			};
+			m_timeDigits[i]->SetPosition(lerpPos);
+		}
+
+		// 콜론도 이동
+		XMFLOAT3 colonPos = {
+			m_colonStartPos.x + (m_colonTargetPos.x - m_colonStartPos.x) * t,
+			m_colonStartPos.y + (m_colonTargetPos.y - m_colonStartPos.y) * t,
+			0.99f,
+		};
+		m_ColonDigit[0]->SetPosition(colonPos);
+
+		if (t >= 1.0f) m_moveTimeUI = false;
+	}
+
+
+
+}
+
+void GameScene::SetCameraToggle()
+{
+	if (m_currentCameraMode == CameraMode::QuarterView)
+	{
+		m_currentCameraMode = CameraMode::ThirdPerson;
+		m_camera = m_thirdPersonCamera;
+		// 마우스 숨기고 중앙에 고정
+		ShowCursor(FALSE);
+
+		POINT center = { 720, 320 }; // 해상도 1440x1080 기준
+		ClientToScreen(gGameFramework->GetHWND(), &center);
+		SetCursorPos(center.x, center.y);
+
+		for (auto& [type, group] : m_monsterGroups)
+		{
+			for (auto& monster : group)
+			{
+				if (monster) monster->SetCamera(m_camera);
+			}
+		}
+
+	}
+	else
+	{
+		m_currentCameraMode = CameraMode::QuarterView;
+		m_camera = m_quarterViewCamera;
+		ShowCursor(TRUE);
+
+		for (auto& [type, group] : m_monsterGroups)
+		{
+			for (auto& monster : group)
+			{
+				if (monster) monster->SetCamera(m_camera);
+			}
+		}
+	}
+
+	m_camera->SetLens(0.25f * XM_PI, gGameFramework->GetAspectRatio(), 0.1f, 1000.f);
+	m_player->SetCamera(m_camera); // 카메라 바뀐 후 플레이어에도 재등록
 }
 
 void GameScene::ChangeJob(int index)

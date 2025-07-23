@@ -73,92 +73,97 @@ void Player::MouseEvent(FLOAT timeElapsed)
 
 void Player::KeyboardEvent(FLOAT timeElapsed)
 {
-    if (!m_camera) return;
+    auto gameScene = dynamic_cast<GameScene*>(gGameFramework->GetSceneManager()->GetCurrentScene().get());
 
-    bool isTPS = dynamic_pointer_cast<ThirdPersonCamera>(m_camera) != nullptr;
-    bool isQuarter = dynamic_pointer_cast<QuarterViewCamera>(m_camera) != nullptr;
+    if (!gameScene->GetEndingSceneBool()) {
 
-    XMFLOAT3 front, right;
+        if (!m_camera) return;
 
-    // 카메라 기준 방향
-    if (isTPS || isQuarter)
-    {
-        front = m_camera->GetN(); front.y = 0.f;
-        right = m_camera->GetU(); right.y = 0.f;
-    }
-    else
-    {
-        front = { 0.f, 0.f, 1.f };
-        right = { 1.f, 0.f, 0.f };
-    }
+        bool isTPS = dynamic_pointer_cast<ThirdPersonCamera>(m_camera) != nullptr;
+        bool isQuarter = dynamic_pointer_cast<QuarterViewCamera>(m_camera) != nullptr;
 
-    front = Vector3::Normalize(front);
-    right = Vector3::Normalize(right);
+        XMFLOAT3 front, right;
 
-    XMFLOAT3 moveDirection{ 0.f, 0.f, 0.f };
-    XMFLOAT3 faceDirection{ 0.f, 0.f, 0.f };
+        // 카메라 기준 방향
+        if (isTPS || isQuarter)
+        {
+            front = m_camera->GetN(); front.y = 0.f;
+            right = m_camera->GetU(); right.y = 0.f;
+        }
+        else
+        {
+            front = { 0.f, 0.f, 1.f };
+            right = { 1.f, 0.f, 0.f };
+        }
 
-    // 키 입력 상태 업데이트
-    if (!isPunching) {
-        keyStates['W'] = (GetAsyncKeyState('W') & 0x8000);
-        keyStates['S'] = (GetAsyncKeyState('S') & 0x8000);
-        keyStates['A'] = (GetAsyncKeyState('A') & 0x8000);
-        keyStates['D'] = (GetAsyncKeyState('D') & 0x8000);
-    }
-    else {
-        keyStates['W'] = false;
-        keyStates['S'] = false;
-        keyStates['A'] = false;
-        keyStates['D'] = false;
-    }
-    keyStates[VK_PRIOR] = (GetAsyncKeyState(VK_PRIOR) & 0x8000); // 위
-    keyStates[VK_NEXT] = (GetAsyncKeyState(VK_NEXT) & 0x8000);   // 아래
+        front = Vector3::Normalize(front);
+        right = Vector3::Normalize(right);
 
-    // 방향 계산
-    if (keyStates['W']) moveDirection = Vector3::Add(moveDirection, front);
-    if (keyStates['S']) moveDirection = Vector3::Add(moveDirection, Vector3::Negate(front));
-    if (keyStates['A']) moveDirection = Vector3::Add(moveDirection, Vector3::Negate(right));
-    if (keyStates['D']) moveDirection = Vector3::Add(moveDirection, right);
-    if (keyStates[VK_PRIOR]) moveDirection = Vector3::Add(moveDirection, { 0.f, 1.f, 0.f });
-    if (keyStates[VK_NEXT])  moveDirection = Vector3::Add(moveDirection, { 0.f, -1.f, 0.f });
+        XMFLOAT3 moveDirection{ 0.f, 0.f, 0.f };
+        XMFLOAT3 faceDirection{ 0.f, 0.f, 0.f };
 
-    // 쿼터뷰 회전 방향 계산
-    //if (isQuarter)
-    //{
+        // 키 입력 상태 업데이트
+        if (!isPunching) {
+            keyStates['W'] = (GetAsyncKeyState('W') & 0x8000);
+            keyStates['S'] = (GetAsyncKeyState('S') & 0x8000);
+            keyStates['A'] = (GetAsyncKeyState('A') & 0x8000);
+            keyStates['D'] = (GetAsyncKeyState('D') & 0x8000);
+        }
+        else {
+            keyStates['W'] = false;
+            keyStates['S'] = false;
+            keyStates['A'] = false;
+            keyStates['D'] = false;
+        }
+        keyStates[VK_PRIOR] = (GetAsyncKeyState(VK_PRIOR) & 0x8000); // 위
+        keyStates[VK_NEXT] = (GetAsyncKeyState(VK_NEXT) & 0x8000);   // 아래
+
+        // 방향 계산
+        if (keyStates['W']) moveDirection = Vector3::Add(moveDirection, front);
+        if (keyStates['S']) moveDirection = Vector3::Add(moveDirection, Vector3::Negate(front));
+        if (keyStates['A']) moveDirection = Vector3::Add(moveDirection, Vector3::Negate(right));
+        if (keyStates['D']) moveDirection = Vector3::Add(moveDirection, right);
+        if (keyStates[VK_PRIOR]) moveDirection = Vector3::Add(moveDirection, { 0.f, 1.f, 0.f });
+        if (keyStates[VK_NEXT])  moveDirection = Vector3::Add(moveDirection, { 0.f, -1.f, 0.f });
+
+        // 쿼터뷰 회전 방향 계산
+        //if (isQuarter)
+        //{
         if (keyStates['W']) faceDirection = Vector3::Add(faceDirection, front);
         if (keyStates['S']) faceDirection = Vector3::Add(faceDirection, Vector3::Negate(front));
         if (keyStates['A']) faceDirection = Vector3::Add(faceDirection, Vector3::Negate(right));
         if (keyStates['D']) faceDirection = Vector3::Add(faceDirection, right);
-   // }
+        // }
 
-    // 속도 적용
-	if (!Vector3::IsZero(moveDirection)) 
-	{
-		XMFLOAT3 normalized = Vector3::Normalize(moveDirection);
-		if (isRunning)
-			velocity = Vector3::Mul(normalized, maxSpeed+20.0);
-		else
-			velocity = Vector3::Mul(normalized, maxSpeed);
-	}
-	else
-	{
-        velocity = { 0.f, 0.f, 0.f };
-    }
+         // 속도 적용
+        if (!Vector3::IsZero(moveDirection))
+        {
+            XMFLOAT3 normalized = Vector3::Normalize(moveDirection);
+            if (isRunning)
+                velocity = Vector3::Mul(normalized, maxSpeed + 20.0);
+            else
+                velocity = Vector3::Mul(normalized, maxSpeed);
+        }
+        else
+        {
+            velocity = { 0.f, 0.f, 0.f };
+        }
 
-    // 최종 이동
-    XMFLOAT3 movement = Vector3::Mul(velocity, timeElapsed);
-    if (!Vector3::IsZero(movement))
-    {
-        Transform(movement);
-    }
+        // 최종 이동
+        XMFLOAT3 movement = Vector3::Mul(velocity, timeElapsed);
+        if (!Vector3::IsZero(movement))
+        {
+            Transform(movement);
+        }
 
-    // 쿼터뷰 회전 적용
-    if (/*isQuarter &&*/ !Vector3::IsZero(faceDirection))
-    {
-        faceDirection = Vector3::Normalize(faceDirection);
-        float angle = atan2f(faceDirection.x, faceDirection.z);
-        float degrees = XMConvertToDegrees(angle);
-        SetRotationY(degrees + 180.f);
+        // 쿼터뷰 회전 적용
+        if (/*isQuarter &&*/ !Vector3::IsZero(faceDirection))
+        {
+            faceDirection = Vector3::Normalize(faceDirection);
+            float angle = atan2f(faceDirection.x, faceDirection.z);
+            float degrees = XMConvertToDegrees(angle);
+            SetRotationY(degrees + 180.f);
+        }
     }
 }
 

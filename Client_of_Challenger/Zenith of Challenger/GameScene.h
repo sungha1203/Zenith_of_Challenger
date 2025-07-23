@@ -80,15 +80,22 @@ public:
     void FireUltimateBulletRain(int num); //마법사 스킬
     void ActivateSwordAuraSkill(); //전사 스킬
     void UpdateSwordAuraSkill(float timeElapsed);
-
     //타 클라 직업 판정
     int m_otherPlayerJobs[2] = { 0, 0 }; // 1: 전사, 2: 마법사, 3: 힐탱커
 
     void SpawnDustEffect(const XMFLOAT3& pos);
     void SpawnDashWarning(const XMFLOAT3& pos, float yaw); //보스 대쉬 공격 범위
     void SpawnShockwaveWarning(const XMFLOAT3& pos); //보스 점프 공격 범위
-
+    //플레이 시간 업데이트
     void UpdateGameTimeDigits();
+    //엔딩 관련
+    void SetEnding(bool end) { m_bossDied = end; };
+    void EndingSceneUpdate(float timeElapsed);
+    bool GetEndingSceneBool() { return m_showEndingSequence; };
+
+    //3인칭 카메라 모드 토글
+    void SetCameraToggle();
+    void SetZenithStart(int StartGame) { m_ZenithStartGame = StartGame; };
 
     vector<shared_ptr<Monsters>> m_bossMonsters; //보스 몬스터 
 
@@ -209,6 +216,23 @@ private:
     bool m_isSwordSkillActive = false;
     float m_swordSkillDuration = 0.0f;
     const float MAX_SWORD_SKILL_DURATION = 5.0f;
+
+    //엔딩화면 전용 변수
+    bool m_bossDied = false;        // 디졸브 완료 시점 감지
+    bool m_showEndingSequence = false;
+    float m_endingTimer = 0.f;
+    const float MAX_ENDING_TIME = 2.0f; // 플레이어가 도달할 시
+    bool m_moveTimeUI = false;
+    float m_timeUIMoveTimer = 0.f;
+    const float MAX_TIMEUI_MOVE_DURATION = 2.0f;
+
+    vector<XMFLOAT3> m_timeDigitStartPos;
+    vector<XMFLOAT3> m_timeDigitTargetPos;
+    XMFLOAT3 m_colonStartPos;
+    XMFLOAT3 m_colonTargetPos;
+    vector<shared_ptr<GameObject>> m_uiEndingBanner;
+    vector<shared_ptr<GameObject>> m_uiPressOn;
+
 
     public:
     //전직 별 직업 매쉬 정보
