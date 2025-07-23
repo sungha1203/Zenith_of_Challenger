@@ -490,22 +490,12 @@ void ClientNetwork::ProcessInventory2Equip(char* buffer)
 	{
 		// otherid[0] 또는 otherid[1] 에 매칭되는지 확인
 		if (pkt->clientID == gameScene->otherid[0])
-		{
-			gameScene->m_otherPlayerJobs[0] = 1;
-			gameScene->m_Otherplayer[0] = gameScene->m_jobOtherPlayers[0]; //전사 player
-			gameScene->m_Otherplayer[0]->m_id = gameScene->otherid[0];
-			gameScene->m_Otherplayer[0]->SetPosition(gameScene->otherpos[0]);
-			auto [cpu, gpu] = gGameFramework->AllocateDescriptorHeapSlot();
-			gameScene->m_Otherplayer[0]->CreateBoneMatrixSRV(gGameFramework->GetDevice(), cpu, gpu);
+		{			
+			gameScene->ChangeJob(0);
 		}
 		else if (pkt->clientID == gameScene->otherid[1])
-		{
-			gameScene->m_otherPlayerJobs[1] = 1;
-			gameScene->m_Otherplayer[1] = gameScene->m_jobOtherPlayers[1]; 
-			gameScene->m_Otherplayer[1]->m_id = gameScene->otherid[1];
-			gameScene->m_Otherplayer[1]->SetPosition(gameScene->otherpos[1]);
-			auto [cpu, gpu] = gGameFramework->AllocateDescriptorHeapSlot(); 
-			gameScene->m_Otherplayer[1]->CreateBoneMatrixSRV(gGameFramework->GetDevice(), cpu, gpu);
+		{						
+			gameScene->ChangeJob(1);
 		}
 	}
 	if (gameScene && pkt->item == 6) // 힐탱커

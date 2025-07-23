@@ -1679,12 +1679,10 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 		auto player = make_shared<Player>(device);
 
 
-		player->SetScale(XMFLOAT3{ 0.0005,0.0005,0.0005 }); // 기본값 확정
-		//player->SetScale(XMFLOAT3{ 0.005,0.005,0.005}); // 기본값 확정
+		player->SetScale(XMFLOAT3{ 0.0005,0.0005,0.0005 }); // 기본값 확정		
 		player->SetRotationY(0.f);                  // 정면을 보게 초기화
 
 		player->SetPosition(gGameFramework->g_pos);
-		//player->SetPosition(XMFLOAT3{ 0.0, 5.0, 0.0 });
 
 		// [5] FBX 메시 전부 등록
 		for (int i = 0; i < meshes.size(); ++i)
@@ -1722,7 +1720,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 		// [8] 본 행렬 StructuredBuffer용 SRV 생성
 		auto [cpuHandle, gpuHandle] = gGameFramework->AllocateDescriptorHeapSlot();
 		player->CreateBoneMatrixSRV(device, cpuHandle, gpuHandle);
-
+		OutputDebugStringA((std::string("gGameFramework addr: ") + std::to_string((uintptr_t)gGameFramework.get()) + "\n").c_str());
 		// [9] Player 등록 및 GameScene 내부에 저장
 		gGameFramework->SetPlayer(player);
 		m_player = gGameFramework->GetPlayer();
@@ -1757,15 +1755,15 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 
 	array<string, 3> modelPaths = {
 	"Model/Player/TestWithoutSword.fbx",//p
-	"Model/Player/TestWithoutSword.fbx",//op1
-	"Model/Player/TestWithoutSword.fbx",//op2
+	"Model/Player/TestWithoutSword2.fbx",//op1
+	"Model/Player/TestWithoutSword3.fbx",//op2
 	//"Model/Player/Mage.fbx",
 	//"Model/Player/Mage.fbx",
 	//"Model/Player/Healer.fbx"
 	//"Model/Player/Healer.fbx"
 	};
 
-	for (int i = 0; i < 2; ++i) {
+	for (int i = 0; i < 1; ++i) {
 		auto loader = make_shared<FBXLoader>();
 		if (loader->LoadFBXModel(modelPaths[i], XMMatrixIdentity())) {
 			auto player = make_shared<Player>(device);
@@ -1798,7 +1796,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 			m_jobPlayers[i] = player;
 		}
 	}
-	for (int i = 0; i < 1; ++i) {
+	for (int i = 1; i < 3; ++i) {
 		auto loader = make_shared<FBXLoader>();
 		if (loader->LoadFBXModel(modelPaths[i], XMMatrixIdentity())) {
 			auto Otherplayer = make_shared<OtherPlayer>(device);
@@ -1807,7 +1805,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 
 			Otherplayer->SetScale(XMFLOAT3{ 0.0005, 0.0005, 0.0005 }); // 기본값 확정
 			Otherplayer->SetRotationY(0.f);                  // 정면을 보게 초기화
-
+			Otherplayer->SetPosition(XMFLOAT3(-580.f, 43.4f, -13.f));
 			Otherplayer->SetAnimationClips(loader->GetAnimationClips());
 			Otherplayer->SetCurrentAnimation("Idle");
 			Otherplayer->SetBoneOffsets(loader->GetBoneOffsets());
@@ -1826,10 +1824,10 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 			playerBox.Extents = { 1.0f, 4.0f, 1.0f };
 			Otherplayer->SetBoundingBox(playerBox);
 
-			/*auto [cpu, gpu] = gGameFramework->AllocateDescriptorHeapSlot();
-			Otherplayer->CreateBoneMatrixSRV(device, cpu, gpu);*/
+			auto [cpu, gpu] = gGameFramework->AllocateDescriptorHeapSlot(); 
+			Otherplayer->CreateBoneMatrixSRV(device, cpu, gpu); 
 
-			m_jobOtherPlayers[i] = Otherplayer;
+			m_jobOtherPlayers[i-1] = Otherplayer;
 		}
 	}
 
@@ -3004,4 +3002,16 @@ void GameScene::UpdateGameTimeDigits()
 			m_timeDigits[i]->SetCustomUV(u0, 0.0f, u1, 1.0f);
 		}
 	}
+}
+
+void GameScene::ChangeJob(int index)
+{
+	gGameFramework->WaitForGpuComplete();
+	m_jobOtherPlayers[index]->SetPosition(otherpos[index]); 
+	m_jobOtherPlayers[index]->oldPos = otherpos[index];  
+	m_otherPlayerJobs[index] = 1;
+	m_Otherplayer[index] = m_jobOtherPlayers[index]; //전사 player
+	m_Otherplayer[index]->m_id = otherid[index];
+	//auto [cpu, gpu] = gGameFramework->AllocateDescriptorHeapSlot();
+	//m_Otherplayer[index]->CreateBoneMatrixSRV(gGameFramework->GetDevice(), cpu, gpu);
 }

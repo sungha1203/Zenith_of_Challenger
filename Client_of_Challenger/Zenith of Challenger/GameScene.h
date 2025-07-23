@@ -91,6 +91,9 @@ public:
     void UpdateGameTimeDigits();
 
     vector<shared_ptr<Monsters>> m_bossMonsters; //보스 몬스터 
+
+    void ChangeJob(int index);
+
 private:
     shared_ptr<FBXLoader> m_fbxLoader; // FBX 로더 추가
     shared_ptr<FBXLoader> m_ZenithLoader; // FBX 로더 추가
