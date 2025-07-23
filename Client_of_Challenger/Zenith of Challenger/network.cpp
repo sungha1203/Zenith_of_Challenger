@@ -146,6 +146,9 @@ void ClientNetwork::Receive() {
 			case SC_PACKET_ZMONSTERMOVE:
 				ProcessZMonsterMove(currentBuffer);
 				break;
+			case SC_PACKET_ZMONSTERATTACK: 
+				ProcessZMonsterAttack(currentBuffer); 
+				break;
 			default:
 				break;
 			}
@@ -486,16 +489,20 @@ void ClientNetwork::ProcessInventory2Equip(char* buffer)
 		if (pkt->clientID == gameScene->otherid[0])
 		{
 			gameScene->m_otherPlayerJobs[0] = 1;
-			gameScene->m_Otherplayer[0] = gameScene->m_jobOtherPlayers[0];
+			gameScene->m_Otherplayer[0] = gameScene->m_jobOtherPlayers[0]; //전사 player
 			gameScene->m_Otherplayer[0]->m_id = gameScene->otherid[0];
-			gameScene->m_Otherplayer[0]->SetPosition(gameScene->m_Otherplayer[0]->m_position);
+			gameScene->m_Otherplayer[0]->SetPosition(gameScene->otherpos[0]);
+			auto [cpu, gpu] = gGameFramework->AllocateDescriptorHeapSlot();
+			gameScene->m_Otherplayer[0]->CreateBoneMatrixSRV(gGameFramework->GetDevice(), cpu, gpu);
 		}
 		else if (pkt->clientID == gameScene->otherid[1])
 		{
 			gameScene->m_otherPlayerJobs[1] = 1;
-			gameScene->m_Otherplayer[1] = gameScene->m_jobOtherPlayers[0];
+			gameScene->m_Otherplayer[1] = gameScene->m_jobOtherPlayers[1]; 
 			gameScene->m_Otherplayer[1]->m_id = gameScene->otherid[1];
-			gameScene->m_Otherplayer[1]->SetPosition(gameScene->m_Otherplayer[1]->m_position);
+			gameScene->m_Otherplayer[1]->SetPosition(gameScene->otherpos[1]);
+			auto [cpu, gpu] = gGameFramework->AllocateDescriptorHeapSlot(); 
+			gameScene->m_Otherplayer[1]->CreateBoneMatrixSRV(gGameFramework->GetDevice(), cpu, gpu);
 		}
 	}
 	if (gameScene && pkt->item == 6) // 힐탱커
@@ -824,43 +831,27 @@ void ClientNetwork::ProcessEndGame(char* buffer)
 	// 그리고 10초 뒤에 자동으로 방 선택 창으로 돌아가게 씬 전환
 }
 
-// [개발중] 정점 몬스터 공격 시작 애니메이션
-void ClientNetwork::ProcessZMonsterAttackAnimation(char* buffer)
+// [개발중] 정점 몬스터 공격  -  패킷 받자마자 해당 몬스터 공격 애니메이션 시작(방향은 그냥 바라보는 곳)
+void ClientNetwork::ProcessZMonsterAttack(char* buffer)
 {
-	SC_Packet_ZMonsterAttack* pkt = reinterpret_cast<SC_Packet_ZMonsterAttack*>(buffer);
-	pkt->monsterID;
+	SC_Packet_ZMonsterAttack* pkt = reinterpret_cast<SC_Packet_ZMonsterAttack*>(buffer); 
+	pkt->monsterID; 
 
-	shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
-	GameScene* gameScene = dynamic_cast<GameScene*>(currentScene.get());
+	shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene(); 
+	GameScene* gameScene = dynamic_cast<GameScene*>(currentScene.get()); 
 
-	if (pkt->monsterID == 25)
-	{
+	if (pkt->monsterID != 25) {  // 정점 일반 몬스터 (1초동안 스킬 애니메이션)
+		gGameFramework->ZmonstersPlayAttack[pkt->monsterID] = true;
+	}
+	else {						 // 정점 보스 몬스터 (2초동안 예고 범위 보여주고 1초동안 스킬 애니메이션)
 		if (pkt->bossmonsterSkill)//점프
 		{
 			gameScene->SpawnShockwaveWarning(gameScene->m_bossMonsters[0]->GetPosition());
 		}
 		else//돌진
-		{			
+		{
 			gameScene->SpawnDashWarning(gameScene->m_bossMonsters[0]->GetPosition(), gGameFramework->BossToward);
 		}
-	}
-	else
-	{
-		gGameFramework->ZmonstersPlayAttack[pkt->monsterID] = true;
-	}
-}
-
-// [개발중] 정점 몬스터 공격  -  패킷 받자마자 해당 몬스터 공격 애니메이션 시작(방향은 그냥 바라보는 곳)
-void ClientNetwork::ProcessZMonsterAttack(char* buffer)
-{
-	SC_Packet_ZMonsterAttack* pkt = reinterpret_cast<SC_Packet_ZMonsterAttack*>(buffer);
-
-	if (pkt->monsterID != 25) {  // 정점 일반 몬스터 (1초동안 스킬 애니메이션)
-		pkt->monsterID;
-	}
-	else {						 // 정점 보스 몬스터 (2초동안 예고 범위 보여주고 1초동안 스킬 애니메이션)
-		pkt->monsterID;
-		pkt->bossmonsterSkill;	// false = 스킬1    true = 스킬2
 	}
 }
 

@@ -74,6 +74,7 @@ inline void ThrowIfFailed(HRESULT hr)
 {
 	if (FAILED(hr))
 	{
+		
 		OutputDebugStringA("DirectX 함수 실패!\n");
 		throw std::runtime_error("DirectX 함수 실패");
 	}

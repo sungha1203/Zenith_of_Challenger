@@ -299,20 +299,26 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
         if(m_job==0)
         {
             m_player->SetCurrentAnimation("Kick");
-        }
-        else
-        {
-            m_player->SetCurrentAnimation("Slash");
-        }
-
-        m_player->isPunching=true;
-        {
+        
             CS_Packet_Animaition pkt;
             pkt.type = CS_PACKET_ANIMATION;
             pkt.animation = 3;
             pkt.size = sizeof(pkt);
             gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
+        
         }
+        else
+        {
+            m_player->SetCurrentAnimation("Slash");
+
+            CS_Packet_Animaition pkt;
+            pkt.type = CS_PACKET_ANIMATION;
+            pkt.animation = 4;
+            pkt.size = sizeof(pkt);
+            gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
+        }
+
+        m_player->isPunching=true;
     }
 
     wasKeyPressedF = isFPressed;
@@ -1623,13 +1629,17 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
         m_Otherplayer[1]->SetScale(XMFLOAT3{ 0.0005,0.0005,0.0005 });
     }
 
-    array<string, 1> modelPaths = {
-    "Model/Player/TestWithoutSword.fbx",
+    array<string, 3> modelPaths = {
+    "Model/Player/TestWithoutSword.fbx",//p
+    "Model/Player/TestWithoutSword.fbx",//op1
+    "Model/Player/TestWithoutSword.fbx",//op2
+    //"Model/Player/Mage.fbx",
     //"Model/Player/Mage.fbx",
     //"Model/Player/Healer.fbx"
+    //"Model/Player/Healer.fbx"
     };
-
-    for (int i = 0; i < 1; ++i) {
+     
+    for (int i = 0; i < 2; ++i) {
         auto loader = make_shared<FBXLoader>();
         if (loader->LoadFBXModel(modelPaths[i], XMMatrixIdentity())) {
             auto player = make_shared<Player>(device);
@@ -1690,8 +1700,8 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
             playerBox.Extents = { 1.0f, 4.0f, 1.0f };
             Otherplayer->SetBoundingBox(playerBox);
 
-            auto [cpu, gpu] = gGameFramework->AllocateDescriptorHeapSlot();
-            Otherplayer->CreateBoneMatrixSRV(device, cpu, gpu);
+            /*auto [cpu, gpu] = gGameFramework->AllocateDescriptorHeapSlot();
+            Otherplayer->CreateBoneMatrixSRV(device, cpu, gpu);*/
 
             m_jobOtherPlayers[i] = Otherplayer;
         }
