@@ -817,8 +817,12 @@ void ClientNetwork::ProcessZMonsterMove(char* buffer)
 // [개발중] HP바와 실제 체력 연동
 void ClientNetwork::ProcessPlayerHP(char* buffer)
 {
+	// 현재 씬 가져오기 (GameScene으로 캐스팅 필요)
+	shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
+	GameScene* gameScene = dynamic_cast<GameScene*>(currentScene.get());
+
 	SC_Packet_PlayerHP* pkt = reinterpret_cast<SC_Packet_PlayerHP*>(buffer);
-	pkt->hp;
+	gameScene->m_uiObjects[1]->m_fillAmount = (float)(pkt->hp / 100);
 }
 
 // [개발중] 보스 잡고 난 후 게임 종료

@@ -322,6 +322,9 @@ void Network::HandlePacket(int client_id, char* buffer, int length) {
 	case CS_PACKET_ANIMATION:
 		ProcessAnimation(client_id, buffer, length);
 		break;
+	case CS_PACKET_DAMAGED:
+		ProcessDamaged(client_id, buffer, length);
+		break;
 	default:
 		std::cout << "[ERROR] 알 수 없는 패킷 수신함. 클라이언트 [" << client_id << "]" << std::endl;
 		break;
