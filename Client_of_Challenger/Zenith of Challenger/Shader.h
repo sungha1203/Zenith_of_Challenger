@@ -179,3 +179,9 @@ public:
 	bool IsShadowShader() const override { return true; }
 };
 
+
+class RestartHintShader : public Shader {
+public:
+	RestartHintShader(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12RootSignature>& rootSignature);
+	~RestartHintShader() override = default;
+};

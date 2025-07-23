@@ -205,8 +205,14 @@ void ClientNetwork::ProcessCustomize(char* buffer)
 void ClientNetwork::ProcessGamestart(char* buffer)
 {
 	SC_Packet_GameStart* pkt = reinterpret_cast<SC_Packet_GameStart*>(buffer);
-	if (pkt->startCS = true)
+
+	//auto gameScene = dynamic_cast<GameScene*>(gGameFramework->GetSceneManager()->GetCurrentScene().get());
+
+	if (pkt->startCS = true) {
 		gGameFramework->IsSuccess = true;
+		//gameScene->SetZenithStart(true);
+		//gameScene->SetCameraToggle();
+	}
 }
 
 void ClientNetwork::ProcessInitialstate(char* buffer)

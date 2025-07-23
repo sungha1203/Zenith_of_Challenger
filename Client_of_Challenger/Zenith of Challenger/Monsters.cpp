@@ -175,6 +175,12 @@ void Monsters::Update(FLOAT timeElapsed)
 			m_isDissolving = false;
 			m_isDead = true;
 			m_isActive = false;
+
+			// 디졸브 종료 후 GameScene에게 신호
+			if (auto gameScene = dynamic_cast<GameScene*>(gGameFramework->GetSceneManager()->GetCurrentScene().get()))
+			{
+				gameScene->SetEnding(true); // <- 보스 죽음 플래그
+			}
 		}
 	}
 
