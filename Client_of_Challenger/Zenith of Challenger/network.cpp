@@ -149,6 +149,9 @@ void ClientNetwork::Receive() {
 			case SC_PACKET_ZMONSTERATTACK:
 				ProcessZMonsterAttack(currentBuffer);
 				break;
+			case SC_PACKET_PLAYERHP:
+				ProcessPlayerHP(currentBuffer);
+				break;
 			default:
 				break;
 			}
@@ -767,12 +770,29 @@ void ClientNetwork::ProcessCMonsterTarget(char* buffer)
 // [개발중] 도전, 정점에서 피가 0이 되면 다시 태어나는 곳 지정해주기
 void ClientNetwork::ProcessRespone(char* buffer)
 {
+
 	SC_Packet_Respone* pkt = reinterpret_cast<SC_Packet_Respone*>(buffer);
+	// 현재 씬 가져오기 (GameScene으로 캐스팅 필요)
+	shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
+	GameScene* gameScene = dynamic_cast<GameScene*>(currentScene.get());
+
 	pkt->clientID;
 	pkt->x;
 	pkt->y;
 	pkt->z;
-	// ProcessWhoisMyteam()부분보고 하면 돼. id랑 xyz값 넘겨주니까 그걸로 상대방 위치 보내주면 돼.
+	XMFLOAT3 pos = { pkt->x, pkt->y, pkt->z };
+	if (pkt->clientID == m_clientID)
+	{		
+		gameScene->m_player->SetPosition(pos);  
+	}
+	else if (pkt->clientID == gameScene->otherid[0])
+	{
+		gameScene->m_Otherplayer[0]->m_position = pos; 
+	}
+	else if (pkt->clientID == gameScene->otherid[1])
+	{
+		gameScene->m_Otherplayer[1]->m_position = pos; 
+	}	
 }
 
 // [개발중] 정점 몬스터 바라보는 방향의 좌표
@@ -822,7 +842,7 @@ void ClientNetwork::ProcessPlayerHP(char* buffer)
 	GameScene* gameScene = dynamic_cast<GameScene*>(currentScene.get());
 
 	SC_Packet_PlayerHP* pkt = reinterpret_cast<SC_Packet_PlayerHP*>(buffer);
-	gameScene->m_uiObjects[1]->m_fillAmount = (float)(pkt->hp / 100);
+	gameScene->m_uiObjects[1]->m_fillAmount = (pkt->hp / 50.f);
 }
 
 // [개발중] 보스 잡고 난 후 게임 종료
