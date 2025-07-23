@@ -585,11 +585,11 @@ void GameScene::Update(FLOAT timeElapsed)
 					const auto& clip = monster->m_animationClips.at(monster->m_currentAnim);
 
 
-					if (monster->m_animTime > clip.duration / 3 && !monster->m_didDamageThisAnim)
+					if (monster->m_animTime > clip.duration / 3 && !monster->m_didDamageThisAnim) 
 					{
 						//m_uiObjects[1]->m_fillAmount -= 0.01;
 						monster->m_didDamageThisAnim = true;
-						CS_Packet_Damaged pkt;
+						CS_Packet_Damaged pkt; 
 						pkt.type = CS_PACKET_DAMAGED;
 						pkt.monsterID = offset + static_cast<int>(i);
 						pkt.size = sizeof(pkt);

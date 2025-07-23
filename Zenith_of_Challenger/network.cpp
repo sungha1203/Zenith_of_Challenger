@@ -764,8 +764,7 @@ void Network::ProcessDamaged(int client_id, char* buffer, int length)
 			pkt2.y = g_client[client_id].GetY();
 			pkt2.z = g_client[client_id].GetZ();
 
-			for (int other_id : client) {
-				if (other_id == client_id) continue;
+			for (int other_id : client) {				
 				g_network.clients[other_id].do_send(pkt2);
 			}
 		}
