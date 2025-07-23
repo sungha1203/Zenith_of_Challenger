@@ -48,13 +48,12 @@ public:
 
 	int m_CurrentAnim = 0;
 
-private:
-
-	FLOAT m_speed;
-
 	// 애니메이션 상태 관리
 	std::unordered_map<std::string, AnimationClip> m_animationClips;
 	float m_animTime = 0.f;
+
+	FLOAT m_speed;
+
 
 	std::unordered_map<std::string, int> m_boneNameToIndex;
 	ComPtr<ID3D12Resource> m_boneMatrixBuffer;             // GPU용 버퍼
@@ -64,6 +63,7 @@ private:
 	unordered_map<string, string> m_boneHierarchy;			//뼈 계층구조
 	std::vector<std::shared_ptr<MeshBase>> m_meshes;
 	unordered_map<int, XMMATRIX> m_boneOffsets;
+private:
 
 	//-------------------------인게임 정보-------------------------
 

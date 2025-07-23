@@ -480,6 +480,39 @@ void GameScene::Update(FLOAT timeElapsed)
 		}
 		UpdateSwordAuraSkill(timeElapsed); //전사 스킬 업데이트
 	}
+	//칼에 다른플레이어 손 행렬 곱해주기
+	for(int i=0;i<2;i++)
+	{
+		if (m_otherPlayerJobs[i] == 1)
+		{
+			// 칼의 원래 로컬 행렬 (즉, 생성 시 초기 위치 → 플레이어 중심에 있어야 함)
+			XMMATRIX swordOffset = XMMatrixTranslation(-3000.0f, 2000.0f, -1000.0f); // 칼이 손에서 약간 오른쪽에 있는 형태로 수정 가능        
+			// 현재 애니메이션 클립 기준 본 행렬 계산
+			const auto& clip = m_Otherplayer[i]->m_animationClips.at(m_Otherplayer[i]->m_currentAnim);
+			float time = fmod(m_Otherplayer[i]->m_animTime, clip.duration);
+
+			auto boneIt = m_Otherplayer[i]->m_boneNameToIndex.find("mixamorig:RightHand");
+			if (boneIt != m_Otherplayer[i]->m_boneNameToIndex.end())
+			{
+				int boneIndex = boneIt->second;
+				auto boneTransforms = clip.GetBoneTransforms(
+					time, m_Otherplayer[i]->m_boneNameToIndex, m_Otherplayer[i]->m_boneHierarchy,
+					m_Otherplayer[i]->m_boneOffsets, m_Otherplayer[i]->m_nodeNameToLocalTransform);
+
+				XMMATRIX boneMat = boneTransforms[boneIndex];
+				XMMATRIX playerMat = XMLoadFloat4x4(&m_Otherplayer[i]->GetWorldMatrix());
+
+				//순서 중요!
+				XMMATRIX weaponMat = swordOffset * boneMat * playerMat;
+				m_weopons[i+1]->SetWorldMatrix(weaponMat); 
+				//m_weopons[0]->m_scale=(XMFLOAT3{ 10.f, 10.f, 10.f }); 
+
+			}
+			//UpdateSwordAuraSkill(timeElapsed); //전사 스킬 업데이트
+		}
+	}
+
+
 	m_player->Update(timeElapsed);
 	m_sun->Update(timeElapsed);
 
@@ -1866,7 +1899,27 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 
 	m_weopons.push_back(swordObject); // 또는 m_weaponPreviewObject 등으로 따로 저장해도 됨 
 
+	auto swordObject2 = make_shared<Sword>(device);
+	swordObject2->SetMesh(swordMeshes);
+	swordObject2->SetShader(m_shaders["FBX"]);  // FBX 전용 셰이더 사용 
+	swordObject2->SetTexture(m_textures["Sword"]); // 텍스처는 적절한 걸 할당 
+	swordObject2->SetTextureIndex(m_textures["Sword"]->GetTextureIndex()); // 텍스처는 적절한 걸 할당 
+	swordObject2->SetUseTexture(true);
+	// 보기 좋게 위치 및 크기 조정 (원한다면)	
+	swordObject2->SetPosition(XMFLOAT3{ -172.0f, 5.1f, 77.0f });
 
+	m_weopons.push_back(swordObject2); // 또는 m_weaponPreviewObject 등으로 따로 저장해도 됨 
+
+	auto swordObject3 = make_shared<Sword>(device);
+	swordObject3->SetMesh(swordMeshes);
+	swordObject3->SetShader(m_shaders["FBX"]);  // FBX 전용 셰이더 사용 
+	swordObject3->SetTexture(m_textures["Sword"]); // 텍스처는 적절한 걸 할당 
+	swordObject3->SetTextureIndex(m_textures["Sword"]->GetTextureIndex()); // 텍스처는 적절한 걸 할당 
+	swordObject3->SetUseTexture(true);
+	// 보기 좋게 위치 및 크기 조정 (원한다면)	
+	swordObject3->SetPosition(XMFLOAT3{ -172.0f, 5.1f, 77.0f });
+
+	m_weopons.push_back(swordObject3); // 또는 m_weaponPreviewObject 등으로 따로 저장해도 됨 
 
 
 
