@@ -45,6 +45,7 @@ public:
     float otherangle[2];
     shared_ptr<OtherPlayer> m_Otherplayer[2];
     shared_ptr<Player> m_player;
+    vector<shared_ptr<GameObject>> m_uiObjects; //GameScene UI 변수
 protected:
     virtual void BuildShaders(const ComPtr<ID3D12Device>& device,
         const ComPtr<ID3D12GraphicsCommandList>& commandList,
@@ -86,5 +87,4 @@ protected:
     vector<std::shared_ptr<GameObject>> m_idObjects;
     vector<std::shared_ptr<GameObject>> m_pwObjects;
     vector<shared_ptr<GameObject>> m_joinButtons; // 참가 버튼
-    vector<shared_ptr<GameObject>> m_uiObjects; //GameScene UI 변수
 };

@@ -322,6 +322,9 @@ void Network::HandlePacket(int client_id, char* buffer, int length) {
 	case CS_PACKET_ANIMATION:
 		ProcessAnimation(client_id, buffer, length);
 		break;
+	case CS_PACKET_DAMAGED:
+		ProcessDamaged(client_id, buffer, length);
+		break;
 	default:
 		std::cout << "[ERROR] 알 수 없는 패킷 수신함. 클라이언트 [" << client_id << "]" << std::endl;
 		break;
@@ -679,7 +682,7 @@ void Network::ProcessAnimation(int client_id, char* buffer, int length) {
 	pkt2.client_id = client_id;
 
 	// 0 : 기본      1 : 걷기      2 : 달리기      3 : 도전자 기본 공격      4 : 직업스킬      5 : 직업 기본 공격
-	if (pkt->animation == 4) {		
+	if (pkt->animation == 4) {
 		if (!g_client[client_id].CanUseSkill()) return;		// 스킬 쿨타임이면 무시
 
 		switch (job) {
@@ -989,6 +992,20 @@ void Network::SendPlayerHP(int client_id)
 	pkt.size = sizeof(pkt);
 
 	g_network.clients[client_id].do_send(pkt);
+}
+
+// 몬스터 공격
+void Network::SendZMonsterAttack(const std::vector<int>& client_id, int MonsterID, int SkillType)
+{
+	SC_Packet_ZMonsterAttack pkt;
+	pkt.type = SC_PACKET_ZMONSTERATTACK;
+	pkt.monsterID = MonsterID;
+	pkt.bossmonsterSkill = SkillType;
+	pkt.size = sizeof(pkt);
+
+	for (int id : client_id)
+		if (g_network.clients[id].m_used)
+			g_network.clients[id].do_send(pkt);
 }
 
 // 결과 보고 및 게임 종료
