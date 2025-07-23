@@ -174,14 +174,7 @@ void Room::m_ZmonsterPosTimerThread()
 				m_Zmonsters[i].Move();
 
 				if (m_Zmonsters[i].AttackAnimation()) {			// 몬스터가 공격을 시작하면
-					SC_Packet_ZMonsterAttack pkt;
-					pkt.type = SC_PACKET_ZMONSTERATTACK;
-					pkt.size = sizeof(pkt);
-					pkt.monsterID = i;
-
-					for (int id : m_clients)
-						if (g_network.clients[id].m_used)
-							g_network.clients[id].do_send(pkt);
+					g_network.SendZMonsterAttack(GetClients(), i, 0);
 				}
 			}
 			// 살아있을때 && 정점 보스 몬스터
@@ -189,15 +182,7 @@ void Room::m_ZmonsterPosTimerThread()
 				m_Zmonsters[i].BossMove();
 
 				if (m_Zmonsters[i].AttackAnimation()) {			// 보스 몬스터가 공격을 시작하면
-					SC_Packet_ZMonsterAttack pkt;
-					pkt.type = SC_PACKET_ZMONSTERATTACK;
-					pkt.size = sizeof(pkt);
-					pkt.monsterID = i;
-					pkt.bossmonsterSkill = m_Zmonsters[i].GetBossSkillType();
-
-					for (int id : m_clients)
-						if (g_network.clients[id].m_used)
-							g_network.clients[id].do_send(pkt);
+					g_network.SendZMonsterAttack(GetClients(), i, m_Zmonsters[i].GetBossSkillType());
 				}
 			}
 

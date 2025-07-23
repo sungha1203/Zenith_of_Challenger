@@ -11,8 +11,15 @@
 #include"Sword.h"
 #include "DissolveDustEffectObject.h"
 #include "AttackRangeIndicator.h"
+#include "SwordAuraObject.h"
 
 class FBXLoader; // 전방 선언 추가
+
+struct SwordAuraTrail
+{
+    shared_ptr<SwordAuraObject> obj;
+    float life = 0.0f; // 경과 시간
+};
 
 class GameScene : public Scene
 {
@@ -71,6 +78,9 @@ public:
     void ActivateZenithStageMonsters();// 몬스터 렌더 여부 활성화
     void CheckHealingCollision();
     void FireUltimateBulletRain(int num); //마법사 스킬
+    void ActivateSwordAuraSkill(); //전사 스킬
+    void UpdateSwordAuraSkill(float timeElapsed);
+
     //타 클라 직업 판정
     int m_otherPlayerJobs[2] = { 0, 0 }; // 1: 전사, 2: 마법사, 3: 힐탱커
 
@@ -140,6 +150,8 @@ private:
     bool m_isReinforceWindowVisible = false; // 'I'키 토글
     bool m_isReinforceSlotOccupied = false;
 
+    bool m_ZenithStartGame = false;
+
     string m_selectedItemType = ""; // "weapon", "job"
 
     shared_ptr<GameObject> m_weaponSlotIcon;
@@ -170,6 +182,12 @@ private:
     vector<shared_ptr<MagicBall>> m_magicBalls; // 마법사 평타 구체
     vector<shared_ptr<GameObject>> m_trailObjects; //마법사 평타 트레일
     vector<shared_ptr<GameObject>> m_effects; //마법사 스킬, 평타 피격시 이펙트
+
+    vector<SwordAuraTrail> m_swordAuraTrailList;
+    float m_trailTimer = 0.0f;
+    const float TRAIL_SPAWN_INTERVAL = 0.01f; // 50프레임/초 생성 주기
+    const float TRAIL_LIFETIME = 0.3f;        // 0.3초 후 사라짐
+
     //무기
     vector<shared_ptr<GameObject>> m_weopons;
 
@@ -180,8 +198,19 @@ private:
 
     //시간 표시 텍스트
     vector<shared_ptr<GameObject>> m_timeDigits;
+    vector<shared_ptr<GameObject>> m_skillIcons;
+    vector<float> m_skillCooldowns = { 0.f, 0.f, 0.f }; // 남은 쿨타임
+    vector<float> m_skillMaxCooldowns = { 8.f, 10.f, 6.f }; // 최대 쿨타임
+
+    vector<shared_ptr<SwordAuraObject>> m_swordAuraObjects;
+    bool m_isSwordSkillActive = false;
+    float m_swordSkillDuration = 0.0f;
+    const float MAX_SWORD_SKILL_DURATION = 5.0f;
+
     public:
     //전직 별 직업 매쉬 정보
     array<shared_ptr<Player>, 3> m_jobPlayers; // 0=전사, 1=마법사, 2=힐탱커
     array<shared_ptr<OtherPlayer>, 3> m_jobOtherPlayers; // 0=전사, 1=마법사, 2=힐탱커
+
+
 };

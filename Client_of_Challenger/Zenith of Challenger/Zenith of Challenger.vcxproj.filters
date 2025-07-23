@@ -193,6 +193,9 @@
     <ClInclude Include="Sword.h">
       <Filter>소스 파일\Object\Weapons</Filter>
     </ClInclude>
+    <ClInclude Include="SwordAuraObject.h">
+      <Filter>소스 파일\Object\Skill</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Zenith of Challenger.cpp">
@@ -306,6 +309,9 @@
     <ClCompile Include="Sword.cpp">
       <Filter>소스 파일\Object\Weapons</Filter>
     </ClCompile>
+    <ClCompile Include="SwordAuraObject.cpp">
+      <Filter>소스 파일\Object\Skill</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Zenith of Challenger.rc">
@@ -388,6 +394,9 @@
       <Filter>셰이더 파일</Filter>
     </FxCompile>
     <FxCompile Include="ShockwaveRangeShader.hlsl">
+      <Filter>셰이더 파일</Filter>
+    </FxCompile>
+    <FxCompile Include="SwordAuraShader.hlsl">
       <Filter>셰이더 파일</Filter>
     </FxCompile>
   </ItemGroup>

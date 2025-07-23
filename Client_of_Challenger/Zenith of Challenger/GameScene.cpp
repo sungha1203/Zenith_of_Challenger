@@ -220,7 +220,8 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
 
     if (GetAsyncKeyState('L') & 0x0001) // F7 키 눌렀을 때 한 번만
     {
-        SpawnDustEffect(m_player->GetPosition());
+        //SpawnDustEffect(m_player->GetPosition());
+        ActivateSwordAuraSkill();
     }
 
     if (GetAsyncKeyState(VK_OEM_PLUS) & 0x0001) // = 키
@@ -242,6 +243,15 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
         pkt.size = sizeof(pkt);
 
         gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
+        m_ZenithStartGame = true;
+    }
+    if (GetAsyncKeyState(VK_OEM_PERIOD) & 0x0001)
+    {
+        m_job += 1;
+
+        if (m_job == 4) {
+            m_job = 1;
+        }
     }
 
     if (GetAsyncKeyState(VK_LEFT) & 0x8000)
@@ -309,7 +319,8 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
         }
         else
         {
-            m_player->SetCurrentAnimation("Slash");
+            m_player->SetCurrentAnimation("Goong");
+        }
 
             CS_Packet_Animaition pkt;
             pkt.type = CS_PACKET_ANIMATION;
@@ -390,6 +401,7 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
     if (GetAsyncKeyState('C') & 0x0001)
     {
         FireMagicBall(2);
+        m_skillCooldowns = m_skillMaxCooldowns;
     }
 
     if (GetAsyncKeyState('P') & 0x8000)
@@ -444,8 +456,8 @@ void GameScene::Update(FLOAT timeElapsed)
             //m_weopons[0]->m_scale=(XMFLOAT3{ 10.f, 10.f, 10.f }); 
 
         }
+        UpdateSwordAuraSkill(timeElapsed); //전사 스킬 업데이트
     }
-
     m_player->Update(timeElapsed);
     m_sun->Update(timeElapsed);
 
@@ -708,6 +720,14 @@ void GameScene::Update(FLOAT timeElapsed)
             }
         }
 
+        //스킬 아이콘
+        for (int i = 0; i < m_skillIcons.size(); ++i)
+        {
+            m_skillCooldowns[i] = std::max(0.f, m_skillCooldowns[i] - timeElapsed);
+
+            bool isReady = (m_skillCooldowns[i] <= 0.f);
+            m_skillIcons[i]->SetHovered(isReady); // 내부에서 m_isHovered = 1 또는 0
+        }
     }
 
     //힐탱커 스킬 업데이트
@@ -921,12 +941,44 @@ void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) con
         for (const auto& weopon : m_weopons)//캐릭터 무기
         {
             weopon->SetShader(m_shaders.at("FBX"));
-            weopon->Render(commandList);
+			weopon->Render(commandList);
+		}
+
+        if (m_ZenithStartGame) {
+            //스킬 아이콘
+            switch (m_job)
+            {
+            case 1: // 전사
+                m_skillIcons[2]->Render(commandList);
+                break;
+            case 2: // 마법사
+                m_skillIcons[0]->Render(commandList);
+                break;
+            case 3: // 탱커
+                m_skillIcons[1]->Render(commandList);
+                break;
+            default:
+                break;
+            }
+        }
+
+	}
+
+    if (m_isSwordSkillActive)
+    {
+        for (const auto& aura : m_swordAuraObjects)
+        {
+            aura->Render(commandList);
         }
     }
 
-    //캐릭터
-    if (m_player)
+    for (auto& trail : m_swordAuraTrailList)
+    {
+        trail.obj->Render(commandList);
+    }
+
+	//캐릭터
+	if (m_player)
     {
         m_player->SetShader(m_shaders.at("CHARACTER"));
         m_player->Render(commandList);
@@ -947,13 +999,19 @@ void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) con
 
         float healthRatio = 1.0f /*m_player->GetCurrentHP() / m_player->GetMaxHP()*/;
 
-        for (const auto& ui : m_uiObjects)
+        for (size_t i = 0; i < m_uiObjects.size(); ++i)
         {
-            // b1 슬롯에 체력비율 전달 (셰이더에서 g_fillAmount로 사용됨)
-            //commandList->SetGraphicsRoot32BitConstants(
-            //   /* RootParameterIndex::UIFillAmount */ 1, 1, &healthRatio, 0);
-
-            ui->Render(commandList);
+            // Zenith 게임 시작 상태일 경우, index 1만 렌더
+            if (m_ZenithStartGame)
+            {
+                if (i == 1 && m_uiObjects[i])
+                    m_uiObjects[i]->Render(commandList);
+            }
+            else
+            {
+                if (m_uiObjects[i])
+                    m_uiObjects[i]->Render(commandList);
+            }
         }
     }
 
@@ -965,17 +1023,18 @@ void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) con
             object->Render(commandList);
         }
     }
-    
 
-    for (const auto& digit : m_goldDigits)
-    {
-        digit->Render(commandList); // 숫자 각각 렌더
-    }
+	if (!m_ZenithStartGame) {
+		for (const auto& digit : m_goldDigits)
+		{
+			digit->Render(commandList); // 숫자 각각 렌더
+		}
 
-    for (const auto& digit : m_inventoryDigits)
-    {
-        digit->Render(commandList);
-    }
+		for (const auto& digit : m_inventoryDigits)
+		{
+			digit->Render(commandList);
+		}
+	}
 
     //파티클 그려주기
     if (m_particleManager)
@@ -1050,6 +1109,7 @@ void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) con
     for (const auto& Colon : m_ColonDigit) {
         Colon->Render(commandList);
     }
+
 
     // 디버그용 그림자맵 시각화
     if (m_debugShadowShader && m_ShadowMapEnabled)
@@ -1163,6 +1223,10 @@ void GameScene::BuildShaders(const ComPtr<ID3D12Device>& device,
 
     auto attackShader2 = make_shared<ShockwaveRangeShader>(device, rootSignature);
     m_shaders.insert({ "AttackRange2", attackShader2 });
+
+    auto SwordauraShader = make_shared<SwordAuraShader>(device, rootSignature);
+    m_shaders.insert({ "SwordAura", SwordauraShader });
+
 }
 
 void GameScene::BuildMeshes(const ComPtr<ID3D12Device>& device,
@@ -1366,6 +1430,16 @@ void GameScene::BuildMeshes(const ComPtr<ID3D12Device>& device,
         }
     }
 
+    auto SwordLoader1 = make_shared<FBXLoader>();
+    if (SwordLoader1->LoadFBXModel("Model/Weapon/SwordOnly2.fbx", XMMatrixIdentity())) //Sword2_FBX
+    {
+        auto meshes = SwordLoader1->GetMeshes();
+        if (!meshes.empty())
+        {
+            m_meshLibrary["Sword1"] = meshes[0];
+        }
+    }
+
     auto AttackRange = make_shared<FBXLoader>();
     if (AttackRange->LoadFBXModel("Model/Skill/AttackRange.fbx", XMMatrixIdentity()))
     {
@@ -1375,6 +1449,9 @@ void GameScene::BuildMeshes(const ComPtr<ID3D12Device>& device,
             m_meshLibrary["AttackRange"] = meshes[0];
         }
     }
+
+    m_meshLibrary["SkillIcon"] = CreateScreenQuad(device, commandList, 1.15f, 1.15f, 0.99f);
+
 }
 
 void GameScene::BuildTextures(const ComPtr<ID3D12Device>& device,
@@ -1509,6 +1586,22 @@ void GameScene::BuildTextures(const ComPtr<ID3D12Device>& device,
         TEXT("Textures/Dust.dds"), RootParameter::Texture);
     DustTexture->CreateShaderVariable(device, true);
     m_textures.insert({ "DUST", DustTexture });
+
+    auto Wizard_SkillTexture = make_shared<Texture>(device, commandList,
+        TEXT("Image/InGameUI/Wizard_Skill_Icon.dds"), RootParameter::Texture);
+    Wizard_SkillTexture->CreateShaderVariable(device, true);
+    m_textures.insert({ "Wizard_Skill_Icon", Wizard_SkillTexture });
+
+    auto Heal_SkillTexture = make_shared<Texture>(device, commandList,
+        TEXT("Image/InGameUI/Heal_Skill_Icon.dds"), RootParameter::Texture);
+    Heal_SkillTexture->CreateShaderVariable(device, true);
+    m_textures.insert({ "Heal_Skill_Icon", Heal_SkillTexture });
+
+    auto Sword_SkillTexture = make_shared<Texture>(device, commandList,
+        TEXT("Image/InGameUI/Sword_Skill_Icon.dds"), RootParameter::Texture);
+    Sword_SkillTexture->CreateShaderVariable(device, true);
+    m_textures.insert({ "Sword_Skill_Icon", Sword_SkillTexture });
+
 }
 
 void GameScene::BuildMaterials(const ComPtr<ID3D12Device>& device,
@@ -2170,6 +2263,34 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 
     m_ColonDigit.push_back(ColonDigit);
 
+    auto icon1 = make_shared<GameObject>(device);
+    icon1->SetMesh(m_meshLibrary["SkillIcon"]);
+    icon1->SetTexture(m_textures["Wizard_Skill_Icon"]); //마법사
+    icon1->SetTextureIndex(m_textures["Wizard_Skill_Icon"]->GetTextureIndex());
+    icon1->SetShader(m_shaders["UI"]);
+    icon1->SetPosition({ 0.9f, -0.65f, 0.99f }); // NDC 좌표 기준
+    icon1->SetScale({ 0.25f, 0.25f, 1.0f });
+
+    auto icon2 = make_shared<GameObject>(device);
+    icon2->SetMesh(m_meshLibrary["SkillIcon"]);
+    icon2->SetTexture(m_textures["Heal_Skill_Icon"]); //힐러
+    icon2->SetTextureIndex(m_textures["Heal_Skill_Icon"]->GetTextureIndex());
+    icon2->SetShader(m_shaders["UI"]);
+    icon2->SetPosition({ 0.9f, -0.65f, 0.99f });
+    icon2->SetScale({ 0.25f, 0.25f, 1.0f });
+
+    auto icon3 = make_shared<GameObject>(device);
+    icon3->SetMesh(m_meshLibrary["SkillIcon"]);
+    icon3->SetTexture(m_textures["Sword_Skill_Icon"]); //전사
+    icon3->SetTextureIndex(m_textures["Sword_Skill_Icon"]->GetTextureIndex());
+    icon3->SetShader(m_shaders["UI"]);
+    icon3->SetPosition({ 0.9f, -0.65f, 0.99f });
+    icon3->SetScale({ 0.25f, 0.25f, 1.0f });
+
+    // 저장
+    m_skillIcons = { icon1, icon2, icon3 };
+
+
 }
 void GameScene::AddCubeCollider(const XMFLOAT3& position, const XMFLOAT3& extents, const FLOAT& rotate)
 {
@@ -2370,11 +2491,13 @@ void GameScene::SetJobSlotUV(int type)
     m_jobSlotIcon->SetCustomUV(u0, 0.f, u1, 1.f);
     m_jobSlotIcon->SetVisible(true);
 
-    // 전직 처리: 그냥 포인터 교체
-    m_player = m_jobPlayers[type];
-    gGameFramework->SetPlayer(m_player);
-    m_player->SetCamera(m_camera);
-    m_job = type + 1;
+	// 전직 처리: 그냥 포인터 교체
+	if (type == 0) {
+		m_player = m_jobPlayers[type];
+		gGameFramework->SetPlayer(m_player);
+		m_player->SetCamera(m_camera);
+		m_job = type + 1;
+	}
 }
 void GameScene::UpdateEnhanceDigits()
 {
@@ -2680,6 +2803,86 @@ void GameScene::FireUltimateBulletRain(int num)
         ball->SetScaleAnimation(0.f, 0.f, 0.f, 0.f, 0.f, 0.f); // scale pulse 제거
 
         m_magicBalls.push_back(ball);
+    }
+}
+void GameScene::ActivateSwordAuraSkill()
+{
+    if (m_isSwordSkillActive) return; // 중복 발동 방지
+
+    auto aura = make_shared<SwordAuraObject>(gGameFramework->GetDevice());
+    aura->SetMesh(m_meshLibrary["Sword1"]); // 전사 검 메시 공유
+    aura->SetShader(m_shaders.at("SwordAura"));
+    aura->SetVisible(true);
+    aura->SetScale(XMFLOAT3(5.f, 5.f, 5.f));
+    m_swordAuraObjects.push_back(aura);
+    m_isSwordSkillActive = true;
+    m_swordSkillDuration = 0.0f;
+}
+void GameScene::UpdateSwordAuraSkill(float timeElapsed)
+{
+    if (!m_isSwordSkillActive) return;
+
+    m_swordSkillDuration += timeElapsed;
+
+    if (m_swordSkillDuration >= MAX_SWORD_SKILL_DURATION)
+    {
+        m_isSwordSkillActive = false;
+        m_swordAuraObjects.clear();
+        m_swordAuraTrailList.clear();
+        return;
+    }
+
+    // 오라 위치 동기화
+    for (auto& aura : m_swordAuraObjects)
+    {
+        aura->Update(timeElapsed);
+
+        if (!m_weopons.empty())
+        {
+            XMMATRIX weaponMatrix = XMLoadFloat4x4(&m_weopons[0]->GetWorldMatrix());
+            aura->SetWorldMatrix(weaponMatrix);
+        }
+    }
+
+    // --- 트레일 생성 ---
+    m_trailTimer += timeElapsed;
+    if (m_trailTimer >= TRAIL_SPAWN_INTERVAL)
+    {
+        m_trailTimer = 0.0f;
+
+        if (!m_weopons.empty())
+        {
+            XMFLOAT4X4 mat = m_weopons[0]->GetWorldMatrix();
+
+            auto trail = std::make_shared<SwordAuraObject>(m_device);
+            trail->SetMesh(m_meshLibrary["Sword1"]);
+            trail->SetShader(m_shaders["SwordAura"]);
+            trail->SetWorldMatrix(XMLoadFloat4x4(&mat));
+            trail->SetUseTexture(false);
+            trail->SetBaseColor(XMFLOAT4(0.2f, 1.f, 1.f, 1.0f)); // 밝은 시안색
+            trail->SetVisible(true);
+
+            m_swordAuraTrailList.push_back({ trail, 0.0f });
+        }
+    }
+
+    // --- 트레일 잔상 페이드 및 제거 ---
+    for (auto it = m_swordAuraTrailList.begin(); it != m_swordAuraTrailList.end(); )
+    {
+        it->life += timeElapsed;
+        float alpha = 1.0f - (it->life / TRAIL_LIFETIME);
+
+        if (alpha <= 0.0f)
+        {
+            it = m_swordAuraTrailList.erase(it);
+        }
+        else
+        {
+            XMFLOAT4 color = it->obj->GetBaseColor();
+            color.w = alpha;
+            it->obj->SetBaseColor(color);
+            ++it;
+        }
     }
 }
 void GameScene::SpawnDustEffect(const XMFLOAT3& position)
