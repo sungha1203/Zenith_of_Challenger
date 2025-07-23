@@ -317,24 +317,76 @@ void Monster::BossMove()
 		auto now = std::chrono::steady_clock::now();
 		float elapsed = std::chrono::duration<float>(now - m_lastAttackTime).count();
 
-		if (!m_attackInProgress) {				// 공격 애니메이션 진행중이 아니라면
+		// 공격 애니메이션 진행중이 아니라면
+		if (!m_attackInProgress) {				
 			m_attackInProgress = true;			// 공격 애니메이션 진행중
 			m_attackJustStart = true;			// 지금 공격 시작했음 모든 클라한테 이 상황 보내줘
 			m_lastAttackTime = now;
 			m_bossSkillCharging = true;
+			m_baseY = m_y;
 			std::cout << "[INFO] 보스몬스터 스킬" << m_bossSkillType << " 예고 시작" << std::endl;
+
+			if (m_bossSkillType == 1) {
+				float tx = g_client[m_aggroplayer].GetX();
+				float tz = g_client[m_aggroplayer].GetZ();
+				float dx = tx - m_x;
+				float dz = tz - m_z;
+				float len = sqrtf(dx * dx + dz * dz);
+				if (len > 0.0001f) {
+					dx /= len;
+					dz /= len;
+				}
+				m_skillStartX = m_x;
+				m_skillStartZ = m_z;
+				m_skillTargetX = m_x + dx * m_skillDashDistance;
+				m_skillTargetZ = m_z + dz * m_skillDashDistance;
+			}
+			else if (m_bossSkillType == 2) {
+				m_skillTargetX = m_x;
+				m_skillTargetZ = m_z;
+			}
+
 		}
-		else if (m_bossSkillCharging && elapsed >= 2.0f) {		// 스킬 범위시전 2초 지난 후 실제 스킬 사용 시점
+		// 스킬 범위시전 2초 지난 후 실제 스킬 사용 시점
+		else if (m_bossSkillCharging && elapsed >= 2.0f) {		
 			std::cout << "[INFO] 보스몬스터 스킬" << m_bossSkillType << " 예고 끝" << std::endl;
 			m_bossSkillCharging = false;
 			m_bossSkillAnimation = true;
 			m_lastAttackTime = now;
 			std::cout << "[INFO] 보스몬스터 스킬" << m_bossSkillType << " 사용" << std::endl;
 		}
-		else if (m_bossSkillAnimation && elapsed >= 1.0f) {		// 스킬 사용 끝난 직후
+		// 스킬 사용중
+		else if (m_bossSkillAnimation && elapsed < 2.0f) {
+			float animElapsed = std::chrono::duration<float>(now - m_lastAttackTime).count();
+			float ratio = animElapsed / 2.0f;					// 공격 진행률
+
+			if (m_bossSkillType == 1) {							// 스킬1(돌진)
+				if (ratio <= 0.5f) {
+					float t = ratio * 2.0f;
+					m_x = m_skillStartX + (m_skillTargetX - m_skillStartX) * t;
+					m_z = m_skillStartZ + (m_skillTargetZ - m_skillStartZ) * t;
+				}
+				else {
+					float t = (ratio - 0.5f) * 2.0f;
+					m_x = m_skillTargetX + (m_skillStartX - m_skillTargetX) * t;
+					m_z = m_skillTargetZ + (m_skillStartZ - m_skillTargetZ) * t;
+				}
+			}
+			else if (m_bossSkillType == 2) {					// 스킬2(점프)
+				float t = ratio;
+				float jumpY = m_skillJumpHeight * 4 * t * (1 - t);
+				m_y = m_baseY + jumpY;
+				m_x = m_skillTargetX;
+				m_z = m_skillTargetZ;
+			}
+
+		}
+		// 스킬 사용 끝난 직후
+		else if (m_bossSkillAnimation && elapsed >= 2.0f) {		
 			std::cout << "[INFO] 보스몬스터 스킬" << m_bossSkillType << " 끝" << std::endl;
 			m_attackInProgress = false;
 			m_bossSkillAnimation = false;
+			m_y = m_baseY;
 
 			// [코드] 실제 데미지 체크
 

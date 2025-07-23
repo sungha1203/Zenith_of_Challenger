@@ -169,7 +169,7 @@ void Room::m_ZmonsterPosTimerThread()
 		for (int i = 0; i <= m_ZMonsterNum; ++i)
 		{
 			// 살아있을때 && 정점 몬스터
-			if (m_Zmonsters[i].GetLived() && i != 25)			
+			if (m_Zmonsters[i].GetLived() && i != 25)
 			{
 				m_Zmonsters[i].Move();
 
@@ -178,7 +178,7 @@ void Room::m_ZmonsterPosTimerThread()
 				}
 			}
 			// 살아있을때 && 정점 보스 몬스터
-			else if (m_Zmonsters[i].GetLived() && i == 25) {	
+			else if (m_Zmonsters[i].GetLived() && i == 25) {
 				m_Zmonsters[i].BossMove();
 
 				if (m_Zmonsters[i].AttackAnimation()) {			// 보스 몬스터가 공격을 시작하면
@@ -578,8 +578,8 @@ void Room::BroadcastMonsterPosition(int idx)
 		else {			// 정점 보스 몬스터
 			switch (m_Zmonsters[idx].GetState()) {
 			case 0:		// 보스 몬스터 처음 위치
-				pkt.targetX = 1.0f;
-				pkt.targetZ = 1.0f;
+				pkt.targetX = -172.79f;
+				pkt.targetZ = 77.81f;
 				break;
 			case 1:		// 플레이어 어그로
 				pkt.targetX = g_client[m_Zmonsters[idx].GetAggroPlayer()].GetX();
@@ -590,8 +590,14 @@ void Room::BroadcastMonsterPosition(int idx)
 				pkt.targetZ = 0.0f;
 				break;
 			case 3:		// 공격
-				pkt.targetX = g_client[m_Zmonsters[idx].GetAggroPlayer()].GetX();
-				pkt.targetZ = g_client[m_Zmonsters[idx].GetAggroPlayer()].GetZ();
+				if (m_Zmonsters[idx].GetBossSkillAnimation() == true) {
+					pkt.targetX = m_Zmonsters[idx].GetSkillTargetX();
+					pkt.targetZ = m_Zmonsters[idx].GetSkillTargetZ();
+				}
+				else {
+					pkt.targetX = g_client[m_Zmonsters[idx].GetAggroPlayer()].GetX();
+					pkt.targetZ = g_client[m_Zmonsters[idx].GetAggroPlayer()].GetZ();
+				}
 				break;
 			}
 		}
