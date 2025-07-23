@@ -870,10 +870,12 @@ void ClientNetwork::ProcessZMonsterAttack(char* buffer)
 		if (pkt->bossmonsterSkill == 2)									//점프
 		{
 			gameScene->SpawnShockwaveWarning(gameScene->m_bossMonsters[0]->GetPosition());
+			gameScene->m_bossMonsters[0]->PlayAnimationWithBlend("Jump", 2.0);
 		}
 		else if(pkt->bossmonsterSkill == 1)								//돌진
 		{
 			gameScene->SpawnDashWarning(gameScene->m_bossMonsters[0]->GetPosition(), gGameFramework->BossToward);
+			gameScene->m_bossMonsters[0]->PlayAnimationWithBlend("Dash", 2.0);
 		}
 	}
 }

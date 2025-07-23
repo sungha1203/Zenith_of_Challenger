@@ -336,11 +336,16 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
         if(m_job==0)
         {
             m_player->SetCurrentAnimation("Kick");
+
+			CS_Packet_Animaition pkt;
+			pkt.type = CS_PACKET_ANIMATION;
+			pkt.animation = 3;
+			pkt.size = sizeof(pkt);
+			gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
         }
         else
         {
-            m_player->SetCurrentAnimation("Slash"); //Goong
-        }
+            m_player->SetCurrentAnimation("Slash"); //Goong        
 
 
 			CS_Packet_Animaition pkt;
@@ -586,11 +591,11 @@ void GameScene::Update(FLOAT timeElapsed)
 					const auto& clip = monster->m_animationClips.at(monster->m_currentAnim);
 
 
-					if (monster->m_animTime > clip.duration / 3 && !monster->m_didDamageThisAnim)
+					if (monster->m_animTime > clip.duration / 3 && !monster->m_didDamageThisAnim) 
 					{
 						//m_uiObjects[1]->m_fillAmount -= 0.01;
 						monster->m_didDamageThisAnim = true;
-						CS_Packet_Damaged pkt;
+						CS_Packet_Damaged pkt; 
 						pkt.type = CS_PACKET_DAMAGED;
 						pkt.monsterID = offset + static_cast<int>(i);
 						pkt.size = sizeof(pkt);
