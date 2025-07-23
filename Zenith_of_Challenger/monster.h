@@ -58,7 +58,7 @@ private:
 	float				m_FirstLastCoord[2][2];					// 기본 돌아다니는 처음과 끝 좌표
 	bool				m_direction = true;						// 기본 이동 루트 방향    // true : 정방향, false : 역방향
 	bool				m_attackInProgress = false;				// 계속 공격 호출을 막기 위함
-	float				m_attackCoolTime = 1.0f;				// 스킬 애니메이션 끝까지 걸리는 시간
+	float				m_attackCoolTime = 2.0f;				// 스킬 애니메이션 끝까지 걸리는 시간
 	bool				m_attackJustStart = false;				// 모든 클라에 몬스터 공격 브로드캐스트 체크
 	int					m_bossSkillType = 1;					// 보스 스킬 유형 (1 : 스킬1   2 : 스킬2)
 	bool				m_bossSkillCharging = false;			// 보스 몬스터 스킬 범위 차징중
