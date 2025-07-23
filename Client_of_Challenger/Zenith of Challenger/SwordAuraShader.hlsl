@@ -28,24 +28,25 @@ PSInput VSMain(VSInput input)
     return output;
 }
 
-// Pixel Shader
 float4 PSMain(PSInput input) : SV_Target
 {
-    // 중심 밝기 강조용: 중심에서 멀어질수록 어둡게
-    float2 center = float2(0.5f, 0.5f);
     float2 uv = input.TexCoord;
+
+    // 중심 밝기 강조
+    float2 center = float2(0.5f, 0.5f);
     float dist = distance(uv, center);
+    float brightness = saturate(1.0f - dist * 2.0f); // 중앙 밝게
 
-    // 중앙 밝기 강조
-    float brightness = saturate(1.0f - dist * 2.0f); // 외곽으로 갈수록 어두워짐
-
-    // 흐르는 라인 느낌 (Y 기준으로 wave)
+    // 흐르는 wave 라인 효과
     float wave = sin((uv.y + g_totalTime * 2.0f) * 20.0f) * 0.1f;
 
-    // 파형을 알파에 반영해서 반짝이는 라인 느낌
-    float alpha = saturate(brightness + wave + 0.3f);
+    // 알파 기반 fade-out 곡선 (g_baseColor.a == 1일 때 완전 보이고, 0일 때 부드럽게 사라짐)
+    float fadeOut = smoothstep(0.0f, 1.0f, g_baseColor.a);
 
-    // 컬러는 고정 + 밝기 강조
+    // 최종 알파 계산
+    float alpha = saturate((brightness + wave + 0.3f) * fadeOut);
+
+    // 컬러 강조
     float3 baseColor = g_baseColor.rgb * (1.0f + brightness * 1.2f);
 
     return float4(baseColor, alpha);
