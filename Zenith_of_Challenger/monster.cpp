@@ -56,7 +56,7 @@ void Monster::SetMonster(int id, NormalMonsterType type, float x, float y, float
 		break;
 	case NormalMonsterType::BossMonster:
 		m_hp = 100;
-		m_attack = 10;
+		m_attack = 50;
 		m_speed = 5;
 		m_attackspeed = 1;
 		break;
@@ -366,6 +366,10 @@ void Monster::BossMove()
 					m_x = m_skillStartX + (m_skillTargetX - m_skillStartX) * t;
 					m_z = m_skillStartZ + (m_skillTargetZ - m_skillStartZ) * t;
 				}
+				else if (ratio > 0.5f && !m_playerDamaged) {
+					m_playerDamaged = true;
+					m_damageThisFrame = true;
+				}
 				else {
 					float t = (ratio - 0.5f) * 2.0f;
 					m_x = m_skillTargetX + (m_skillStartX - m_skillTargetX) * t;
@@ -383,24 +387,30 @@ void Monster::BossMove()
 		}
 		// 스킬 사용 끝난 직후
 		else if (m_bossSkillAnimation && elapsed >= 2.0f) {		
-			std::cout << "[INFO] 보스몬스터 스킬" << m_bossSkillType << " 끝" << std::endl;
-			m_attackInProgress = false;
-			m_bossSkillAnimation = false;
-			m_y = m_baseY;
-
-			// [코드] 실제 데미지 체크
-
-			if(m_bossSkillType == 1)
-				m_bossSkillType = 2;
-			else if(m_bossSkillType == 2)
-				m_bossSkillType = 1;
-
-			if (m_AggroList.empty()) {
-				m_state = MonsterState::ReturnStart;
+			if (m_bossSkillType == 2 && !m_playerDamaged) {
+				m_playerDamaged = true;
+				m_damageThisFrame = true;
 			}
-			else {
-				m_state = MonsterState::Aggro;
-				std::cout << "[INFO] 보스몬스터 플레이어 따라감" << std::endl;
+
+			if (elapsed >= 2.5f) {
+				std::cout << "[INFO] 보스몬스터 스킬" << m_bossSkillType << " 끝" << std::endl;
+				m_playerDamaged = false;
+				m_attackInProgress = false;
+				m_bossSkillAnimation = false;
+				m_y = m_baseY;
+
+				if (m_bossSkillType == 1)
+					m_bossSkillType = 2;
+				else if (m_bossSkillType == 2)
+					m_bossSkillType = 1;
+
+				if (m_AggroList.empty()) {
+					m_state = MonsterState::ReturnStart;
+				}
+				else {
+					m_state = MonsterState::Aggro;
+					std::cout << "[INFO] 보스몬스터 플레이어 따라감" << std::endl;
+				}
 			}
 		}
 		break;
@@ -494,4 +504,39 @@ DropItemType Monster::DropWHAT()
 	else {										// 꽝
 		return DropItemType::None;
 	}
+}
+
+void Monster::BossSkillDamage(const std::vector<int>& clients)
+{
+	if (m_bossSkillType == 1) BossSkillDashDamage(clients);
+	else if (m_bossSkillType == 2) BossSkillJumpDamage(clients);
+}
+
+// 보스 몬스터 스킬1 돌진 데미지 판정
+void Monster::BossSkillDashDamage(const std::vector<int>& clients)
+{
+	
+}
+
+// 보스 몬스터 스킬2 점프 데미지 판정
+void Monster::BossSkillJumpDamage(const std::vector<int>& clients)
+{
+	for (const int clinetID : clients) {
+		float targetX = g_client[clinetID].GetX();
+		float targetZ = g_client[clinetID].GetZ();
+
+		float dx = m_x - targetX;
+		float dz = m_z - targetZ;
+		float dist = sqrt(dx * dx + dz * dz);
+
+		if (dist <= 100.f) {			// 점프 스킬 데미지 범위
+			g_client[clinetID].MinusHP(m_attack, 3);
+			std::cout << "[DAMAGE] [" << clinetID << "]번 플레이어 데미지 받음" << std::endl;
+		}
+	}
+}
+
+void Monster::SetDamageThisFrame(bool check)
+{
+	m_damageThisFrame = check;
 }

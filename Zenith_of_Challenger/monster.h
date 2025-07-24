@@ -70,6 +70,8 @@ private:
 	float				m_skillTargetZ;							// 보스 몬스터 스킬 방향 타겟 Z위치
 	float				m_skillDashDistance = 150.f;			// 보스 몬스터 스킬1(돌진) 범위
 	float				m_skillJumpHeight	= 400.f;			// 보스 몬스터 스킬2(점프) 범위
+	bool				m_playerDamaged = false;				// 플레이어가 피격 당했는지
+	bool				m_damageThisFrame = false;				// 플레이어 데미지 판정 시간
 	std::chrono::steady_clock::time_point m_lastAttackTime;		// 스킬공격 마지막 시간 체크
 
 public:
@@ -92,6 +94,11 @@ public:
 	void			SetFristLastCoord(float x1, float z1, float x2, float z2);
 	bool			AttackAnimation();
 	void			SetAttackJustStart(bool check);
+	void			BossSkillDamage(const std::vector<int>& clients);
+	void			BossSkillDashDamage(const std::vector<int>& clients);
+	void			BossSkillJumpDamage(const std::vector<int>& clients);
+
+	void			SetDamageThisFrame(bool check);
 
 	NormalMonsterType		GetType() const { return m_type; }
 	bool					GetLived() const { return m_islived; }
@@ -108,4 +115,5 @@ public:
 	bool					GetBossSkillAnimation() const { return m_bossSkillAnimation; }
 	float					GetSkillTargetX() const { return m_skillTargetX; }
 	float					GetSkillTargetZ() const { return m_skillTargetZ; }
+	bool					GetDamageThisFrame() const { return m_damageThisFrame; }
 };
