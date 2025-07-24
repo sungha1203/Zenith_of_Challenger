@@ -719,38 +719,9 @@ void GameScene::Update(FLOAT timeElapsed)
 			}
 		}
 
-
-		int score = m_goldScore;
-		for (int i = 2; i >= 0; --i)
-		{
-			int digit = score % 10;
-			score /= 10;
-
-			if (i < m_goldDigits.size())
-			{
-				auto& digitUI = m_goldDigits[i];
-
-				float u0 = (digit * 100.0f) / 1000.0f;  // 픽셀 기준으로 계산
-				float u1 = ((digit + 1) * 100.0f) / 1000.0f;
-
-				digitUI->SetCustomUV(u0, 0.0f, u1, 1.0f);
-			}
-		}
-
 		if (m_particleManager)
 		{
 			m_particleManager->Update(timeElapsed);
-		}
-
-		// 각 인벤토리 숫자의 UV 갱신
-		for (int i = 0; i < 6; ++i)
-		{
-			int digit = m_inventoryCounts[i];
-
-			float u0 = (digit * 100.0f) / 1000.0f;
-			float u1 = ((digit + 1) * 100.0f) / 1000.0f;
-
-			m_inventoryDigits[i]->SetCustomUV(u0, 0.0f, u1, 1.0f);
 		}
 	}
 	else //정점 스테이지
@@ -809,6 +780,34 @@ void GameScene::Update(FLOAT timeElapsed)
 		if(m_OtherJobNum[0] == 0) ChangeJob(0);
 		if(m_OtherJobNum[1] == 1) ChangeJob(1);
 
+	}
+
+
+	int score = m_goldScore;
+	for (int i = 2; i >= 0; --i)
+	{
+		int digit = score % 10;
+		score /= 10;
+
+		if (i < m_goldDigits.size())
+		{
+			auto& digitUI = m_goldDigits[i];
+
+			float u0 = (digit * 100.0f) / 1000.0f;  // 픽셀 기준으로 계산
+			float u1 = ((digit + 1) * 100.0f) / 1000.0f;
+
+			digitUI->SetCustomUV(u0, 0.0f, u1, 1.0f);
+		}
+	}
+	// 각 인벤토리 숫자의 UV 갱신
+	for (int i = 0; i < 6; ++i)
+	{
+		int digit = m_inventoryCounts[i];
+
+		float u0 = (digit * 100.0f) / 1000.0f;
+		float u1 = ((digit + 1) * 100.0f) / 1000.0f;
+
+		m_inventoryDigits[i]->SetCustomUV(u0, 0.0f, u1, 1.0f);
 	}
 
 	m_skybox->SetPosition(m_camera->GetEye());
@@ -1095,7 +1094,7 @@ void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) con
 			// Zenith 게임 시작 상태일 경우, index 1만 렌더
 			if (m_ZenithStartGame)
 			{
-				if (i == 1 && m_uiObjects[i])
+				if (i <= 1 && m_uiObjects[i])
 					m_uiObjects[i]->Render(commandList);
 			}
 			else
