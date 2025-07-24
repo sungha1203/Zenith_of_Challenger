@@ -102,6 +102,8 @@ public:
     void ChangeJob(int index);
     void SetOtherJob1(int num) { m_OtherJobNum[0] = num; };
     void SetOtherJob2(int num) { m_OtherJobNum[1] = num; };
+    //정점 스테이지 몬스터 관리 변수
+    unordered_map<string, vector<shared_ptr<Monsters>>> m_BossStageMonsters; //정점 스테이지에서 쓰이는 몬스터 10마리
 private:
     int m_OtherJobNum[2] = {99,99};
 
@@ -126,8 +128,6 @@ private:
     unordered_map<string, shared_ptr<MeshBase>> m_meshLibrary;
 
 
-    //정점 스테이지 몬스터 관리 변수
-    unordered_map<string, vector<shared_ptr<Monsters>>> m_BossStageMonsters; //정점 스테이지에서 쓰이는 몬스터 10마리
 
     //그림자 관련
     shared_ptr<DebugShadowShader> m_debugShadowShader;

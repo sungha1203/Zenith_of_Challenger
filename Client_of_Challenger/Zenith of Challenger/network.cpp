@@ -868,7 +868,32 @@ void ClientNetwork::ProcessZMonsterAttack(char* buffer)
 	GameScene* gameScene = dynamic_cast<GameScene*>(currentScene.get()); 
 
 	if (pkt->monsterID != 25) {				// 정점 일반 몬스터 (1초동안 스킬 애니메이션)
+
 		gGameFramework->ZmonstersPlayAttack[pkt->monsterID] = true;
+		string type;
+		switch (pkt->monsterID/5)
+		{
+		case 0:
+			type = "Mushroom_Dark";
+			break;
+		case 1:
+			type = "FrightFly";
+			break;
+		case 2:
+			type = "Plant_Dionaea";
+			break;
+		case 3:
+			type = "Venus_Blue";
+			break;
+		case 4:
+			type = "Flower_Fairy";
+			break;
+		default:
+			break;
+		}
+		auto monster = gameScene->m_BossStageMonsters[type][pkt->monsterID % 5]; 
+		monster->PlayAnimationWithBlend("Attack", 2.0f); 
+		monster->m_AnimOnce = true;
 	}
 	else {									// 정점 보스 몬스터 (2초동안 예고 범위 보여주고 1초동안 스킬 애니메이션)
 		if (pkt->bossmonsterSkill == 2)									//점프

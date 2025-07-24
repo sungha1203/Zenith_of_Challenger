@@ -90,6 +90,14 @@ void Monsters::Update(FLOAT timeElapsed)
 					StopDie = true;
 					m_animTime -= 1.0;
 				}
+				else if (m_AnimOnce)
+				{
+					m_animTime -= clip.duration;
+					//PlayAnimationWithBlend(m_returnAnimation, 2.0f);
+					m_playMove = true; 
+					m_AnimOnce = false;
+					//m_returnAnimation = "none";
+				}
 				else
 				{
 					m_animTime -= clip.duration;
@@ -480,6 +488,7 @@ void Monsters::StartDissolve()
 	// 초기 디졸브 진행도
 	SetDissolveAmount(0.f);
 }
+
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
