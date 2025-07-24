@@ -96,7 +96,10 @@ public:
 	bool IsDissolving() const { return m_isDissolving; }
 	float m_dustSpawnTimer = 0.0f;           // 누적 타이머
 	float m_dustSpawnInterval = 0.1f;        // 먼지 생성 주기 (초당 10번)
-
+	void PlayAnimationOnce(string playAnimation);
+	bool m_AnimOnce = false;
+	string m_returnAnimation="none";
+	bool m_playMove = false;
 private:
 
 	std::unordered_map<std::string, int> m_boneNameToIndex;

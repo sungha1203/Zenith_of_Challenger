@@ -764,11 +764,11 @@ void GameScene::Update(FLOAT timeElapsed)
 				monster->Update(timeElapsed);
 				if (idx < gGameFramework->ZmonstersCoord.size()) {
 					monster->SetPosition(XMFLOAT3(gGameFramework->ZmonstersCoord[idx].x, gGameFramework->ZmonstersCoord[idx].y, gGameFramework->ZmonstersCoord[idx].z));
-					monster->SetRotationY(gGameFramework->ZmonstersToward[idx]);
-					if (gGameFramework->ZmonstersPlayAttack[idx])
+					monster->SetRotationY(gGameFramework->ZmonstersToward[idx]);					
+					if (monster->m_playMove)
 					{
-						monster->PlayAnimationWithBlend("Attack", 2.0f);
-						gGameFramework->ZmonstersPlayAttack[idx] = false;
+						monster->PlayAnimationWithBlend("Move", 2.0f);
+						monster->m_playMove = false;
 					}
 					++idx;
 				}
@@ -981,7 +981,7 @@ void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) con
 
 			for (const auto& monster : group)
 			{
-				if (!monster->IsActive()) continue;
+				if (!monster->IsActive()) continue;// 5마리만 렌더링
 
 				monster->SetShader(m_shaders.at("FrightFly"));
 				monster->Render(commandList);
