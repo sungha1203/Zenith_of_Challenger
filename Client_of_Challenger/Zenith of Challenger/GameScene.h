@@ -71,13 +71,13 @@ public:
 
     //스킬
     void SpawnHealingObject(int num);
-    void FireMagicBall(int num); //마법사 평타
+    void FireMagicBall(int num, float angle); //마법사 평타
     void AddTrailObject(const shared_ptr<GameObject>& obj);
     void SpawnMagicImpactEffect(const XMFLOAT3& pos);
     void SpawnHealingEffect(const XMFLOAT3& playerPos);
     void ActivateZenithStageMonsters();// 몬스터 렌더 여부 활성화
     void CheckHealingCollision();
-    void FireUltimateBulletRain(int num); //마법사 스킬
+    void FireUltimateBulletRain(int num, float yaw); //마법사 스킬
     void ActivateSwordAuraSkill(int num); //전사 스킬
     void UpdateSwordAuraSkill(float timeElapsed);
     //타 클라 직업 판정

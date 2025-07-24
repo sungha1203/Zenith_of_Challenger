@@ -152,6 +152,9 @@ void ClientNetwork::Receive() {
 			case SC_PACKET_PLAYERHP:
 				ProcessPlayerHP(currentBuffer);
 				break;
+			case SC_PACKET_ATTACKEFFECT:
+				ProcessAttackEffect(currentBuffer);
+				break;
 			default:
 				break;
 			}
@@ -547,32 +550,6 @@ void ClientNetwork::ProcessAnimation(char* buffer)
 {
 	SC_Packet_Animaition* pkt = reinterpret_cast<SC_Packet_Animaition*>(buffer);
 
-	//if (pkt->animation == 3) {		// 0 == 펀치
-	//	if (pkt->client_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[0])
-	//	{
-	//		shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
-	//		currentScene->m_Otherplayer[0]->SetCurrentAnimation("Punch.001");
-	//	}
-	//	else if (pkt->client_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[1])
-	//	{
-	//		shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
-	//		currentScene->m_Otherplayer[1]->SetCurrentAnimation("Punch.001");
-	//	}
-	//}
-	//else if(pkt->animation == 2)
-	//{		// 1 == 달리기
-	//	if (pkt->client_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[0])
-	//	{
-	//		shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
-	//		currentScene->m_Otherplayer[0]->m_currentAnim = "Running";
-	//	}
-	//	else if (pkt->client_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[1])
-	//	{
-	//		shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
-	//		currentScene->m_Otherplayer[1]->m_currentAnim = "Running";
-	//	}
-	//}
-
 	switch (pkt->animation) {
 	case 0:  // idle
 		if (pkt->client_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[0])
@@ -678,6 +655,19 @@ void ClientNetwork::ProcessAnimation(char* buffer)
 		break;
 	case 7: // 전사 기본 공격
 
+		// 플레이어 0
+		if (pkt->client_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[0])
+		{
+			shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
+			currentScene->m_Otherplayer[0]->m_CurrentAnim = pkt->animation;
+		}
+		// 플레이어 1
+		else if (pkt->client_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[1])
+		{
+			shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
+			currentScene->m_Otherplayer[1]->m_CurrentAnim = pkt->animation;
+		}
+
 		break;
 	case 8: // 마법사 기본 공격
 		auto currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
@@ -689,13 +679,11 @@ void ClientNetwork::ProcessAnimation(char* buffer)
 		if (pkt->client_id == currentScene->otherid[0])
 		{
 			currentScene->m_Otherplayer[0]->m_CurrentAnim = pkt->animation;
-			gameScene->FireMagicBall(0); //0번 플레이어 기준 발사
 		}
 		// 플레이어 1
 		else if (pkt->client_id == currentScene->otherid[1])
 		{
 			currentScene->m_Otherplayer[1]->m_CurrentAnim = pkt->animation;
-			gameScene->FireMagicBall(1); //1번 플레이어 기준 발사
 		}
 		break;
 	}
@@ -708,6 +696,22 @@ void ClientNetwork::ProcessAttackEffect(char* buffer)
 	pkt->targetID;				// 어떤 플레이어가 쓰는거임?  스킬 이펙트가 나오는 위치도 targetID로 알수있어
 	pkt->skill;					// 무슨 스킬??
 	pkt->angle;
+	// 0. 전사 기본 공격 이펙트,    1. 전사 스킬 공격 이펙트,    2. 마법사 기본 공격 이펙트,    3. 마법사 스킬 공격 이펙트
+
+	auto currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
+	auto gameScene = std::dynamic_pointer_cast<GameScene>(currentScene);
+	switch (pkt->skill) {
+	case 0:
+		break;
+	case 1:
+		break;
+	case 2:
+		gameScene->FireMagicBall(pkt->targetID, pkt->angle); //1번 플레이어 기준 발사
+		break;
+	case 3:
+		gameScene->FireUltimateBulletRain(pkt->targetID, pkt->angle);
+		break;
+	}
 }
 
 void ClientNetwork::ProcessZenithState(char* buffer)

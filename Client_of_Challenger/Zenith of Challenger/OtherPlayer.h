@@ -21,6 +21,9 @@ public:
 
 	void SetAnimationClips(const std::vector<AnimationClip>& clips);
 	void SetCurrentAnimation(const std::string& name);
+
+	bool StartAnimation = false;
+
 	//void UploadBoneMatricesToShader(const std::vector<XMMATRIX>& boneTransforms, std::unordered_map<std::string, int>animBoneIndex, const ComPtr<ID3D12GraphicsCommandList>& commandList);
 	void UploadBoneMatricesToShader(const std::vector<XMMATRIX>& boneTransforms, const ComPtr<ID3D12GraphicsCommandList>& commandList);
 	// SRV 생성 함수

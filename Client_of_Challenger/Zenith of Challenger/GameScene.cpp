@@ -105,23 +105,32 @@ void GameScene::MouseEvent(HWND hWnd, FLOAT timeElapsed)
             if (m_job == 1) // 전사
             {
                 m_player->SetCurrentAnimation("Slash"); // 또는 다른 힐탱커용 평타 애니메이션
+				{
+					// 네트워크 패킷 전송
+					CS_Packet_Animaition pkt;
+					pkt.type = CS_PACKET_ANIMATION;
+					pkt.animation = 7;
+					pkt.size = sizeof(pkt);
+					gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
+				}
             }
             else if (m_job == 2) // 마법사
             {
-                FireMagicBall(2);
+                FireMagicBall(2, m_player->GetRotationY());
+				// 다른 플레이어들한테 내가 스킬 뭐 쓰는지 보내주기
+				{
+					CS_Packet_AttackEffect pkt;
+					pkt.type = CS_PACKET_ATTACKEFFECT;
+					pkt.size = sizeof(pkt);
+					pkt.skill = 2;
+					gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
+				}
             }
             else if (m_job == 3) // 힐탱커
             {
             }
 
             m_player->isPunching = true;
-
-            // 네트워크 패킷 전송
-            CS_Packet_Animaition pkt;
-            pkt.type = CS_PACKET_ANIMATION;
-            pkt.animation = 3;
-            pkt.size = sizeof(pkt);
-            gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
         }
 
         
@@ -397,13 +406,13 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
 			// 
 		}
 		else if (m_job == 2) { // 너가 마법사라면
-			FireMagicBall(2);
+			FireUltimateBulletRain(2, m_player->GetRotationY());
+			// 다른 플레이어들한테 내가 스킬 뭐 쓰는지 보내주기
 			{
-				CS_Packet_Animaition pkt;
-				pkt.type = CS_PACKET_ANIMATION;
-				pkt.animation = 8;
+				CS_Packet_AttackEffect pkt;
+				pkt.type = CS_PACKET_ATTACKEFFECT;
 				pkt.size = sizeof(pkt);
-
+				pkt.skill = 3;
 				gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
 			}
 		}
@@ -423,12 +432,12 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
 
 	if (GetAsyncKeyState('M') & 0x0001) // 궁극기 키
 	{
-		FireUltimateBulletRain(2); // 본인 기준
+		FireUltimateBulletRain(2, m_player->GetRotationY()); // 본인 기준
 	}
 
 	if (GetAsyncKeyState('C') & 0x0001)
 	{
-		FireMagicBall(2);
+		FireMagicBall(2, m_player->GetRotationY());
 		m_skillCooldowns = m_skillMaxCooldowns;
 	}
 
@@ -2714,7 +2723,7 @@ void GameScene::SpawnHealingObject(int num)
 
 	m_healingObjects.push_back(healing);
 }
-void GameScene::FireMagicBall(int num)
+void GameScene::FireMagicBall(int num, float angle)
 {
 	if (m_meshLibrary.find("MagicBall") == m_meshLibrary.end()) return;
 
@@ -2907,7 +2916,7 @@ void GameScene::CheckHealingCollision()
 	next_heal:;
 	}
 }
-void GameScene::FireUltimateBulletRain(int num)
+void GameScene::FireUltimateBulletRain(int num, float yaw)
 {
 	if (m_meshLibrary.find("MagicBall") == m_meshLibrary.end()) return;
 

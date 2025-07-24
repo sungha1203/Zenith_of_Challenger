@@ -97,6 +97,9 @@ void OtherPlayer::Update(FLOAT timeElapsed)
     case 3:
         m_currentAnim = "Punch.001";
         break;
+    case 7:
+        m_currentAnim = "Slash";
+        break;
     }
 
 
