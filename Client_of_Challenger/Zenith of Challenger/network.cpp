@@ -649,7 +649,6 @@ void ClientNetwork::ProcessAnimation(char* buffer)
 			auto gameScene = std::dynamic_pointer_cast<GameScene>(currentScene2);
 			if (gameScene) {
 				gameScene->SpawnHealingObject(1);
-
 			}
 		}
 		break;
@@ -674,16 +673,21 @@ void ClientNetwork::ProcessAnimation(char* buffer)
 		auto gameScene = std::dynamic_pointer_cast<GameScene>(currentScene);
 
 		if (!gameScene) break;
-
+		if (pkt->client_id == m_clientID)
+		{
+			gameScene->FireMagicBall(2); //플레이어 기준 발사
+		}
 		// 플레이어 0
 		if (pkt->client_id == currentScene->otherid[0])
 		{
 			currentScene->m_Otherplayer[0]->m_CurrentAnim = pkt->animation;
+			gameScene->FireOther1MagicBall(); //타 클라 1번 플레이어 기준 발사
 		}
 		// 플레이어 1
 		else if (pkt->client_id == currentScene->otherid[1])
 		{
 			currentScene->m_Otherplayer[1]->m_CurrentAnim = pkt->animation;
+			gameScene->FireOther2MagicBall(); //타 클라 1번 플레이어 기준 발사
 		}
 		break;
 	}
@@ -700,18 +704,29 @@ void ClientNetwork::ProcessAttackEffect(char* buffer)
 
 	auto currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
 	auto gameScene = std::dynamic_pointer_cast<GameScene>(currentScene);
-	switch (pkt->skill) {
-	case 0:
-		break;
-	case 1:
-		break;
-	case 2:
-		gameScene->FireMagicBall(pkt->targetID, pkt->angle); //1번 플레이어 기준 발사
-		break;
-	case 3:
-		gameScene->FireUltimateBulletRain(pkt->targetID, pkt->angle);
-		break;
-	}
+	//switch (pkt->skill) {
+	//case 0:
+	//	break;
+	//case 1:
+	//	break;
+	//case 2:
+	//	//if (pkt->targetID == m_clientID)
+	//	//{
+	//	//	gameScene->FireMagicBall(0, 0); //플레이어 기준 발사
+	//	//}
+	//	//else if (pkt->targetID == currentScene->otherid[0])
+	//	//{
+	//	//	gameScene->FireMagicBall(1, pkt->angle); //타 클라 1번 플레이어 기준 발사
+	//	//}
+	//	//else if (pkt->targetID == currentScene->otherid[1])
+	//	//{
+	//	//	gameScene->FireMagicBall(2, pkt->angle); //타 클라 2번 플레이어 기준 발사
+	//	//}
+	//	break;
+	//case 3:
+	//	gameScene->FireUltimateBulletRain(pkt->targetID, pkt->angle);
+	//	break;
+	//}
 }
 
 void ClientNetwork::ProcessZenithState(char* buffer)

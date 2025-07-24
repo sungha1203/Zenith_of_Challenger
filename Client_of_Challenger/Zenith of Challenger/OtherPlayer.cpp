@@ -224,6 +224,20 @@ void OtherPlayer::SetCurrentAnimation(const std::string& name)
     }
 }
 
+XMFLOAT3 OtherPlayer::GetForward() const
+{
+    XMMATRIX world = XMLoadFloat4x4(&GetWorldMatrix());
+
+    // 월드행렬의 z축 추출
+    XMVECTOR forward = XMVector3Normalize(world.r[2]);
+    forward = XMVectorNegate(forward);
+
+    XMFLOAT3 dir;
+    XMStoreFloat3(&dir, forward);
+
+    return dir;
+}
+
 void OtherPlayer::UploadBoneMatricesToShader(const std::vector<XMMATRIX>& boneTransforms, const ComPtr<ID3D12GraphicsCommandList>& commandList)
 {
     const UINT MAX_BONES = 128;

@@ -509,8 +509,7 @@ void CGameFramework::CreateDescriptorHeaps()
 void CGameFramework::HandleSceneTransition()
 {
 	auto startScene = dynamic_pointer_cast<StartScene>(m_sceneManager->GetCurrentScene());
-	//if (startScene && startScene->IsStartButtonClicked())		// 클라 개발
-	if (startScene && IsSuccess == true)						// 서버 개발
+	if (startScene && IsSuccess == true)
 	{
 		m_shouldTransition = true;
 		startScene->ResetStartButtonClicked();

@@ -48,6 +48,7 @@ public:
     virtual void BuildMaterials(const ComPtr<ID3D12Device>& device,
         const ComPtr<ID3D12GraphicsCommandList>& commandList);
     virtual void BuildObjects(const ComPtr<ID3D12Device>& device);
+    void ClearSceneResources() override;
 
     void AddCubeCollider(const XMFLOAT3& position, const XMFLOAT3& extents, const FLOAT& rotate = 0.f);
 
@@ -71,7 +72,11 @@ public:
 
     //스킬
     void SpawnHealingObject(int num);
-    void FireMagicBall(int num, float angle); //마법사 평타
+    void FireMagicBall(int num); //마법사 평타
+    void FireOther1MagicBall(); //마법사 평타
+    void FireOther2MagicBall(); //마법사 평타
+
+
     void AddTrailObject(const shared_ptr<GameObject>& obj);
     void SpawnMagicImpactEffect(const XMFLOAT3& pos);
     void SpawnHealingEffect(const XMFLOAT3& playerPos);
@@ -80,6 +85,8 @@ public:
     void FireUltimateBulletRain(int num, float yaw); //마법사 스킬
     void ActivateSwordAuraSkill(int num); //전사 스킬
     void UpdateSwordAuraSkill(float timeElapsed);
+
+
     //타 클라 직업 판정
     int m_otherPlayerJobs[2] = { 0, 0 }; // 1: 전사, 2: 마법사, 3: 힐탱커
 
@@ -194,6 +201,10 @@ private:
 
     vector<shared_ptr<MagicBall>> m_magicBalls; // 마법사 평타 구체
     vector<shared_ptr<GameObject>> m_trailObjects; //마법사 평타 트레일
+
+    vector<shared_ptr<MagicBall>> m_OthermagicBalls1; // 마법사 평타 구체
+    vector<shared_ptr<MagicBall>> m_OthermagicBalls2; // 마법사 평타 구체
+
     vector<shared_ptr<GameObject>> m_effects; //마법사 스킬, 평타 피격시 이펙트
 
     vector<SwordAuraTrail> m_swordAuraTrailList;
@@ -202,6 +213,11 @@ private:
     float m_trailTimer = 0.0f;
     const float TRAIL_SPAWN_INTERVAL = 0.01f; // 50프레임/초 생성 주기
     const float TRAIL_LIFETIME = 0.3f;        // 0.3초 후 사라짐
+
+    float m_magicBasicAttackCooldown = 4.0f;  // 마법사 평타 3초 쿨타임
+    float m_magicBasicAttackTimer = 0.0f;     // 경과 시간
+    bool m_magicAttack = false;
+
 
     //무기
     vector<shared_ptr<GameObject>> m_weopons;
