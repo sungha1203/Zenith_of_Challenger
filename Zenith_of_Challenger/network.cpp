@@ -929,6 +929,20 @@ void Network::SendStartZenithStage(const std::vector<int>& client_id) {
 	}
 }
 
+// 정점 스테이지 이동 전 공격력 설정
+void Network::SendPlayerAttack(const std::vector<int>& client_id)
+{
+	SC_Packet_PlayerAttack pkt;
+	pkt.type = SC_PACKET_PLAYERATTACK;
+
+	for (int id : client_id) {
+		if (!g_network.clients[id].m_used) continue;
+		pkt.attack = g_client[id].GetAttack();
+		pkt.size = sizeof(pkt);
+		g_network.clients[id].do_send(pkt);
+	}
+}
+
 // 골드 업데이트
 void Network::SendUpdateGold(const std::vector<int>& client_id) {
 	int room_id = g_room_manager.GetRoomID(client_id[0]);

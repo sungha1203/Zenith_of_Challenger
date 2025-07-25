@@ -118,6 +118,7 @@ public:
     void SetOtherJob2(int num) { m_OtherJobNum[1] = num; };
     //정점 스테이지 몬스터 관리 변수
     unordered_map<string, vector<shared_ptr<Monsters>>> m_BossStageMonsters; //정점 스테이지에서 쓰이는 몬스터 10마리
+    int  m_job = 0;
 private:
     int m_OtherJobNum[2] = {99,99};
 
@@ -168,7 +169,6 @@ private:
     //인벤토리 무기 및 전직서 관련
     bool m_WeaponOnly = false;
     bool m_JopOnly = false;
-    int  m_job = 0;
 
     //강화창 관련
     shared_ptr<GameObject> m_reinforcedWindowUI;

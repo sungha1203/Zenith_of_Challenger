@@ -43,6 +43,7 @@ public:
 	void		ProcessDebugItem(char* buffer);
 	void		ProcessItemState(char* buffer);
 	void		ProcessAnimation(char* buffer);
+	void		ProcessPlayerAttack(char* buffer);
 	void		ProcessAttackEffect(char* buffer);
 	void		ProcessZenithState(char* buffer);
 	void		ProcessZenithStage(char* buffer);
@@ -60,7 +61,10 @@ public:
 
 	int				m_clientID = 0;
 	unsigned int	m_prevRemain;
-
+	float m_challengerRatio = 50.0f;
+	float m_swordRatio = 150.0f;
+	float m_wizardRatio = 100.0f;
+	float m_healTankerRatio = 500.0f;
 private:
 	void		Receive();
 };

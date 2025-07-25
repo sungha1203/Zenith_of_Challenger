@@ -117,6 +117,7 @@ void GameScene::MouseEvent(HWND hWnd, FLOAT timeElapsed)
 			else if (m_job == 2) // 마법사
 			{
 				if (!m_magicAttack) {
+				m_player->SetCurrentAnimation("Slash");
 					m_magicAttack = true;
 					{
 						// 네트워크 패킷 전송
@@ -348,7 +349,7 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
 		}
 		else
 		{
-			m_player->SetCurrentAnimation("Goong"); //Goong
+			//m_player->SetCurrentAnimation("Slash"); //Goong
 		}
 
 		m_skillCooldowns = m_skillMaxCooldowns;
@@ -687,14 +688,20 @@ void GameScene::Update(FLOAT timeElapsed)
 						gGameFramework->ZmonstersCoord[idx].y, 
 						gGameFramework->ZmonstersCoord[idx].z));
 					monster->SetRotationY(gGameFramework->ZmonstersToward[idx]);
+					//정점 충돌 test
+					
+					//정점 충돌 test
+					
 					if (monster->m_playMove)
 					{
 						monster->PlayAnimationWithBlend("Move", 2.0f);
 						monster->m_playMove = false;
 					}
+
 					++idx;
 				}
 			}
+
 		}
 
 		// 보스 몬스터 업데이트
@@ -2388,6 +2395,17 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 			player->SetBoneHierarchy(loader->GetBoneHierarchy());
 			player->SetstaticNodeTransforms(loader->GetStaticNodeTransforms());
 			player->SetNodeNameToGlobalTransform(loader->GetNodeNameToGlobalTransform());
+
+			// m_player 생성 이후 위치
+			BoundingBox playerBox; 
+			playerBox.Center = XMFLOAT3{ 0.f, 4.5f, 0.f }; 
+			playerBox.Extents = { 1.0f, 4.2f, 1.0f }; // 스케일링된 값 
+			player->SetPlayerBoundingBox(playerBox); 
+
+			BoundingBox playerAttBox; 
+			playerAttBox.Center = XMFLOAT3{ 0.f, 0.0f, 0.f }; 
+			playerAttBox.Extents = { 2.0f, 4.0f, 2.0f }; 
+			player->SetAttBoundingBox(playerAttBox); 
 
 			player->SetTexture(m_textures["CHARACTER"]);
 			player->SetTextureIndex(m_textures["CHARACTER"]->GetTextureIndex());
