@@ -60,7 +60,10 @@ public:
 
 	int				m_clientID = 0;
 	unsigned int	m_prevRemain;
-
+	float m_challengerRatio = 50.0f;
+	float m_swordRatio = 150.0f;
+	float m_wizardRatio = 100.0f;
+	float m_healTankerRatio = 500.0f;
 private:
 	void		Receive();
 };
