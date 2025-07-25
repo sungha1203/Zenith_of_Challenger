@@ -359,7 +359,7 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
 		}
 		else
 		{
-			m_player->SetCurrentAnimation("Slash"); //Goong
+			m_player->SetCurrentAnimation("Dance"); //Goong
 		}
 
 
@@ -751,18 +751,24 @@ void GameScene::Update(FLOAT timeElapsed)
 		if (m_OtherJobNum[1] == 1) ChangeJob(1);//전사
 		if (m_OtherJobNum[0] == 2) ChangeJob(2);//마법사
 		if (m_OtherJobNum[1] == 3) ChangeJob(3);//마법사
+		if (m_OtherJobNum[0] == 4) ChangeJob(4);//마법사
+		if (m_OtherJobNum[1] == 5) ChangeJob(5);//마법사
 		//칼에 플레이어 손 행렬 곱해주기
 		if (m_job > 0)
 		{
 			// 칼의 원래 로컬 행렬 (즉, 생성 시 초기 위치 → 플레이어 중심에 있어야 함)
-			XMMATRIX weoponTranslation;
+			XMMATRIX weoponTranslation = XMMatrixIdentity(); 
 			if (m_job == 1)
 			{
-				weoponTranslation = XMMatrixTranslation(-3000.0f, 2000.0f, -1000.0f); // 칼이 손에서 약간 오른쪽에 있는 형태로 수정 가능  
+				weoponTranslation = XMMatrixTranslation(-3000.0f, 0.0f, -1000.0f); // 칼이 손에서 약간 오른쪽에 있는 형태로 수정 가능  
 			}
 			else if (m_job == 2)
 			{
 				weoponTranslation = XMMatrixTranslation(-2700.0f, 1500.0f, -1500.0f); // 마법사 행렬 
+			}
+			else if (m_job == 3)
+			{
+				weoponTranslation = XMMatrixTranslation(6000.0f, 1500.0f, 5500.0f); // 힐탱커 행렬 
 			}
 
 
@@ -772,6 +778,10 @@ void GameScene::Update(FLOAT timeElapsed)
 			float time = fmod(m_player->m_animTime, clip.duration);
 
 			auto boneIt = m_player->m_boneNameToIndex.find("mixamorig:RightHand");
+			if (m_job == 3)
+			{
+				boneIt = m_player->m_boneNameToIndex.find("mixamorig:LeftHand");
+			}
 			if (boneIt != m_player->m_boneNameToIndex.end())
 			{
 				int boneIndex = boneIt->second;
@@ -802,7 +812,7 @@ void GameScene::Update(FLOAT timeElapsed)
 			if (m_otherPlayerJobs[i] == 1)
 			{
 				// 칼의 원래 로컬 행렬 (즉, 생성 시 초기 위치 → 플레이어 중심에 있어야 함)
-				weoponTranslation = XMMatrixTranslation(-3000.0f, 2000.0f, -1000.0f); // 칼이 손에서 약간 오른쪽에 있는 형태로 수정 가능 
+				weoponTranslation = XMMatrixTranslation(-3000.0f, 0.0f, -1000.0f); // 칼이 손에서 약간 오른쪽에 있는 형태로 수정 가능 
 				otherjobisValid = true;
 			}
 			else if (m_otherPlayerJobs[i] == 2)
@@ -811,15 +821,25 @@ void GameScene::Update(FLOAT timeElapsed)
 				weoponTranslation = XMMatrixTranslation(-2700.0f, 1500.0f, -1500.0f); // 칼이 손에서 약간 오른쪽에 있는 형태로 수정 가능 
 				otherjobisValid = true;
 			}
+			else if(m_otherPlayerJobs[i] == 3)
+			{
+				// 방패의 원래 로컬 행렬 (즉, 생성 시 초기 위치 → 플레이어 중심에 있어야 함)
+				weoponTranslation = XMMatrixTranslation(6000.0f, 1500.0f, 5500.0f); // 힐탱커 행렬  
+				otherjobisValid = true;
+			}
 			if (!otherjobisValid)
 				continue;
 
-
+			
 			// 현재 애니메이션 클립 기준 본 행렬 계산
 			const auto& clip = m_Otherplayer[i]->m_animationClips.at(m_Otherplayer[i]->m_currentAnim);
 			float time = fmod(m_Otherplayer[i]->m_animTime, clip.duration);
 
 			auto boneIt = m_Otherplayer[i]->m_boneNameToIndex.find("mixamorig:RightHand");
+			if (m_job == 3)
+			{
+				boneIt = m_Otherplayer[i]->m_boneNameToIndex.find("mixamorig:LeftHand");
+			}
 			if (boneIt != m_Otherplayer[i]->m_boneNameToIndex.end())
 			{
 				int boneIndex = boneIt->second;
@@ -838,6 +858,8 @@ void GameScene::Update(FLOAT timeElapsed)
 						m_weopons[1]->SetWorldMatrix(weaponMat); //0,1,2 칼   3,4,5 지팡이
 					else if (m_otherPlayerJobs[i] == 2)
 						m_weopons[4]->SetWorldMatrix(weaponMat); //0,1,2 칼   3,4,5 지팡이
+					else if (m_otherPlayerJobs[i] == 3)
+						m_weopons[7]->SetWorldMatrix(weaponMat); //0,1,2 칼   3,4,5 지팡이
 				}
 				else
 				{
@@ -845,6 +867,8 @@ void GameScene::Update(FLOAT timeElapsed)
 						m_weopons[2]->SetWorldMatrix(weaponMat); //0,1,2 칼   3,4,5 지팡이
 					else if (m_otherPlayerJobs[i] == 2)
 						m_weopons[5]->SetWorldMatrix(weaponMat); //0,1,2 칼   3,4,5 지팡이
+					else if (m_otherPlayerJobs[i] == 3)
+						m_weopons[8]->SetWorldMatrix(weaponMat); //0,1,2 칼   3,4,5 지팡이
 				}
 
 			}
@@ -860,6 +884,9 @@ void GameScene::Update(FLOAT timeElapsed)
 		}
 
 	}
+
+
+	
 
 
 	int score = m_goldScore;
@@ -1742,7 +1769,8 @@ void GameScene::BuildMeshes(const ComPtr<ID3D12Device>& device,
 	}
 
 	auto SwordLoader = make_shared<FBXLoader>();
-	if (SwordLoader->LoadFBXModel("Model/Weapon/SwordOnly.fbx", XMMatrixIdentity()))
+	//if (SwordLoader->LoadFBXModel("Model/Weapon/SwordOnly.fbx", XMMatrixIdentity()))
+	if (SwordLoader->LoadFBXModel("Model/Weapon/RotSword.fbx", XMMatrixIdentity()))
 	{
 		auto meshes = SwordLoader->GetMeshes();
 		if (!meshes.empty())
@@ -1752,7 +1780,7 @@ void GameScene::BuildMeshes(const ComPtr<ID3D12Device>& device,
 	}
 
 	auto SwordLoader1 = make_shared<FBXLoader>();
-	if (SwordLoader1->LoadFBXModel("Model/Weapon/SwordOnly2.fbx", XMMatrixIdentity())) //Sword2_FBX
+	if (SwordLoader1->LoadFBXModel("Model/Weapon/RotSword2.fbx", XMMatrixIdentity())) //Sword2_FBX
 	{
 		auto meshes = SwordLoader1->GetMeshes();
 		if (!meshes.empty())
@@ -1780,7 +1808,25 @@ void GameScene::BuildMeshes(const ComPtr<ID3D12Device>& device,
 			m_meshLibrary["Staff1"] = meshes[0];
 		}
 	}
+	auto ShieldLoader = make_shared<FBXLoader>();
+	if (ShieldLoader->LoadFBXModel("Model/Weapon/RotShield.fbx", XMMatrixIdentity()))
+	{
+		auto meshes = ShieldLoader->GetMeshes();
+		if (!meshes.empty())
+		{
+			m_meshLibrary["Shield"] = meshes[0];
+		}
+	}
 
+	auto ShieldLoader1 = make_shared<FBXLoader>();
+	if (ShieldLoader1->LoadFBXModel("Model/Weapon/RotShield2.fbx", XMMatrixIdentity()))
+	{
+		auto meshes = ShieldLoader1->GetMeshes();
+		if (!meshes.empty())
+		{
+			m_meshLibrary["Shield1"] = meshes[0];
+		}
+	}
 
 
 	auto AttackRange = make_shared<FBXLoader>();
@@ -1929,6 +1975,11 @@ void GameScene::BuildTextures(const ComPtr<ID3D12Device>& device,
 		TEXT("Image/T_Staff_Newbie_01_Bl_D.dds"), RootParameter::Texture);
 	StaffTexture->CreateShaderVariable(device, true);
 	m_textures.insert({ "Staff", StaffTexture });
+
+	auto ShieldTexture = make_shared<Texture>(device, commandList,
+		TEXT("Image/T_Shield_Newbie_01_Bl_D.dds"), RootParameter::Texture);
+	ShieldTexture->CreateShaderVariable(device, true);
+	m_textures.insert({ "Shield", ShieldTexture });
 
 	auto DustTexture = make_shared<Texture>(device, commandList,
 		TEXT("Textures/Dust.dds"), RootParameter::Texture);
@@ -2082,18 +2133,19 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 		m_Otherplayer[1]->SetScale(XMFLOAT3{ 0.0005,0.0005,0.0005 });
 	}
 
-	array<string, 6> modelPaths = {
-	"Model/Player/TestWithoutSword.fbx",//p
+	array<string, 9> modelPaths = {
+	"Model/Player/TestWithoutSwordWithDance.fbx",//p
 	"Model/Player/Wizard.fbx",
+	"Model/Player/HealTanker.fbx",
 	"Model/Player/TestWithoutSword2.fbx",//op1
 	"Model/Player/TestWithoutSword3.fbx",//op2
 	"Model/Player/Wizard2.fbx",
 	"Model/Player/Wizard3.fbx",
-	//"Model/Player/Healer.fbx"
-	//"Model/Player/Healer.fbx"
+	"Model/Player/HealTanker2.fbx",
+	"Model/Player/HealTanker3.fbx",
 	};
 
-	for (int i = 0; i < 2; ++i) {
+	for (int i = 0; i < 3; ++i) {
 		auto loader = make_shared<FBXLoader>();
 		if (loader->LoadFBXModel(modelPaths[i], XMMatrixIdentity())) {
 			auto player = make_shared<Player>(device);
@@ -2127,7 +2179,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 		}
 	}
 
-	for (int i = 2; i < 6; ++i) {
+	for (int i = 3; i < 9; ++i) {
 		auto loader = make_shared<FBXLoader>();
 		if (loader->LoadFBXModel(modelPaths[i], XMMatrixIdentity())) {
 			auto Otherplayer = make_shared<OtherPlayer>(device);
@@ -2158,11 +2210,13 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 			auto [cpu, gpu] = gGameFramework->AllocateDescriptorHeapSlot();
 			Otherplayer->CreateBoneMatrixSRV(device, cpu, gpu);
 
-			m_jobOtherPlayers[i - 2] = Otherplayer;
+			m_jobOtherPlayers[i - 3] = Otherplayer;
 			//m_jobOtherPlayers[0] :전사
 			//m_jobOtherPlayers[1] :전사
 			//m_jobOtherPlayers[2] :마법사
 			//m_jobOtherPlayers[3] :마법사
+			//m_jobOtherPlayers[4] :힐탱커
+			//m_jobOtherPlayers[5] :힐탱커
 		}
 	}
 
@@ -2235,6 +2289,47 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 	staffObject3->SetPosition(XMFLOAT3{ -172.0f, 5.1f, 77.0f });
 
 	m_weopons.push_back(staffObject3); // 또는 m_weaponPreviewObject 등으로 따로 저장해도 됨   
+
+
+	//======
+	auto shieldMeshes = m_meshLibrary["Shield"];
+
+	auto shieldObject = make_shared<Staff>(device);
+	shieldObject->SetMesh(shieldMeshes);
+	shieldObject->SetShader(m_shaders["FBX"]);  // FBX 전용 셰이더 사용 
+	shieldObject->SetTexture(m_textures["Shield"]); // 텍스처는 적절한 걸 할당 
+	shieldObject->SetTextureIndex(m_textures["Shield"]->GetTextureIndex()); // 텍스처는 적절한 걸 할당 
+	shieldObject->SetUseTexture(true);
+	// 보기 좋게 위치 및 크기 조정 (원한다면)	
+	staffObject->SetPosition(XMFLOAT3{ -172.0f, 5.1f, 77.0f });
+
+	m_weopons.push_back(shieldObject); // 또는 m_weaponPreviewObject 등으로 따로 저장해도 됨  
+
+	auto shieldObject2 = make_shared<Staff>(device);
+	shieldObject2->SetMesh(shieldMeshes);
+	shieldObject2->SetShader(m_shaders["FBX"]);  // FBX 전용 셰이더 사용 
+	shieldObject2->SetTexture(m_textures["Shield"]); // 텍스처는 적절한 걸 할당 
+	shieldObject2->SetTextureIndex(m_textures["Shield"]->GetTextureIndex()); // 텍스처는 적절한 걸 할당 
+	shieldObject2->SetUseTexture(true);
+	// 보기 좋게 위치 및 크기 조정 (원한다면)	
+	shieldObject2->SetPosition(XMFLOAT3{ -172.0f, 5.1f, 77.0f });
+
+	m_weopons.push_back(shieldObject2); // 또는 m_weaponPreviewObject 등으로 따로 저장해도 됨  
+
+	auto shieldObject3 = make_shared<Staff>(device);
+	shieldObject3->SetMesh(shieldMeshes);
+	shieldObject3->SetShader(m_shaders["FBX"]);  // FBX 전용 셰이더 사용 
+	shieldObject3->SetTexture(m_textures["Shield"]); // 텍스처는 적절한 걸 할당 
+	shieldObject3->SetTextureIndex(m_textures["Shield"]->GetTextureIndex()); // 텍스처는 적절한 걸 할당 
+	shieldObject3->SetUseTexture(true);
+	// 보기 좋게 위치 및 크기 조정 (원한다면)	
+	shieldObject3->SetPosition(XMFLOAT3{ -172.0f, 5.1f, 77.0f });
+
+	m_weopons.push_back(shieldObject3); // 또는 m_weaponPreviewObject 등으로 따로 저장해도 됨   
+	//======
+
+
+
 
 	//맵의 오브젝트들 바운딩 박스
 
@@ -2963,19 +3058,19 @@ void GameScene::SetJobSlotUV(int type)
 	m_jobSlotIcon->SetVisible(true);
 
 	// 전직 처리: 그냥 포인터 교체
-	if (type == 0) {
+	//if (type == 0) {
 		m_player = m_jobPlayers[type];
 		gGameFramework->SetPlayer(m_player);
 		m_player->SetCamera(m_camera);
 		m_job = type + 1;
-	}
+	/*}
 	else if (type == 1)
 	{
 		m_player = m_jobPlayers[type];
 		gGameFramework->SetPlayer(m_player);
 		m_player->SetCamera(m_camera);
 		m_job = type + 1;
-	}
+	}*/
 }
 void GameScene::UpdateEnhanceDigits()
 {
@@ -3718,7 +3813,7 @@ void GameScene::SetCameraToggle()
 	m_camera->SetLens(0.25f * XM_PI, gGameFramework->GetAspectRatio(), 0.1f, 1000.f);
 	m_player->SetCamera(m_camera); // 카메라 바뀐 후 플레이어에도 재등록
 }
-void GameScene::ChangeJob(int index)//0,1,2,3
+void GameScene::ChangeJob(int index)//0,1,2,3,4,5
 {
 	gGameFramework->WaitForGpuComplete();
 	//m_jobOtherPlayers[index]->SetPosition(otherpos[index]); 
@@ -3729,11 +3824,11 @@ void GameScene::ChangeJob(int index)//0,1,2,3
 	m_Otherplayer[index % 2]->SetPosition(otherpos[index % 2]);
 	//auto [cpu, gpu] = gGameFramework->AllocateDescriptorHeapSlot();
 	//m_Otherplayer[index]->CreateBoneMatrixSRV(gGameFramework->GetDevice(), cpu, gpu);
-	if (index == 0) m_OtherJobNum[0] = 99;
-	if (index == 1) m_OtherJobNum[1] = 99;
-	if (index == 2) m_OtherJobNum[0] = 99;
-	if (index == 3) m_OtherJobNum[1] = 99;
-
+	//if (index == 0) m_OtherJobNum[0] = 99;
+	//if (index == 1) m_OtherJobNum[1] = 99;
+	//if (index == 2) m_OtherJobNum[0] = 99;
+	//if (index == 3) m_OtherJobNum[1] = 99;
+	m_OtherJobNum[index%2] = 99;
 }
 void GameScene::ClearSceneResources()
 {

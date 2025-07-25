@@ -191,6 +191,7 @@
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SceneManager.h" />
     <ClInclude Include="Shader.h" />
+    <ClInclude Include="Shield.h" />
     <ClInclude Include="Staff.h" />
     <ClInclude Include="StartScene.h" />
     <ClInclude Include="stdafx.h" />
@@ -239,6 +240,7 @@
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="SceneManager.cpp" />
     <ClCompile Include="Shader.cpp" />
+    <ClCompile Include="Shield.cpp" />
     <ClCompile Include="Staff.cpp" />
     <ClCompile Include="StartScene.cpp" />
     <ClCompile Include="stdafx.cpp" />

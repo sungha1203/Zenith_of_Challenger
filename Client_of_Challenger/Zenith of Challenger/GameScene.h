@@ -13,6 +13,7 @@
 #include "AttackRangeIndicator.h"
 #include "SwordAuraObject.h"
 #include"Staff.h"
+#include"Shield.h"
 
 class FBXLoader; // 전방 선언 추가
 
