@@ -59,7 +59,7 @@ public:
 	void	SetCoord(float x, float y, float z);							// 좌표 갱신
 	void	SetAngle(float angle);											// 방향 갱신
 	
-	void	LeverUpPlayer(Player& player);									// 직업 전직 후 캐릭터 설정
+	void	LeverUpPlayer(int classtype);									// 직업 전직 후 캐릭터 설정
 
 	void	AddHP(int heal);												// 피 회복
 	int		MinusHP(int damage, int gamemode);								// 피 깎임
