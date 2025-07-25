@@ -504,6 +504,18 @@ void ClientNetwork::ProcessInventory2Equip(char* buffer)
 			gameScene->SetOtherJob2(1);
 		}
 	}
+	if (gameScene && pkt->item == 5) // 마법사
+	{
+		// otherid[0] 또는 otherid[1] 에 매칭되는지 확인
+		if (pkt->clientID == gameScene->otherid[0])
+		{
+			gameScene->SetOtherJob1(2);
+		}
+		else if (pkt->clientID == gameScene->otherid[1])
+		{
+			gameScene->SetOtherJob2(3);
+		}
+	}
 	if (gameScene && pkt->item == 6) // 힐탱커
 	{
 		// otherid[0] 또는 otherid[1] 에 매칭되는지 확인

@@ -12,6 +12,7 @@
 #include "DissolveDustEffectObject.h"
 #include "AttackRangeIndicator.h"
 #include "SwordAuraObject.h"
+#include"Staff.h"
 
 class FBXLoader; // 전방 선언 추가
 
@@ -242,7 +243,7 @@ private:
     public:
     //전직 별 직업 매쉬 정보
     array<shared_ptr<Player>, 3> m_jobPlayers; // 0=전사, 1=마법사, 2=힐탱커
-    array<shared_ptr<OtherPlayer>, 3> m_jobOtherPlayers; // 0=전사, 1=마법사, 2=힐탱커
+    array<shared_ptr<OtherPlayer>, 6> m_jobOtherPlayers; // 0=전사, 1=마법사, 2=힐탱커
 
 
 };

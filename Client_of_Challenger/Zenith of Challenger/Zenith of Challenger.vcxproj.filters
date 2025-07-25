@@ -196,6 +196,9 @@
     <ClInclude Include="SwordAuraObject.h">
       <Filter>소스 파일\Object\Skill</Filter>
     </ClInclude>
+    <ClInclude Include="Staff.h">
+      <Filter>소스 파일\Object\Weapons</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Zenith of Challenger.cpp">
@@ -311,6 +314,9 @@
     </ClCompile>
     <ClCompile Include="SwordAuraObject.cpp">
       <Filter>소스 파일\Object\Skill</Filter>
+    </ClCompile>
+    <ClCompile Include="Staff.cpp">
+      <Filter>소스 파일\Object\Weapons</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
