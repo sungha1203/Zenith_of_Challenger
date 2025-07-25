@@ -11,8 +11,8 @@ ClientInfo::ClientInfo(int client_id)
 	m_ingameInfo.classtype = Classtype::CHALLENGER;     // 초기 직업 : 도전자
 	m_ingameInfo.weapon.type = 0;                       // 기본 무기 : 맨손
 	m_ingameInfo.weapon.level = 0;                      // 무기 레벨 : 0
-	m_ingameInfo.clothes = 0;                        // 기본 머리 : X
-	m_ingameInfo.hp = 50;                               // 도전자 체력       : 50
+	m_ingameInfo.clothes = 0;							// 기본 머리 : X
+	m_ingameInfo.hp = 100;                              // 도전자 체력       : 50
 	m_ingameInfo.attack = 20;                           // 도전자 공격력     : 20
 	m_ingameInfo.speed = 1;                             // 도전자 이동 속도  : 1
 	m_ingameInfo.attackspeed = 1;                       // 도전자 공격 속도  : 1
@@ -153,23 +153,23 @@ bool ClientInfo::SetEnhanceGradeUp(int weapongrade)
 	return roll <= probabilities[weapongrade];
 }
 
-void ClientInfo::LeverUpPlayer(Player& player)
+void ClientInfo::LeverUpPlayer(int classtype)
 {
-	switch (player.classtype) {
-	case Classtype::WARRIOR:
-		player.hp = 300;
-		player.attack = 50;
-		player.speed = 2;
+	switch (classtype) {
+	case (int)Classtype::WARRIOR:
+		m_ingameInfo.hp = 300;
+		m_ingameInfo.attack = 50;
+		m_ingameInfo.speed = 2;
 		break;
-	case Classtype::MAGE:
-		player.hp = 200;
-		player.attack = 100;
-		player.speed = 2;
+	case (int)Classtype::MAGE:
+		m_ingameInfo.hp = 200;
+		m_ingameInfo.attack = 100;
+		m_ingameInfo.speed = 2;
 		break;
-	case Classtype::HEALTANKER:
-		player.hp = 1000;
-		player.attack = 0;
-		player.speed = 1;
+	case (int)Classtype::HEALTANKER:
+		m_ingameInfo.hp = 1000;
+		m_ingameInfo.attack = 0;
+		m_ingameInfo.speed = 1;
 		break;
 	}
 }

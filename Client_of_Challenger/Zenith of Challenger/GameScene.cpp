@@ -718,8 +718,8 @@ void GameScene::Update(FLOAT timeElapsed)
 		if (m_OtherJobNum[1] == 1) ChangeJob(1);//전사
 		if (m_OtherJobNum[0] == 2) ChangeJob(2);//마법사
 		if (m_OtherJobNum[1] == 3) ChangeJob(3);//마법사
-		if (m_OtherJobNum[0] == 4) ChangeJob(4);//마법사
-		if (m_OtherJobNum[1] == 5) ChangeJob(5);//마법사
+		if (m_OtherJobNum[0] == 4) ChangeJob(4);//힐탱커 
+		if (m_OtherJobNum[1] == 5) ChangeJob(5);//힐탱커 
 		//칼에 플레이어 손 행렬 곱해주기
 		if (m_job > 0)
 		{
@@ -803,7 +803,7 @@ void GameScene::Update(FLOAT timeElapsed)
 			float time = fmod(m_Otherplayer[i]->m_animTime, clip.duration);
 
 			auto boneIt = m_Otherplayer[i]->m_boneNameToIndex.find("mixamorig:RightHand");
-			if (m_job == 3)
+			if (m_otherPlayerJobs[i] == 3)
 			{
 				boneIt = m_Otherplayer[i]->m_boneNameToIndex.find("mixamorig:LeftHand");
 			}
