@@ -591,6 +591,7 @@ void Network::ProcessInventorySelcet(int client_id, char* buffer, int length) {
 		&& room.GetJobTypeNum(pkt->item) > 0)			// 방(인벤토리)에 있는 해당 전직서 하나 지움
 	{
 		g_client[client_id].SetJobType(pkt->item);
+		g_client[client_id].LeverUpPlayer((int)g_client[client_id].GetJobType());
 		room.DecideJobDocument(pkt->item);
 		pkt2.item = pkt->item;
 		pkt2.num = room.GetJobTypeNum(pkt->item);
