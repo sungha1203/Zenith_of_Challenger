@@ -109,7 +109,7 @@ void GameScene::MouseEvent(HWND hWnd, FLOAT timeElapsed)
 					// 네트워크 패킷 전송
 					CS_Packet_Animaition pkt;
 					pkt.type = CS_PACKET_ANIMATION;
-					pkt.animation = 7;
+					pkt.animation = 5;
 					pkt.size = sizeof(pkt);
 					gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
 				}
@@ -122,17 +122,12 @@ void GameScene::MouseEvent(HWND hWnd, FLOAT timeElapsed)
 						// 네트워크 패킷 전송
 						CS_Packet_Animaition pkt;
 						pkt.type = CS_PACKET_ANIMATION;
-						pkt.animation = 8;
+						pkt.animation = 5;
 						pkt.size = sizeof(pkt);
 						gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
 					}
 				}
 			}
-			else if (m_job == 3) // 힐탱커
-			{
-
-			}
-
 			m_player->isPunching = true;
 		}
 
@@ -262,12 +257,6 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
 	{
 		ActivateSwordAuraSkill(0);
 
-		CS_Packet_Animaition pkt;
-		pkt.type = CS_PACKET_ANIMATION;
-		pkt.animation = 4;
-		pkt.size = sizeof(pkt);
-
-		gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
 	}
 
 	if (GetAsyncKeyState(VK_OEM_PLUS) & 0x0001) // = 키
@@ -362,6 +351,7 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
 			m_player->SetCurrentAnimation("Slash"); //Goong
 		}
 
+		m_skillCooldowns = m_skillMaxCooldowns;
 
 		CS_Packet_Animaition pkt;
 		pkt.type = CS_PACKET_ANIMATION;
@@ -405,24 +395,7 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
 
 	if (GetAsyncKeyState('H') & 0x0001)     // 정점 스테이지 직업별 스킬 공격
 	{
-		if (m_job == 1) {      // 너가 전사라면
-			// 
-		}
-		else if (m_job == 2) { // 너가 마법사라면
-			FireUltimateBulletRain(2, m_player->GetRotationY());
-			// 다른 플레이어들한테 내가 스킬 뭐 쓰는지 보내주기
-			{
-				CS_Packet_AttackEffect pkt;
-				pkt.type = CS_PACKET_ATTACKEFFECT;
-				pkt.skill = 3;
-				pkt.size = sizeof(pkt);
-				gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
-			}
-		}
-		else if (m_job == 3) { // 너가 힐탱커라면
-			SpawnHealingObject(2);
-		}
-		// 다른 플레이어들한테 내가 스킬 뭐 쓰는지 보내주기
+		m_skillCooldowns = m_skillMaxCooldowns;
 		{
 			CS_Packet_Animaition pkt;
 			pkt.type = CS_PACKET_ANIMATION;
@@ -433,21 +406,15 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
 		}
 	}
 
-	if (GetAsyncKeyState('M') & 0x0001) // 궁극기 키
-	{
-		FireUltimateBulletRain(2, m_player->GetRotationY()); // 본인 기준
-	}
-
 	if (GetAsyncKeyState('C') & 0x0001)
 	{
-		m_skillCooldowns = m_skillMaxCooldowns;
 		if (!m_magicAttack) {
 			m_magicAttack = true;
 			{
 				// 네트워크 패킷 전송
 				CS_Packet_Animaition pkt;
 				pkt.type = CS_PACKET_ANIMATION;
-				pkt.animation = 8;
+				pkt.animation = 5;
 				pkt.size = sizeof(pkt);
 				gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
 			}
@@ -913,7 +880,6 @@ void GameScene::Update(FLOAT timeElapsed)
 			++it;
 		}
 	}
-
 	//타 플레이어1 평타 업데이트
 	for (auto it = m_OthermagicBalls1.begin(); it != m_OthermagicBalls1.end();)
 	{
@@ -945,6 +911,51 @@ void GameScene::Update(FLOAT timeElapsed)
 		}
 	}
 
+	//마법사 스킬 업데이트
+	for (auto it = m_UltPlayermagicBalls.begin(); it != m_UltPlayermagicBalls.end();)
+	{
+		auto& ball = *it;
+		ball->Update(timeElapsed);
+
+		if (ball->IsDead())
+		{
+			it = m_UltPlayermagicBalls.erase(it);
+		}
+		else
+		{
+			++it;
+		}
+	}
+	//타 플레이어1 스킬 업데이트
+	for (auto it = m_UltOther1magicBalls.begin(); it != m_UltOther1magicBalls.end();)
+	{
+		auto& ball = *it;
+		ball->Update(timeElapsed);
+
+		if (ball->IsDead())
+		{
+			it = m_UltOther1magicBalls.erase(it);
+		}
+		else
+		{
+			++it;
+		}
+	}
+	//타 플레이어2 마법사 스킬 업데이트
+	for (auto it = m_UltOther2magicBalls.begin(); it != m_UltOther2magicBalls.end();)
+	{
+		auto& ball = *it;
+		ball->Update(timeElapsed);
+
+		if (ball->IsDead())
+		{
+			it = m_UltOther2magicBalls.erase(it);
+		}
+		else
+		{
+			++it;
+		}
+	}
 
 	for (auto& trail : m_trailObjects)
 		trail->Update(timeElapsed);
@@ -1110,8 +1121,160 @@ void GameScene::Update(FLOAT timeElapsed)
 			}
 		}
 	}
+	//마법사 스킬 몬스터 충돌처리
+	for (auto& ball : m_UltPlayermagicBalls)
+	{
+		if (!ball->IsActive()) continue;
 
+		const BoundingBox& ballBox = ball->GetBoundingBox();
+		const XMFLOAT3& ballCenter = ballBox.Center;
+		XMFLOAT3 ballPos = ball->GetPosition();
 
+		XMFLOAT3 ballCenterWorld = {
+			ballPos.x + ballCenter.x,
+			ballPos.y + ballCenter.y,
+			ballPos.z + ballCenter.z
+		};
+
+		const XMFLOAT3& ballExtent = ballBox.Extents;
+
+		// 모든 몬스터 대상 충돌 체크
+		for (auto& [type, group] : m_monsterGroups)
+		{
+			for (auto& monster : group)
+			{
+				if (!monster || monster->IsDead()) continue;
+
+				const BoundingBox& monBox = monster->GetBoundingBox();
+				const XMFLOAT3& monCenter = monBox.Center;
+				const XMFLOAT3& monExtent = monBox.Extents;
+
+				XMFLOAT3 monPos = monster->GetPosition();
+				XMFLOAT3 monCenterWorld = {
+					monPos.x + monCenter.x,
+					monPos.y + monCenter.y,
+					monPos.z + monCenter.z
+				};
+
+				bool intersectX = abs(ballCenterWorld.x - monCenterWorld.x) <= (ballExtent.x + monExtent.x);
+				bool intersectY = abs(ballCenterWorld.y - monCenterWorld.y) <= (ballExtent.y + monExtent.y);
+				bool intersectZ = abs(ballCenterWorld.z - monCenterWorld.z) <= (ballExtent.z + monExtent.z);
+
+				if (intersectX && intersectY && intersectZ)
+				{
+
+					monster->ApplyDamage(1.0f); // 데미지 지정
+
+					SpawnMagicImpactEffect(ballCenterWorld);
+
+					ball->SetActive(false);
+					break; // 여러 몬스터에게 다중 충돌 막기
+				}
+			}
+		}
+	}
+	for (auto& ball : m_UltOther1magicBalls)
+	{
+		if (!ball->IsActive()) continue;
+
+		const BoundingBox& ballBox = ball->GetBoundingBox();
+		const XMFLOAT3& ballCenter = ballBox.Center;
+		XMFLOAT3 ballPos = ball->GetPosition();
+
+		XMFLOAT3 ballCenterWorld = {
+			ballPos.x + ballCenter.x,
+			ballPos.y + ballCenter.y,
+			ballPos.z + ballCenter.z
+		};
+
+		const XMFLOAT3& ballExtent = ballBox.Extents;
+
+		// 모든 몬스터 대상 충돌 체크
+		for (auto& [type, group] : m_monsterGroups)
+		{
+			for (auto& monster : group)
+			{
+				if (!monster || monster->IsDead()) continue;
+
+				const BoundingBox& monBox = monster->GetBoundingBox();
+				const XMFLOAT3& monCenter = monBox.Center;
+				const XMFLOAT3& monExtent = monBox.Extents;
+
+				XMFLOAT3 monPos = monster->GetPosition();
+				XMFLOAT3 monCenterWorld = {
+					monPos.x + monCenter.x,
+					monPos.y + monCenter.y,
+					monPos.z + monCenter.z
+				};
+
+				bool intersectX = abs(ballCenterWorld.x - monCenterWorld.x) <= (ballExtent.x + monExtent.x);
+				bool intersectY = abs(ballCenterWorld.y - monCenterWorld.y) <= (ballExtent.y + monExtent.y);
+				bool intersectZ = abs(ballCenterWorld.z - monCenterWorld.z) <= (ballExtent.z + monExtent.z);
+
+				if (intersectX && intersectY && intersectZ)
+				{
+
+					monster->ApplyDamage(1.0f); // 데미지 지정
+
+					SpawnMagicImpactEffect(ballCenterWorld);
+
+					ball->SetActive(false);
+					break; // 여러 몬스터에게 다중 충돌 막기
+				}
+			}
+		}
+	}
+	for (auto& ball : m_UltOther2magicBalls)
+	{
+		if (!ball->IsActive()) continue;
+
+		const BoundingBox& ballBox = ball->GetBoundingBox();
+		const XMFLOAT3& ballCenter = ballBox.Center;
+		XMFLOAT3 ballPos = ball->GetPosition();
+
+		XMFLOAT3 ballCenterWorld = {
+			ballPos.x + ballCenter.x,
+			ballPos.y + ballCenter.y,
+			ballPos.z + ballCenter.z
+		};
+
+		const XMFLOAT3& ballExtent = ballBox.Extents;
+
+		// 모든 몬스터 대상 충돌 체크
+		for (auto& [type, group] : m_monsterGroups)
+		{
+			for (auto& monster : group)
+			{
+				if (!monster || monster->IsDead()) continue;
+
+				const BoundingBox& monBox = monster->GetBoundingBox();
+				const XMFLOAT3& monCenter = monBox.Center;
+				const XMFLOAT3& monExtent = monBox.Extents;
+
+				XMFLOAT3 monPos = monster->GetPosition();
+				XMFLOAT3 monCenterWorld = {
+					monPos.x + monCenter.x,
+					monPos.y + monCenter.y,
+					monPos.z + monCenter.z
+				};
+
+				bool intersectX = abs(ballCenterWorld.x - monCenterWorld.x) <= (ballExtent.x + monExtent.x);
+				bool intersectY = abs(ballCenterWorld.y - monCenterWorld.y) <= (ballExtent.y + monExtent.y);
+				bool intersectZ = abs(ballCenterWorld.z - monCenterWorld.z) <= (ballExtent.z + monExtent.z);
+
+				if (intersectX && intersectY && intersectZ)
+				{
+
+					monster->ApplyDamage(1.0f); // 데미지 지정
+
+					SpawnMagicImpactEffect(ballCenterWorld);
+
+					ball->SetActive(false);
+					break; // 여러 몬스터에게 다중 충돌 막기
+				}
+			}
+		}
+	}
 	//마법사 평타 이펙트
 	for (auto& effect : m_effects)
 	{
@@ -1388,6 +1551,28 @@ void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) con
 		ball->SetShader(m_shaders.at("MagicBall"));
 		ball->Render(commandList);
 	}
+
+	for (const auto& ball : m_UltPlayermagicBalls)
+	{
+		if (!ball->IsActive()) continue;
+		ball->SetShader(m_shaders.at("MagicBall"));
+		ball->Render(commandList);
+	}
+
+	for (const auto& ball : m_UltOther1magicBalls)
+	{
+		if (!ball->IsActive()) continue;
+		ball->SetShader(m_shaders.at("MagicBall"));
+		ball->Render(commandList);
+	}
+
+	for (const auto& ball : m_UltOther2magicBalls)
+	{
+		if (!ball->IsActive()) continue;
+		ball->SetShader(m_shaders.at("MagicBall"));
+		ball->Render(commandList);
+	}
+
 
 	for (const auto& trail : m_trailObjects)
 	{
@@ -2876,6 +3061,27 @@ void GameScene::RenderShadowPass(const ComPtr<ID3D12GraphicsCommandList>& comman
 		ball->Render(commandList);
 	}
 
+	for (const auto& ball : m_UltPlayermagicBalls)
+	{
+		if (!ball->IsActive()) continue;
+		ball->SetShader(m_shaders.at("SHADOW"));
+		ball->Render(commandList);
+	}
+
+	for (const auto& ball : m_UltOther1magicBalls)
+	{
+		if (!ball->IsActive()) continue;
+		ball->SetShader(m_shaders.at("SHADOW"));
+		ball->Render(commandList);
+	}
+
+	for (const auto& ball : m_UltOther2magicBalls)
+	{
+		if (!ball->IsActive()) continue;
+		ball->SetShader(m_shaders.at("SHADOW"));
+		ball->Render(commandList);
+	}
+
 	for (const auto& sword : m_weopons) {
 		if (sword) {
 			sword->SetShader(m_shaders.at("SHADOW"));
@@ -3037,7 +3243,7 @@ void GameScene::SpawnHealingObject(int num)
 
 	m_healingObjects.push_back(healing);
 }
-void GameScene::FireMagicBall(int num)
+void GameScene::FireMagicBall()
 {
 	if (m_meshLibrary.find("MagicBall") == m_meshLibrary.end()) return;
 
@@ -3049,16 +3255,9 @@ void GameScene::FireMagicBall(int num)
 	XMFLOAT3 playerPos;
 	XMFLOAT3 forward;
 
-	if (num == 2) // 본인
-	{
-		playerPos = m_player->GetPosition();
-		forward = Vector3::Normalize(m_player->GetForward());
-	}
-	else // 다른 플레이어
-	{
-		playerPos = m_Otherplayer[num]->GetPosition();
-		forward = Vector3::Normalize(m_Otherplayer[num]->GetForward());
-	}
+	playerPos = m_player->GetPosition();
+	forward = Vector3::Normalize(m_player->GetForward());
+	
 
 	playerPos.y += 8.0f; // 발사 높이
 
@@ -3342,7 +3541,7 @@ void GameScene::CheckHealingCollision()
 	next_heal:;
 	}
 }
-void GameScene::FireUltimateBulletRain(int num, float yaw)
+void GameScene::FireUltimateBulletRain()
 {
 	if (m_meshLibrary.find("MagicBall") == m_meshLibrary.end()) return;
 
@@ -3355,17 +3554,8 @@ void GameScene::FireUltimateBulletRain(int num, float yaw)
 	XMFLOAT3 casterPos;
 	XMFLOAT3 forward;
 
-	if (num == 2) // 본인
-	{
-		casterPos = m_player->GetPosition();
-		forward = Vector3::Normalize(m_player->GetForward());
-	}
-	else // 다른 플레이어
-	{
-		casterPos = otherpos[num];
-		forward = { cosf(yaw), 0.f, sinf(yaw) }; // 고정 방향 (or 다른 플레이어 회전값 기반으로 확장 가능)
-		forward = Vector3::Normalize(forward);
-	}
+	casterPos = m_player->GetPosition();
+	forward = Vector3::Normalize(m_player->GetForward());
 
 	casterPos.y += 5.0f;
 
@@ -3394,7 +3584,99 @@ void GameScene::FireUltimateBulletRain(int num, float yaw)
 		ball->SetWaveOffsets(0.f, 0.f);
 		ball->SetScaleAnimation(0.f, 0.f, 0.f, 0.f, 0.f, 0.f); // scale pulse 제거
 
-		m_magicBalls.push_back(ball);
+		m_UltPlayermagicBalls.push_back(ball);
+	}
+}
+void GameScene::FireUltimateBulletRainOther1()
+{
+	if (m_meshLibrary.find("MagicBall") == m_meshLibrary.end()) return;
+
+	const int numShots = 10;                  // 전체 발사 수
+	const float angleRange = XMConvertToRadians(30.0f); // 부채꼴 각도 (±15도)
+	const float shotInterval = angleRange / (numShots - 1); // 탄 간격
+	const float speed = 100.0f;
+
+	// 발사 기준 위치
+	XMFLOAT3 casterPos;
+	XMFLOAT3 forward;
+
+	casterPos = m_Otherplayer[0]->GetPosition();
+	forward = Vector3::Normalize(m_Otherplayer[0]->GetForward());
+
+	casterPos.y += 5.0f;
+
+	XMVECTOR forwardVec = XMLoadFloat3(&forward);
+
+	for (int i = 0; i < numShots; ++i)
+	{
+		float angleOffset = -angleRange * 0.5f + shotInterval * i;
+		XMMATRIX rot = XMMatrixRotationY(angleOffset);
+		XMVECTOR shotDir = XMVector3TransformNormal(forwardVec, rot);
+
+		XMFLOAT3 dir;
+		XMStoreFloat3(&dir, shotDir);
+		dir = Vector3::Normalize(dir);
+
+		auto ball = make_shared<MagicBall>(m_device);
+		ball->SetMesh(m_meshLibrary["MagicBall"]);
+		ball->SetShader(m_shaders["MagicBall"]);
+		ball->SetPosition(casterPos);
+		ball->SetDirection(dir);
+		ball->SetSpeed(speed);
+		ball->SetLifetime(1.5f);
+
+		ball->SetBallType(MagicBallType::Ultimate);
+
+		ball->SetWaveOffsets(0.f, 0.f);
+		ball->SetScaleAnimation(0.f, 0.f, 0.f, 0.f, 0.f, 0.f); // scale pulse 제거
+
+		m_UltOther1magicBalls.push_back(ball);
+	}
+}
+void GameScene::FireUltimateBulletRainOther2()
+{
+	if (m_meshLibrary.find("MagicBall") == m_meshLibrary.end()) return;
+
+	const int numShots = 10;                  // 전체 발사 수
+	const float angleRange = XMConvertToRadians(30.0f); // 부채꼴 각도 (±15도)
+	const float shotInterval = angleRange / (numShots - 1); // 탄 간격
+	const float speed = 100.0f;
+
+	// 발사 기준 위치
+	XMFLOAT3 casterPos;
+	XMFLOAT3 forward;
+
+	casterPos = m_Otherplayer[1]->GetPosition();
+	forward = Vector3::Normalize(m_Otherplayer[1]->GetForward());
+
+	casterPos.y += 5.0f;
+
+	XMVECTOR forwardVec = XMLoadFloat3(&forward);
+
+	for (int i = 0; i < numShots; ++i)
+	{
+		float angleOffset = -angleRange * 0.5f + shotInterval * i;
+		XMMATRIX rot = XMMatrixRotationY(angleOffset);
+		XMVECTOR shotDir = XMVector3TransformNormal(forwardVec, rot);
+
+		XMFLOAT3 dir;
+		XMStoreFloat3(&dir, shotDir);
+		dir = Vector3::Normalize(dir);
+
+		auto ball = make_shared<MagicBall>(m_device);
+		ball->SetMesh(m_meshLibrary["MagicBall"]);
+		ball->SetShader(m_shaders["MagicBall"]);
+		ball->SetPosition(casterPos);
+		ball->SetDirection(dir);
+		ball->SetSpeed(speed);
+		ball->SetLifetime(1.5f);
+
+		ball->SetBallType(MagicBallType::Ultimate);
+
+		ball->SetWaveOffsets(0.f, 0.f);
+		ball->SetScaleAnimation(0.f, 0.f, 0.f, 0.f, 0.f, 0.f); // scale pulse 제거
+
+		m_UltOther2magicBalls.push_back(ball);
 	}
 }
 void GameScene::ActivateSwordAuraSkill(int num) //0 = 타 클라1 / 1 = 타 클라2 / 2 = 본인
@@ -3405,7 +3687,7 @@ void GameScene::ActivateSwordAuraSkill(int num) //0 = 타 클라1 / 1 = 타 클�
 	aura->SetMesh(m_meshLibrary["Sword1"]); // 전사 검 메시 공유
 	aura->SetShader(m_shaders.at("SwordAura"));
 	aura->SetVisible(true);
-	aura->SetScale(XMFLOAT3(5.f, 5.f, 5.f));
+	aura->SetScale(XMFLOAT3(1.f, 1.f, 1.f));
 	m_swordAuraObjects.push_back(aura);
 	m_isSwordSkillActive = true;
 	m_swordSkillDuration = 0.0f;

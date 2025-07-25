@@ -612,7 +612,12 @@ void ClientNetwork::ProcessAnimation(char* buffer)
 		}
 		break;
 	case 4: // 전사
-		if (pkt->client_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[0])
+		if (pkt->client_id == m_clientID)
+		{
+			auto gameScene = dynamic_cast<GameScene*>(gGameFramework->GetSceneManager()->GetCurrentScene().get());
+			gameScene->ActivateSwordAuraSkill(0);
+		}
+		else if (pkt->client_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[0])
 		{
 			shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
 			currentScene->m_Otherplayer[0]->m_CurrentAnim = pkt->animation;
@@ -628,18 +633,41 @@ void ClientNetwork::ProcessAnimation(char* buffer)
 		}
 		break;
 	case 5: // 법사
-		if (pkt->client_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[0])
+	{
+		auto currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
+		auto gameScene = std::dynamic_pointer_cast<GameScene>(currentScene);
+
+		if (!gameScene) break;
+
+		if (pkt->client_id == m_clientID)
 		{
-			shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
+			gameScene->FireUltimateBulletRain(); //플레이어 기준 발사
+		}
+		// 플레이어 0
+		if (pkt->client_id == currentScene->otherid[0])
+		{
 			currentScene->m_Otherplayer[0]->m_CurrentAnim = pkt->animation;
+			gameScene->FireUltimateBulletRainOther1(); //타 클라 1번 플레이어 기준 발사
 		}
-		else if (pkt->client_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[1])
+		// 플레이어 1
+		else if (pkt->client_id == currentScene->otherid[1])
 		{
-			shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
 			currentScene->m_Otherplayer[1]->m_CurrentAnim = pkt->animation;
+			gameScene->FireUltimateBulletRainOther2(); //타 클라 1번 플레이어 기준 발사
 		}
+	}
 		break;
 	case 6: // 힐탱커
+		if (pkt->client_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[0])
+		{
+			auto currentScene2 = gGameFramework->GetSceneManager()->GetCurrentScene();
+			auto gameScene = std::dynamic_pointer_cast<GameScene>(currentScene2);
+			if (gameScene) {
+				gameScene->SpawnHealingObject(2);
+
+			}
+		}
+
 		if (pkt->client_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[0])
 		{
 			shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
@@ -652,7 +680,8 @@ void ClientNetwork::ProcessAnimation(char* buffer)
 
 			}
 		}
-		else if (pkt->client_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[1])
+
+		if (pkt->client_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[1])
 		{
 			shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
 			currentScene->m_Otherplayer[1]->m_CurrentAnim = pkt->animation;
@@ -665,7 +694,6 @@ void ClientNetwork::ProcessAnimation(char* buffer)
 		}
 		break;
 	case 7: // 전사 기본 공격
-
 		// 플레이어 0
 		if (pkt->client_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[0])
 		{
@@ -681,13 +709,14 @@ void ClientNetwork::ProcessAnimation(char* buffer)
 
 		break;
 	case 8: // 마법사 기본 공격
+	{
 		auto currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
 		auto gameScene = std::dynamic_pointer_cast<GameScene>(currentScene);
 
 		if (!gameScene) break;
 		if (pkt->client_id == m_clientID)
 		{
-			gameScene->FireMagicBall(2); //플레이어 기준 발사
+			gameScene->FireMagicBall(); //플레이어 기준 발사
 		}
 		// 플레이어 0
 		if (pkt->client_id == currentScene->otherid[0])
@@ -699,11 +728,15 @@ void ClientNetwork::ProcessAnimation(char* buffer)
 		else if (pkt->client_id == currentScene->otherid[1])
 		{
 			currentScene->m_Otherplayer[1]->m_CurrentAnim = pkt->animation;
-			gameScene->FireOther2MagicBall(); //타 클라 1번 플레이어 기준 발사
+			gameScene->FireOther2MagicBall(); //타 클라 2번 플레이어 기준 발사
 		}
+	}
 		break;
 	}
 }
+
+
+
 
 // [개발중] 전사, 마법사 기본 공격 및 스킬 공격 이펙트 부분
 void ClientNetwork::ProcessAttackEffect(char* buffer)

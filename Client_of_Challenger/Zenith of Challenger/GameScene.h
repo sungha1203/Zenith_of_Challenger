@@ -73,9 +73,14 @@ public:
 
     //스킬
     void SpawnHealingObject(int num);
-    void FireMagicBall(int num); //마법사 평타
+    void FireMagicBall(); //마법사 평타
     void FireOther1MagicBall(); //마법사 평타
     void FireOther2MagicBall(); //마법사 평타
+
+    void FireUltimateBulletRain(); //마법사 스킬
+    void FireUltimateBulletRainOther1(); //마법사 스킬
+    void FireUltimateBulletRainOther2(); //마법사 스킬
+
 
 
     void AddTrailObject(const shared_ptr<GameObject>& obj);
@@ -83,7 +88,6 @@ public:
     void SpawnHealingEffect(const XMFLOAT3& playerPos);
     void ActivateZenithStageMonsters();// 몬스터 렌더 여부 활성화
     void CheckHealingCollision();
-    void FireUltimateBulletRain(int num, float yaw); //마법사 스킬
     void ActivateSwordAuraSkill(int num); //전사 스킬
     void UpdateSwordAuraSkill(float timeElapsed);
 
@@ -200,11 +204,16 @@ private:
     vector<shared_ptr<GameObject>> m_healingObjects; //힐링 아이템 오브젝트
     vector<shared_ptr<HealingEffectObject>> m_healingEffects; //힐팩 습득 시 이펙트
 
-    vector<shared_ptr<MagicBall>> m_magicBalls; // 마법사 평타 구체
     vector<shared_ptr<GameObject>> m_trailObjects; //마법사 평타 트레일
 
+    vector<shared_ptr<MagicBall>> m_magicBalls; // 마법사 평타 구체
     vector<shared_ptr<MagicBall>> m_OthermagicBalls1; // 마법사 평타 구체
     vector<shared_ptr<MagicBall>> m_OthermagicBalls2; // 마법사 평타 구체
+
+    vector<shared_ptr<MagicBall>> m_UltPlayermagicBalls; // 마법사 평타 구체
+    vector<shared_ptr<MagicBall>> m_UltOther1magicBalls; // 마법사 평타 구체
+    vector<shared_ptr<MagicBall>> m_UltOther2magicBalls; // 마법사 평타 구체
+
 
     vector<shared_ptr<GameObject>> m_effects; //마법사 스킬, 평타 피격시 이펙트
 
@@ -232,12 +241,12 @@ private:
     vector<shared_ptr<GameObject>> m_timeDigits;
     vector<shared_ptr<GameObject>> m_skillIcons;
     vector<float> m_skillCooldowns = { 0.f, 0.f, 0.f }; // 남은 쿨타임
-    vector<float> m_skillMaxCooldowns = { 8.f, 10.f, 6.f }; // 최대 쿨타임
+    vector<float> m_skillMaxCooldowns = { 4.f, 4.f, 4.f }; // 최대 쿨타임
 
     vector<shared_ptr<SwordAuraObject>> m_swordAuraObjects;
     bool m_isSwordSkillActive = false;
     float m_swordSkillDuration = 0.0f;
-    const float MAX_SWORD_SKILL_DURATION = 5.0f;
+    const float MAX_SWORD_SKILL_DURATION = 10.0f;
 
     //엔딩화면 전용 변수
     bool m_bossDied = false;        // 디졸브 완료 시점 감지
