@@ -183,11 +183,11 @@ void ClientInfo::AddHP(int heal)
 	g_network.SendPlayerHP(GetID());
 }
 
-int ClientInfo::MinusHP(int damage, int gamemode)
+void ClientInfo::MinusHP(int damage, int gamemode)
 {
 	if (m_ingameInfo.hp > 0)
 		m_ingameInfo.hp -= damage;
-	if (m_ingameInfo.hp < 0) { // 피0이 되면
+	if (m_ingameInfo.hp <= 0) { // 피0이 되면
 		m_ingameInfo.hp = 100;
 		g_network.SendPlayerHP(GetID());
 
@@ -196,19 +196,18 @@ int ClientInfo::MinusHP(int damage, int gamemode)
 			m_ingameInfo.x = -172.79f;
 			m_ingameInfo.y = 0.1f;
 			m_ingameInfo.z = 77.81f;
-			return 1;
+			g_network.SendPlayerRespone(GetID());
 		}
 		else if (gamemode == 3) {
 			// 클라에서 죽는 애니메이션 나온 뒤 3초뒤에 부활
 			m_ingameInfo.x = 557.f;
 			m_ingameInfo.y = 44.f;
 			m_ingameInfo.z = -11.f;
-			return 1;
+			g_network.SendPlayerRespone(GetID());
 		}
 	}
 
 	g_network.SendPlayerHP(GetID());
-	return 0;
 }
 
 bool ClientInfo::CanUseSkill()
