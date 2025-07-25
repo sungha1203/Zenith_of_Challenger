@@ -46,6 +46,10 @@ public:
     shared_ptr<OtherPlayer> m_Otherplayer[2];
     shared_ptr<Player> m_player;
     vector<shared_ptr<GameObject>> m_uiObjects; //GameScene UI 변수
+
+    bool m_isRoomSelectionActive = false; //방 선택 여부
+    bool m_isMouseOnStartBtn = false;
+
 protected:
     virtual void BuildShaders(const ComPtr<ID3D12Device>& device,
         const ComPtr<ID3D12GraphicsCommandList>& commandList,

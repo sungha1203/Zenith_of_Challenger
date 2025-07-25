@@ -100,7 +100,7 @@ void Scene::ClearSceneResources()
 	m_meshes.clear();
 	m_textures.clear();
 	m_objects.clear();
-
+	m_shaders.clear();
 	//GPU 리소스 해제
 	if (m_device)
 	{

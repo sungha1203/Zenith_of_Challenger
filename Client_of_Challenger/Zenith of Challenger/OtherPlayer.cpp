@@ -97,6 +97,9 @@ void OtherPlayer::Update(FLOAT timeElapsed)
     case 3:
         m_currentAnim = "Punch.001";
         break;
+    case 7:
+        m_currentAnim = "Slash";
+        break;
     }
 
 
@@ -219,6 +222,20 @@ void OtherPlayer::SetCurrentAnimation(const std::string& name)
         m_currentAnim = name;
         m_animTime = 0.f;
     }
+}
+
+XMFLOAT3 OtherPlayer::GetForward() const
+{
+    XMMATRIX world = XMLoadFloat4x4(&GetWorldMatrix());
+
+    // 월드행렬의 z축 추출
+    XMVECTOR forward = XMVector3Normalize(world.r[2]);
+    forward = XMVectorNegate(forward);
+
+    XMFLOAT3 dir;
+    XMStoreFloat3(&dir, forward);
+
+    return dir;
 }
 
 void OtherPlayer::UploadBoneMatricesToShader(const std::vector<XMMATRIX>& boneTransforms, const ComPtr<ID3D12GraphicsCommandList>& commandList)

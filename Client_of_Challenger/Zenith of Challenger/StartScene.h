@@ -36,17 +36,16 @@ public:
     bool IsStartButtonClicked() const { return m_isStartButtonClicked; }
     void ResetStartButtonClicked() { m_isStartButtonClicked = false; }
     void UpdateLoginObjects();
+    void ClearSceneResources() override;
 
 private:
     //로그인 전용 맴버변수
     string username;
     string password;
     bool isTypingUsername = true;
-    bool m_isRoomSelectionActive = false; //방 선택 여부
-    bool m_isMouseOnStartBtn = false;
     bool m_isStartButtonClicked = false;
-
     shared_ptr<GameObject> m_startBtn; // START 버튼 단독 추적용
+
     vector<bool> m_hasJoinedRoom; // 각 방 참가 여부
 
     bool m_isLoading = false;

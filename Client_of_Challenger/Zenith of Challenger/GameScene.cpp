@@ -97,35 +97,47 @@ void GameScene::MouseEvent(HWND hWnd, FLOAT timeElapsed)
 			gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
 		}
 
-        // --- 평타 공격 처리 ---
-        if (m_ZenithStartGame && !m_player->isPunching)
-        {
-            m_AttackCollision = true;
+		// --- 평타 공격 처리 ---
+		if (m_ZenithStartGame && !m_player->isPunching)
+		{
+			m_AttackCollision = true;
 
-            if (m_job == 1) // 전사
-            {
-                m_player->SetCurrentAnimation("Slash"); // 또는 다른 힐탱커용 평타 애니메이션
-            }
-            else if (m_job == 2) // 마법사
-            {
-                FireMagicBall(2);
-            }
-            else if (m_job == 3) // 힐탱커
-            {
-            }
+			if (m_job == 1) // 전사
+			{
+				m_player->SetCurrentAnimation("Slash"); // 또는 다른 힐탱커용 평타 애니메이션
+				{
+					// 네트워크 패킷 전송
+					CS_Packet_Animaition pkt;
+					pkt.type = CS_PACKET_ANIMATION;
+					pkt.animation = 7;
+					pkt.size = sizeof(pkt);
+					gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
+				}
+			}
+			else if (m_job == 2) // 마법사
+			{
+				if (!m_magicAttack) {
+					m_magicAttack = true;
+					{
+						// 네트워크 패킷 전송
+						CS_Packet_Animaition pkt;
+						pkt.type = CS_PACKET_ANIMATION;
+						pkt.animation = 8;
+						pkt.size = sizeof(pkt);
+						gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
+					}
+				}
+			}
+			else if (m_job == 3) // 힐탱커
+			{
 
-            m_player->isPunching = true;
+			}
 
-            // 네트워크 패킷 전송
-            CS_Packet_Animaition pkt;
-            pkt.type = CS_PACKET_ANIMATION;
-            pkt.animation = 3;
-            pkt.size = sizeof(pkt);
-            gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
-        }
+			m_player->isPunching = true;
+		}
 
-        
-    }
+		
+	}
 }
 
 void GameScene::KeyboardEvent(FLOAT timeElapsed)
@@ -397,14 +409,13 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
 			// 
 		}
 		else if (m_job == 2) { // 너가 마법사라면
-			m_player->SetCurrentAnimation("Goong"); //Goong
-			FireMagicBall(2);
+			FireUltimateBulletRain(2, m_player->GetRotationY());
+			// 다른 플레이어들한테 내가 스킬 뭐 쓰는지 보내주기
 			{
-				CS_Packet_Animaition pkt;
-				pkt.type = CS_PACKET_ANIMATION;
-				pkt.animation = 8;
+				CS_Packet_AttackEffect pkt;
+				pkt.type = CS_PACKET_ATTACKEFFECT;
+				pkt.skill = 3;
 				pkt.size = sizeof(pkt);
-
 				gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
 			}
 		}
@@ -424,19 +435,44 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
 
 	if (GetAsyncKeyState('M') & 0x0001) // 궁극기 키
 	{
-		FireUltimateBulletRain(2); // 본인 기준
+		FireUltimateBulletRain(2, m_player->GetRotationY()); // 본인 기준
 	}
 
 	if (GetAsyncKeyState('C') & 0x0001)
 	{
-		FireMagicBall(2);
 		m_skillCooldowns = m_skillMaxCooldowns;
+		if (!m_magicAttack) {
+			m_magicAttack = true;
+			{
+				// 네트워크 패킷 전송
+				CS_Packet_Animaition pkt;
+				pkt.type = CS_PACKET_ANIMATION;
+				pkt.animation = 8;
+				pkt.size = sizeof(pkt);
+				gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
+			}
+		}
 	}
 
 	if (GetAsyncKeyState('P') & 0x8000)
 	{
 		XMFLOAT3 playerPos = m_player->GetPosition();
 		SpawnHealingEffect(playerPos);
+	}
+
+	if (GetAsyncKeyState('R') & 0x0001 && m_bossDied)
+	{
+		// 씬 매니저 접근 후 씬 전환
+		gGameFramework->GetSceneManager()->ChangeScene("StartScene", m_device, m_commandList, m_rootSignature);
+
+		auto scene = gGameFramework->GetSceneManager()->GetCurrentScene();
+		scene->BuildObjects(m_device, m_commandList, m_rootSignature);  //반드시 다시 호출
+
+		// StartScene에 방 선택 UI를 바로 보여주기 위해 변수 설정
+		scene->m_isRoomSelectionActive = true;
+		scene->m_isMouseOnStartBtn = false;
+		gGameFramework->IsSuccess = false;
+		ShowCursor(TRUE);
 	}
 
 }
@@ -653,38 +689,9 @@ void GameScene::Update(FLOAT timeElapsed)
 			}
 		}
 
-
-		int score = m_goldScore;
-		for (int i = 2; i >= 0; --i)
-		{
-			int digit = score % 10;
-			score /= 10;
-
-			if (i < m_goldDigits.size())
-			{
-				auto& digitUI = m_goldDigits[i];
-
-				float u0 = (digit * 100.0f) / 1000.0f;  // 픽셀 기준으로 계산
-				float u1 = ((digit + 1) * 100.0f) / 1000.0f;
-
-				digitUI->SetCustomUV(u0, 0.0f, u1, 1.0f);
-			}
-		}
-
 		if (m_particleManager)
 		{
 			m_particleManager->Update(timeElapsed);
-		}
-
-		// 각 인벤토리 숫자의 UV 갱신
-		for (int i = 0; i < 6; ++i)
-		{
-			int digit = m_inventoryCounts[i];
-
-			float u0 = (digit * 100.0f) / 1000.0f;
-			float u1 = ((digit + 1) * 100.0f) / 1000.0f;
-
-			m_inventoryDigits[i]->SetCustomUV(u0, 0.0f, u1, 1.0f);
 		}
 	}
 	else //정점 스테이지
@@ -839,6 +846,41 @@ void GameScene::Update(FLOAT timeElapsed)
 					else if (m_otherPlayerJobs[i] == 2)
 						m_weopons[5]->SetWorldMatrix(weaponMat); //0,1,2 칼   3,4,5 지팡이
 				}
+		if (m_job == 2 && m_magicAttack) // 마법사
+		{
+			m_magicBasicAttackTimer += timeElapsed;
+			if (m_magicBasicAttackTimer >= m_magicBasicAttackCooldown) {
+				m_magicAttack = false;
+				m_magicBasicAttackTimer = 0.0f;
+			}
+		}
+
+	}
+
+
+	int score = m_goldScore;
+	for (int i = 2; i >= 0; --i)
+	{
+		int digit = score % 10;
+		score /= 10;
+
+		if (i < m_goldDigits.size())
+		{
+			auto& digitUI = m_goldDigits[i];
+
+			float u0 = (digit * 100.0f) / 1000.0f;  // 픽셀 기준으로 계산
+			float u1 = ((digit + 1) * 100.0f) / 1000.0f;
+
+			digitUI->SetCustomUV(u0, 0.0f, u1, 1.0f);
+		}
+	}
+	// 각 인벤토리 숫자의 UV 갱신
+	for (int i = 0; i < 6; ++i)
+	{
+		int digit = m_inventoryCounts[i];
+
+		float u0 = (digit * 100.0f) / 1000.0f;
+		float u1 = ((digit + 1) * 100.0f) / 1000.0f;
 
 				//m_weopons[0]->m_scale=(XMFLOAT3{ 10.f, 10.f, 10.f }); 
 
@@ -846,6 +888,9 @@ void GameScene::Update(FLOAT timeElapsed)
 			//UpdateSwordAuraSkill(timeElapsed); //전사 스킬 업데이트
 
 		}
+
+
+
 	}
 
 	m_skybox->SetPosition(m_camera->GetEye());
@@ -864,13 +909,45 @@ void GameScene::Update(FLOAT timeElapsed)
 
 		if (ball->IsDead())
 		{
-			it = m_magicBalls.erase(it); // 수명 끝난 매직볼 제거
+			it = m_magicBalls.erase(it);
 		}
 		else
 		{
 			++it;
 		}
 	}
+
+	//타 플레이어1 평타 업데이트
+	for (auto it = m_OthermagicBalls1.begin(); it != m_OthermagicBalls1.end();)
+	{
+		auto& ball = *it;
+		ball->Update(timeElapsed);
+
+		if (ball->IsDead())
+		{
+			it = m_OthermagicBalls1.erase(it);
+		}
+		else
+		{
+			++it;
+		}
+	}
+	//타 플레이어2 마법사 평타 업데이트
+	for (auto it = m_OthermagicBalls2.begin(); it != m_OthermagicBalls2.end();)
+	{
+		auto& ball = *it;
+		ball->Update(timeElapsed);
+
+		if (ball->IsDead())
+		{
+			it = m_OthermagicBalls2.erase(it);
+		}
+		else
+		{
+			++it;
+		}
+	}
+
 
 	for (auto& trail : m_trailObjects)
 		trail->Update(timeElapsed);
@@ -934,6 +1011,109 @@ void GameScene::Update(FLOAT timeElapsed)
 			}
 		}
 	}
+	for (auto& ball : m_OthermagicBalls1)
+	{
+		if (!ball->IsActive()) continue;
+
+		const BoundingBox& ballBox = ball->GetBoundingBox();
+		const XMFLOAT3& ballCenter = ballBox.Center;
+		XMFLOAT3 ballPos = ball->GetPosition();
+
+		XMFLOAT3 ballCenterWorld = {
+			ballPos.x + ballCenter.x,
+			ballPos.y + ballCenter.y,
+			ballPos.z + ballCenter.z
+		};
+
+		const XMFLOAT3& ballExtent = ballBox.Extents;
+
+		// 모든 몬스터 대상 충돌 체크
+		for (auto& [type, group] : m_monsterGroups)
+		{
+			for (auto& monster : group)
+			{
+				if (!monster || monster->IsDead()) continue;
+
+				const BoundingBox& monBox = monster->GetBoundingBox();
+				const XMFLOAT3& monCenter = monBox.Center;
+				const XMFLOAT3& monExtent = monBox.Extents;
+
+				XMFLOAT3 monPos = monster->GetPosition();
+				XMFLOAT3 monCenterWorld = {
+					monPos.x + monCenter.x,
+					monPos.y + monCenter.y,
+					monPos.z + monCenter.z
+				};
+
+				bool intersectX = abs(ballCenterWorld.x - monCenterWorld.x) <= (ballExtent.x + monExtent.x);
+				bool intersectY = abs(ballCenterWorld.y - monCenterWorld.y) <= (ballExtent.y + monExtent.y);
+				bool intersectZ = abs(ballCenterWorld.z - monCenterWorld.z) <= (ballExtent.z + monExtent.z);
+
+				if (intersectX && intersectY && intersectZ)
+				{
+
+					monster->ApplyDamage(1.0f); // 데미지 지정
+
+					SpawnMagicImpactEffect(ballCenterWorld);
+
+					ball->SetActive(false);
+					break; // 여러 몬스터에게 다중 충돌 막기
+				}
+			}
+		}
+	}
+	for (auto& ball : m_OthermagicBalls2)
+	{
+		if (!ball->IsActive()) continue;
+
+		const BoundingBox& ballBox = ball->GetBoundingBox();
+		const XMFLOAT3& ballCenter = ballBox.Center;
+		XMFLOAT3 ballPos = ball->GetPosition();
+
+		XMFLOAT3 ballCenterWorld = {
+			ballPos.x + ballCenter.x,
+			ballPos.y + ballCenter.y,
+			ballPos.z + ballCenter.z
+		};
+
+		const XMFLOAT3& ballExtent = ballBox.Extents;
+
+		// 모든 몬스터 대상 충돌 체크
+		for (auto& [type, group] : m_monsterGroups)
+		{
+			for (auto& monster : group)
+			{
+				if (!monster || monster->IsDead()) continue;
+
+				const BoundingBox& monBox = monster->GetBoundingBox();
+				const XMFLOAT3& monCenter = monBox.Center;
+				const XMFLOAT3& monExtent = monBox.Extents;
+
+				XMFLOAT3 monPos = monster->GetPosition();
+				XMFLOAT3 monCenterWorld = {
+					monPos.x + monCenter.x,
+					monPos.y + monCenter.y,
+					monPos.z + monCenter.z
+				};
+
+				bool intersectX = abs(ballCenterWorld.x - monCenterWorld.x) <= (ballExtent.x + monExtent.x);
+				bool intersectY = abs(ballCenterWorld.y - monCenterWorld.y) <= (ballExtent.y + monExtent.y);
+				bool intersectZ = abs(ballCenterWorld.z - monCenterWorld.z) <= (ballExtent.z + monExtent.z);
+
+				if (intersectX && intersectY && intersectZ)
+				{
+
+					monster->ApplyDamage(1.0f); // 데미지 지정
+
+					SpawnMagicImpactEffect(ballCenterWorld);
+
+					ball->SetActive(false);
+					break; // 여러 몬스터에게 다중 충돌 막기
+				}
+			}
+		}
+	}
+
 
 	//마법사 평타 이펙트
 	for (auto& effect : m_effects)
@@ -1192,6 +1372,20 @@ void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) con
 	}
 
 	for (const auto& ball : m_magicBalls)
+	{
+		if (!ball->IsActive()) continue;
+		ball->SetShader(m_shaders.at("MagicBall"));
+		ball->Render(commandList);
+	}
+
+	for (const auto& ball : m_OthermagicBalls1)
+	{
+		if (!ball->IsActive()) continue;
+		ball->SetShader(m_shaders.at("MagicBall"));
+		ball->Render(commandList);
+	}
+
+	for (const auto& ball : m_OthermagicBalls2)
 	{
 		if (!ball->IsActive()) continue;
 		ball->SetShader(m_shaders.at("MagicBall"));
@@ -2212,81 +2406,81 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 
 	auto healthBarZeroUI = make_shared<GameObject>(device);
 
-    healthBarZeroUI->SetTexture(m_textures["HealthBarZero"]);  // 우리가 방금 로드한 텍스처 사용  
-    healthBarZeroUI->SetTextureIndex(m_textures["HealthBarZero"]->GetTextureIndex());  //   
-    healthBarZeroUI->SetMesh(CreateScreenQuad(device, gGameFramework->GetCommandList(), 1.4f, 0.15f, 0.98f));
-    //healthBarUI->SetPosition({0.f, -0.6f, -0.85f });        // NDC 좌표로 하단 왼쪽 고정 (롤 스타일)
-    //healthBarUI->SetPosition(XMFLOAT3(0.f, 0.2f, 0.98f));        // NDC 좌표로 하단 왼쪽 고정 (롤 스타일)
-    healthBarZeroUI->SetPosition(XMFLOAT3(-0.3f, -0.7f, 0.98f));
-    healthBarZeroUI->SetScale(XMFLOAT3(1.2f, 1.2f, 1.2f));
-    healthBarZeroUI->SetUseTexture(true);
-    healthBarZeroUI->SetBaseColor(XMFLOAT4(1, 1, 1, 1));
-    healthBarZeroUI->SetHovered(true);
-    m_uiObjects.push_back(healthBarZeroUI);
+	healthBarZeroUI->SetTexture(m_textures["HealthBarZero"]);  // 우리가 방금 로드한 텍스처 사용  
+	healthBarZeroUI->SetTextureIndex(m_textures["HealthBarZero"]->GetTextureIndex());  //   
+	healthBarZeroUI->SetMesh(CreateScreenQuad(device, gGameFramework->GetCommandList(), 1.4f, 0.15f, 0.98f));
+	//healthBarUI->SetPosition({0.f, -0.6f, -0.85f });        // NDC 좌표로 하단 왼쪽 고정 (롤 스타일)
+	//healthBarUI->SetPosition(XMFLOAT3(0.f, 0.2f, 0.98f));        // NDC 좌표로 하단 왼쪽 고정 (롤 스타일)
+	healthBarZeroUI->SetPosition(XMFLOAT3(-0.3f, -0.7f, 0.98f));
+	healthBarZeroUI->SetScale(XMFLOAT3(1.2f, 1.2f, 1.2f));
+	healthBarZeroUI->SetUseTexture(true);
+	healthBarZeroUI->SetBaseColor(XMFLOAT4(1, 1, 1, 1));
+	healthBarZeroUI->SetHovered(true);
+	m_uiObjects.push_back(healthBarZeroUI);
 
 	auto healthBarUI = make_shared<GameObject>(device);
 
-    healthBarUI->SetTexture(m_textures["HealthBar"]);  // 우리가 방금 로드한 텍스처 사용
-    healthBarUI->SetTextureIndex(m_textures["HealthBar"]->GetTextureIndex());  // 
-    healthBarUI->SetMesh(CreateScreenQuad(device, gGameFramework->GetCommandList(), 1.4f, 0.15f, 0.98f));
-    //healthBarUI->SetPosition({0.f, -0.6f, -0.85f });        // NDC 좌표로 하단 왼쪽 고정 (롤 스타일)
-    //healthBarUI->SetPosition(XMFLOAT3(0.f, 0.2f, 0.98f));        // NDC 좌표로 하단 왼쪽 고정 (롤 스타일)
-    healthBarUI->SetPosition(XMFLOAT3(-0.3f, -0.7f, 0.98f));
-    healthBarUI->SetScale(XMFLOAT3(1.2f, 1.2f, 1.2f));
-    healthBarUI->SetUseTexture(true);
-    healthBarUI->SetBaseColor(XMFLOAT4(1, 1, 1, 1));
-    healthBarUI->SetHovered(true);
-    m_uiObjects.push_back(healthBarUI);
+	healthBarUI->SetTexture(m_textures["HealthBar"]);  // 우리가 방금 로드한 텍스처 사용
+	healthBarUI->SetTextureIndex(m_textures["HealthBar"]->GetTextureIndex());  // 
+	healthBarUI->SetMesh(CreateScreenQuad(device, gGameFramework->GetCommandList(), 1.4f, 0.15f, 0.98f));
+	//healthBarUI->SetPosition({0.f, -0.6f, -0.85f });        // NDC 좌표로 하단 왼쪽 고정 (롤 스타일)
+	//healthBarUI->SetPosition(XMFLOAT3(0.f, 0.2f, 0.98f));        // NDC 좌표로 하단 왼쪽 고정 (롤 스타일)
+	healthBarUI->SetPosition(XMFLOAT3(-0.3f, -0.7f, 0.98f));
+	healthBarUI->SetScale(XMFLOAT3(1.2f, 1.2f, 1.2f));
+	healthBarUI->SetUseTexture(true);
+	healthBarUI->SetBaseColor(XMFLOAT4(1, 1, 1, 1));
+	healthBarUI->SetHovered(true);
+	m_uiObjects.push_back(healthBarUI);
 
 	auto Inventory = make_shared<GameObject>(device);
 
-    Inventory->SetTexture(m_textures["Inventory"]);  // 우리가 방금 로드한 텍스처 사용
-    Inventory->SetTextureIndex(m_textures["Inventory"]->GetTextureIndex());  // 
-    Inventory->SetMesh(CreateScreenQuad(device, gGameFramework->GetCommandList(), 0.5f, 0.5f, 0.98f));
-    Inventory->SetPosition(XMFLOAT3(0.8f, -0.55f, 0.97f));
-    Inventory->SetUseTexture(true);
-    Inventory->SetBaseColor(XMFLOAT4(1, 1, 1, 1));
-    Inventory->SetHovered(true);
-    m_uiObjects.push_back(Inventory);
+	Inventory->SetTexture(m_textures["Inventory"]);  // 우리가 방금 로드한 텍스처 사용
+	Inventory->SetTextureIndex(m_textures["Inventory"]->GetTextureIndex());  // 
+	Inventory->SetMesh(CreateScreenQuad(device, gGameFramework->GetCommandList(), 0.5f, 0.5f, 0.98f));
+	Inventory->SetPosition(XMFLOAT3(0.8f, -0.55f, 0.97f));
+	Inventory->SetUseTexture(true);
+	Inventory->SetBaseColor(XMFLOAT4(1, 1, 1, 1));
+	Inventory->SetHovered(true);
+	m_uiObjects.push_back(Inventory);
 
 
 	auto Portrait = make_shared<GameObject>(device);
 
-    Portrait->SetTexture(m_textures["Portrait"]);  // 우리가 방금 로드한 텍스처 사용
-    Portrait->SetTextureIndex(m_textures["Portrait"]->GetTextureIndex());  // 
-    Portrait->SetMesh(CreateScreenQuad(device, gGameFramework->GetCommandList(), 0.25f, 0.25f, 0.98f));
-    Portrait->SetPosition(XMFLOAT3(-0.9f, -0.4f, 0.98f));
-    Portrait->SetUseTexture(true);
-    Portrait->SetBaseColor(XMFLOAT4(1, 1, 1, 1));
-    Portrait->SetHovered(true);
-    m_uiObjects.push_back(Portrait);
+	Portrait->SetTexture(m_textures["Portrait"]);  // 우리가 방금 로드한 텍스처 사용
+	Portrait->SetTextureIndex(m_textures["Portrait"]->GetTextureIndex());  // 
+	Portrait->SetMesh(CreateScreenQuad(device, gGameFramework->GetCommandList(), 0.25f, 0.25f, 0.98f));
+	Portrait->SetPosition(XMFLOAT3(-0.9f, -0.4f, 0.98f));
+	Portrait->SetUseTexture(true);
+	Portrait->SetBaseColor(XMFLOAT4(1, 1, 1, 1));
+	Portrait->SetHovered(true);
+	m_uiObjects.push_back(Portrait);
 
 	auto Gold = make_shared<GameObject>(device);
 
-    Gold->SetTexture(m_textures["Gold"]);  // 우리가 방금 로드한 텍스처 사용
-    Gold->SetTextureIndex(m_textures["Gold"]->GetTextureIndex());
-    Gold->SetMesh(CreateScreenQuad(device, gGameFramework->GetCommandList(), 0.25f, 0.25f, 0.98f));
-    Gold->SetPosition(XMFLOAT3(0.75f, 0.7f, 0.98f));
-    Gold->SetUseTexture(true);
-    Gold->SetBaseColor(XMFLOAT4(1, 1, 1, 1));
-    Gold->SetHovered(true);
-    m_uiObjects.push_back(Gold);
+	Gold->SetTexture(m_textures["Gold"]);  // 우리가 방금 로드한 텍스처 사용
+	Gold->SetTextureIndex(m_textures["Gold"]->GetTextureIndex());
+	Gold->SetMesh(CreateScreenQuad(device, gGameFramework->GetCommandList(), 0.25f, 0.25f, 0.98f));
+	Gold->SetPosition(XMFLOAT3(0.75f, 0.7f, 0.98f));
+	Gold->SetUseTexture(true);
+	Gold->SetBaseColor(XMFLOAT4(1, 1, 1, 1));
+	Gold->SetHovered(true);
+	m_uiObjects.push_back(Gold);
 
 	// Gold 점수 3자리 숫자 UI 생성
 	for (int i = 0; i < 3; ++i)
 	{
 		auto digitUI = std::make_shared<GameObject>(device);
 
-        digitUI->SetTexture(m_textures["Gold_Score"]); // Gold_Score 텍스처 적용
-        digitUI->SetTextureIndex(m_textures["Gold_Score"]->GetTextureIndex());
-        digitUI->SetShader(m_shaders["UI"]); // UI용 셰이더 사용
-        digitUI->SetUseTexture(true);
-        digitUI->SetuseCustomUV(1); // customUV 사용 설정
-        digitUI->SetHovered(true);
-        // 처음에는 모두 0으로 보여야 하니까
-        float u0 = 0.0f;
-        float u1 = 1.0f;
-        digitUI->SetCustomUV(u0, 0.0f, u1, 1.0f);
+		digitUI->SetTexture(m_textures["Gold_Score"]); // Gold_Score 텍스처 적용
+		digitUI->SetTextureIndex(m_textures["Gold_Score"]->GetTextureIndex());
+		digitUI->SetShader(m_shaders["UI"]); // UI용 셰이더 사용
+		digitUI->SetUseTexture(true);
+		digitUI->SetuseCustomUV(1); // customUV 사용 설정
+		digitUI->SetHovered(true);
+		// 처음에는 모두 0으로 보여야 하니까
+		float u0 = 0.0f;
+		float u1 = 1.0f;
+		digitUI->SetCustomUV(u0, 0.0f, u1, 1.0f);
 
 		// 처음 메쉬 설정 (0 숫자용 UV 기준)
 		digitUI->SetMesh(CreateScreenQuadWithCustomUV(
@@ -2319,14 +2513,14 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 	{
 		auto digitUI = std::make_shared<GameObject>(device);
 
-        digitUI->SetTexture(m_textures["Item_num"]); // 텍스처 지정
-        digitUI->SetTextureIndex(m_textures["Item_num"]->GetTextureIndex());
-        digitUI->SetShader(m_shaders["UI"]);
-        digitUI->SetUseTexture(true);
-        digitUI->SetuseCustomUV(1);
-        digitUI->SetHovered(true);
-        float u0 = 0.0f;
-        float u1 = 1.0f;
+		digitUI->SetTexture(m_textures["Item_num"]); // 텍스처 지정
+		digitUI->SetTextureIndex(m_textures["Item_num"]->GetTextureIndex());
+		digitUI->SetShader(m_shaders["UI"]);
+		digitUI->SetUseTexture(true);
+		digitUI->SetuseCustomUV(1);
+		digitUI->SetHovered(true);
+		float u0 = 0.0f;
+		float u1 = 1.0f;
 
 		digitUI->SetCustomUV(u0, 0.0f, u1, 1.0f);
 		digitUI->SetMesh(CreateScreenQuadWithCustomUV(
@@ -2339,72 +2533,72 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 		m_inventoryDigits.push_back(digitUI);
 	}
 
-    // 강화창 UI 오브젝트 생성
-    m_reinforcedWindowUI = make_shared<GameObject>(device);
-    m_reinforcedWindowUI->SetTexture(m_textures["reinforced"]);
-    m_reinforcedWindowUI->SetTextureIndex(m_textures["reinforced"]->GetTextureIndex());
-    m_reinforcedWindowUI->SetMesh(CreateScreenQuad(device, gGameFramework->GetCommandList(), 0.8f, 1.1f, 0.97f));
-    m_reinforcedWindowUI->SetPosition(XMFLOAT3(-0.73f, 0.28f, 0.97f));  // 정중앙
-    m_reinforcedWindowUI->SetUseTexture(true);
-    m_reinforcedWindowUI->SetBaseColor(XMFLOAT4(1, 1, 1, 1));
-    m_reinforcedWindowUI->SetHovered(true);
+	// 강화창 UI 오브젝트 생성
+	m_reinforcedWindowUI = make_shared<GameObject>(device);
+	m_reinforcedWindowUI->SetTexture(m_textures["reinforced"]);
+	m_reinforcedWindowUI->SetTextureIndex(m_textures["reinforced"]->GetTextureIndex());
+	m_reinforcedWindowUI->SetMesh(CreateScreenQuad(device, gGameFramework->GetCommandList(), 0.8f, 1.1f, 0.97f));
+	m_reinforcedWindowUI->SetPosition(XMFLOAT3(-0.73f, 0.28f, 0.97f));  // 정중앙
+	m_reinforcedWindowUI->SetUseTexture(true);
+	m_reinforcedWindowUI->SetBaseColor(XMFLOAT4(1, 1, 1, 1));
+	m_reinforcedWindowUI->SetHovered(true);
 
-    //무기 아이콘 슬롯
-    m_weaponSlotIcon = make_shared<GameObject>(device);
-    m_weaponSlotIcon->SetMesh(CreateScreenQuadWithCustomUV(
-        device,
-        gGameFramework->GetCommandList(),
-        0.14f, 0.13f, 0.97f,
-        0.0f, 0.0f, 1.0f, 1.0f  // 초기에는 보이지 않게
-    ));
-    m_weaponSlotIcon->SetTexture(m_textures.at("weapon"));
-    m_weaponSlotIcon->SetPosition({ -0.335f, 0.06f, 0.0f });
-    m_weaponSlotIcon->SetuseCustomUV(1);
-    m_weaponSlotIcon->SetUseTexture(true);
-    m_weaponSlotIcon->SetCustomUV(0.0f, 0.0f, 0.0f, 0.0f);
-    m_weaponSlotIcon->SetVisible(true);
-    m_weaponSlotIcon->SetBaseColor(XMFLOAT4(1, 1, 1, 1));
-    m_weaponSlotIcon->SetShader(m_shaders.at("UI"));
-    m_weaponSlotIcon->SetTextureIndex(m_textures["weapon"]->GetTextureIndex());
-    m_weaponSlotIcon->SetHovered(true);
-    // 직업 아이콘 슬롯
-    m_jobSlotIcon = make_shared<GameObject>(device);
-    m_jobSlotIcon->SetMesh(CreateScreenQuadWithCustomUV(
-        device,
-        gGameFramework->GetCommandList(),
-        0.14f, 0.13f, 0.97f,
-        0.0f, 0.0f, 1.0f, 1.0f
-    ));
-    m_jobSlotIcon->SetTexture(m_textures.at("job"));
-    m_jobSlotIcon->SetPosition({ -0.335f, 0.23f, 0.0f });
-    m_jobSlotIcon->SetuseCustomUV(1);
-    m_jobSlotIcon->SetUseTexture(true);
-    m_jobSlotIcon->SetCustomUV(0.0f, 0.0f, 0.0f, 0.0f);
-    m_jobSlotIcon->SetVisible(true);
-    m_jobSlotIcon->SetBaseColor(XMFLOAT4(1, 1, 1, 1));
-    m_jobSlotIcon->SetShader(m_shaders.at("UI"));
-    m_jobSlotIcon->SetTextureIndex(m_textures["job"]->GetTextureIndex());
-    m_jobSlotIcon->SetHovered(true);
-    //'+'아이콘 이미지
-    m_plusIcon = make_shared<GameObject>(device);
-    m_plusIcon->SetMesh(CreateScreenQuad(device, gGameFramework->GetCommandList(), 0.1f, 0.1f, 0.97f));
-    m_plusIcon->SetTexture(m_textures["plus"]);
-    m_plusIcon->SetTextureIndex(m_textures["plus"]->GetTextureIndex());
-    m_plusIcon->SetPosition(XMFLOAT3(-0.6f, 0.05f, 0.97f));
-    m_plusIcon->SetUseTexture(true);
-    m_plusIcon->SetHovered(true);
+	//무기 아이콘 슬롯
+	m_weaponSlotIcon = make_shared<GameObject>(device);
+	m_weaponSlotIcon->SetMesh(CreateScreenQuadWithCustomUV(
+		device,
+		gGameFramework->GetCommandList(),
+		0.14f, 0.13f, 0.97f,
+		0.0f, 0.0f, 1.0f, 1.0f  // 초기에는 보이지 않게
+	));
+	m_weaponSlotIcon->SetTexture(m_textures.at("weapon"));
+	m_weaponSlotIcon->SetPosition({ -0.335f, 0.06f, 0.0f });
+	m_weaponSlotIcon->SetuseCustomUV(1);
+	m_weaponSlotIcon->SetUseTexture(true);
+	m_weaponSlotIcon->SetCustomUV(0.0f, 0.0f, 0.0f, 0.0f);
+	m_weaponSlotIcon->SetVisible(true);
+	m_weaponSlotIcon->SetBaseColor(XMFLOAT4(1, 1, 1, 1));
+	m_weaponSlotIcon->SetShader(m_shaders.at("UI"));
+	m_weaponSlotIcon->SetTextureIndex(m_textures["weapon"]->GetTextureIndex());
+	m_weaponSlotIcon->SetHovered(true);
+	// 직업 아이콘 슬롯
+	m_jobSlotIcon = make_shared<GameObject>(device);
+	m_jobSlotIcon->SetMesh(CreateScreenQuadWithCustomUV(
+		device,
+		gGameFramework->GetCommandList(),
+		0.14f, 0.13f, 0.97f,
+		0.0f, 0.0f, 1.0f, 1.0f
+	));
+	m_jobSlotIcon->SetTexture(m_textures.at("job"));
+	m_jobSlotIcon->SetPosition({ -0.335f, 0.23f, 0.0f });
+	m_jobSlotIcon->SetuseCustomUV(1);
+	m_jobSlotIcon->SetUseTexture(true);
+	m_jobSlotIcon->SetCustomUV(0.0f, 0.0f, 0.0f, 0.0f);
+	m_jobSlotIcon->SetVisible(true);
+	m_jobSlotIcon->SetBaseColor(XMFLOAT4(1, 1, 1, 1));
+	m_jobSlotIcon->SetShader(m_shaders.at("UI"));
+	m_jobSlotIcon->SetTextureIndex(m_textures["job"]->GetTextureIndex());
+	m_jobSlotIcon->SetHovered(true);
+	//'+'아이콘 이미지
+	m_plusIcon = make_shared<GameObject>(device);
+	m_plusIcon->SetMesh(CreateScreenQuad(device, gGameFramework->GetCommandList(), 0.1f, 0.1f, 0.97f));
+	m_plusIcon->SetTexture(m_textures["plus"]);
+	m_plusIcon->SetTextureIndex(m_textures["plus"]->GetTextureIndex());
+	m_plusIcon->SetPosition(XMFLOAT3(-0.6f, 0.05f, 0.97f));
+	m_plusIcon->SetUseTexture(true);
+	m_plusIcon->SetHovered(true);
 
 	auto forcedDigit = std::make_shared<GameObject>(device);
 
-    forcedDigit->SetTexture(m_textures["Gold_Score"]); // Gold_Score 텍스처 적용
-    forcedDigit->SetTextureIndex(m_textures["Gold_Score"]->GetTextureIndex());
-    forcedDigit->SetShader(m_shaders["UI"]); // UI용 셰이더 사용
-    forcedDigit->SetUseTexture(true);
-    forcedDigit->SetuseCustomUV(1); // customUV 사용 설정
-    forcedDigit->SetHovered(true);
-    float u0 = 0.0f;
-    float u1 = 0.32f;
-    forcedDigit->SetCustomUV(u0, 0.0f, u1, 1.0f);
+	forcedDigit->SetTexture(m_textures["Gold_Score"]); // Gold_Score 텍스처 적용
+	forcedDigit->SetTextureIndex(m_textures["Gold_Score"]->GetTextureIndex());
+	forcedDigit->SetShader(m_shaders["UI"]); // UI용 셰이더 사용
+	forcedDigit->SetUseTexture(true);
+	forcedDigit->SetuseCustomUV(1); // customUV 사용 설정
+	forcedDigit->SetHovered(true);
+	float u0 = 0.0f;
+	float u1 = 0.32f;
+	forcedDigit->SetCustomUV(u0, 0.0f, u1, 1.0f);
 
 	// 처음 메쉬 설정 (0 숫자용 UV 기준)
 	forcedDigit->SetMesh(CreateScreenQuadWithCustomUV(
@@ -2435,15 +2629,15 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 	float spacing = 0.07f;
 	float colonGap = 0.05f; // 가운데 콜론 간격 추가
 
-    for (int i = 0; i < 4; ++i) // 숫자 4자리만
-    {
-        auto digitObj = std::make_shared<GameObject>(device);
-        digitObj->SetTexture(m_textures["Item_num"]);
-        digitObj->SetTextureIndex(m_textures["Item_num"]->GetTextureIndex());
-        digitObj->SetShader(m_shaders["UI"]);
-        digitObj->SetUseTexture(true);
-        digitObj->SetuseCustomUV(1);
-        digitObj->SetHovered(true);
+	for (int i = 0; i < 4; ++i) // 숫자 4자리만
+	{
+		auto digitObj = std::make_shared<GameObject>(device);
+		digitObj->SetTexture(m_textures["Item_num"]);
+		digitObj->SetTextureIndex(m_textures["Item_num"]->GetTextureIndex());
+		digitObj->SetShader(m_shaders["UI"]);
+		digitObj->SetUseTexture(true);
+		digitObj->SetuseCustomUV(1);
+		digitObj->SetHovered(true);
 
 		float u0 = 0.0f;
 		float u1 = 0.3f;
@@ -2466,15 +2660,15 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 	// ':' 따로 출력
 	auto ColonDigit = std::make_shared<GameObject>(device);
 
-    ColonDigit->SetTexture(m_textures["Colon"]); // Gold_Score 텍스처 적용
-    ColonDigit->SetTextureIndex(m_textures["Colon"]->GetTextureIndex());
-    ColonDigit->SetShader(m_shaders["UI"]); // UI용 셰이더 사용
-    ColonDigit->SetUseTexture(true);
-    ColonDigit->SetuseCustomUV(1); // customUV 사용 설정
-    ColonDigit->SetHovered(true);
-    u0 = 0.0f;
-    u1 = 1.1f;
-    ColonDigit->SetCustomUV(u0, 0.0f, u1, 1.0f);
+	ColonDigit->SetTexture(m_textures["Colon"]); // Gold_Score 텍스처 적용
+	ColonDigit->SetTextureIndex(m_textures["Colon"]->GetTextureIndex());
+	ColonDigit->SetShader(m_shaders["UI"]); // UI용 셰이더 사용
+	ColonDigit->SetUseTexture(true);
+	ColonDigit->SetuseCustomUV(1); // customUV 사용 설정
+	ColonDigit->SetHovered(true);
+	u0 = 0.0f;
+	u1 = 1.1f;
+	ColonDigit->SetCustomUV(u0, 0.0f, u1, 1.0f);
 
 	// 처음 메쉬 설정 (0 숫자용 UV 기준)
 	ColonDigit->SetMesh(CreateScreenQuadWithCustomUV(
@@ -2671,6 +2865,20 @@ void GameScene::RenderShadowPass(const ComPtr<ID3D12GraphicsCommandList>& comman
 		ball->Render(commandList);
 	}
 
+	for (const auto& ball : m_OthermagicBalls1)
+	{
+		if (!ball->IsActive()) continue;
+		ball->SetShader(m_shaders.at("SHADOW"));
+		ball->Render(commandList);
+	}
+
+	for (const auto& ball : m_OthermagicBalls2)
+	{
+		if (!ball->IsActive()) continue;
+		ball->SetShader(m_shaders.at("SHADOW"));
+		ball->Render(commandList);
+	}
+
 	for (const auto& sword : m_weopons) {
 		if (sword) {
 			sword->SetShader(m_shaders.at("SHADOW"));
@@ -2813,13 +3021,13 @@ void GameScene::SpawnHealingObject(int num)
 		healing->SetPosition(playerPos);
 		healing->m_ownerJob = m_job; // 내 직업 저장
 
-    }
-    else {  // 다른 플레이어
-        auto playerPos = otherpos[num];
-        playerPos.y += 10.f; // 지면 위로 살짝 띄움
-        healing->SetPosition(playerPos);
-        healing->m_ownerJob = 3;
-    }
+	}
+	else {  // 다른 플레이어
+		auto playerPos = otherpos[num];
+		playerPos.y += 10.f; // 지면 위로 살짝 띄움
+		healing->SetPosition(playerPos);
+		healing->m_ownerJob = 3;
+	}
 
 	// 크기/회전 조정
 	healing->SetScale(XMFLOAT3(0.05f, 0.05f, 0.05f));
@@ -2851,8 +3059,8 @@ void GameScene::FireMagicBall(int num)
 	}
 	else // 다른 플레이어
 	{
-		playerPos = otherpos[num];
-		forward = { 0.f, 0.f, 1.f }; // 다른 플레이어가 바라보는 방향 정보 필요
+		playerPos = m_Otherplayer[num]->GetPosition();
+		forward = Vector3::Normalize(m_Otherplayer[num]->GetForward());
 	}
 
 	playerPos.y += 8.0f; // 발사 높이
@@ -2892,6 +3100,118 @@ void GameScene::FireMagicBall(int num)
 		ball->SetScaleAnimation(freqX, ampX, freqY, ampY, freqZ, ampZ);
 
 		m_magicBalls.push_back(ball);
+	}
+}
+void GameScene::FireOther1MagicBall()
+{
+	if (m_meshLibrary.find("MagicBall") == m_meshLibrary.end()) return;
+
+	const int numShots = 5;
+	const float maxAngleOffset = XMConvertToRadians(3.0f); // 최대 ±3도 퍼짐
+	const float speed = 50.0f;
+
+	// 발사 기준 위치
+	XMFLOAT3 playerPos;
+	XMFLOAT3 forward;
+
+
+	playerPos = m_Otherplayer[0]->GetPosition();
+	forward = Vector3::Normalize(m_Otherplayer[0]->GetForward());
+	
+
+	playerPos.y += 8.0f; // 발사 높이
+
+	XMVECTOR forwardVec = XMLoadFloat3(&forward);
+
+	for (int i = 0; i < numShots; ++i)
+	{
+		auto ball = make_shared<MagicBall>(m_device);
+		ball->SetMesh(m_meshLibrary["MagicBall"]);
+		ball->SetShader(m_shaders["MagicBall"]);
+		ball->SetPosition(playerPos);
+
+		float angleOffset = Random::Range(-maxAngleOffset, maxAngleOffset);
+		XMMATRIX rot = XMMatrixRotationY(angleOffset);
+		XMVECTOR shotDir = XMVector3TransformNormal(forwardVec, rot);
+
+		XMFLOAT3 dir;
+		XMStoreFloat3(&dir, shotDir);
+		dir = Vector3::Normalize(dir);
+		ball->SetDirection(dir);
+		ball->SetSpeed(speed);
+		ball->SetLifetime(3.0f);
+
+		float offsetX = Random::Range(0.0f, XM_2PI);
+		float offsetY = Random::Range(0.0f, XM_2PI);
+		ball->SetWaveOffsets(offsetX, offsetY);
+
+		float freqX = Random::Range(5.0f, 8.0f);
+		float freqY = Random::Range(6.0f, 9.0f);
+		float freqZ = Random::Range(4.0f, 7.0f);
+
+		float ampX = Random::Range(0.2f, 0.4f);
+		float ampY = Random::Range(0.15f, 0.3f);
+		float ampZ = Random::Range(0.2f, 0.35f);
+
+		ball->SetScaleAnimation(freqX, ampX, freqY, ampY, freqZ, ampZ);
+
+		m_OthermagicBalls1.push_back(ball);
+	}
+}
+void GameScene::FireOther2MagicBall()
+{
+	if (m_meshLibrary.find("MagicBall") == m_meshLibrary.end()) return;
+
+	const int numShots = 5;
+	const float maxAngleOffset = XMConvertToRadians(3.0f); // 최대 ±3도 퍼짐
+	const float speed = 50.0f;
+
+	// 발사 기준 위치
+	XMFLOAT3 playerPos;
+	XMFLOAT3 forward;
+
+
+	playerPos = m_Otherplayer[1]->GetPosition();
+	forward = Vector3::Normalize(m_Otherplayer[1]->GetForward());
+
+
+	playerPos.y += 8.0f; // 발사 높이
+
+	XMVECTOR forwardVec = XMLoadFloat3(&forward);
+
+	for (int i = 0; i < numShots; ++i)
+	{
+		auto ball = make_shared<MagicBall>(m_device);
+		ball->SetMesh(m_meshLibrary["MagicBall"]);
+		ball->SetShader(m_shaders["MagicBall"]);
+		ball->SetPosition(playerPos);
+
+		float angleOffset = Random::Range(-maxAngleOffset, maxAngleOffset);
+		XMMATRIX rot = XMMatrixRotationY(angleOffset);
+		XMVECTOR shotDir = XMVector3TransformNormal(forwardVec, rot);
+
+		XMFLOAT3 dir;
+		XMStoreFloat3(&dir, shotDir);
+		dir = Vector3::Normalize(dir);
+		ball->SetDirection(dir);
+		ball->SetSpeed(speed);
+		ball->SetLifetime(3.0f);
+
+		float offsetX = Random::Range(0.0f, XM_2PI);
+		float offsetY = Random::Range(0.0f, XM_2PI);
+		ball->SetWaveOffsets(offsetX, offsetY);
+
+		float freqX = Random::Range(5.0f, 8.0f);
+		float freqY = Random::Range(6.0f, 9.0f);
+		float freqZ = Random::Range(4.0f, 7.0f);
+
+		float ampX = Random::Range(0.2f, 0.4f);
+		float ampY = Random::Range(0.15f, 0.3f);
+		float ampZ = Random::Range(0.2f, 0.35f);
+
+		ball->SetScaleAnimation(freqX, ampX, freqY, ampY, freqZ, ampZ);
+
+		m_OthermagicBalls2.push_back(ball);
 	}
 }
 void GameScene::AddTrailObject(const shared_ptr<GameObject>& obj)
@@ -3025,7 +3345,7 @@ void GameScene::CheckHealingCollision()
 	next_heal:;
 	}
 }
-void GameScene::FireUltimateBulletRain(int num)
+void GameScene::FireUltimateBulletRain(int num, float yaw)
 {
 	if (m_meshLibrary.find("MagicBall") == m_meshLibrary.end()) return;
 
@@ -3046,7 +3366,8 @@ void GameScene::FireUltimateBulletRain(int num)
 	else // 다른 플레이어
 	{
 		casterPos = otherpos[num];
-		forward = { 0.f, 0.f, 1.f }; // 고정 방향 (or 다른 플레이어 회전값 기반으로 확장 가능)
+		forward = { cosf(yaw), 0.f, sinf(yaw) }; // 고정 방향 (or 다른 플레이어 회전값 기반으로 확장 가능)
+		forward = Vector3::Normalize(forward);
 	}
 
 	casterPos.y += 5.0f;
@@ -3253,6 +3574,7 @@ void GameScene::EndingSceneUpdate(float timeElapsed)
 		m_showEndingSequence = true;
 		m_endingTimer = 0.f;
 
+		m_uiObjects[0]->SetVisible(false);
 		m_uiObjects[1]->SetVisible(false);
 
 		for (int i = 0; i < 3; ++i) {
@@ -3415,4 +3737,99 @@ void GameScene::ChangeJob(int index)//0,1,2,3
 	if (index == 2) m_OtherJobNum[0] = 99;
 	if (index == 3) m_OtherJobNum[1] = 99;
 
+}
+void GameScene::ClearSceneResources()
+{
+	// FBX 및 메시 관련
+	m_fbxLoader.reset();
+	m_ZenithLoader.reset();
+	m_playerLoader.reset();
+	m_fbxMeshes.clear();
+	m_ZenithMeshes.clear();
+	m_fbxObjects.clear();
+	m_ZenithObjects.clear();
+
+	// 몬스터
+	m_monsterGroups.clear();
+	m_BossStageMonsters.clear();
+	m_bossMonsters.clear();
+
+	// 카메라 및 쉐도우
+	m_quarterViewCamera.reset();
+	m_thirdPersonCamera.reset();
+	m_debugShadowShader.reset();
+
+	// UI, 골드, 인벤토리, 강화
+	m_goldDigits.clear();
+	m_inventoryDigits.clear();
+	m_weaponSlotIcon.reset();
+	m_jobSlotIcon.reset();
+	m_plusIcon.reset();
+	m_reinforcedWindowUI.reset();
+	m_forcedDigits.clear();
+	m_ColonDigit.clear();
+
+	// 파티클
+	m_particleManager.reset();
+
+	// 이펙트, 스킬, 무기
+	m_healingObjects.clear();
+	m_healingEffects.clear();
+	m_magicBalls.clear();
+	m_trailObjects.clear();
+	m_effects.clear();
+	m_swordAuraTrailList.clear();
+	m_weopons.clear();
+	m_dustEffects.clear();
+	m_attackIndicators.clear();
+	m_swordAuraObjects.clear();
+
+	// 시간 UI
+	m_timeDigits.clear();
+	m_timeDigitStartPos.clear();
+	m_timeDigitTargetPos.clear();
+	m_uiEndingBanner.clear();
+	m_uiPressOn.clear();
+
+	// 플레이어
+	for (auto& job : m_jobPlayers) job.reset();
+	for (auto& job : m_jobOtherPlayers) job.reset();
+
+	// 기타 변수 초기화
+	m_skillIcons.clear();
+	m_skillCooldowns = { 0.f, 0.f, 0.f };
+	m_skillMaxCooldowns = { 8.f, 10.f, 6.f };
+	m_inventoryCounts[0] = m_inventoryCounts[1] = m_inventoryCounts[2] =
+		m_inventoryCounts[3] = m_inventoryCounts[4] = m_inventoryCounts[5] = 0;
+	m_upgradeScore = 0;
+	m_goldScore = 0;
+	m_job = 0;
+	m_SwordNum = 99;
+	m_bossDied = false;
+	m_showEndingSequence = false;
+	m_endingTimer = 0.f;
+	m_moveTimeUI = false;
+	m_timeUIMoveTimer = 0.f;
+	m_isSwordSkillActive = false;
+	m_swordSkillDuration = 0.f;
+	m_ZenithEnabled = false;
+	m_ZenithStartGame = false;
+	m_WeaponOnly = false;
+	m_JopOnly = false;
+	m_selectedItemType.clear();
+	m_currentCameraMode = CameraMode::QuarterView;
+	m_AttackCollision = false;
+	wasKeyPressedF = false;
+
+	// 기타 애니메이션 라이브러리 초기화
+	m_meshLibrary.clear();
+	m_animClipLibrary.clear();
+	m_boneOffsetLibrary.clear();
+	m_boneNameMap.clear();
+	m_BoneHierarchy.clear();
+	m_staticNodeTransforms.clear();
+	m_nodeNameToLocalTransform.clear();
+
+	// 부모 Scene 리소스 해제 호출
+	Scene::ClearSceneResources();
 }

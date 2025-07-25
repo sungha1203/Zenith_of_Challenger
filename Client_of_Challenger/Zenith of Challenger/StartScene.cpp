@@ -85,7 +85,6 @@ void StartScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) co
             {
                 obj->Render(commandList); // 배경 → 타이틀 순서대로 push_back된 상태
             }
-            for (const auto& obj : m_StartSceneObjects) obj->Render(commandList);
             for (const auto& obj : m_idObjects) obj->Render(commandList);
             for (const auto& obj : m_pwObjects) obj->Render(commandList);
         }
@@ -228,33 +227,33 @@ void StartScene::KeyboardEvent(UINT message, WPARAM wParam)
     }
     else if (wParam == VK_RETURN)
 
-    //------------------------------------------------------// 클라 개발
-    //{
-    //    if (username == "ADMIN" && password == "PASS"){
-    //        m_isRoomSelectionActive = true; // 씬 전환
-    //    }
-    //    else {
-    //        username.clear();
-    //        password.clear();
-    //        isTypingUsername = true;
-    //    }
-    //}
-    
-    //------------------------------------------------------// 서버 개발
-    {
-        std::string idpw = username + " " + password;
-        CS_Packet_Login sendPacket{
+		//------------------------------------------------------// 클라 개발
+		//{
+		//    if (username == "ADMIN" && password == "PASS"){
+		//        m_isRoomSelectionActive = true; // 씬 전환
+		//    }
+		//    else {
+		//        username.clear();
+		//        password.clear();
+		//        isTypingUsername = true;
+		//    }
+		//}
+
+		//------------------------------------------------------// 서버 개발
+	{
+		std::string idpw = username + " " + password;
+		CS_Packet_Login sendPacket{
 .type = CS_PACKET_LOGIN,
 .size = static_cast<int>(idpw.size() + 5)
-        };
-        memcpy(sendPacket.loginData, idpw.c_str(), idpw.length());
-        if (gGameFramework && gGameFramework->GetClientNetwork()) {
-            gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<char*>(&sendPacket), sendPacket.size);
-        }
-        username.clear();
-        password.clear();
-        isTypingUsername = true;
-    }
+		};
+		memcpy(sendPacket.loginData, idpw.c_str(), idpw.length());
+		if (gGameFramework && gGameFramework->GetClientNetwork()) {
+			gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<char*>(&sendPacket), sendPacket.size);
+		}
+		username.clear();
+		password.clear();
+		isTypingUsername = true;
+	}
 
     else if ((wParam >= 'a' && wParam <= 'z') || (wParam >= 'A' && wParam <= 'Z') || (wParam >= '0' && wParam <= '9'))
     {
@@ -575,4 +574,32 @@ void StartScene::UpdateLoginObjects()
         obj->SetPosition(XMFLOAT3(PAStart + i * (0.05f), -0.54f, 0.98f));
         m_pwObjects.push_back(obj);
     }
+}
+
+void StartScene::ClearSceneResources()
+{
+    std::cout << "[StartScene] 리소스 해제 중..." << std::endl;
+
+    m_StartSceneObjects.clear();
+    m_SelectSceneObjects.clear();
+    m_startBar.clear();
+    m_idObjects.clear();
+    m_pwObjects.clear();
+    m_joinButtons.clear();
+    m_hasJoinedRoom.clear();
+
+    m_loadingScreen.reset();
+    m_startBtn.reset();
+    m_camera.reset();
+    m_skybox.reset();
+
+    m_isStartButtonClicked = false;
+    m_isLoading = false;
+    m_loadingElapsed = 0.0f;
+    username.clear();
+    password.clear();
+    isTypingUsername = true;
+
+    // 부모 클래스에서 관리하는 리소스도 clear (mesh/texture 등)
+    Scene::ClearSceneResources();
 }
