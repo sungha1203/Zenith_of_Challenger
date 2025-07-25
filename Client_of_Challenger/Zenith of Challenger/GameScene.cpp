@@ -348,7 +348,7 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
 		}
 		else
 		{
-			m_player->SetCurrentAnimation("Dance"); //Goong
+			m_player->SetCurrentAnimation("Goong"); //Goong
 		}
 
 		m_skillCooldowns = m_skillMaxCooldowns;

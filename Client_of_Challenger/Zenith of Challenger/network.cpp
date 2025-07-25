@@ -662,7 +662,7 @@ void ClientNetwork::ProcessAnimation(char* buffer)
 	}
 		break;
 	case 6: // ÈúÅÊÄ¿
-		if (pkt->client_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[0])
+		if (pkt->client_id == m_clientID)
 		{
 			auto currentScene2 = gGameFramework->GetSceneManager()->GetCurrentScene();
 			auto gameScene = std::dynamic_pointer_cast<GameScene>(currentScene2);
