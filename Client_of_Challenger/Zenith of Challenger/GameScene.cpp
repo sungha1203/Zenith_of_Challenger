@@ -136,7 +136,7 @@ void GameScene::MouseEvent(HWND hWnd, FLOAT timeElapsed)
 			m_player->isPunching = true;
 		}
 
-		
+
 	}
 }
 
@@ -495,7 +495,7 @@ void GameScene::Update(FLOAT timeElapsed)
 		}
 	}
 
-	
+
 
 
 	m_player->Update(timeElapsed);
@@ -603,11 +603,11 @@ void GameScene::Update(FLOAT timeElapsed)
 					const auto& clip = monster->m_animationClips.at(monster->m_currentAnim);
 
 
-					if (monster->m_animTime > clip.duration / 3 && !monster->m_didDamageThisAnim) 
+					if (monster->m_animTime > clip.duration / 3 && !monster->m_didDamageThisAnim)
 					{
 						//m_uiObjects[1]->m_fillAmount -= 0.01;
 						monster->m_didDamageThisAnim = true;
-						CS_Packet_Damaged pkt; 
+						CS_Packet_Damaged pkt;
 						pkt.type = CS_PACKET_DAMAGED;
 						pkt.monsterID = offset + static_cast<int>(i);
 						pkt.size = sizeof(pkt);
@@ -714,7 +714,7 @@ void GameScene::Update(FLOAT timeElapsed)
 				monster->Update(timeElapsed);
 				if (idx < gGameFramework->ZmonstersCoord.size()) {
 					monster->SetPosition(XMFLOAT3(gGameFramework->ZmonstersCoord[idx].x, gGameFramework->ZmonstersCoord[idx].y, gGameFramework->ZmonstersCoord[idx].z));
-					monster->SetRotationY(gGameFramework->ZmonstersToward[idx]);					
+					monster->SetRotationY(gGameFramework->ZmonstersToward[idx]);
 					if (monster->m_playMove)
 					{
 						monster->PlayAnimationWithBlend("Move", 2.0f);
@@ -747,10 +747,10 @@ void GameScene::Update(FLOAT timeElapsed)
 
 		EndingSceneUpdate(timeElapsed);
 
-		if(m_OtherJobNum[0] == 0) ChangeJob(0);//전사
-		if(m_OtherJobNum[1] == 1) ChangeJob(1);//전사
-		if(m_OtherJobNum[0] == 2) ChangeJob(2);//마법사
-		if(m_OtherJobNum[1] == 3) ChangeJob(3);//마법사
+		if (m_OtherJobNum[0] == 0) ChangeJob(0);//전사
+		if (m_OtherJobNum[1] == 1) ChangeJob(1);//전사
+		if (m_OtherJobNum[0] == 2) ChangeJob(2);//마법사
+		if (m_OtherJobNum[1] == 3) ChangeJob(3);//마법사
 		//칼에 플레이어 손 행렬 곱해주기
 		if (m_job > 0)
 		{
@@ -797,23 +797,23 @@ void GameScene::Update(FLOAT timeElapsed)
 			if (!m_Otherplayer[i])
 				continue;
 
-			XMMATRIX weoponTranslation= XMMatrixIdentity(); // 기본값으로 초기화 
+			XMMATRIX weoponTranslation = XMMatrixIdentity(); // 기본값으로 초기화 
 			bool otherjobisValid = false;
 			if (m_otherPlayerJobs[i] == 1)
 			{
 				// 칼의 원래 로컬 행렬 (즉, 생성 시 초기 위치 → 플레이어 중심에 있어야 함)
-				 weoponTranslation = XMMatrixTranslation(-3000.0f, 2000.0f, -1000.0f); // 칼이 손에서 약간 오른쪽에 있는 형태로 수정 가능 
+				weoponTranslation = XMMatrixTranslation(-3000.0f, 2000.0f, -1000.0f); // 칼이 손에서 약간 오른쪽에 있는 형태로 수정 가능 
 				otherjobisValid = true;
 			}
 			else if (m_otherPlayerJobs[i] == 2)
 			{
 				// 지팡이의 원래 로컬 행렬 (즉, 생성 시 초기 위치 → 플레이어 중심에 있어야 함)
-				 weoponTranslation = XMMatrixTranslation(-2700.0f, 1500.0f, -1500.0f); // 칼이 손에서 약간 오른쪽에 있는 형태로 수정 가능 
+				weoponTranslation = XMMatrixTranslation(-2700.0f, 1500.0f, -1500.0f); // 칼이 손에서 약간 오른쪽에 있는 형태로 수정 가능 
 				otherjobisValid = true;
 			}
 			if (!otherjobisValid)
 				continue;
-			
+
 
 			// 현재 애니메이션 클립 기준 본 행렬 계산
 			const auto& clip = m_Otherplayer[i]->m_animationClips.at(m_Otherplayer[i]->m_currentAnim);
@@ -846,6 +846,10 @@ void GameScene::Update(FLOAT timeElapsed)
 					else if (m_otherPlayerJobs[i] == 2)
 						m_weopons[5]->SetWorldMatrix(weaponMat); //0,1,2 칼   3,4,5 지팡이
 				}
+
+			}
+		}
+
 		if (m_job == 2 && m_magicAttack) // 마법사
 		{
 			m_magicBasicAttackTimer += timeElapsed;
@@ -882,16 +886,9 @@ void GameScene::Update(FLOAT timeElapsed)
 		float u0 = (digit * 100.0f) / 1000.0f;
 		float u1 = ((digit + 1) * 100.0f) / 1000.0f;
 
-				//m_weopons[0]->m_scale=(XMFLOAT3{ 10.f, 10.f, 10.f }); 
-
-			}
-			//UpdateSwordAuraSkill(timeElapsed); //전사 스킬 업데이트
-
-		}
-
-
-
+		m_inventoryDigits[i]->SetCustomUV(u0, 0.0f, u1, 1.0f);
 	}
+
 
 	m_skybox->SetPosition(m_camera->GetEye());
 
@@ -1159,7 +1156,7 @@ void GameScene::Update(FLOAT timeElapsed)
 			++it;
 	}
 
-	if(!m_bossDied) UpdateGameTimeDigits();
+	if (!m_bossDied) UpdateGameTimeDigits();
 
 	CheckHealingCollision();
 
@@ -1263,11 +1260,11 @@ void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) con
 		}
 
 		for (const auto& Banner : m_uiEndingBanner) {
-			if(Banner->IsVisible()) Banner->Render(commandList);
+			if (Banner->IsVisible()) Banner->Render(commandList);
 		}
 
 		for (const auto& Press : m_uiPressOn) {
-			if(Press->IsVisible()) Press->Render(commandList);
+			if (Press->IsVisible()) Press->Render(commandList);
 		}
 
 	}
@@ -1922,7 +1919,7 @@ void GameScene::BuildTextures(const ComPtr<ID3D12Device>& device,
 		TEXT("Image/Monsters/Polygonal_Metalon_Purple.dds"), RootParameter::Texture);
 	MetalonTexture->CreateShaderVariable(device, true);
 	m_textures.insert({ "Metalon", MetalonTexture });
-	
+
 	auto SwordTexture = make_shared<Texture>(device, commandList,
 		TEXT("Image/Sword1_Albedo_Silver.dds"), RootParameter::Texture);
 	SwordTexture->CreateShaderVariable(device, true);
@@ -1931,9 +1928,9 @@ void GameScene::BuildTextures(const ComPtr<ID3D12Device>& device,
 	auto StaffTexture = make_shared<Texture>(device, commandList,
 		TEXT("Image/T_Staff_Newbie_01_Bl_D.dds"), RootParameter::Texture);
 	StaffTexture->CreateShaderVariable(device, true);
-	m_textures.insert({ "Staff", StaffTexture });		
-		
-		auto DustTexture = make_shared<Texture>(device, commandList,
+	m_textures.insert({ "Staff", StaffTexture });
+
+	auto DustTexture = make_shared<Texture>(device, commandList,
 		TEXT("Textures/Dust.dds"), RootParameter::Texture);
 	DustTexture->CreateShaderVariable(device, true);
 	m_textures.insert({ "DUST", DustTexture });
@@ -2091,7 +2088,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 	"Model/Player/TestWithoutSword2.fbx",//op1
 	"Model/Player/TestWithoutSword3.fbx",//op2
 	"Model/Player/Wizard2.fbx",
-	"Model/Player/Wizard3.fbx",	
+	"Model/Player/Wizard3.fbx",
 	//"Model/Player/Healer.fbx"
 	//"Model/Player/Healer.fbx"
 	};
@@ -2158,8 +2155,8 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 			playerBox.Extents = { 1.0f, 4.0f, 1.0f };
 			Otherplayer->SetBoundingBox(playerBox);
 
-			auto [cpu, gpu] = gGameFramework->AllocateDescriptorHeapSlot(); 
-			Otherplayer->CreateBoneMatrixSRV(device, cpu, gpu); 
+			auto [cpu, gpu] = gGameFramework->AllocateDescriptorHeapSlot();
+			Otherplayer->CreateBoneMatrixSRV(device, cpu, gpu);
 
 			m_jobOtherPlayers[i - 2] = Otherplayer;
 			//m_jobOtherPlayers[0] :전사
@@ -2213,7 +2210,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 	staffObject->SetTextureIndex(m_textures["Staff"]->GetTextureIndex()); // 텍스처는 적절한 걸 할당 
 	staffObject->SetUseTexture(true);
 	// 보기 좋게 위치 및 크기 조정 (원한다면)	
-	staffObject->SetPosition(XMFLOAT3{ -172.0f, 5.1f, 77.0f }); 
+	staffObject->SetPosition(XMFLOAT3{ -172.0f, 5.1f, 77.0f });
 
 	m_weopons.push_back(staffObject); // 또는 m_weaponPreviewObject 등으로 따로 저장해도 됨  
 
@@ -2974,10 +2971,10 @@ void GameScene::SetJobSlotUV(int type)
 	}
 	else if (type == 1)
 	{
-		m_player = m_jobPlayers[type]; 
-		gGameFramework->SetPlayer(m_player); 
-		m_player->SetCamera(m_camera); 
-		m_job = type + 1; 
+		m_player = m_jobPlayers[type];
+		gGameFramework->SetPlayer(m_player);
+		m_player->SetCamera(m_camera);
+		m_job = type + 1;
 	}
 }
 void GameScene::UpdateEnhanceDigits()
@@ -3117,7 +3114,7 @@ void GameScene::FireOther1MagicBall()
 
 	playerPos = m_Otherplayer[0]->GetPosition();
 	forward = Vector3::Normalize(m_Otherplayer[0]->GetForward());
-	
+
 
 	playerPos.y += 8.0f; // 발사 높이
 
