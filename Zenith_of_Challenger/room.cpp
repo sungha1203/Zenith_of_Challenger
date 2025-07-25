@@ -148,8 +148,9 @@ void Room::ZenithTimerThread()
 	for (int i = 0; i < ZENITH_TIME; ++i) {
 		std::this_thread::sleep_for(std::chrono::seconds(1));
 		if (m_stopTimer) return;
-		if (m_bossDie = true) {
+		if (m_bossDie == true) {
 			m_clearTime = i;
+			break;
 		}
 		UpdateMonsterTargetList();
 		UpdateMonsterAggroList();
