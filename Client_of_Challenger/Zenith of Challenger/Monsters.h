@@ -100,6 +100,7 @@ public:
 	bool m_AnimOnce = false;
 	string m_returnAnimation="none";
 	bool m_playMove = false;
+	bool m_ImBoss = false;
 private:
 
 	std::unordered_map<std::string, int> m_boneNameToIndex;

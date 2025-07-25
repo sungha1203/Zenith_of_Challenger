@@ -304,6 +304,10 @@ void Network::HandlePacket(int client_id, char* buffer, int length) {
 	case CS_PACKET_MONSTERHP:
 		ProcessMonsterHP(client_id, buffer, length);
 		break;
+	case CS_PACKET_ZMONSTERHP:
+
+		ProcessZMonsterHP(client_id, buffer, length);
+		break;
 	case CS_PACKET_INVENTORY:
 		ProcessInventorySelcet(client_id, buffer, length);
 		break;
@@ -545,13 +549,13 @@ void Network::ProcessZMonsterHP(int client_id, char* buffer, int length)
 	SC_Packet_ZMonsterHP pkt2;
 	pkt2.type = SC_PACKET_ZMONSTERHP;
 	pkt2.monsterID = pkt->monsterID;
-	pkt2.monsterHP = room.GetCMonsters(pkt->monsterID).GetHP();
+	pkt2.monsterHP = room.GetZMonsters(pkt->monsterID).GetHP();
 	pkt2.size = sizeof(SC_Packet_ZMonsterHP);
 	for (int other_id : client) {
 		g_network.clients[other_id].do_send(pkt2);
 	}
 
-	if (pkt->monsterID = 25 && room.GetCMonsters(pkt->monsterID).GetHP() == 0) {
+	if (pkt->monsterID = 25 && room.GetZMonsters(pkt->monsterID).GetHP() == 0) {
 		room.SetClearBoss();
 	}
 }

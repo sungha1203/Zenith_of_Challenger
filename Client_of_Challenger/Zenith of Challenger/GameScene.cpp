@@ -201,7 +201,7 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
 	}
 	if (GetAsyncKeyState(VK_F4) & 0x0001) { // F4 키 단일 입력
 		m_OutLine = !m_OutLine;
-		m_bossDied = true;
+		SetEnding();
 	}
 	if (GetAsyncKeyState(VK_F6) & 0x0001) // 한 번만
 	{
@@ -462,6 +462,9 @@ void GameScene::Update(FLOAT timeElapsed)
 		}
 	}
 
+	if (gGameFramework->IsSuccess2 == true) {
+		m_ZenithStartGame = true;
+	}
 
 
 
@@ -680,7 +683,9 @@ void GameScene::Update(FLOAT timeElapsed)
 			{
 				monster->Update(timeElapsed);
 				if (idx < gGameFramework->ZmonstersCoord.size()) {
-					monster->SetPosition(XMFLOAT3(gGameFramework->ZmonstersCoord[idx].x, gGameFramework->ZmonstersCoord[idx].y, gGameFramework->ZmonstersCoord[idx].z));
+					monster->SetPosition(XMFLOAT3(gGameFramework->ZmonstersCoord[idx].x, 
+						gGameFramework->ZmonstersCoord[idx].y, 
+						gGameFramework->ZmonstersCoord[idx].z));
 					monster->SetRotationY(gGameFramework->ZmonstersToward[idx]);
 					if (monster->m_playMove)
 					{
@@ -1014,8 +1019,19 @@ void GameScene::Update(FLOAT timeElapsed)
 		// 모든 몬스터 대상 충돌 체크
 		for (auto& [type, group] : m_monsterGroups)
 		{
-			for (auto& monster : group)
+			int idxStart = 0;
+
+			// 타입에 따른 시작 인덱스 설정
+			if (type == "Mushroom_Dark")       idxStart = 0;
+			else if (type == "FrightFly")      idxStart = 5;
+			else if (type == "Plant_Dionaea")  idxStart = 10;
+			else if (type == "Venus_Blue")     idxStart = 15;
+			else if (type == "Flower_Fairy")   idxStart = 20;
+			else if (type == "Metalon")        idxStart = 25;
+
+			for (size_t i = 0; i < group.size(); ++i)
 			{
+				auto& monster = group[i];
 				if (!monster || monster->IsDead()) continue;
 
 				const BoundingBox& monBox = monster->GetBoundingBox();
@@ -1035,13 +1051,19 @@ void GameScene::Update(FLOAT timeElapsed)
 
 				if (intersectX && intersectY && intersectZ)
 				{
+					{
+						// 패킷 전송
+						CS_Packet_ZMonsterHP pkt;
+						pkt.type = CS_PACKET_ZMONSTERHP;
+						pkt.monsterID = idxStart + static_cast<int>(i); // ← 타입별 오프셋 + 인덱스
+						pkt.damage = 1;
+						pkt.size = sizeof(pkt);
 
-					monster->ApplyDamage(1.0f); // 데미지 지정
-
+						gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
+					}
 					SpawnMagicImpactEffect(ballCenterWorld);
-
 					ball->SetActive(false);
-					break; // 여러 몬스터에게 다중 충돌 막기
+					break;
 				}
 			}
 		}
@@ -1168,8 +1190,19 @@ void GameScene::Update(FLOAT timeElapsed)
 		// 모든 몬스터 대상 충돌 체크
 		for (auto& [type, group] : m_monsterGroups)
 		{
-			for (auto& monster : group)
+			int idxStart = 0;
+
+			// 타입에 따른 시작 인덱스 설정
+			if (type == "Mushroom_Dark")       idxStart = 0;
+			else if (type == "FrightFly")      idxStart = 5;
+			else if (type == "Plant_Dionaea")  idxStart = 10;
+			else if (type == "Venus_Blue")     idxStart = 15;
+			else if (type == "Flower_Fairy")   idxStart = 20;
+			else if (type == "Metalon")        idxStart = 25;
+
+			for (size_t i = 0; i < group.size(); ++i)
 			{
+				auto& monster = group[i];
 				if (!monster || monster->IsDead()) continue;
 
 				const BoundingBox& monBox = monster->GetBoundingBox();
@@ -1189,13 +1222,19 @@ void GameScene::Update(FLOAT timeElapsed)
 
 				if (intersectX && intersectY && intersectZ)
 				{
+					{
+						// 패킷 전송
+						CS_Packet_ZMonsterHP pkt;
+						pkt.type = CS_PACKET_ZMONSTERHP;
+						pkt.monsterID = idxStart + static_cast<int>(i); // ← 타입별 오프셋 + 인덱스
+						pkt.damage = 10;
+						pkt.size = sizeof(pkt);
 
-					monster->ApplyDamage(1.0f); // 데미지 지정
-
+						gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
+					}
 					SpawnMagicImpactEffect(ballCenterWorld);
-
 					ball->SetActive(false);
-					break; // 여러 몬스터에게 다중 충돌 막기
+					break;
 				}
 			}
 		}
@@ -3598,19 +3637,15 @@ void GameScene::CheckHealingCollision()
 
 			if (oX && oY && oZ)
 			{
-				// 타 플레이어도 힐탱커고 힐팩도 힐탱커가 만든 거면 무시
+				// 힐팩을 먹은 플레이어가 힐탱커이면 무시
 				if (m_otherPlayerJobs[i] == 3 && healing->m_ownerJob == 3)
 				{
 					++it;
 					goto next_heal;
 				}
 
-				// 내가 힐탱커일 경우 → 힐팩은 못 먹어도 이펙트는 보여줌
-				if (m_job == 3 && healing->m_ownerJob == 3)
-				{
-					SpawnHealingEffect(otherPos);
-				}
-
+				// 그 외 유저가 힐팩을 먹은 경우 → 힐팩 제거 + 이펙트 표시
+				SpawnHealingEffect(otherPos);
 				it = m_healingObjects.erase(it);
 				goto next_heal;
 			}
@@ -3938,6 +3973,17 @@ void GameScene::UpdateGameTimeDigits()
 		if (i < m_timeDigits.size())
 		{
 			m_timeDigits[i]->SetCustomUV(u0, 0.0f, u1, 1.0f);
+		}
+	}
+}
+void GameScene::SetEnding()
+{
+	auto it = m_monsterGroups.find("Metalon");
+	if (it != m_monsterGroups.end() && !it->second.empty())
+	{
+		if (it->second[0])
+		{
+			it->second[0]->StartDissolve();
 		}
 	}
 }

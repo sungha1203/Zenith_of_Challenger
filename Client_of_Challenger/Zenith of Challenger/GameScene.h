@@ -102,7 +102,8 @@ public:
     //플레이 시간 업데이트
     void UpdateGameTimeDigits();
     //엔딩 관련
-    void SetEnding(bool end) { m_bossDied = end; };
+    void SetEnding();
+    void SetBossDie(bool end) { m_bossDied = end; };
     void EndingSceneUpdate(float timeElapsed);
     bool GetEndingSceneBool() { return m_showEndingSequence; };
 
@@ -250,7 +251,7 @@ private:
     const float MAX_SWORD_SKILL_DURATION = 10.0f;
 
     //엔딩화면 전용 변수
-    bool m_bossDied = false;        // 디졸브 완료 시점 감지
+    bool m_bossDied = false;       
     bool m_showEndingSequence = false;
     float m_endingTimer = 0.f;
     const float MAX_ENDING_TIME = 2.0f; // 플레이어가 도달할 시

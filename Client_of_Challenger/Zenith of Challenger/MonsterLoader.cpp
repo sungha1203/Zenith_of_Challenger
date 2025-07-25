@@ -275,6 +275,8 @@ void LoadAllMonsters(
         monster->SetBoneNameToIndex(boneMap.at("Metalon"));
         monster->SetBoneHierarchy(boneHierarchy.at("Metalon"));
         monster->SetNodeNameToGlobalTransform(NodeNameToGlobalTransform.at("Metalon"));
+        monster->m_ImBoss = true;
+
 
         // [3] 바운딩 박스
         BoundingBox box;
