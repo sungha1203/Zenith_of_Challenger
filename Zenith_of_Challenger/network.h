@@ -47,6 +47,7 @@ public:
 	static void		SendZenithState(const std::vector<int>& client_id);					// 정점 스테이지 내 초기 상태
 	static void		SendStartRepairTime(const std::vector<int> & client_id);			// 정비 시간(8분 지나고 시작의 땅으로 이동)
 	static void		SendStartZenithStage(const std::vector<int> & client_id);			// 도전 -> 정점 스테이지
+	static void     SendPlayerAttack(const std::vector<int>& client_id);				// 정점 스테이지 이동 전 공격력 설정
 	static void		SendUpdateGold(const std::vector<int> & client_id);					// 골드 업데이트
 	static void     SendPlayerHP(int client_id);										// 플레이어 체력 업데이트				
 	static void		SendInitMonster(const std::vector<int> & client_id, const std::array<Monster, 50> & monsters);		// 도전 몬스터 초기 좌표 설정

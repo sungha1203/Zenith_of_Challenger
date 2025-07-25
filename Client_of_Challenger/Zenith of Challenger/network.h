@@ -43,6 +43,7 @@ public:
 	void		ProcessDebugItem(char* buffer);
 	void		ProcessItemState(char* buffer);
 	void		ProcessAnimation(char* buffer);
+	void		ProcessPlayerAttack(char* buffer);
 	void		ProcessAttackEffect(char* buffer);
 	void		ProcessZenithState(char* buffer);
 	void		ProcessZenithStage(char* buffer);

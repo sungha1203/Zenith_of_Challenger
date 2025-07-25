@@ -51,17 +51,18 @@ constexpr int NAME_SIZE = 20;				// 이름 글자 수
 #define SC_PACKET_INVENTORY			 68		// 인벤토리 현재 상황
 #define SC_PACKET_SELECTITEM		 69		// 인벤토리에서 무기 or 전직서 결정
 #define SC_PACKET_ITEMSTATE			 70		// 무기 강화 성공 여부
-#define SC_PACKET_CHAT				 71		// 인게임 속 채팅
-#define SC_PACKET_DEBUGITEM			 72		// 디버깅용 아이템 추가
-#define SC_PACKET_ANIMATION			 73		// 애니메이션
-#define SC_PACKET_CMONSTERTARGET	 74		// 도전스테이지 몬스터가 바라보는 방향
-#define SC_PACKET_ZMONSTERTARGET	 75		// 정점스테이지 몬스터가 바라보는 방향
-#define SC_PACKET_RESPONE			 76		// 도전or정점 죽은 후 리스폰
-#define SC_PACKET_ZMONSTERMOVE		 77		// 정점 스테이지 몬스터의 이동
-#define SC_PACKET_ZMONSTERATTACK	 78		// 정점 스테이지 몬스터의 공격
-#define SC_PACKET_ATTACKEFFECT		 79		// 스킬, 기본 공격 이펙트(전사, 마법사)
-#define SC_PACKET_PLAYERHP			 80		// 플레이어 체력 업데이트
-#define SC_PACKET_ENDGAME			 81		// 게임 종료
+#define SC_PACKET_PLAYERATTACK		 71	    // 정점 스테이지 입장 전 플레이어 공격력
+#define SC_PACKET_CHAT				 72		// 인게임 속 채팅
+#define SC_PACKET_DEBUGITEM			 73		// 디버깅용 아이템 추가
+#define SC_PACKET_ANIMATION			 74		// 애니메이션
+#define SC_PACKET_CMONSTERTARGET	 75		// 도전스테이지 몬스터가 바라보는 방향
+#define SC_PACKET_ZMONSTERTARGET	 76		// 정점스테이지 몬스터가 바라보는 방향
+#define SC_PACKET_RESPONE			 77		// 도전or정점 죽은 후 리스폰
+#define SC_PACKET_ZMONSTERMOVE		 78		// 정점 스테이지 몬스터의 이동
+#define SC_PACKET_ZMONSTERATTACK	 79		// 정점 스테이지 몬스터의 공격
+#define SC_PACKET_ATTACKEFFECT		 80		// 스킬, 기본 공격 이펙트(전사, 마법사)
+#define SC_PACKET_PLAYERHP			 81		// 플레이어 체력 업데이트
+#define SC_PACKET_ENDGAME			 82		// 게임 종료
 
 #define SC_PACKET_LOGOCHUT			 999		// 로그아웃
 
@@ -387,6 +388,13 @@ struct SC_Packet_ItemState
 	char	type;
 	int		size;
 	int		result;
+};
+
+struct SC_Packet_PlayerAttack
+{
+	char	type;
+	int		size;
+	int		attack;
 };
 
 struct SC_Packet_DebugItem
