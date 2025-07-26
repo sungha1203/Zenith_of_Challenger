@@ -12,6 +12,7 @@ ClientInfo::ClientInfo(int client_id)
 	m_ingameInfo.weapon.type = 0;                       // 기본 무기 : 맨손
 	m_ingameInfo.weapon.level = 0;                      // 무기 레벨 : 0
 	m_ingameInfo.clothes = 0;							// 기본 머리 : X
+	m_ingameInfo.maxhp = 100;                           // 도전자 최대 체력  : 100
 	m_ingameInfo.hp = 100;                              // 도전자 체력       : 100
 	m_ingameInfo.attack = 30;                           // 도전자 공격력     : 30
 	m_ingameInfo.speed = 1;                             // 도전자 이동 속도  : 1
@@ -235,16 +236,19 @@ void ClientInfo::LeverUpPlayer(int classtype)
 {
 	switch (classtype) {
 	case (int)Classtype::WARRIOR:
+		m_ingameInfo.maxhp = 300;
 		m_ingameInfo.hp = 300;
 		m_ingameInfo.attack = 50;
 		m_ingameInfo.speed = 2;
 		break;
 	case (int)Classtype::MAGE:
+		m_ingameInfo.maxhp = 200;
 		m_ingameInfo.hp = 200;
 		m_ingameInfo.attack = 100;
 		m_ingameInfo.speed = 2;
 		break;
 	case (int)Classtype::HEALTANKER:
+		m_ingameInfo.maxhp = 1000;
 		m_ingameInfo.hp = 1000;
 		m_ingameInfo.attack = 0;
 		m_ingameInfo.speed = 1;
@@ -254,10 +258,10 @@ void ClientInfo::LeverUpPlayer(int classtype)
 
 void ClientInfo::AddHP(int heal)
 {
-	if (m_ingameInfo.hp < 100)
+	if (m_ingameInfo.hp < m_ingameInfo.maxhp)
 		m_ingameInfo.hp += heal;
-	if (m_ingameInfo.hp > 100) // 피100이 넘으면
-		m_ingameInfo.hp = 100;
+	if (m_ingameInfo.hp > m_ingameInfo.maxhp) // 최대 최력이 넘으면
+		m_ingameInfo.hp = m_ingameInfo.maxhp;
 	g_network.SendPlayerHP(GetID());
 }
 

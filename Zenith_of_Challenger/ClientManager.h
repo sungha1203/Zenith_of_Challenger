@@ -21,7 +21,8 @@ struct Player
 	Classtype		classtype;				// 직업 
 	Weapon			weapon;					// 무기
 	int				clothes = 0;			// 옷종류
-	int				hp;						// 체력
+	int				maxhp;					// 최대 체력
+	int				hp;						// 현재 체력
 	int				attack;					// 공격력
 	int				speed;					// 이동 속도
 	int				attackspeed;			// 공격 속도

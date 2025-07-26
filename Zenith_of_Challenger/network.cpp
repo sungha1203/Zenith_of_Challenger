@@ -305,7 +305,6 @@ void Network::HandlePacket(int client_id, char* buffer, int length) {
 		ProcessMonsterHP(client_id, buffer, length);
 		break;
 	case CS_PACKET_ZMONSTERHP:
-
 		ProcessZMonsterHP(client_id, buffer, length);
 		break;
 	case CS_PACKET_INVENTORY:
@@ -749,7 +748,7 @@ void Network::ProcessEatHealPack(int client_id, char* buffer, int length)
 {
 	CS_Packet_HealPack* pkt = reinterpret_cast<CS_Packet_HealPack*>(buffer);
 	if (pkt->eat == true) {
-		g_client[client_id].AddHP(10);
+		g_client[client_id].AddHP(100);
 	}
 }
 
