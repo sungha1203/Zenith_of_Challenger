@@ -94,6 +94,8 @@ void GameScene::MouseEvent(HWND hWnd, FLOAT timeElapsed)
 
 		if (isEnhanceClicked)
 		{
+			g_Sound.PlaySoundEffect("Sounds/ReinforceButton.wav");
+
 			CS_Packet_ItemState pkt;
 			pkt.type = CS_PACKET_ITEMSTATE;
 			pkt.enhanceTry = true;
@@ -671,7 +673,7 @@ void GameScene::Update(FLOAT timeElapsed)
 					}
 
 				}
-				else if (monster->isAttacking && !monster->AttackRange.Intersects(m_player->GetBoundingBox()))
+				else if (monster->isAttacking && !monster->AttackRange.Intersects(m_player->GetBoundingBox())&& monster->m_currentAnim != "Die")
 				{
 
 					monster->PlayAnimationWithBlend("Idle", 0.2f);
@@ -819,7 +821,7 @@ void GameScene::Update(FLOAT timeElapsed)
 							CS_Packet_ZMonsterHP pkt;
 							pkt.type = CS_PACKET_ZMONSTERHP;
 							pkt.monsterID = idx;
-							pkt.damage = 20;
+							pkt.damage = m_skillAttack;
 							pkt.size = sizeof(pkt);
 							gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
 							m_AttackCollision = false;
@@ -1221,6 +1223,7 @@ void GameScene::Update(FLOAT timeElapsed)
 
 				if (intersectX && intersectY && intersectZ)
 				{
+					g_Sound.PlaySoundEffect("Sounds/CollisionMagicBall.wav");
 					{
 						// 패킷 전송
 						CS_Packet_ZMonsterHP pkt;
@@ -1278,9 +1281,7 @@ void GameScene::Update(FLOAT timeElapsed)
 
 				if (intersectX && intersectY && intersectZ)
 				{
-
-					monster->ApplyDamage(1.0f); // 데미지 지정
-
+					g_Sound.PlaySoundEffect("Sounds/CollisionMagicBall.wav");
 					SpawnMagicImpactEffect(ballCenterWorld);
 
 					ball->SetActive(false);
@@ -1329,9 +1330,7 @@ void GameScene::Update(FLOAT timeElapsed)
 
 				if (intersectX && intersectY && intersectZ)
 				{
-
-					monster->ApplyDamage(1.0f); // 데미지 지정
-
+					g_Sound.PlaySoundEffect("Sounds/CollisionMagicBall.wav");
 					SpawnMagicImpactEffect(ballCenterWorld);
 
 					ball->SetActive(false);
@@ -1392,6 +1391,7 @@ void GameScene::Update(FLOAT timeElapsed)
 
 				if (intersectX && intersectY && intersectZ)
 				{
+					g_Sound.PlaySoundEffect("Sounds/CollisionMagicBall.wav");
 					{
 						// 패킷 전송
 						CS_Packet_ZMonsterHP pkt;
@@ -1449,7 +1449,7 @@ void GameScene::Update(FLOAT timeElapsed)
 
 				if (intersectX && intersectY && intersectZ)
 				{
-
+					g_Sound.PlaySoundEffect("Sounds/CollisionMagicBall.wav");
 					monster->ApplyDamage(1.0f); // 데미지 지정
 
 					SpawnMagicImpactEffect(ballCenterWorld);
@@ -1502,7 +1502,7 @@ void GameScene::Update(FLOAT timeElapsed)
 				{
 
 					monster->ApplyDamage(1.0f); // 데미지 지정
-
+					g_Sound.PlaySoundEffect("Sounds/CollisionMagicBall.wav");
 					SpawnMagicImpactEffect(ballCenterWorld);
 
 					ball->SetActive(false);
@@ -4158,6 +4158,8 @@ void GameScene::EndingSceneUpdate(float timeElapsed)
 {
 	if (m_bossDied && !m_showEndingSequence)
 	{
+		if(!m_showEndingSequence) g_Sound.PlayBGM("Sounds/Ending.mp3");
+
 		m_showEndingSequence = true;
 		m_endingTimer = 0.f;
 
