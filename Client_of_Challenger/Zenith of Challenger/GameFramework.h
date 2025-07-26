@@ -12,6 +12,7 @@
 class ClientNetwork;
 class ClientState;
 
+
 inline void GetClientSize(HWND hWnd, int& width, int& height)
 {
     RECT rect;

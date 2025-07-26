@@ -37,6 +37,10 @@ void CGameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd)
 	//std::this_thread::sleep_for(std::chrono::seconds(1)); // 1초 대기
 	InitDirect3D();
 	BuildObjects();
+
+	g_Sound.Initialize();
+	g_Sound.PlaySoundEffect("Sounds/StartSceneBGM.mp3");
+
 }
 
 void CGameFramework::OnDestroy()
@@ -79,6 +83,7 @@ void CGameFramework::FrameAdvance()
 	SetWindowText(m_hWnd, titleStream.str().c_str());
 
 	Update();
+	g_Sound.Update();
 
 	ThrowIfFailed(m_commandAllocator->Reset());
 	ThrowIfFailed(m_commandList->Reset(m_commandAllocator.Get(), nullptr));

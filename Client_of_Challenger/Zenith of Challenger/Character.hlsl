@@ -85,7 +85,7 @@ float4 PSMain(PixelInput input) : SV_Target
     float shadow = ComputeShadowFactor(input.shadowPos.xyz);
 
     // 조명 연산 후 그림자 적용
-    return Lighting(input.worldPos, normal, toEye, texColor, matData) * shadow * 0.7f;
+    return Lighting(input.worldPos, normal, toEye, texColor, matData) * 0.7f; //* shadow
 
     // 디버그용 그림자 확인
     // return ComputeShadowFactor(input.worldPos);
