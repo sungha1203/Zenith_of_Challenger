@@ -74,5 +74,5 @@ float4 PSMain(PixelInput input) : SV_Target
 
     float shadow = ComputeShadowFactor(input.shadowPos.xyz);
 
-    return Lighting(input.worldPos, normal, toEye, texColor, matData) * shadow;
+    return Lighting(input.worldPos, normal, toEye, texColor, matData); //shadow
 }

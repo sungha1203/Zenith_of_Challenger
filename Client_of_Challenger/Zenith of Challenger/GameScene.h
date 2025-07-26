@@ -82,7 +82,8 @@ public:
     void FireUltimateBulletRainOther1(); //마법사 스킬
     void FireUltimateBulletRainOther2(); //마법사 스킬
 
-
+    void SetWizardNormalAttack(int num) { m_Wizardnormal = num; }
+    void SetWizardSkillAttack(int num) { m_WizardSkill = num; }
 
     void AddTrailObject(const shared_ptr<GameObject>& obj);
     void SpawnMagicImpactEffect(const XMFLOAT3& pos);
@@ -238,6 +239,10 @@ private:
     bool m_magicAttack = false;
     bool m_OnceDance = false; // 댄스 모션만 취하게 하는 변수
     bool m_OnceDanceAlways = false; // 댄스 모션만 취하게 하는 변수
+
+    int m_Wizardnormal = 0;
+    int m_WizardSkill = 0;
+
 
     //무기
     vector<shared_ptr<GameObject>> m_weopons;

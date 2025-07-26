@@ -206,8 +206,18 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
 		m_player->SetCamera(m_camera); // 카메라 바뀐 후 플레이어에도 재등록
 	}
 	if (GetAsyncKeyState(VK_F4) & 0x0001) { // F4 키 단일 입력
-		m_OutLine = !m_OutLine;
-		SetEnding();
+		//m_OutLine = !m_OutLine;
+		//SetEnding();
+		{
+			// 패킷 전송
+			CS_Packet_ZMonsterHP pkt;
+			pkt.type = CS_PACKET_ZMONSTERHP;
+			pkt.monsterID = 25; // ← 타입별 오프셋 + 인덱스
+			pkt.damage = 3001;
+			pkt.size = sizeof(pkt);
+
+			gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
+		}
 	}
 	if (GetAsyncKeyState(VK_F6) & 0x0001) // 한 번만
 	{
@@ -474,9 +484,9 @@ void GameScene::Update(FLOAT timeElapsed)
 		g_Sound.PlayBGM("Sounds/ZenithBGM.mp3");
 		g_Sound.SetBGMVolume(0.2f);
 		//정점 몬스터 체력 세팅
-		for (auto& [type, group] : m_BossStageMonsters)
+		for (auto& [type, group] : m_monsterGroups)
 		{
-			int maxHP = 100; // 기본값
+			int maxHP = 100;
 
 			if (type == "Mushroom_Dark")        maxHP = 150;
 			else if (type == "FrightFly")       maxHP = 150;
@@ -485,14 +495,27 @@ void GameScene::Update(FLOAT timeElapsed)
 			else if (type == "Flower_Fairy")    maxHP = 100;
 			else if (type == "Metalon")         maxHP = 3000;
 
-			for (auto& monster : group)
+			for (size_t i = 0; i < group.size(); ++i)
 			{
-				if (monster)
+				auto& monster = group[i];
+				if (!monster) continue;
+
+				if (i < 5)
 				{
-					monster->SetInitHP(maxHP, maxHP); 
+					// 전투에 나올 몬스터
+					monster->SetInitHP(maxHP, maxHP);
+					monster->SetVisible(true);
+					monster->SetDead(false);
+				}
+				else
+				{
+					// 비활성화 몬스터
+					monster->SetVisible(false);
+					monster->SetDead(true);
 				}
 			}
 		}
+
 
 
 	}
@@ -712,7 +735,12 @@ void GameScene::Update(FLOAT timeElapsed)
 
 			for (auto& monster : group)
 			{
+				if (monster->IsDead()) {
+					++idx;
+					continue;
+				}
 				monster->Update(timeElapsed);
+
 				if (idx < gGameFramework->ZmonstersCoord.size()) {
 					XMFLOAT3 pos = XMFLOAT3(gGameFramework->ZmonstersCoord[idx].x,
 						gGameFramework->ZmonstersCoord[idx].y,
@@ -723,7 +751,6 @@ void GameScene::Update(FLOAT timeElapsed)
 					//정점 충돌 test
 					//auto& monster = group[i];
 
-					if (monster->IsDead()) continue;
 					auto playerBox = m_player->GetBoundingBox(); 
 					auto monsterBox = monster->GetBoundingBox();
 					auto monsterCenter = monsterBox.Center;
@@ -961,6 +988,33 @@ void GameScene::Update(FLOAT timeElapsed)
 
 			}
 		}
+
+		if (m_Wizardnormal == 1) {
+			FireMagicBall(); 
+			m_Wizardnormal = 0;
+		}
+		else if (m_Wizardnormal == 2) {
+			FireOther1MagicBall(); 
+			m_Wizardnormal = 0;
+		}
+		else if (m_Wizardnormal == 3) {
+			FireOther2MagicBall();
+			m_Wizardnormal = 0;
+		}
+
+		if (m_WizardSkill == 1) {
+			FireUltimateBulletRain(); 
+			m_WizardSkill = 0;
+		}
+		else if (m_WizardSkill == 2) {
+			FireUltimateBulletRainOther1(); 
+			m_WizardSkill = 0;
+		}
+		else if (m_WizardSkill == 3) {
+			FireUltimateBulletRainOther2(); 
+			m_WizardSkill = 0;
+		}
+
 
 		if (m_job == 2 && m_magicAttack) // 마법사
 		{
@@ -2187,7 +2241,7 @@ void GameScene::BuildTextures(const ComPtr<ID3D12Device>& device,
 	const ComPtr<ID3D12GraphicsCommandList>& commandList)
 {
 	auto skyboxTexture = make_shared<Texture>(device, commandList,
-		TEXT("Skybox/SkyBox3.dds"), RootParameter::TextureCube);
+		TEXT("Skybox/SkyBox3.dds"), RootParameter::TextureCube); //skybox_day / skybox_night
 	skyboxTexture->CreateShaderVariable(device, true);
 	m_textures.insert({ "SKYBOX", skyboxTexture });
 
@@ -2775,41 +2829,31 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 	// FrightFly 5마리
 	for (int i = 0; i < 5; ++i, ++index)
 	{
-		m_monsterGroups["FrightFly"][i]->SetActive(false);
 		m_BossStageMonsters["FrightFly"].push_back(m_monsterGroups["FrightFly"][i]);
-		m_BossStageMonsters["FrightFly"][i]->SetPosition(gGameFramework->ZmonstersCoord[i + 5]);
 	}
 
 	// Flower_Fairy 5마리
 	for (int i = 0; i < 5; ++i, ++index)
 	{
-		m_monsterGroups["Flower_Fairy"][i]->SetActive(false);
 		m_BossStageMonsters["Flower_Fairy"].push_back(m_monsterGroups["Flower_Fairy"][i]);
-		m_BossStageMonsters["Flower_Fairy"][i]->SetPosition(gGameFramework->ZmonstersCoord[i + 20]);
 	}
 
 	// Mushroom_Dark 5마리
 	for (int i = 0; i < 5; ++i, ++index)
 	{
-		m_monsterGroups["Mushroom_Dark"][i]->SetActive(false);
 		m_BossStageMonsters["Mushroom_Dark"].push_back(m_monsterGroups["Mushroom_Dark"][i]);
-		m_BossStageMonsters["Mushroom_Dark"][i]->SetPosition(gGameFramework->ZmonstersCoord[i]);
 	}
 
 	// Venus_Blue 5마리
 	for (int i = 0; i < 5; ++i, ++index)
 	{
-		m_monsterGroups["Venus_Blue"][i]->SetActive(false);
 		m_BossStageMonsters["Venus_Blue"].push_back(m_monsterGroups["Venus_Blue"][i]);
-		m_BossStageMonsters["Venus_Blue"][i]->SetPosition(gGameFramework->ZmonstersCoord[i + 15]);
 	}
 
 	// Plant_Dionaea 5마리
 	for (int i = 0; i < 5; ++i, ++index)
 	{
-		m_monsterGroups["Plant_Dionaea"][i]->SetActive(false);
 		m_BossStageMonsters["Plant_Dionaea"].push_back(m_monsterGroups["Plant_Dionaea"][i]);
-		m_BossStageMonsters["Plant_Dionaea"][i]->SetPosition(gGameFramework->ZmonstersCoord[i + 10]);
 	}
 
 	//스카이박스
@@ -3135,7 +3179,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 	icon1->SetTexture(m_textures["Wizard_Skill_Icon"]); //마법사
 	icon1->SetTextureIndex(m_textures["Wizard_Skill_Icon"]->GetTextureIndex());
 	icon1->SetShader(m_shaders["UI"]);
-	icon1->SetPosition({ 0.9f, -0.65f, 0.99f }); // NDC 좌표 기준
+	icon1->SetPosition({ 0.9f, -0.65f, 0.9999f }); // NDC 좌표 기준
 	icon1->SetScale({ 0.25f, 0.25f, 1.0f });
 
 	auto icon2 = make_shared<GameObject>(device);
@@ -3143,7 +3187,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 	icon2->SetTexture(m_textures["Heal_Skill_Icon"]); //힐러
 	icon2->SetTextureIndex(m_textures["Heal_Skill_Icon"]->GetTextureIndex());
 	icon2->SetShader(m_shaders["UI"]);
-	icon2->SetPosition({ 0.9f, -0.65f, 0.99f });
+	icon2->SetPosition({ 0.9f, -0.65f, 0.9999f });
 	icon2->SetScale({ 0.25f, 0.25f, 1.0f });
 
 	auto icon3 = make_shared<GameObject>(device);
@@ -3151,7 +3195,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 	icon3->SetTexture(m_textures["Sword_Skill_Icon"]); //전사
 	icon3->SetTextureIndex(m_textures["Sword_Skill_Icon"]->GetTextureIndex());
 	icon3->SetShader(m_shaders["UI"]);
-	icon3->SetPosition({ 0.9f, -0.65f, 0.99f });
+	icon3->SetPosition({ 0.9f, -0.65f, 0.9999f });
 	icon3->SetScale({ 0.25f, 0.25f, 1.0f });
 
 	// 저장
@@ -3163,7 +3207,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 	Banner_Clear->SetTexture(m_textures["Result_Clear"]);
 	Banner_Clear->SetTextureIndex(m_textures["Result_Clear"]->GetTextureIndex());
 	Banner_Clear->SetShader(m_shaders["UI"]);
-	Banner_Clear->SetPosition({ 0.69f, -0.22f, 0.98f });
+	Banner_Clear->SetPosition({ 0.69f, -0.22f, 0.99f });
 	Banner_Clear->SetScale({ 0.6f, 0.6f, 1.0f });
 	Banner_Clear->SetHovered(true);
 	Banner_Clear->SetVisible(false);
@@ -3175,7 +3219,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 	Banner_Fail->SetTexture(m_textures["Result_Fail"]);
 	Banner_Fail->SetTextureIndex(m_textures["Result_Fail"]->GetTextureIndex());
 	Banner_Fail->SetShader(m_shaders["UI"]);
-	Banner_Fail->SetPosition({ 0.69f, -0.22f, 0.98f });
+	Banner_Fail->SetPosition({ 0.69f, -0.22f, 0.99f });
 	Banner_Fail->SetScale({ 0.6f, 0.6f, 1.0f });
 	Banner_Fail->SetHovered(true);
 	Banner_Fail->SetVisible(false);
@@ -4124,7 +4168,9 @@ void GameScene::EndingSceneUpdate(float timeElapsed)
 			m_skillIcons[i]->SetVisible(false);
 		}
 		// 플레이어 위치 → 도착 목표
-		m_player->SetPosition({ 567.f, 43.6f, -15.3f }); 
+		if(m_job == 1) m_player->SetPosition({ 567.f, 43.6f, -15.3f }); 
+		if(m_job == 2) m_player->SetPosition({ 567.f, 44.0f, -15.3f }); 
+		if(m_job == 3) m_player->SetPosition({ 567.f, 43.6f, -15.3f }); 
 
 		// 시간 UI 이동 시작
 		m_moveTimeUI = true;

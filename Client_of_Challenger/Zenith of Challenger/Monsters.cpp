@@ -89,7 +89,7 @@ void Monsters::Update(FLOAT timeElapsed)
 				{
 					StopDie = true;
 					m_animTime -= 1.0;
-					m_isDead = true;
+					if(!m_ImBoss)m_isDead = true;
 				}
 				else if (m_AnimOnce)
 				{
