@@ -187,6 +187,7 @@ void Monsters::Update(FLOAT timeElapsed)
 			if (auto gameScene = dynamic_cast<GameScene*>(gGameFramework->GetSceneManager()->GetCurrentScene().get()))
 			{
 				gameScene->SetBossDie(true); // <- 보스 죽음 플래그
+				gameScene->SetDanceMotion(true);
 			}
 		}
 	}

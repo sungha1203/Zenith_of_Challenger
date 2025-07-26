@@ -40,7 +40,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device,
 
 	// 정점맵 파일 로드
 	m_ZenithLoader = make_shared<FBXLoader>();
-	if (m_ZenithLoader->LoadFBXModel("Model/Map/ZenithObject3.fbx",
+	if (m_ZenithLoader->LoadFBXModel("Model/Map/ZenithObject4.fbx",
 		XMMatrixScaling(1.0f, 1.0f, 1.0f)))
 	{
 		m_ZenithMeshes = m_ZenithLoader->GetMeshes();
@@ -64,7 +64,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device,
 
 void GameScene::MouseEvent(HWND hWnd, FLOAT timeElapsed)
 {
-	if (GetAsyncKeyState(VK_LBUTTON) & 0x0001)
+	if (GetAsyncKeyState(VK_LBUTTON) & 0x0001 && !m_OnceDanceAlways)
 	{
 		POINT pt;
 		GetCursorPos(&pt);
@@ -4012,7 +4012,7 @@ void GameScene::EndingSceneUpdate(float timeElapsed)
 			m_skillIcons[i]->SetVisible(false);
 		}
 		// 플레이어 위치 → 도착 목표
-		m_player->SetPosition({ 570.f, 43.6f, 6.5f }); // 예시 위치
+		m_player->SetPosition({ 567.f, 43.6f, -15.3f }); 
 
 		// 시간 UI 이동 시작
 		m_moveTimeUI = true;
@@ -4052,7 +4052,7 @@ void GameScene::EndingSceneUpdate(float timeElapsed)
 		m_endingTimer += timeElapsed;
 
 		XMFLOAT3 playerPos = m_player->GetPosition();
-		m_player->SetRotationY(225.f);
+		m_player->SetRotationY(-20.f);
 		XMFLOAT3 forward = m_player->GetForward();
 
 		XMFLOAT3 camPos = {
@@ -4074,6 +4074,7 @@ void GameScene::EndingSceneUpdate(float timeElapsed)
 		if (m_OnceDance) {
 			m_player->SetCurrentAnimation("Dance");
 			m_OnceDance = false;
+			m_OnceDanceAlways = true;
 		}
 
 		// UI 띄우기
@@ -4081,6 +4082,7 @@ void GameScene::EndingSceneUpdate(float timeElapsed)
 		{
 			m_uiEndingBanner[0]->SetVisible(true); // 승리 UI 표시
 			m_uiPressOn[0]->SetVisible(true);
+			ShowCursor(TRUE);
 			//m_uiEndingBanner[1]->SetVisible(true); // 패배 UI 표시
 		}
 	}
