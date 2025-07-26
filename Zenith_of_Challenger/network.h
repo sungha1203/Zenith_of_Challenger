@@ -54,7 +54,7 @@ public:
 	static void		SendInitMonster(const std::vector<int> & client_id, const std::array<Monster, 50> & monsters);		// 도전 몬스터 초기 좌표 설정
 	static void		SendZenithMonster(const std::vector<int> & client_id, const std::array<Monster, 26> & monsters);	// 정점 몬스터 초기 좌표 설정
 	static void		SendZMonsterAttack(const std::vector<int>& client_id, int MonsterID, int SkillType);				// 정점 몬스터 공격
-	static void		SendBossAttackMotion(const std::vector<int>& client_id);											// 보스 몬스터 공격 모션 시작
+	static void		SendBossAttackMotion(const std::vector<int>& client_id, int BossSkill);											// 보스 몬스터 공격 모션 시작
 	static void		SendEndGame(const std::vector<int>& client_id, int time);											// 게임 종료
 
 public:

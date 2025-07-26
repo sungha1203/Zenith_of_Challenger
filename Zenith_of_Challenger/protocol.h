@@ -476,6 +476,7 @@ struct SC_Packet_BossAttackMotion
 {
 	char	type;
 	int		size;
+	int		BossSkill;
 };
 
 struct SC_Packet_PlayerHP

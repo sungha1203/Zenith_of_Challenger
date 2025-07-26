@@ -1024,10 +1024,11 @@ void Network::SendZMonsterAttack(const std::vector<int>& client_id, int MonsterI
 }
 
 // 보스 몬스터 공격 모션 시작
-void Network::SendBossAttackMotion(const std::vector<int>& client_id)
+void Network::SendBossAttackMotion(const std::vector<int>& client_id, int BossSkill)
 {
 	SC_Packet_BossAttackMotion pkt;
 	pkt.type = SC_PACKET_BOSSATTACKMOTION;
+	pkt.BossSkill = BossSkill;
 	pkt.size = sizeof(pkt);
 
 	for (int id : client_id)

@@ -182,7 +182,7 @@ void Room::m_ZmonsterPosTimerThread()
 					g_network.SendZMonsterAttack(GetClients(), i, 0);
 				}
 				if (m_Zmonsters[i].AttackMotion()) {
-					g_network.SendBossAttackMotion(GetClients());
+					g_network.SendBossAttackMotion(GetClients(), m_Zmonsters[i].GetBossSkillType());
 				}
 			}
 			// 살아있을때 && 정점 보스 몬스터
