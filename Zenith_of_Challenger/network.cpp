@@ -544,6 +544,7 @@ void Network::ProcessZMonsterHP(int client_id, char* buffer, int length)
 	Room& room = g_room_manager.GetRoom(room_id);
 	const auto& client = room.GetClients();
 
+	if (!room.GetZMonster(pkt->monsterID).GetLived()) return;		// Á×¾îÀÖÀ¸¸é return
 	room.GetZMonster(pkt->monsterID).TakeDamage(pkt->damage);
 
 	SC_Packet_ZMonsterHP pkt2;
@@ -909,7 +910,8 @@ void Network::SendPlayerAttack(const std::vector<int>& client_id)
 
 	for (int id : client_id) {
 		if (!g_network.clients[id].m_used) continue;
-		pkt.attack = g_client[id].GetAttack();
+		pkt.normalAttack = g_client[id].GetNormalAttack();
+		pkt.skillAttack = g_client[id].GetSkillAttack();
 		pkt.size = sizeof(pkt);
 		g_network.clients[id].do_send(pkt);
 	}

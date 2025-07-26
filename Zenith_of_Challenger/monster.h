@@ -36,7 +36,7 @@ struct AggroInfo
 class Monster
 {
 private:
-	int					m_version;								// 도전 - 0, 정점 - 1
+	int					m_version = 0;							// 도전 - 0, 정점 - 1
 	int					m_id;									// 고유 ID
 	int					m_islived = true;						// 살아있는지
 	NormalMonsterType	m_type;									// 몬스터 종류
@@ -81,7 +81,7 @@ public:
 	std::mutex mx;
 
 	void			Reset();
-	void			SetMonster(int id, NormalMonsterType type, float x, float y, float z);
+	void			SetMonster(int id, NormalMonsterType type, float x, float y, float z, int version);
 	void			TakeDamage(int dmg);
 	void			Move();
 	void			BossMove();
