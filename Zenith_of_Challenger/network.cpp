@@ -691,13 +691,15 @@ void Network::ProcessAnimation(int client_id, char* buffer, int length) {
 
 	// 0 : 기본      1 : 걷기      2 : 달리기      3 : 도전자 기본 공격      4 : 직업스킬      5 : 직업 기본 공격
 	if (pkt->animation == 4) {
-		if (!g_client[client_id].CanUseSkill()) return;		// 스킬 쿨타임이면 무시
-
 		switch (job) {
-		case 0: pkt2.animation = 3; break;		// 도전자 스킬(기본공격)
-		case 1: pkt2.animation = 4; break;		// 전  사 스킬
-		case 2: pkt2.animation = 5; break;		// 마법사 스킬
-		case 3: pkt2.animation = 6; break;		// 힐탱커 스킬
+		case 0: pkt2.animation = 3;
+			break;		// 도전자 스킬(기본공격)
+		case 1:
+		case 2:
+		case 3:
+			if (!g_client[client_id].CanUseSkill()) return;		// 스킬 쿨타임이면 무시
+			pkt2.animation = job + 3;
+			break;
 		}
 		g_client[client_id].StartCoolTime();	// 마지막 스킬 사용 시점
 	}
