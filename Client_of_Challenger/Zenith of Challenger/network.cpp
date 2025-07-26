@@ -519,8 +519,8 @@ void ClientNetwork::ProcessInventory2Equip(char* buffer)
 	pkt->item;				// 전직서인지 무기인지
 
 	shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
-	GameScene* gameScene = dynamic_cast<GameScene*>(currentScene.get());	
-	if (gameScene && pkt->item >= 1&& pkt->item<4)
+	GameScene* gameScene = dynamic_cast<GameScene*>(currentScene.get());
+	if (gameScene && pkt->item >= 1 && pkt->item < 4)
 	{
 		// otherid[0] 또는 otherid[1] 에 매칭되는지 확인
 		if (pkt->clientID == m_clientID)
@@ -532,7 +532,7 @@ void ClientNetwork::ProcessInventory2Equip(char* buffer)
 			gameScene->m_WhatOtherGrab[0] = pkt->item;
 		}
 		else if (pkt->clientID == gameScene->otherid[1])
-		{			
+		{
 			gameScene->m_WhatOtherGrab[1] = pkt->item;
 		}
 	}
@@ -541,15 +541,15 @@ void ClientNetwork::ProcessInventory2Equip(char* buffer)
 		// otherid[0] 또는 otherid[1] 에 매칭되는지 확인
 		if (pkt->clientID == m_clientID)
 		{
-			gameScene->m_player->SetPosition(gGameFramework->g_pos); 
+			gameScene->m_player->SetPosition(gGameFramework->g_pos);
 		}
 		else if (pkt->clientID == gameScene->otherid[0])
-		{			
+		{
 			gameScene->SetOtherJob1(0);
 			gameScene->m_Otherplayer[0]->SetPosition(gameScene->otherpos[0]);
 		}
 		else if (pkt->clientID == gameScene->otherid[1])
-		{						
+		{
 			gameScene->SetOtherJob2(1);
 			gameScene->m_Otherplayer[1]->SetPosition(gameScene->otherpos[1]);
 		}
@@ -557,7 +557,7 @@ void ClientNetwork::ProcessInventory2Equip(char* buffer)
 	if (gameScene && pkt->item == 5) // 마법사
 	{
 		// otherid[0] 또는 otherid[1] 에 매칭되는지 확인
-		if(pkt->clientID == m_clientID)
+		if (pkt->clientID == m_clientID)
 		{
 			gameScene->m_player->SetPosition(gGameFramework->g_pos);
 		}
@@ -573,7 +573,7 @@ void ClientNetwork::ProcessInventory2Equip(char* buffer)
 	if (gameScene && pkt->item == 6) // 힐탱커
 	{
 		// otherid[0] 또는 otherid[1] 에 매칭되는지 확인
-		if(pkt->clientID == m_clientID)
+		if (pkt->clientID == m_clientID)
 		{
 			gameScene->m_player->SetPosition(gGameFramework->g_pos);
 		}
@@ -661,7 +661,7 @@ void ClientNetwork::ProcessAnimation(char* buffer)
 	case 3:  // punching
 		if (pkt->client_id == m_clientID)
 		{
-			auto gameScene = dynamic_cast<GameScene*>(gGameFramework->GetSceneManager()->GetCurrentScene().get());			
+			auto gameScene = dynamic_cast<GameScene*>(gGameFramework->GetSceneManager()->GetCurrentScene().get());
 			gameScene->m_player->SetCurrentAnimation("Kick");
 			//gameScene->m_player->isPunching = true;
 		}
@@ -685,7 +685,7 @@ void ClientNetwork::ProcessAnimation(char* buffer)
 		{
 			auto gameScene = dynamic_cast<GameScene*>(gGameFramework->GetSceneManager()->GetCurrentScene().get());
 			gameScene->ActivateSwordAuraSkill(0);
-			gameScene->m_player->SetCurrentAnimation("Goong"); 
+			gameScene->m_player->SetCurrentAnimation("Goong");
 			g_Sound.PlaySoundEffect("Sounds/Sword Magic Sound Effect.wav");
 
 		}
@@ -729,7 +729,7 @@ void ClientNetwork::ProcessAnimation(char* buffer)
 			currentScene->m_Otherplayer[0]->m_CurrentAnim = pkt->animation;
 			gameScene->SetWizardSkillAttack(2); //타 클라 1번 플레이어 기준 발사
 			gameScene->m_Otherplayer[0]->SetCurrentAnimation("Goong");
-			gameScene->m_Otherplayer[0]->isAttacking=true;
+			gameScene->m_Otherplayer[0]->isAttacking = true;
 			g_Sound.PlaySoundEffect("Sounds/Wizzad_Skill.wav");
 			g_Sound.SetSFXVolume(0.2f);
 		}
@@ -744,7 +744,7 @@ void ClientNetwork::ProcessAnimation(char* buffer)
 			g_Sound.SetSFXVolume(0.2f);
 		}
 	}
-		break;
+	break;
 	case 6: // 힐탱커
 		if (pkt->client_id == m_clientID)
 		{
@@ -752,7 +752,7 @@ void ClientNetwork::ProcessAnimation(char* buffer)
 			auto gameScene = std::dynamic_pointer_cast<GameScene>(currentScene2);
 			if (gameScene) {
 				gameScene->SpawnHealingObject(2);
-				gameScene->m_player->SetCurrentAnimation("Goong"); 
+				gameScene->m_player->SetCurrentAnimation("Goong");
 			}
 		}
 
@@ -773,7 +773,7 @@ void ClientNetwork::ProcessAnimation(char* buffer)
 		{
 			shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
 			currentScene->m_Otherplayer[1]->m_CurrentAnim = pkt->animation;
-			
+
 			auto currentScene2 = gGameFramework->GetSceneManager()->GetCurrentScene();
 			auto gameScene = std::dynamic_pointer_cast<GameScene>(currentScene2);
 			if (gameScene) {
@@ -787,7 +787,7 @@ void ClientNetwork::ProcessAnimation(char* buffer)
 		{
 			auto currentScene2 = gGameFramework->GetSceneManager()->GetCurrentScene();
 			auto gameScene = std::dynamic_pointer_cast<GameScene>(currentScene2);
-			if (gameScene) {				
+			if (gameScene) {
 				gameScene->m_player->SetCurrentAnimation("Slash");
 			}
 		}
@@ -797,7 +797,7 @@ void ClientNetwork::ProcessAnimation(char* buffer)
 			shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
 			//currentScene->m_Otherplayer[0]->m_CurrentAnim = pkt->animation;
 			currentScene->m_Otherplayer[0]->SetCurrentAnimation("Slash");
-			currentScene->m_Otherplayer[0]->isAttacking=true;
+			currentScene->m_Otherplayer[0]->isAttacking = true;
 		}
 		// 플레이어 1
 		else if (pkt->client_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[1])
@@ -805,7 +805,7 @@ void ClientNetwork::ProcessAnimation(char* buffer)
 			shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
 			//currentScene->m_Otherplayer[1]->m_CurrentAnim = pkt->animation;
 			currentScene->m_Otherplayer[1]->SetCurrentAnimation("Slash");
-			currentScene->m_Otherplayer[1]->isAttacking=true;
+			currentScene->m_Otherplayer[1]->isAttacking = true;
 		}
 
 		break;
@@ -818,8 +818,8 @@ void ClientNetwork::ProcessAnimation(char* buffer)
 		if (pkt->client_id == m_clientID)
 		{
 			gameScene->SetWizardNormalAttack(1); //플레이어 기준 발사
-			gameScene->m_player->SetCurrentAnimation("Slash"); 
-			
+			gameScene->m_player->SetCurrentAnimation("Slash");
+
 		}
 		// 플레이어 0
 		if (pkt->client_id == currentScene->otherid[0])
@@ -834,6 +834,34 @@ void ClientNetwork::ProcessAnimation(char* buffer)
 			currentScene->m_Otherplayer[1]->m_CurrentAnim = pkt->animation;
 			gameScene->SetWizardNormalAttack(3);  //타 클라 2번 플레이어 기준 발사
 			gameScene->m_Otherplayer[1]->SetCurrentAnimation("Slash");
+		}
+	}
+	break;
+	case 9:
+	{
+		//if (pkt->client_id == m_clientID)
+		//{
+		//	auto currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
+		//	auto gameScene = std::dynamic_pointer_cast<GameScene>(currentScene);
+		//	if (gameScene) {
+		//		gameScene->m_player->SetCurrentAnimation("Slash");
+		//	}
+		//}
+		// 플레이어 0
+		if (pkt->client_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[0])
+		{
+			shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
+			//currentScene->m_Otherplayer[0]->m_CurrentAnim = pkt->animation;
+			currentScene->m_Otherplayer[0]->SetCurrentAnimation("Die");
+			currentScene->m_Otherplayer[0]->isAttacking = true;
+		}
+		// 플레이어 1
+		else if (pkt->client_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[1])
+		{
+			shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
+			//currentScene->m_Otherplayer[1]->m_CurrentAnim = pkt->animation;
+			currentScene->m_Otherplayer[1]->SetCurrentAnimation("Die");
+			currentScene->m_Otherplayer[1]->isAttacking = true;
 		}
 	}
 		break;
@@ -955,6 +983,12 @@ void ClientNetwork::ProcessRespone(char* buffer)
 	// 현재 씬 가져오기 (GameScene으로 캐스팅 필요)
 	shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
 	GameScene* gameScene = dynamic_cast<GameScene*>(currentScene.get());
+	
+	CS_Packet_Animaition Diepkt;
+	Diepkt.type = CS_PACKET_ANIMATION;
+	Diepkt.animation = 9;
+	Diepkt.size = sizeof(Diepkt);
+	gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&Diepkt), Diepkt.size);
 
 	pkt->clientID;
 	pkt->x;
@@ -962,17 +996,19 @@ void ClientNetwork::ProcessRespone(char* buffer)
 	pkt->z;
 	XMFLOAT3 pos = { pkt->x, pkt->y, pkt->z };
 	if (pkt->clientID == m_clientID)
-	{		
-		gameScene->m_player->SetPosition(pos);  
-	}
-	else if (pkt->clientID == gameScene->otherid[0])
 	{
-		gameScene->m_Otherplayer[0]->m_position = pos; 
+		gameScene->m_player->SetCurrentAnimation("Die");
+		gameScene->m_player->m_isDying = true;
+		gameScene->m_player->responePos = pos;
 	}
-	else if (pkt->clientID == gameScene->otherid[1])
-	{
-		gameScene->m_Otherplayer[1]->m_position = pos; 
-	}	
+	//else if (pkt->clientID == gameScene->otherid[0])
+	//{
+	//	gameScene->m_Otherplayer[0]->m_position = pos; 
+	//}
+	//else if (pkt->clientID == gameScene->otherid[1])
+	//{
+	//	gameScene->m_Otherplayer[1]->m_position = pos; 
+	//}	
 }
 
 // [개발중] 정점 몬스터 바라보는 방향의 좌표
@@ -980,7 +1016,7 @@ void ClientNetwork::ProcessZMonsterMove(char* buffer)
 {
 	SC_Packet_ZMonsterMove* pkt = reinterpret_cast<SC_Packet_ZMonsterMove*>(buffer);
 	if (pkt->monsterID == 25)
-	{	
+	{
 		gGameFramework->BossCoord.x = pkt->x;
 		gGameFramework->BossCoord.y = pkt->y;
 		gGameFramework->BossCoord.z = pkt->z;
@@ -1009,7 +1045,7 @@ void ClientNetwork::ProcessZMonsterMove(char* buffer)
 		// [3] 회전 각도 계산 (Z 기준)
 		float angle = atan2f(toWard.x, toWard.z); // x/z
 		float degrees = XMConvertToDegrees(angle);
-		gGameFramework->ZmonstersToward[pkt->monsterID] = degrees+180;		
+		gGameFramework->ZmonstersToward[pkt->monsterID] = degrees + 180;
 	}
 
 }
@@ -1025,16 +1061,16 @@ void ClientNetwork::ProcessPlayerHP(char* buffer)
 	switch (gameScene->m_job)
 	{
 	case 0:
-	gameScene->m_uiObjects[1]->m_fillAmount = (pkt->hp / 100.f);
+		gameScene->m_uiObjects[1]->m_fillAmount = (pkt->hp / 100.f);
 		break;
 	case 1:
-	gameScene->m_uiObjects[1]->m_fillAmount = (pkt->hp / 300.f);
+		gameScene->m_uiObjects[1]->m_fillAmount = (pkt->hp / 300.f);
 		break;
 	case 2:
-	gameScene->m_uiObjects[1]->m_fillAmount = (pkt->hp / 200.f);
+		gameScene->m_uiObjects[1]->m_fillAmount = (pkt->hp / 200.f);
 		break;
 	case 3:
-	gameScene->m_uiObjects[1]->m_fillAmount = (pkt->hp / 1000.f);
+		gameScene->m_uiObjects[1]->m_fillAmount = (pkt->hp / 1000.f);
 		break;
 	default:
 		break;
@@ -1046,7 +1082,7 @@ void ClientNetwork::ProcessPlayerHP(char* buffer)
 void ClientNetwork::ProcessEndGame(char* buffer)
 {
 	SC_Packet_EndGame* pkt = reinterpret_cast<SC_Packet_EndGame*>(buffer);
-	pkt->time;		
+	pkt->time;
 	// 클리어 시간 몇초인지, 만약 300초로 왔으면 실패, 300초 안으로 들어왔으면 성공
 	// 씬 전환하지말고 그냥 우리 장비창 처럼 사진으로 하고 클리어 초만 넣어두면 될거같아.
 	// 그리고 10초 뒤에 자동으로 방 선택 창으로 돌아가게 씬 전환
@@ -1063,14 +1099,14 @@ void ClientNetwork::ProcessZMonsterAttack(char* buffer)
 {
 	SC_Packet_ZMonsterAttack* pkt = reinterpret_cast<SC_Packet_ZMonsterAttack*>(buffer);
 
-	shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene(); 
-	GameScene* gameScene = dynamic_cast<GameScene*>(currentScene.get()); 
+	shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
+	GameScene* gameScene = dynamic_cast<GameScene*>(currentScene.get());
 
 	if (pkt->monsterID != 25) {				// 정점 일반 몬스터 (1초동안 스킬 애니메이션)
 
 		gGameFramework->ZmonstersPlayAttack[pkt->monsterID] = true;
 		string type;
-		switch (pkt->monsterID/5)
+		switch (pkt->monsterID / 5)
 		{
 		case 0:
 			type = "Mushroom_Dark";
@@ -1090,17 +1126,17 @@ void ClientNetwork::ProcessZMonsterAttack(char* buffer)
 		default:
 			break;
 		}
-		auto monster = gameScene->m_BossStageMonsters[type][pkt->monsterID % 5]; 
-		monster->PlayAnimationWithBlend("Attack", 0.2f); 
+		auto monster = gameScene->m_BossStageMonsters[type][pkt->monsterID % 5];
+		monster->PlayAnimationWithBlend("Attack", 0.2f);
 		monster->m_AnimOnce = true;
 	}
 	else {									// 정점 보스 몬스터 (2초동안  보여주고 1초동안 예고 범위스킬 애니메이션)
 		if (pkt->bossmonsterSkill == 2)									//점프
 		{
-			gameScene->SpawnShockwaveWarning(gameScene->m_bossMonsters[0]->GetPosition());		
+			gameScene->SpawnShockwaveWarning(gameScene->m_bossMonsters[0]->GetPosition());
 			//gameScene->m_bossMonsters[0]->PlayAnimationWithBlend("Jump", 2.0f);
 		}
-		else if(pkt->bossmonsterSkill == 1)								//돌진
+		else if (pkt->bossmonsterSkill == 1)								//돌진
 		{
 			gameScene->SpawnDashWarning(gameScene->m_bossMonsters[0]->GetPosition(), gGameFramework->BossToward);
 			//gameScene->m_bossMonsters[0]->PlayAnimationWithBlend("Dash", 2.0f);

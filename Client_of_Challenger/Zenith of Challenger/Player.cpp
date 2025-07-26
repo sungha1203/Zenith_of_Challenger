@@ -198,6 +198,11 @@ void Player::Update(FLOAT timeElapsed)
             if (m_animTime > clip.duration)
             {
             	//m_animTime = fmod(m_animTime, clip.duration);
+                if (m_isDying)
+                {
+                    m_isDying = false;
+                    SetPosition(responePos);
+                }
                 m_animTime -= clip.duration;
             }
         }
@@ -209,7 +214,7 @@ void Player::Update(FLOAT timeElapsed)
     GameScene* gameScene = dynamic_cast<GameScene*>(currentScene.get());
 
     if (!gameScene->GetDanceMontion()) { //마지막은 춤추는 모션
-        if (isMoving && !isPunching)
+        if (isMoving && !isPunching &&!m_isDying)
         {
             if (GetAsyncKeyState(VK_SHIFT) && m_animationClips.contains("Running"))
             {
@@ -223,7 +228,7 @@ void Player::Update(FLOAT timeElapsed)
                     gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
                 }
             }
-            else if (m_animationClips.contains("Walking"))
+            else if (m_animationClips.contains("Walking") && !m_isDying)
             {
                 /*SetCurrentAnimation("Walking");*/
                 isRunning = false;
@@ -237,7 +242,7 @@ void Player::Update(FLOAT timeElapsed)
                 m_currentAnim = "Walking";
             }
         }
-        else if (isPunching)
+        else if (isPunching && !m_isDying)
         {
             //m_currentAnim = "Walking";
             if(m_canPunch)
@@ -264,7 +269,7 @@ void Player::Update(FLOAT timeElapsed)
                 }
             }
         }
-        else
+        else if(!m_isDying)
         {
             if (m_animationClips.contains("Idle") && m_currentAnim != "Idle")
             {

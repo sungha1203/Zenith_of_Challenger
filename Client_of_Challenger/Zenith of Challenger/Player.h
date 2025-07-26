@@ -24,7 +24,8 @@ public:
 
 	void SetScale(XMFLOAT3 scale);
 	XMFLOAT3 GetScale() const;
-
+	XMFLOAT3 responePos;
+	bool m_isDying = false;
 	void SetAnimationClips(const std::vector<AnimationClip>& clips);
 	void SetCurrentAnimation(const std::string& name);
 	std::string& GetCurrentAnimation() { return m_currentAnim;}
