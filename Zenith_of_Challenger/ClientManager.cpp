@@ -208,16 +208,16 @@ void ClientInfo::SetAttack()
 	case 2:
 	{
 		if ((int)m_ingameInfo.weapon.type == 0) {		// ¡÷∏‘
-			m_normalAttack = 70 + m_ingameInfo.weapon.level * 5 - 50;
-			m_normalAttack = 120 + m_ingameInfo.weapon.level * 5 - 50;
+			m_normalAttack = (70 + m_ingameInfo.weapon.level * 5 - 50) / 5;
+			m_normalAttack = (120 + m_ingameInfo.weapon.level * 5 - 50) / 10;
 		}
 		else if ((int)m_ingameInfo.weapon.type == 2) {	// ¡ˆ∆Œ¿Ã
-			m_normalAttack = 70 + m_ingameInfo.weapon.level * 5;
-			m_normalAttack = 120 + m_ingameInfo.weapon.level * 5;
+			m_normalAttack = (70 + m_ingameInfo.weapon.level * 5) / 5;
+			m_normalAttack = (120 + m_ingameInfo.weapon.level * 5) / 10;
 		}
 		else {											// ±◊ ø‹
-			m_normalAttack = 70 + m_ingameInfo.weapon.level * 5 - 20;
-			m_normalAttack = 120 + m_ingameInfo.weapon.level * 5 - 20;
+			m_normalAttack = (70 + m_ingameInfo.weapon.level * 5 - 20) / 5;
+			m_normalAttack = (120 + m_ingameInfo.weapon.level * 5 - 20) / 10;
 		}
 		break;
 	}
