@@ -62,7 +62,8 @@ constexpr int NAME_SIZE = 20;				// 이름 글자 수
 #define SC_PACKET_ZMONSTERATTACK	 79		// 정점 스테이지 몬스터의 공격
 #define SC_PACKET_ATTACKEFFECT		 80		// 스킬, 기본 공격 이펙트(전사, 마법사)
 #define SC_PACKET_PLAYERHP			 81		// 플레이어 체력 업데이트
-#define SC_PACKET_ENDGAME			 82		// 게임 종료
+#define SC_PACKET_BOSSATTACKMOTION	 82		// 보스몬스터 공격모션 시작
+#define SC_PACKET_ENDGAME			 83		// 게임 종료
 
 #define SC_PACKET_LOGOCHUT			 999		// 로그아웃
 
@@ -469,6 +470,12 @@ struct SC_Packet_ZMonsterAttack
 	int		size;
 	int		monsterID;
 	int		bossmonsterSkill;
+};
+
+struct SC_Packet_BossAttackMotion
+{
+	char	type;
+	int		size;
 };
 
 struct SC_Packet_PlayerHP
