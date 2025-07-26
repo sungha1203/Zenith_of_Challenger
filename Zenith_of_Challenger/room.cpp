@@ -181,6 +181,9 @@ void Room::m_ZmonsterPosTimerThread()
 				if (m_Zmonsters[i].AttackAnimation()) {			// 몬스터가 공격을 시작하면
 					g_network.SendZMonsterAttack(GetClients(), i, 0);
 				}
+				if (m_Zmonsters[i].AttackMotion()) {
+					g_network.SendBossAttackMotion(GetClients());
+				}
 			}
 			// 살아있을때 && 정점 보스 몬스터
 			else if (m_Zmonsters[i].GetLived() && i == 25) {

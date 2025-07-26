@@ -51,6 +51,7 @@ public:
 	void		ProcessRespone(char* buffer);
 	void		ProcessZMonsterMove(char* buffer);
 	void		ProcessPlayerHP(char* buffer);
+	void		ProcessBossAttackMotion(char* buffer);
 	void		ProcessEndGame(char* buffer);
 	void		ProcessZMonsterAttack(char* buffer);
 

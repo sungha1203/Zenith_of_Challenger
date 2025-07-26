@@ -1023,6 +1023,18 @@ void Network::SendZMonsterAttack(const std::vector<int>& client_id, int MonsterI
 			g_network.clients[id].do_send(pkt);
 }
 
+// 보스 몬스터 공격 모션 시작
+void Network::SendBossAttackMotion(const std::vector<int>& client_id)
+{
+	SC_Packet_BossAttackMotion pkt;
+	pkt.type = SC_PACKET_BOSSATTACKMOTION;
+	pkt.size = sizeof(pkt);
+
+	for (int id : client_id)
+		if (g_network.clients[id].m_used)
+			g_network.clients[id].do_send(pkt);
+}
+
 // 결과 보고 및 게임 종료
 void Network::SendEndGame(const std::vector<int>& client_id, int time)
 {

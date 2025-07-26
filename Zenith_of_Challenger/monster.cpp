@@ -354,6 +354,7 @@ void Monster::BossMove()
 			m_bossSkillAnimation = true;
 			m_lastAttackTime = now;
 			std::cout << "[INFO] 보스몬스터 스킬" << m_bossSkillType << " 사용" << std::endl;
+			m_attackMotionStart = true;
 		}
 		// 스킬 사용중
 		else if (m_bossSkillAnimation && elapsed < 2.0f) {
@@ -471,9 +472,23 @@ bool Monster::AttackAnimation()
 	return false;
 }
 
+bool Monster::AttackMotion()
+{
+	if (m_attackMotionStart) {
+		m_attackMotionStart = false;
+		return true;
+	}
+	return false;
+}
+
 void Monster::SetAttackJustStart(bool check)
 {
 	m_attackJustStart = false;
+}
+
+void Monster::SetAttackMotionStart(bool check)
+{
+	m_attackMotionStart = false;
 }
 
 DropItemType Monster::DropWHAT()

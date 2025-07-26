@@ -155,6 +155,9 @@ void ClientNetwork::Receive() {
 			case SC_PACKET_PLAYERHP:
 				ProcessPlayerHP(currentBuffer);
 				break;
+			case SC_PACKET_BOSSATTACKMOTION:
+				ProcessBossAttackMotion(currentBuffer);
+				break;
 			case SC_PACKET_ATTACKEFFECT:
 				ProcessAttackEffect(currentBuffer);
 				break;
@@ -1058,6 +1061,12 @@ void ClientNetwork::ProcessPlayerHP(char* buffer)
 		break;
 	}
 	// 0.0~2.0
+}
+
+void ClientNetwork::ProcessBossAttackMotion(char* buffer)
+{
+	SC_Packet_BossAttackMotion* pkt;
+
 }
 
 // [개발중] 보스 잡고 난 후 게임 종료
