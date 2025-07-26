@@ -127,6 +127,7 @@ public:
     int  m_job = 0;
     int m_WhatGrab = 0;
     int m_WhatOtherGrab[2] = { 0 };
+
 private:
     int m_OtherJobNum[2] = {99,99};
 

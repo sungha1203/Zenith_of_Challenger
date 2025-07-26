@@ -971,20 +971,20 @@ void GameScene::Update(FLOAT timeElapsed)
 				XMMATRIX weaponMat = weoponTranslation * boneMat * playerMat;
 				if (i == 0)
 				{
-					if (m_otherPlayerJobs[i] == 1)
+					if (m_WhatOtherGrab[i] == 1)
 						m_weopons[1]->SetWorldMatrix(weaponMat); //0,1,2 칼   3,4,5 지팡이
-					else if (m_otherPlayerJobs[i] == 2)
+					else if (m_WhatOtherGrab[i] == 2)
 						m_weopons[4]->SetWorldMatrix(weaponMat); //0,1,2 칼   3,4,5 지팡이
-					else if (m_otherPlayerJobs[i] == 3)
+					else if (m_WhatOtherGrab[i] == 3)
 						m_weopons[7]->SetWorldMatrix(weaponMat); //0,1,2 칼   3,4,5 지팡이
 				}
 				else
 				{
-					if (m_otherPlayerJobs[i] == 1)
+					if (m_WhatOtherGrab[i] == 1)
 						m_weopons[2]->SetWorldMatrix(weaponMat); //0,1,2 칼   3,4,5 지팡이
-					else if (m_otherPlayerJobs[i] == 2)
+					else if (m_WhatOtherGrab[i] == 2)
 						m_weopons[5]->SetWorldMatrix(weaponMat); //0,1,2 칼   3,4,5 지팡이
-					else if (m_otherPlayerJobs[i] == 3)
+					else if (m_WhatOtherGrab[i] == 3)
 						m_weopons[8]->SetWorldMatrix(weaponMat); //0,1,2 칼   3,4,5 지팡이
 				}
 
@@ -2108,7 +2108,7 @@ void GameScene::BuildMeshes(const ComPtr<ID3D12Device>& device,
 
 	// Metalon FBX 메쉬 저장
 	auto Metalon = make_shared<FBXLoader>();
-	if (Metalon->LoadFBXModel("Model/Monsters/Metalon/ExportBoss.fbx", XMMatrixIdentity()))//scale 0.1     
+	if (Metalon->LoadFBXModel("Model/Monsters/Metalon/ExportBossWithJump.fbx", XMMatrixIdentity()))//scale 0.1     
 	{
 		auto meshes = Metalon->GetMeshes();
 		if (!meshes.empty())
