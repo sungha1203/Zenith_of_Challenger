@@ -991,7 +991,6 @@ void ClientNetwork::ProcessEndGame(char* buffer)
 	shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
 	GameScene* gameScene = dynamic_cast<GameScene*>(currentScene.get());
 
-	gameScene->SetDanceMotion(true);
 	gameScene->m_bossMonsters[0]->SetCurrentAnimation("Die");
 	gameScene->SetEnding();
 }

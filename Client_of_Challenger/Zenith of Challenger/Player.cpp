@@ -205,73 +205,75 @@ void Player::Update(FLOAT timeElapsed)
 
     bool isMoving = keyStates['W'] || keyStates['A'] || keyStates['S'] || keyStates['D'];
 
-    if (isMoving && !isPunching)
-    {
-        if (GetAsyncKeyState(VK_SHIFT) && m_animationClips.contains("Running"))
+    shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
+    GameScene* gameScene = dynamic_cast<GameScene*>(currentScene.get());
+
+    if (!gameScene->GetDanceMontion()) { //마지막은 춤추는 모션
+        if (isMoving && !isPunching)
         {
-            m_currentAnim = "Running";
-            isRunning = true;
+            if (GetAsyncKeyState(VK_SHIFT) && m_animationClips.contains("Running"))
             {
+                m_currentAnim = "Running";
+                isRunning = true;
+                {
+                    CS_Packet_Animaition pkt;
+                    pkt.type = CS_PACKET_ANIMATION;
+                    pkt.animation = 2;
+                    pkt.size = sizeof(pkt);
+                    gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
+                }
+            }
+            else if (m_animationClips.contains("Walking"))
+            {
+                /*SetCurrentAnimation("Walking");*/
+                isRunning = false;
+                {
+                    CS_Packet_Animaition pkt;
+                    pkt.type = CS_PACKET_ANIMATION;
+                    pkt.animation = 1;
+                    pkt.size = sizeof(pkt);
+                    gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
+                }
+                m_currentAnim = "Walking";
+            }
+        }
+        else if (isPunching)
+        {
+            //m_currentAnim = "Walking";
+            XMFLOAT3 AttBoundingExtents = { 3.0f,4.0f,3.0f };
+            m_boundingBox.Extents = AttBoundingExtents;
+            if (m_animTime > m_animationClips.at(m_currentAnim).duration - 5.0)
+            {
+                isPunching = false;
+                isMoving = false;
+                //SetCurrentAnimation("Idle");
+                m_currentAnim = "Idle";
+                m_boundingBox.Extents = { 1.0f, 4.0f, 1.0f };
+                {
+                    CS_Packet_Animaition pkt;
+                    pkt.type = CS_PACKET_ANIMATION;
+                    pkt.animation = 0;
+                    pkt.size = sizeof(pkt);
+                    gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
+                }
+            }
+        }
+        else
+        {
+            if (m_animationClips.contains("Idle") && m_currentAnim != "Idle")
+            {
+                m_currentAnim = "Idle";
+
                 CS_Packet_Animaition pkt;
                 pkt.type = CS_PACKET_ANIMATION;
-                pkt.animation = 2;
+                pkt.animation = 0;
                 pkt.size = sizeof(pkt);
                 gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
             }
         }
-        else if (m_animationClips.contains("Walking"))
-        {
-            /*SetCurrentAnimation("Walking");*/
-            isRunning = false;
-            {
-                CS_Packet_Animaition pkt;
-                pkt.type = CS_PACKET_ANIMATION;
-                pkt.animation = 1;
-                pkt.size = sizeof(pkt);
-                gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
-            }
-            m_currentAnim = "Walking";
-        }        
     }
-    else if(isPunching)
-    {
-        //m_currentAnim = "Walking";
-        XMFLOAT3 AttBoundingExtents = {3.0f,4.0f,3.0f};
-        m_boundingBox.Extents = AttBoundingExtents;
-        if (m_animTime > m_animationClips.at(m_currentAnim).duration - 5.0)
-        {
-            isPunching = false;
-            isMoving = false;
-            //SetCurrentAnimation("Idle");
-            m_currentAnim = "Idle";
-            m_boundingBox.Extents = { 1.0f, 4.0f, 1.0f };
-            {
-                CS_Packet_Animaition pkt;
-                pkt.type = CS_PACKET_ANIMATION;
-                pkt.animation = 0;
-				pkt.size = sizeof(pkt);
-				gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
-			}
-		}
-	}
-	else
+
 	{
-		if (m_animationClips.contains("Idle") && m_currentAnim != "Idle")
-		{
-			//  SetCurrentAnimation("Idle");
-			m_currentAnim = "Idle";
-
-			CS_Packet_Animaition pkt;
-			pkt.type = CS_PACKET_ANIMATION;
-			pkt.animation = 0;
-			pkt.size = sizeof(pkt);
-			gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
-
-		}
-	}
-
-
-    {
         /////////////////////////여기다가 GetPosition()사용해서 float값 3개 가지고 오면 될거야
 
     }

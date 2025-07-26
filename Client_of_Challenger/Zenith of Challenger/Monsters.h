@@ -90,7 +90,8 @@ public:
 	shared_ptr<HealthBarObject> GetHealthBar() const { return m_healthBar; }
 	void SetActive(bool active) { m_isActive = active; }
 	bool IsActive() const { return m_isActive; }
-
+	void SetInitHP(float cur, float max) { m_currentHP = cur; m_maxHP = max; }
+	
 	//µðÁ¹ºê ¼ÎÀÌ´õ Àü¿ë
 	void StartDissolve();
 	bool IsDissolving() const { return m_isDissolving; }
