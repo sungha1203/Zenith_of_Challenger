@@ -212,8 +212,8 @@ void Room::EndGame()
 	m_IsGaming = false;
 	m_stopMonsterPosThread = true;
 
-	ResetRoom();
 	g_network.SendEndGame(GetClients(), m_clearTime);
+	//ResetRoom();
 
 	std::cout << "[INFO][" << m_room_id << "]방 게임을 종료하였습니다!\n";
 	// TODO
