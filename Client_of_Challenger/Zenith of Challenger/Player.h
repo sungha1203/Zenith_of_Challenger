@@ -51,6 +51,8 @@ public:
 	int m_id;
 	void PlayAnimationWithBlend(const std::string& newAnim, float blendDuration);
 	bool isPunching = false;
+	bool m_canPunch = true;
+
 
 	std::string GetCurrentAnim() const { return m_currentAnim; }
 	float GetAnimTime() const { return m_animTime; }

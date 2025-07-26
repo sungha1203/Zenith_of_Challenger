@@ -726,12 +726,7 @@ void GameScene::Update(FLOAT timeElapsed)
 					bool intersectZ = dz <= (playerExtent.z + monsterExtent.z);
 
 					if (monster->AttackRange.Intersects(m_player->GetBoundingBox())&&monster->m_currentAnim=="Attack")
-					{
-						//if (!monster->isAttacking)
-						//{
-						//	monster->isAttacking = true;
-						//	monster->PlayAnimationWithBlend("Attack", 0.2f);
-						//}
+					{						
 						float time = monster->m_animTime;
 						float duration = monster->m_animationClips.at(monster->m_currentAnim).duration;
 
@@ -760,25 +755,13 @@ void GameScene::Update(FLOAT timeElapsed)
 					}
 
 					if (intersectX && intersectY && intersectZ)
-					{
-						if (monster->IsDead() && !monster->IsParticleSpawned())
-						{
-							for (int i = 0; i < 100; ++i)
-							{
-								m_particleManager->SpawnParticle(monster->GetPosition());
-							}
-							monster->MarkParticleSpawned();
-							continue;
-						}
-
-						m_player->SetPosition(m_player->m_prevPosition); // 이동 되돌리기
+					{						
 						monster->SetBaseColor(XMFLOAT4(1.f, 0.f, 0.f, 1.f)); // 충돌 시 빨강
-
 						monster->isAttacking = true;
 						if (getAttackCollision())
 						{
-							CS_Packet_MonsterHP pkt;
-							pkt.type = CS_PACKET_MONSTERHP;
+							CS_Packet_ZMonsterHP pkt;
+							pkt.type = CS_PACKET_ZMONSTERHP;
 							pkt.monsterID = idx;
 							pkt.damage = 20;
 							pkt.size = sizeof(pkt);
@@ -786,21 +769,12 @@ void GameScene::Update(FLOAT timeElapsed)
 							m_AttackCollision = false;
 						}
 
-					}
-					//else if (monster->isAttacking && !monster->AttackRange.Intersects(m_player->GetBoundingBox()))
-					//{
-					//
-					//	monster->PlayAnimationWithBlend("Idle", 0.2f);
-					//
-					//	monster->SetBaseColor(XMFLOAT4(1.f, 1.f, 1.f, 1.f)); // 기본 흰색
-					//	monster->isAttacking = false;
-					//}
-
+					}					
 					//정점 충돌 test
 					
 					if (monster->m_playMove)
 					{
-						monster->PlayAnimationWithBlend("Move", 2.0f);
+						monster->PlayAnimationWithBlend("Move", 0.2f);
 						monster->m_playMove = false;
 					}
 
@@ -839,19 +813,19 @@ void GameScene::Update(FLOAT timeElapsed)
 		if (m_OtherJobNum[0] == 4) ChangeJob(4);//힐탱커 
 		if (m_OtherJobNum[1] == 5) ChangeJob(5);//힐탱커 
 		//칼에 플레이어 손 행렬 곱해주기
-		if (m_job > 0)
+		if (m_WhatGrab > 0)
 		{
 			// 칼의 원래 로컬 행렬 (즉, 생성 시 초기 위치 → 플레이어 중심에 있어야 함)
 			XMMATRIX weoponTranslation = XMMatrixIdentity(); 
-			if (m_job == 1)
+			if (m_WhatGrab == 1)
 			{
 				weoponTranslation = XMMatrixTranslation(-3000.0f, 0.0f, -1000.0f); // 칼이 손에서 약간 오른쪽에 있는 형태로 수정 가능  
 			}
-			else if (m_job == 2)
+			else if (m_WhatGrab == 2)
 			{
 				weoponTranslation = XMMatrixTranslation(-2700.0f, 1500.0f, -1500.0f); // 마법사 행렬 
 			}
-			else if (m_job == 3)
+			else if (m_WhatGrab == 3)
 			{
 				weoponTranslation = XMMatrixTranslation(6000.0f, 1500.0f, 5500.0f); // 힐탱커 행렬 
 			}
@@ -863,7 +837,7 @@ void GameScene::Update(FLOAT timeElapsed)
 			float time = fmod(m_player->m_animTime, clip.duration);
 
 			auto boneIt = m_player->m_boneNameToIndex.find("mixamorig:RightHand");
-			if (m_job == 3)
+			if (m_WhatGrab == 3)
 			{
 				boneIt = m_player->m_boneNameToIndex.find("mixamorig:LeftHand");
 			}
@@ -880,7 +854,7 @@ void GameScene::Update(FLOAT timeElapsed)
 				//순서 중요!
 				XMMATRIX weaponMat = weoponTranslation * boneMat * playerMat;
 
-				m_weopons[(m_job - 1) * 3]->SetWorldMatrix(weaponMat);
+				m_weopons[(m_WhatGrab - 1) * 3]->SetWorldMatrix(weaponMat);
 				//m_weopons[0]->m_scale=(XMFLOAT3{ 10.f, 10.f, 10.f }); 
 
 			}
@@ -894,19 +868,19 @@ void GameScene::Update(FLOAT timeElapsed)
 
 			XMMATRIX weoponTranslation = XMMatrixIdentity(); // 기본값으로 초기화 
 			bool otherjobisValid = false;
-			if (m_otherPlayerJobs[i] == 1)
+			if (m_WhatOtherGrab[i] == 1)
 			{
 				// 칼의 원래 로컬 행렬 (즉, 생성 시 초기 위치 → 플레이어 중심에 있어야 함)
 				weoponTranslation = XMMatrixTranslation(-3000.0f, 0.0f, -1000.0f); // 칼이 손에서 약간 오른쪽에 있는 형태로 수정 가능 
 				otherjobisValid = true;
 			}
-			else if (m_otherPlayerJobs[i] == 2)
+			else if (m_WhatOtherGrab[i] == 2)
 			{
 				// 지팡이의 원래 로컬 행렬 (즉, 생성 시 초기 위치 → 플레이어 중심에 있어야 함)
 				weoponTranslation = XMMatrixTranslation(-2700.0f, 1500.0f, -1500.0f); // 칼이 손에서 약간 오른쪽에 있는 형태로 수정 가능 
 				otherjobisValid = true;
 			}
-			else if(m_otherPlayerJobs[i] == 3)
+			else if(m_WhatOtherGrab[i] == 3)
 			{
 				// 방패의 원래 로컬 행렬 (즉, 생성 시 초기 위치 → 플레이어 중심에 있어야 함)
 				weoponTranslation = XMMatrixTranslation(6000.0f, 1500.0f, 5500.0f); // 힐탱커 행렬  
@@ -921,7 +895,7 @@ void GameScene::Update(FLOAT timeElapsed)
 			float time = fmod(m_Otherplayer[i]->m_animTime, clip.duration);
 
 			auto boneIt = m_Otherplayer[i]->m_boneNameToIndex.find("mixamorig:RightHand");
-			if (m_otherPlayerJobs[i] == 3)
+			if (m_WhatOtherGrab[i] == 3)
 			{
 				boneIt = m_Otherplayer[i]->m_boneNameToIndex.find("mixamorig:LeftHand");
 			}
@@ -3413,7 +3387,7 @@ void GameScene::SetWeaponSlotUV(int type)
 	// type: 0 = 칼, 1 = 지팡이, 2 = 방패
 	float u0 = (type * 100.0f) / 300.0f;
 	float u1 = ((type + 1) * 100.0f) / 300.0f;
-
+	m_WhatGrab = type + 1;
 	m_weaponSlotIcon->SetCustomUV(u0, 0.f, u1, 1.f);
 	m_weaponSlotIcon->SetVisible(true);
 }
@@ -3426,10 +3400,12 @@ void GameScene::SetJobSlotUV(int type)
 	m_jobSlotIcon->SetCustomUV(u0, 0.f, u1, 1.f);
 	m_jobSlotIcon->SetVisible(true);
 
-		m_player = m_jobPlayers[type];
-		gGameFramework->SetPlayer(m_player);
-		m_player->SetCamera(m_camera);
-		m_job = type + 1;
+	m_player = m_jobPlayers[type];
+	gGameFramework->SetPlayer(m_player);
+	m_player->SetCamera(m_camera);
+	m_job = type + 1;
+	if (m_job > 1)
+		m_player->m_canPunch = false;
 }
 void GameScene::UpdateEnhanceDigits()
 {

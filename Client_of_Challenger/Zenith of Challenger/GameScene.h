@@ -121,6 +121,8 @@ public:
     //정점 스테이지 몬스터 관리 변수
     unordered_map<string, vector<shared_ptr<Monsters>>> m_BossStageMonsters; //정점 스테이지에서 쓰이는 몬스터 10마리
     int  m_job = 0;
+    int m_WhatGrab = 0;
+    int m_WhatOtherGrab[2] = { 0 };
 private:
     int m_OtherJobNum[2] = {99,99};
 
