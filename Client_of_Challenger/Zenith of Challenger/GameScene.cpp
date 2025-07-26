@@ -463,8 +463,9 @@ void GameScene::Update(FLOAT timeElapsed)
 		}
 	}
 
-	if (gGameFramework->IsSuccess2 == true) {
+	if (gGameFramework->IsSuccess2 == true && m_gameStartTime == 0) {
 		m_ZenithStartGame = true;
+		m_gameStartTime = gGameFramework->GetTotalTime();
 	}
 
 
@@ -865,7 +866,7 @@ void GameScene::Update(FLOAT timeElapsed)
 	}
 
 
-	
+	if (!m_bossDied && m_ZenithStartGame) UpdateGameTimeDigits(); //보스 스테이지에 진입하고 보스가 죽지 않을때 업데이트
 
 
 	int score = m_goldScore;
@@ -1063,7 +1064,7 @@ void GameScene::Update(FLOAT timeElapsed)
 						CS_Packet_ZMonsterHP pkt;
 						pkt.type = CS_PACKET_ZMONSTERHP;
 						pkt.monsterID = idxStart + static_cast<int>(i); // ← 타입별 오프셋 + 인덱스
-						pkt.damage = 1;
+						pkt.damage = 10;
 						pkt.size = sizeof(pkt);
 
 						gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
@@ -1392,8 +1393,6 @@ void GameScene::Update(FLOAT timeElapsed)
 			++it;
 	}
 
-	if (!m_bossDied) UpdateGameTimeDigits();
-
 	CheckHealingCollision();
 
 }
@@ -1678,13 +1677,15 @@ void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) con
 		warning->Render(commandList);
 	}
 
-	//
-	for (const auto& digit : m_timeDigits) {
-		digit->Render(commandList);
-	}
+	//플레이타임 UI
+	if (m_ZenithStartGame) {
+		for (const auto& digit : m_timeDigits) {
+			digit->Render(commandList);
+		}
 
-	for (const auto& Colon : m_ColonDigit) {
-		Colon->Render(commandList);
+		for (const auto& Colon : m_ColonDigit) {
+			Colon->Render(commandList);
+		}
 	}
 
 
@@ -2078,7 +2079,7 @@ void GameScene::BuildTextures(const ComPtr<ID3D12Device>& device,
 	const ComPtr<ID3D12GraphicsCommandList>& commandList)
 {
 	auto skyboxTexture = make_shared<Texture>(device, commandList,
-		TEXT("Skybox/SkyBox_0.dds"), RootParameter::TextureCube);
+		TEXT("Skybox/SkyBox3.dds"), RootParameter::TextureCube);
 	skyboxTexture->CreateShaderVariable(device, true);
 	m_textures.insert({ "SKYBOX", skyboxTexture });
 
@@ -3971,7 +3972,9 @@ void GameScene::SpawnShockwaveWarning(const XMFLOAT3& pos)
 }
 void GameScene::UpdateGameTimeDigits()
 {
-	int totalSeconds = static_cast<int>(gGameFramework->GetTotalTime());
+	float currentTime = gGameFramework->GetTotalTime();
+	int totalSeconds = static_cast<int>(currentTime - m_gameStartTime);
+
 	int minutes = totalSeconds / 60;
 	int seconds = totalSeconds % 60;
 
@@ -4019,7 +4022,7 @@ void GameScene::EndingSceneUpdate(float timeElapsed)
 			m_skillIcons[i]->SetVisible(false);
 		}
 		// 플레이어 위치 → 도착 목표
-		m_player->SetPosition({ 570.f, 44.f, 6.5f }); // 예시 위치
+		m_player->SetPosition({ 570.f, 43.6f, 6.5f }); // 예시 위치
 
 		// 시간 UI 이동 시작
 		m_moveTimeUI = true;
@@ -4077,6 +4080,11 @@ void GameScene::EndingSceneUpdate(float timeElapsed)
 		// 승리 연출용 카메라 고정
 		m_camera->SetPosition(camPos);
 		m_camera->SetLookAt(lookAt);
+		
+		if (m_OnceDance) {
+			m_player->SetCurrentAnimation("Dance");
+			m_OnceDance = false;
+		}
 
 		// UI 띄우기
 		if (m_endingTimer >= MAX_ENDING_TIME)

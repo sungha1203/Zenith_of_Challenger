@@ -371,7 +371,7 @@ void Monsters::SetHP(int hp)
 	{
 		m_currentHP = 0.f;
 		if(!m_ImBoss) m_isDead = true;
-		if (m_ImBoss) StartDissolve(); //만약 보스인데 체력이 0이면
+		//if (m_ImBoss) StartDissolve(); //만약 보스인데 체력이 0이면
 	}
 }
 

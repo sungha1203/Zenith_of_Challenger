@@ -555,7 +555,7 @@ void Network::ProcessZMonsterHP(int client_id, char* buffer, int length)
 		g_network.clients[other_id].do_send(pkt2);
 	}
 
-	if (pkt->monsterID = 25 && room.GetZMonsters(pkt->monsterID).GetHP() == 0) {
+	if (pkt->monsterID == 25 && room.GetZMonsters(pkt->monsterID).GetHP() == 0) {
 		room.SetClearBoss();
 	}
 }
@@ -1023,6 +1023,7 @@ void Network::SendZMonsterAttack(const std::vector<int>& client_id, int MonsterI
 void Network::SendEndGame(const std::vector<int>& client_id, int time)
 {
 	SC_Packet_EndGame pkt;
+	pkt.type = SC_PACKET_ENDGAME;
 	pkt.size = sizeof(pkt);
 	pkt.time = time;
 

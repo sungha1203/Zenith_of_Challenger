@@ -991,8 +991,9 @@ void ClientNetwork::ProcessEndGame(char* buffer)
 	shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
 	GameScene* gameScene = dynamic_cast<GameScene*>(currentScene.get());
 
+	gameScene->SetDanceMotion(true);
+	gameScene->m_bossMonsters[0]->SetCurrentAnimation("Die");
 	gameScene->SetEnding();
-
 }
 
 // [개발중] 정점 몬스터 공격  -  패킷 받자마자 해당 몬스터 공격 애니메이션 시작(방향은 그냥 바라보는 곳)
