@@ -39,8 +39,8 @@ void CGameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd)
 	BuildObjects();
 
 	g_Sound.Initialize();
-	g_Sound.PlaySoundEffect("Sounds/StartSceneBGM.mp3");
-
+	g_Sound.PlayBGM("Sounds/StartSceneBGM.mp3");
+	g_Sound.SetBGMVolume(0.2f);
 }
 
 void CGameFramework::OnDestroy()

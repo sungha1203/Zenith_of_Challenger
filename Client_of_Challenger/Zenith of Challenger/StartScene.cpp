@@ -166,6 +166,8 @@ void StartScene::MouseEvent(UINT message, LPARAM lParam)
                 m_loadingElapsed = 0.0f;
                 m_loadingScreen->SetVisible(true);
 
+                g_Sound.PlaySoundEffect("Sounds/Button_Click.mp3");
+
                 // 서버 개발: GameStart 패킷 전송
                 CS_Packet_GameStart pkt;
                 pkt.type = CS_PACKET_GAMESTART;
@@ -193,6 +195,8 @@ void StartScene::MouseEvent(UINT message, LPARAM lParam)
 
             if (message == WM_LBUTTONDOWN)
             {
+                g_Sound.PlaySoundEffect("Sounds/Button_Click.mp3");
+
                 // 서버 개발: Room 선택 패킷 전송
                 CS_Packet_Room pkt;
                 pkt.room_id = i;

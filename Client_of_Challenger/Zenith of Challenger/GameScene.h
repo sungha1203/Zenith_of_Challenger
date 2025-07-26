@@ -82,7 +82,8 @@ public:
     void FireUltimateBulletRainOther1(); //마법사 스킬
     void FireUltimateBulletRainOther2(); //마법사 스킬
 
-
+    void SetWizardNormalAttack(int num) { m_Wizardnormal = num; }
+    void SetWizardSkillAttack(int num) { m_WizardSkill = num; }
 
     void AddTrailObject(const shared_ptr<GameObject>& obj);
     void SpawnMagicImpactEffect(const XMFLOAT3& pos);
@@ -92,6 +93,9 @@ public:
     void ActivateSwordAuraSkill(int num); //전사 스킬
     void UpdateSwordAuraSkill(float timeElapsed);
 
+    //평타, 스킬 데미지 최신화
+    void SetskillAttack(int n) { m_skillAttack = n; };
+    void SetnormalAttack(int n) { m_normalAttack = n; };
 
     //타 클라 직업 판정
     int m_otherPlayerJobs[2] = { 0, 0 }; // 1: 전사, 2: 마법사, 3: 힐탱커
@@ -237,6 +241,10 @@ private:
     bool m_OnceDance = false; // 댄스 모션만 취하게 하는 변수
     bool m_OnceDanceAlways = false; // 댄스 모션만 취하게 하는 변수
 
+    int m_Wizardnormal = 0;
+    int m_WizardSkill = 0;
+
+
     //무기
     vector<shared_ptr<GameObject>> m_weopons;
 
@@ -273,6 +281,10 @@ private:
     XMFLOAT3 m_colonTargetPos;
     vector<shared_ptr<GameObject>> m_uiEndingBanner;
     vector<shared_ptr<GameObject>> m_uiPressOn;
+
+    //플레이어 스킬 평타 데미지 저장
+    int m_skillAttack = 0;
+    int m_normalAttack = 0;
 
 
     public:

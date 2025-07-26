@@ -60,6 +60,7 @@ public:
 
 	void SetHP(int hp);
 	bool IsDead() const { return m_isDead; }
+	void SetDead(bool die) { m_isDead = die; }
 	void ApplyDamage(float damage);
 	bool IsParticleSpawned() const { return m_particleSpawned; }
 	void MarkParticleSpawned() { m_particleSpawned = true; }
