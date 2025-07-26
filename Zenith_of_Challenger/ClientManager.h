@@ -40,6 +40,8 @@ class ClientInfo
 {
 private:
 	Player	m_ingameInfo;			// 인게임 정보 (1.직업 / 2.무기 / 3.옷종류 / 4.체력 / 5.공격력 / 6.이동속도 / 7.공격속도 / 8.좌표)
+	int		m_normalAttack = 0;		// 정점 스테이지 평타 공격력
+	int		m_skillAttack = 0;		// 정점 스테이지 스킬 공격력
 
 	std::chrono::steady_clock::time_point m_lastSkillTime;
 
@@ -58,6 +60,7 @@ public:
 	void	SetZenithCoord(int idx);										// 정점 스테이지 스폰 좌표
 	void	SetCoord(float x, float y, float z);							// 좌표 갱신
 	void	SetAngle(float angle);											// 방향 갱신
+	void	SetAttack();													// 정점 들어가기 전에 공격력 설정
 	
 	void	LeverUpPlayer(int classtype);									// 직업 전직 후 캐릭터 설정
 
@@ -72,7 +75,8 @@ public:
 	float	GetY() const { return m_ingameInfo.y; }							// 캐릭터 y좌표 반환
 	float	GetZ() const { return m_ingameInfo.z; }							// 캐릭터 z좌표 반환
 	int		GetHP() const { return m_ingameInfo.hp; }						// 캐릭터 HP 반환
-	int		GetAttack() const { return m_ingameInfo.attack; }				// 캐릭터 공격력 반환
+	int		GetNormalAttack() const { return m_normalAttack; }				// 캐릭터 평타 공격력 반환
+	int		GetSkillAttack() const { return m_skillAttack; }				// 캐릭터 스킬 공격력 반환
 	int		GetSpeed() const { return m_ingameInfo.speed; }					// 캐릭터 이동속도 반환
 	int		GetAttackSpeed() const { return m_ingameInfo.attackspeed; }		// 캐릭터 공격속도 반환
 	float	GetAngle() const { return m_ingameInfo.angle; }					// 캐릭터 방향 반환
