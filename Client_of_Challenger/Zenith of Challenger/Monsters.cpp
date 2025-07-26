@@ -89,6 +89,7 @@ void Monsters::Update(FLOAT timeElapsed)
 				{
 					StopDie = true;
 					m_animTime -= 1.0;
+					m_isDead = true;
 				}
 				else if (m_AnimOnce)
 				{
@@ -371,7 +372,10 @@ void Monsters::SetHP(int hp)
 	if (m_currentHP <= 0.f)
 	{
 		m_currentHP = 0.f;
-		if(!m_ImBoss) m_isDead = true;
+		{
+			if (!m_ImBoss) PlayAnimationWithBlend("Die", 0.2f);
+			isAttacking = false;
+		}
 		//if (m_ImBoss) StartDissolve(); //만약 보스인데 체력이 0이면
 	}
 }
