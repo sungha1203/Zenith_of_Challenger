@@ -818,8 +818,8 @@ void ClientNetwork::ProcessAnimation(char* buffer)
 		if (pkt->client_id == m_clientID)
 		{
 			gameScene->SetWizardNormalAttack(1); //플레이어 기준 발사
-			gameScene->m_player->SetCurrentAnimation("Slash");
-
+			gameScene->m_player->SetCurrentAnimation("Slash"); 
+			g_Sound.PlaySoundEffect("Sounds/Wizzad_attack.mp3");
 		}
 		// 플레이어 0
 		if (pkt->client_id == currentScene->otherid[0])
@@ -827,6 +827,8 @@ void ClientNetwork::ProcessAnimation(char* buffer)
 			currentScene->m_Otherplayer[0]->m_CurrentAnim = pkt->animation;
 			gameScene->SetWizardNormalAttack(2);  //타 클라 1번 플레이어 기준 발사
 			gameScene->m_Otherplayer[0]->SetCurrentAnimation("Slash");
+			g_Sound.PlaySoundEffect("Sounds/Wizzad_attack.mp3");
+			g_Sound.SetSFXVolume(0.2f);
 		}
 		// 플레이어 1
 		else if (pkt->client_id == currentScene->otherid[1])
@@ -834,6 +836,8 @@ void ClientNetwork::ProcessAnimation(char* buffer)
 			currentScene->m_Otherplayer[1]->m_CurrentAnim = pkt->animation;
 			gameScene->SetWizardNormalAttack(3);  //타 클라 2번 플레이어 기준 발사
 			gameScene->m_Otherplayer[1]->SetCurrentAnimation("Slash");
+			g_Sound.PlaySoundEffect("Sounds/Wizzad_attack.mp3");
+			g_Sound.SetSFXVolume(0.2f);
 		}
 	}
 	break;
@@ -1092,6 +1096,8 @@ void ClientNetwork::ProcessEndGame(char* buffer)
 
 	gameScene->m_bossMonsters[0]->SetCurrentAnimation("Die");
 	gameScene->SetEnding();
+	g_Sound.PlaySoundEffect("Sounds/BossDie.wav");
+
 }
 
 // [개발중] 정점 몬스터 공격  -  패킷 받자마자 해당 몬스터 공격 애니메이션 시작(방향은 그냥 바라보는 곳)
