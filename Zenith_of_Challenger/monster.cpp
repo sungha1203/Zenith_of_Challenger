@@ -515,7 +515,36 @@ void Monster::BossSkillDamage(const std::vector<int>& clients)
 // 보스 몬스터 스킬1 돌진 데미지 판정
 void Monster::BossSkillDashDamage(const std::vector<int>& clients)
 {
-	
+	float dx = m_skillTargetX - m_skillStartX;
+	float dz = m_skillTargetZ - m_skillStartZ;
+	float len = sqrtf(dx * dx + dz * dz);
+	if (len < 0.0001f) return;
+
+	dx /= len;
+	dz /= len;
+
+	float centerX = m_skillStartX + dx * (m_skillDashDistance * 0.5f);
+	float centerZ = m_skillStartZ + dz * (m_skillDashDistance * 0.5f);
+
+	const float halfLength = m_skillDashDistance * 0.9f;
+	const float halfWidth = 25.f; 
+
+	for (const int clinetID : clients)
+	{
+		float px = g_client[clinetID].GetX();
+		float pz = g_client[clinetID].GetZ();
+
+		float relX = px - centerX;
+		float relZ = pz - centerZ;
+
+		float localX = relX * dx + relZ * dz;         // 보스 진행 방향 축
+		float localZ = -relX * dz + relZ * dx;        // 보스 측면 방향 축 (직각 벡터)
+
+		if (fabs(localX) <= halfLength && fabs(localZ) <= halfWidth) {
+			g_client[clinetID].MinusHP(m_attack, 3);
+			std::cout << "[DAMAGE] [" << clinetID << "]번 플레이어 데미지 받음" << std::endl;
+		}
+	}
 }
 
 // 보스 몬스터 스킬2 점프 데미지 판정
@@ -529,7 +558,7 @@ void Monster::BossSkillJumpDamage(const std::vector<int>& clients)
 		float dz = m_z - targetZ;
 		float dist = sqrt(dx * dx + dz * dz);
 
-		if (dist <= 100.f) {			// 점프 스킬 데미지 범위
+		if (dist <= 100.f) {							// 점프 스킬 데미지 범위
 			g_client[clinetID].MinusHP(m_attack, 3);
 			std::cout << "[DAMAGE] [" << clinetID << "]번 플레이어 데미지 받음" << std::endl;
 		}
