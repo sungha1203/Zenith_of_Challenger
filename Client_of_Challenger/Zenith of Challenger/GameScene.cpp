@@ -345,7 +345,7 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
 		//m_player->SetCurrentAnimation("Hook");
 		if (m_job == 0)
 		{
-			m_player->SetCurrentAnimation("Kick");
+			//m_player->SetCurrentAnimation("Kick");
 		}
 		else
 		{

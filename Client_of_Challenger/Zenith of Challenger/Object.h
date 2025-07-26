@@ -44,6 +44,7 @@ public:
 	XMFLOAT3            m_scale;
 	//XMFLOAT4X4 GetWorldMatrix() { return m_worldMatrix; }
 	//void SetWorldMatrix(XMFLOAT4X4 mat) { m_worldMatrix = mat;}
+	bool isAttacking = false;
 protected:
 	XMFLOAT4X4			m_worldMatrix;
 

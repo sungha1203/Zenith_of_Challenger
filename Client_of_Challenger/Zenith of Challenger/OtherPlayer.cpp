@@ -66,7 +66,13 @@ void OtherPlayer::Update(FLOAT timeElapsed)
             m_animTime += timeElapsed * clip.ticksPerSecond * 2.0f;
            
             if (m_animTime >= clip.duration)
+            {
+                if (isAttacking)
+                {
+                    isAttacking = false;
+                }
                 m_animTime -= clip.duration;
+            }
             
         }
         
@@ -86,16 +92,19 @@ void OtherPlayer::Update(FLOAT timeElapsed)
 
     switch (m_CurrentAnim) {
     case 0:
+        if(!isAttacking)
         m_currentAnim = "Idle";
         break;
     case 1:
+        if(!isAttacking)
         m_currentAnim = "Walking";
         break;
     case 2:
+        if(!isAttacking)
         m_currentAnim = "Running";
         break;
     case 3:
-        m_currentAnim = "Punch.001";
+        m_currentAnim = "Kick";
         break;
     case 7:
         m_currentAnim = "Slash";
