@@ -181,9 +181,6 @@ void Room::m_ZmonsterPosTimerThread()
 				if (m_Zmonsters[i].AttackAnimation()) {			// 몬스터가 공격을 시작하면
 					g_network.SendZMonsterAttack(GetClients(), i, 0);
 				}
-				if (m_Zmonsters[i].AttackMotion()) {
-					g_network.SendBossAttackMotion(GetClients(), m_Zmonsters[i].GetBossSkillType());
-				}
 			}
 			// 살아있을때 && 정점 보스 몬스터
 			else if (m_Zmonsters[i].GetLived() && i == 25) {
@@ -195,6 +192,9 @@ void Room::m_ZmonsterPosTimerThread()
 				if (m_Zmonsters[i].GetDamageThisFrame()) {		// 보스 몬스터가 스킬 공격한 후 데미지 판정시점
 					m_Zmonsters[i].BossSkillDamage(m_clients);
 					m_Zmonsters[i].SetDamageThisFrame(false);
+				}
+				if (m_Zmonsters[i].AttackMotion()) {
+					g_network.SendBossAttackMotion(GetClients(), m_Zmonsters[i].GetBossSkillType());
 				}
 			}
 

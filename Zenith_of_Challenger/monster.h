@@ -95,8 +95,6 @@ public:
 	void			SetFristLastCoord(float x1, float z1, float x2, float z2);
 	bool			AttackAnimation();
 	bool			AttackMotion();
-	void			SetAttackJustStart(bool check);
-	void			SetAttackMotionStart(bool check);
 	void			BossSkillDamage(const std::vector<int>& clients);
 	void			BossSkillDashDamage(const std::vector<int>& clients);
 	void			BossSkillJumpDamage(const std::vector<int>& clients);

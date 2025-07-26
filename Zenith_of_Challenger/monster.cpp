@@ -472,6 +472,7 @@ bool Monster::AttackAnimation()
 	return false;
 }
 
+// 
 bool Monster::AttackMotion()
 {
 	if (m_attackMotionStart) {
@@ -479,16 +480,6 @@ bool Monster::AttackMotion()
 		return true;
 	}
 	return false;
-}
-
-void Monster::SetAttackJustStart(bool check)
-{
-	m_attackJustStart = false;
-}
-
-void Monster::SetAttackMotionStart(bool check)
-{
-	m_attackMotionStart = false;
 }
 
 DropItemType Monster::DropWHAT()
