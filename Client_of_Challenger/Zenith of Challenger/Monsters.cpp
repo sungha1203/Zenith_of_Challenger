@@ -101,7 +101,11 @@ void Monsters::Update(FLOAT timeElapsed)
 				}
 				else
 				{
-					m_animTime -= clip.duration;
+					if (m_currentAnim == "Jump")
+					{
+						m_currentAnim = "Move";
+					}
+						m_animTime -= clip.duration;
 				}
 			}
 		}		

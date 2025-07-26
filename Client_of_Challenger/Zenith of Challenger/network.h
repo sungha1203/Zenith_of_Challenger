@@ -53,7 +53,7 @@ public:
 	void		ProcessPlayerHP(char* buffer);
 	void		ProcessEndGame(char* buffer);
 	void		ProcessZMonsterAttack(char* buffer);
-
+	std::chrono::steady_clock::time_point m_lastAttackTime; 
 public:
 	SOCKET			m_clientsocket = INVALID_SOCKET;
 	std::thread		m_recvThread;
