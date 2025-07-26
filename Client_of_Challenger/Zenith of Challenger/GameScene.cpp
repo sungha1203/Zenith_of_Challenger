@@ -575,7 +575,7 @@ void GameScene::Update(FLOAT timeElapsed)
 					const auto& clip = monster->m_animationClips.at(monster->m_currentAnim);
 
 
-					if (monster->m_animTime > clip.duration / 3 && !monster->m_didDamageThisAnim)
+					if (monster->m_animTime > clip.duration / 3 && !monster->m_didDamageThisAnim)// 도전 일반몬스터한테 맞을때
 					{
 						//m_uiObjects[1]->m_fillAmount -= 0.01;
 						monster->m_didDamageThisAnim = true;
@@ -685,12 +685,117 @@ void GameScene::Update(FLOAT timeElapsed)
 			{
 				monster->Update(timeElapsed);
 				if (idx < gGameFramework->ZmonstersCoord.size()) {
-					monster->SetPosition(XMFLOAT3(gGameFramework->ZmonstersCoord[idx].x, 
-						gGameFramework->ZmonstersCoord[idx].y, 
-						gGameFramework->ZmonstersCoord[idx].z));
+					XMFLOAT3 pos = XMFLOAT3(gGameFramework->ZmonstersCoord[idx].x,
+						gGameFramework->ZmonstersCoord[idx].y,
+						gGameFramework->ZmonstersCoord[idx].z);
+					monster->SetPosition(pos);
+					monster->AttackRange.Center = pos; 
 					monster->SetRotationY(gGameFramework->ZmonstersToward[idx]);
 					//정점 충돌 test
-					
+					//auto& monster = group[i];
+
+					if (monster->IsDead()) continue;
+					auto playerBox = m_player->GetBoundingBox(); 
+					auto monsterBox = monster->GetBoundingBox();
+					auto monsterCenter = monsterBox.Center;
+
+					XMFLOAT3 playerWorldPos = m_player->GetPosition(); 
+					XMFLOAT3 monsterWorldPos = monster->GetPosition();
+
+					XMFLOAT3 playerCenterWorld = {
+					   playerWorldPos.x,
+					   playerWorldPos.y + 5.0f,
+					   playerWorldPos.z
+					};
+
+					XMFLOAT3 monsterCenterWorld = {
+					   monsterWorldPos.x + monsterCenter.x,
+					   monsterWorldPos.y + monsterCenter.y,
+					   monsterWorldPos.z + monsterCenter.z
+					};
+
+					float dx = abs(playerCenterWorld.x - monsterCenterWorld.x);
+					float dy = abs(playerCenterWorld.y - monsterCenterWorld.y);
+					float dz = abs(playerCenterWorld.z - monsterCenterWorld.z);
+
+					const XMFLOAT3& playerExtent = playerBox.Extents;
+					const XMFLOAT3& monsterExtent = monsterBox.Extents;
+
+					bool intersectX = dx <= (playerExtent.x + monsterExtent.x);
+					bool intersectY = dy <= (playerExtent.y + monsterExtent.y);
+					bool intersectZ = dz <= (playerExtent.z + monsterExtent.z);
+
+					if (monster->AttackRange.Intersects(m_player->GetBoundingBox())&&monster->m_currentAnim=="Attack")
+					{
+						//if (!monster->isAttacking)
+						//{
+						//	monster->isAttacking = true;
+						//	monster->PlayAnimationWithBlend("Attack", 0.2f);
+						//}
+						float time = monster->m_animTime;
+						float duration = monster->m_animationClips.at(monster->m_currentAnim).duration;
+
+						if (monster->m_prevAnimTime > time)
+						{
+							monster->m_didDamageThisAnim = false;
+						}
+
+						const auto& clip = monster->m_animationClips.at(monster->m_currentAnim);
+
+
+						if (monster->m_animTime > clip.duration / 3 && !monster->m_didDamageThisAnim)
+						{
+							//m_uiObjects[1]->m_fillAmount -= 0.01;
+							monster->m_didDamageThisAnim = true;
+							CS_Packet_Damaged pkt;
+							pkt.type = CS_PACKET_DAMAGED;
+							pkt.monsterID = idx;
+							pkt.size = sizeof(pkt);
+
+							gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
+							m_AttackCollision = false;
+						}
+
+						monster->m_prevAnimTime = time;
+					}
+
+					if (intersectX && intersectY && intersectZ)
+					{
+						if (monster->IsDead() && !monster->IsParticleSpawned())
+						{
+							for (int i = 0; i < 100; ++i)
+							{
+								m_particleManager->SpawnParticle(monster->GetPosition());
+							}
+							monster->MarkParticleSpawned();
+							continue;
+						}
+
+						m_player->SetPosition(m_player->m_prevPosition); // 이동 되돌리기
+						monster->SetBaseColor(XMFLOAT4(1.f, 0.f, 0.f, 1.f)); // 충돌 시 빨강
+
+						monster->isAttacking = true;
+						if (getAttackCollision())
+						{
+							CS_Packet_MonsterHP pkt;
+							pkt.type = CS_PACKET_MONSTERHP;
+							pkt.monsterID = idx;
+							pkt.damage = 20;
+							pkt.size = sizeof(pkt);
+							gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
+							m_AttackCollision = false;
+						}
+
+					}
+					//else if (monster->isAttacking && !monster->AttackRange.Intersects(m_player->GetBoundingBox()))
+					//{
+					//
+					//	monster->PlayAnimationWithBlend("Idle", 0.2f);
+					//
+					//	monster->SetBaseColor(XMFLOAT4(1.f, 1.f, 1.f, 1.f)); // 기본 흰색
+					//	monster->isAttacking = false;
+					//}
+
 					//정점 충돌 test
 					
 					if (monster->m_playMove)
