@@ -522,19 +522,29 @@ void ClientNetwork::ProcessInventory2Equip(char* buffer)
 	if (gameScene && pkt->item == 4) // 전사
 	{
 		// otherid[0] 또는 otherid[1] 에 매칭되는지 확인
-		if (pkt->clientID == gameScene->otherid[0])
+		if (pkt->clientID == m_clientID)
+		{
+			gameScene->m_player->SetPosition(gGameFramework->g_pos); 
+		}
+		else if (pkt->clientID == gameScene->otherid[0])
 		{			
 			gameScene->SetOtherJob1(0);
+			gameScene->m_Otherplayer[0]->SetPosition(gameScene->otherpos[0]);
 		}
 		else if (pkt->clientID == gameScene->otherid[1])
 		{						
 			gameScene->SetOtherJob2(1);
+			gameScene->m_Otherplayer[1]->SetPosition(gameScene->otherpos[1]);
 		}
 	}
 	if (gameScene && pkt->item == 5) // 마법사
 	{
 		// otherid[0] 또는 otherid[1] 에 매칭되는지 확인
-		if (pkt->clientID == gameScene->otherid[0])
+		if(pkt->clientID == m_clientID)
+		{
+			gameScene->m_player->SetPosition(gGameFramework->g_pos);
+		}
+		else if (pkt->clientID == gameScene->otherid[0])
 		{
 			gameScene->SetOtherJob1(2);
 		}
@@ -546,7 +556,11 @@ void ClientNetwork::ProcessInventory2Equip(char* buffer)
 	if (gameScene && pkt->item == 6) // 힐탱커
 	{
 		// otherid[0] 또는 otherid[1] 에 매칭되는지 확인
-		if (pkt->clientID == gameScene->otherid[0])
+		if(pkt->clientID == m_clientID)
+		{
+			gameScene->m_player->SetPosition(gGameFramework->g_pos);
+		}
+		else if (pkt->clientID == gameScene->otherid[0])
 		{
 			gameScene->SetOtherJob1(4);
 		}

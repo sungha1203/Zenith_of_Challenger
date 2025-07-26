@@ -2387,7 +2387,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 			player->SetScale(XMFLOAT3{ 0.0005, 0.0005, 0.0005 }); // 기본값 확정
 			player->SetRotationY(0.f);                  // 정면을 보게 초기화
 
-			player->SetPosition(XMFLOAT3(-580.f, 43.4f, -13.f));
+			//player->SetPosition(XMFLOAT3(-580.f, 43.4f, -13.f));
 
 			player->SetAnimationClips(loader->GetAnimationClips());
 			player->SetCurrentAnimation("Idle");
@@ -3321,20 +3321,10 @@ void GameScene::SetJobSlotUV(int type)
 	m_jobSlotIcon->SetCustomUV(u0, 0.f, u1, 1.f);
 	m_jobSlotIcon->SetVisible(true);
 
-	// 전직 처리: 그냥 포인터 교체
-	//if (type == 0) {
 		m_player = m_jobPlayers[type];
 		gGameFramework->SetPlayer(m_player);
 		m_player->SetCamera(m_camera);
 		m_job = type + 1;
-	/*}
-	else if (type == 1)
-	{
-		m_player = m_jobPlayers[type];
-		gGameFramework->SetPlayer(m_player);
-		m_player->SetCamera(m_camera);
-		m_job = type + 1;
-	}*/
 }
 void GameScene::UpdateEnhanceDigits()
 {
