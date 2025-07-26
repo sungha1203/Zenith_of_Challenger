@@ -131,6 +131,9 @@ void ClientNetwork::Receive() {
 			case SC_PACKET_ANIMATION:
 				ProcessAnimation(currentBuffer);
 				break;
+			case SC_PACKET_PLAYERATTACK:
+				ProcessPlayerAttack(currentBuffer);
+				break;
 			case SC_PACKET_ZENITHSTAGE:
 				ProcessZenithStage(currentBuffer);
 				break;
@@ -154,6 +157,9 @@ void ClientNetwork::Receive() {
 				break;
 			case SC_PACKET_ATTACKEFFECT:
 				ProcessAttackEffect(currentBuffer);
+				break;
+			case SC_PACKET_ENDGAME:
+				ProcessEndGame(currentBuffer);
 				break;
 			default:
 				break;
@@ -412,34 +418,52 @@ void ClientNetwork::ProcessZMonsterHP(char* buffer)
 	int hp = pkt->monsterHP;
 
 	// 1. ID → 타입 + 인덱스 해석
-	string type;
+	std::string type;
 	int index = 0;
 
 	if (monsterID >= 0 && monsterID < 5) {
 		type = "Mushroom_Dark"; index = monsterID;
 	}
 	else if (monsterID < 10) {
-
-		type = "FrightFly"; index = monsterID;
+		type = "FrightFly"; index = monsterID - 5;
 	}
 	else if (monsterID < 15) {
-		type = "Plant_Dionaea"; index = monsterID;
+		type = "Plant_Dionaea"; index = monsterID - 10;
 	}
 	else if (monsterID < 20) {
-		type = "Venus_Blue"; index = monsterID;
+		type = "Venus_Blue"; index = monsterID - 15;
 	}
 	else if (monsterID < 25) {
-		type = "Flower_Fairy"; index = monsterID;
+		type = "Flower_Fairy"; index = monsterID - 20;
 	}
-	else if (monsterID == 25) {			// 보스 몬스터
-		type = "Venus_Blue"; index = monsterID;
+	else if (monsterID == 25) {
+		type = "Metalon"; index = 0;
 	}
 	else {
-		OutputDebugStringA("[ERROR] Invalid Monster ID!\n");
 		return;
 	}
 
-	// 도전 몬스터랑 동일...
+	// 2. 현재 씬이 GameScene인지 확인
+	shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
+	GameScene* gameScene = dynamic_cast<GameScene*>(currentScene.get());
+	if (!gameScene)
+	{
+		return;
+	}
+
+	// 3. 보스 스테이지 몬스터 그룹 참조
+	auto& monsterGroups = gameScene->GetMonsterGroups();
+	if (!monsterGroups.contains(type) || index >= monsterGroups[type].size())
+	{
+		return;
+	}
+
+	// 4. 체력 동기화 및 처리
+	auto& monster = monsterGroups[type][index];
+	if (monster)
+	{
+		monster->SetHP(hp);
+	}
 }
 
 void ClientNetwork::ProcessItemDrop(char* buffer)
@@ -775,8 +799,11 @@ void ClientNetwork::ProcessAnimation(char* buffer)
 	}
 }
 
-
-
+void ClientNetwork::ProcessPlayerAttack(char* buffer)
+{
+	SC_Packet_PlayerAttack* pkt = reinterpret_cast<SC_Packet_PlayerAttack*>(buffer);
+	pkt->attack;
+}
 
 // [개발중] 전사, 마법사 기본 공격 및 스킬 공격 이펙트 부분
 void ClientNetwork::ProcessAttackEffect(char* buffer)
@@ -974,6 +1001,13 @@ void ClientNetwork::ProcessEndGame(char* buffer)
 	// 클리어 시간 몇초인지, 만약 300초로 왔으면 실패, 300초 안으로 들어왔으면 성공
 	// 씬 전환하지말고 그냥 우리 장비창 처럼 사진으로 하고 클리어 초만 넣어두면 될거같아.
 	// 그리고 10초 뒤에 자동으로 방 선택 창으로 돌아가게 씬 전환
+
+	shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
+	GameScene* gameScene = dynamic_cast<GameScene*>(currentScene.get());
+
+	gameScene->SetDanceMotion(true);
+	gameScene->m_bossMonsters[0]->SetCurrentAnimation("Die");
+	gameScene->SetEnding();
 }
 
 // [개발중] 정점 몬스터 공격  -  패킷 받자마자 해당 몬스터 공격 애니메이션 시작(방향은 그냥 바라보는 곳)

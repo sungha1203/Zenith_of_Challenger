@@ -62,7 +62,7 @@ public:
 	void	LeverUpPlayer(int classtype);									// 직업 전직 후 캐릭터 설정
 
 	void	AddHP(int heal);												// 피 회복
-	int		MinusHP(int damage, int gamemode);								// 피 깎임
+	void	MinusHP(int damage, int gamemode);								// 피 깎임
 
 	Classtype GetJobType() const { return m_ingameInfo.classtype; }			// 캐릭터 직업 반환
 	int		GetWeaponType() const { return m_ingameInfo.weapon.type; }		// 캐릭터 무기 반환

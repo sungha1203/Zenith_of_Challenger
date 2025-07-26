@@ -102,9 +102,12 @@ public:
     //플레이 시간 업데이트
     void UpdateGameTimeDigits();
     //엔딩 관련
-    void SetEnding(bool end) { m_bossDied = end; };
+    void SetEnding();
+    void SetBossDie(bool end) { m_bossDied = end; };
     void EndingSceneUpdate(float timeElapsed);
     bool GetEndingSceneBool() { return m_showEndingSequence; };
+    void SetDanceMotion(bool Dan) { m_OnceDance = Dan; };
+
 
     //3인칭 카메라 모드 토글
     void SetCameraToggle();
@@ -228,7 +231,7 @@ private:
     float m_magicBasicAttackCooldown = 4.0f;  // 마법사 평타 3초 쿨타임
     float m_magicBasicAttackTimer = 0.0f;     // 경과 시간
     bool m_magicAttack = false;
-
+    bool m_OnceDance = false; // 댄스 모션만 취하게 하는 변수
 
     //무기
     vector<shared_ptr<GameObject>> m_weopons;
@@ -250,13 +253,15 @@ private:
     const float MAX_SWORD_SKILL_DURATION = 10.0f;
 
     //엔딩화면 전용 변수
-    bool m_bossDied = false;        // 디졸브 완료 시점 감지
+    bool m_bossDied = false;       
     bool m_showEndingSequence = false;
     float m_endingTimer = 0.f;
     const float MAX_ENDING_TIME = 2.0f; // 플레이어가 도달할 시
     bool m_moveTimeUI = false;
     float m_timeUIMoveTimer = 0.f;
     const float MAX_TIMEUI_MOVE_DURATION = 2.0f;
+    float m_gameStartTime = 0.0f; //시작 시간 저장용 변수
+
 
     vector<XMFLOAT3> m_timeDigitStartPos;
     vector<XMFLOAT3> m_timeDigitTargetPos;

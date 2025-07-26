@@ -178,16 +178,15 @@ void Monsters::Update(FLOAT timeElapsed)
 		}
 
 		// 디졸브 완료 시 상태 종료
-		if (t >= 1.0f)
+		if (t >= 1.0f && m_ImBoss) //보스일경우만
 		{
 			m_isDissolving = false;
 			m_isDead = true;
 			m_isActive = false;
-
 			// 디졸브 종료 후 GameScene에게 신호
 			if (auto gameScene = dynamic_cast<GameScene*>(gGameFramework->GetSceneManager()->GetCurrentScene().get()))
 			{
-				gameScene->SetEnding(true); // <- 보스 죽음 플래그
+				gameScene->SetBossDie(true); // <- 보스 죽음 플래그
 			}
 		}
 	}
@@ -371,7 +370,8 @@ void Monsters::SetHP(int hp)
 	if (m_currentHP <= 0.f)
 	{
 		m_currentHP = 0.f;
-		m_isDead = true;
+		if(!m_ImBoss) m_isDead = true;
+		//if (m_ImBoss) StartDissolve(); //만약 보스인데 체력이 0이면
 	}
 }
 
@@ -381,7 +381,6 @@ void Monsters::ApplyDamage(float damage)
 	if (m_currentHP <= 0.f && !m_isDead)
 	{
 		m_currentHP = 0.f;
-		StartDissolve(); // 디졸브 시작
 	}
 }
 
@@ -478,6 +477,7 @@ void Monsters::StartDissolve()
 {
 	m_isDissolving = true;
 	m_dissolveTimer = 0.0f;
+	SetCurrentAnimation("Die");
 
 	// 디졸브 기준축: Y축 (아래 → 위)
 	SetDissolveAxis(Vector3::Normalize({ 0.f, 1.f, 0.f }));

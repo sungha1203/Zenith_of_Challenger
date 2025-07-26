@@ -108,6 +108,7 @@ void Room::PushStartZenithButton(int RoomMasterID)
 
 	g_network.SendZenithState(GetClients());				// 정점 스테이지 클라이언트 초기 좌표 패킷 보내기
 	g_network.SendStartZenithStage(GetClients());			// 게임방 안에 본인 포함 모두한테 게임시작 패킷 보내기
+	g_network.SendPlayerAttack(GetClients());				// 플레이어 공격력 패킷 보내기
 
 	std::cout << "[INFO] 방[" << m_room_id << "] 정점 스테이지에 진입하였습니다!\n";
 }
@@ -147,8 +148,9 @@ void Room::ZenithTimerThread()
 	for (int i = 0; i < ZENITH_TIME; ++i) {
 		std::this_thread::sleep_for(std::chrono::seconds(1));
 		if (m_stopTimer) return;
-		if (m_bossDie = true) {
+		if (m_bossDie == true) {
 			m_clearTime = i;
+			break;
 		}
 		UpdateMonsterTargetList();
 		UpdateMonsterAggroList();
@@ -210,8 +212,8 @@ void Room::EndGame()
 	m_IsGaming = false;
 	m_stopMonsterPosThread = true;
 
-	ResetRoom();
 	g_network.SendEndGame(GetClients(), m_clearTime);
+	//ResetRoom();
 
 	std::cout << "[INFO][" << m_room_id << "]방 게임을 종료하였습니다!\n";
 	// TODO

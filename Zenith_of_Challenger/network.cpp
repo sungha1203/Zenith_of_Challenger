@@ -304,6 +304,10 @@ void Network::HandlePacket(int client_id, char* buffer, int length) {
 	case CS_PACKET_MONSTERHP:
 		ProcessMonsterHP(client_id, buffer, length);
 		break;
+	case CS_PACKET_ZMONSTERHP:
+
+		ProcessZMonsterHP(client_id, buffer, length);
+		break;
 	case CS_PACKET_INVENTORY:
 		ProcessInventorySelcet(client_id, buffer, length);
 		break;
@@ -545,13 +549,13 @@ void Network::ProcessZMonsterHP(int client_id, char* buffer, int length)
 	SC_Packet_ZMonsterHP pkt2;
 	pkt2.type = SC_PACKET_ZMONSTERHP;
 	pkt2.monsterID = pkt->monsterID;
-	pkt2.monsterHP = room.GetCMonsters(pkt->monsterID).GetHP();
+	pkt2.monsterHP = room.GetZMonsters(pkt->monsterID).GetHP();
 	pkt2.size = sizeof(SC_Packet_ZMonsterHP);
 	for (int other_id : client) {
 		g_network.clients[other_id].do_send(pkt2);
 	}
 
-	if (pkt->monsterID = 25 && room.GetCMonsters(pkt->monsterID).GetHP() == 0) {
+	if (pkt->monsterID == 25 && room.GetZMonsters(pkt->monsterID).GetHP() == 0) {
 		room.SetClearBoss();
 	}
 }
@@ -758,38 +762,10 @@ void Network::ProcessDamaged(int client_id, char* buffer, int length)
 	const auto& client = room.GetClients();
 
 	if (room.GetMode() == 1) {		// 도전 스테이지
-		int result = g_client[client_id].MinusHP(room.GetCMonsters(pkt->monsterID).GetAttack(), 1);
-		if (result == 1) {
-			SC_Packet_Respone pkt2;
-			pkt2.type = SC_PACKET_RESPONE;
-			pkt2.size = sizeof(pkt2);
-			pkt2.clientID = client_id;
-			pkt2.x = g_client[client_id].GetX();
-			pkt2.y = g_client[client_id].GetY();
-			pkt2.z = g_client[client_id].GetZ();
-
-			for (int other_id : client) {				
-				g_network.clients[other_id].do_send(pkt2);
-			}
-		}
-
+		g_client[client_id].MinusHP(room.GetCMonsters(pkt->monsterID).GetAttack(), 1);
 	}
 	else if (room.GetMode() == 3) {	// 정점 스테이지
-		int result = g_client[client_id].MinusHP(room.GetZMonsters(pkt->monsterID).GetAttack(), 3);
-		if (result == 1) {
-			SC_Packet_Respone pkt3;
-			pkt3.type = SC_PACKET_RESPONE;
-			pkt3.size = sizeof(pkt3);
-			pkt3.clientID = client_id;
-			pkt3.x = g_client[client_id].GetX();
-			pkt3.y = g_client[client_id].GetY();
-			pkt3.z = g_client[client_id].GetZ();
-
-			for (int other_id : client) {
-				if (other_id == client_id) continue;
-				g_network.clients[other_id].do_send(pkt3);
-			}
-		}
+		g_client[client_id].MinusHP(room.GetZMonsters(pkt->monsterID).GetAttack(), 3);
 	}
 }
 
@@ -927,6 +903,40 @@ void Network::SendStartZenithStage(const std::vector<int>& client_id) {
 	}
 }
 
+// 정점 스테이지 이동 전 공격력 설정
+void Network::SendPlayerAttack(const std::vector<int>& client_id)
+{
+	SC_Packet_PlayerAttack pkt;
+	pkt.type = SC_PACKET_PLAYERATTACK;
+
+	for (int id : client_id) {
+		if (!g_network.clients[id].m_used) continue;
+		pkt.attack = g_client[id].GetAttack();
+		pkt.size = sizeof(pkt);
+		g_network.clients[id].do_send(pkt);
+	}
+}
+
+// 도전, 정점에서 피가 0이 되면 다시 태어나는 곳 설정
+void Network::SendPlayerRespone(int client_id)
+{
+	int room_id = g_room_manager.GetRoomID(client_id);
+	Room& room = g_room_manager.GetRoom(room_id);
+	const auto& client = room.GetClients();
+
+	SC_Packet_Respone pkt;
+	pkt.type = SC_PACKET_RESPONE;
+	pkt.clientID = client_id;
+	pkt.x = g_client[client_id].GetX();
+	pkt.y = g_client[client_id].GetY();
+	pkt.z = g_client[client_id].GetZ();
+	pkt.size = sizeof(pkt);
+
+	for (int other_id : client) {
+		g_network.clients[other_id].do_send(pkt);
+	}
+}
+
 // 골드 업데이트
 void Network::SendUpdateGold(const std::vector<int>& client_id) {
 	int room_id = g_room_manager.GetRoomID(client_id[0]);
@@ -1015,6 +1025,7 @@ void Network::SendZMonsterAttack(const std::vector<int>& client_id, int MonsterI
 void Network::SendEndGame(const std::vector<int>& client_id, int time)
 {
 	SC_Packet_EndGame pkt;
+	pkt.type = SC_PACKET_ENDGAME;
 	pkt.size = sizeof(pkt);
 	pkt.time = time;
 
