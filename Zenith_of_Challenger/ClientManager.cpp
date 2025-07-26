@@ -12,8 +12,8 @@ ClientInfo::ClientInfo(int client_id)
 	m_ingameInfo.weapon.type = 0;                       // 기본 무기 : 맨손
 	m_ingameInfo.weapon.level = 0;                      // 무기 레벨 : 0
 	m_ingameInfo.clothes = 0;							// 기본 머리 : X
-	m_ingameInfo.hp = 100;                              // 도전자 체력       : 50
-	m_ingameInfo.attack = 20;                           // 도전자 공격력     : 20
+	m_ingameInfo.hp = 100;                              // 도전자 체력       : 100
+	m_ingameInfo.attack = 30;                           // 도전자 공격력     : 30
 	m_ingameInfo.speed = 1;                             // 도전자 이동 속도  : 1
 	m_ingameInfo.attackspeed = 1;                       // 도전자 공격 속도  : 1
 	m_ingameInfo.z = 0;                                 // 도전 스테이지 리스폰 x
@@ -153,6 +153,84 @@ bool ClientInfo::SetEnhanceGradeUp(int weapongrade)
 	return roll <= probabilities[weapongrade];
 }
 
+void ClientInfo::SetAttack()
+{
+//  [조합]
+	{
+		// 	전직서 없으면(도전자)         -> 30 고정
+		//  무기 전직서 조합 맞으면       -> + 0
+		//	무기 없으면                   -> - 50
+		//	무기 전직서 조합 안맞으면     -> - 20
+		//	무기 + 1                      -> + 5
+		//	----------------------
+		//	도전자
+		//	평타 공격력 -> 30
+		//	스킬 공격력 -> 30
+		//  ----------------------
+		//	전사
+		//	평타 공격력 -> 100
+		//	스킬 공격력 -> 150
+		//  ----------------------
+		//	법사
+		//	평타 공격력 -> 70
+		//	스킬 공격력 -> 120
+		//  ----------------------
+		//	힐탱커
+		//	평타 공격력 -> 0
+		//	스킬 공격력 -> 0
+	}
+	switch ((int)m_ingameInfo.classtype) {
+	// 전직 못했을 때(도전자)
+	case 0:						
+	{
+		m_normalAttack = 30 + m_ingameInfo.weapon.level * 5;
+		m_normalAttack = 30 + m_ingameInfo.weapon.level * 5;
+		break;
+	}
+	// 전사
+	case 1:						
+	{
+		if ((int)m_ingameInfo.weapon.type == 0) {		// 주먹
+			m_normalAttack = 100 + m_ingameInfo.weapon.level * 5 - 50;
+			m_normalAttack = 150 + m_ingameInfo.weapon.level * 5 - 50;
+		}
+		else if ((int)m_ingameInfo.weapon.type == 1) {	// 칼
+			m_normalAttack = 100 + m_ingameInfo.weapon.level * 5;
+			m_normalAttack = 150 + m_ingameInfo.weapon.level * 5;
+		}
+		else {											// 그 외
+			m_normalAttack = 100 + m_ingameInfo.weapon.level * 5 - 20;
+			m_normalAttack = 150 + m_ingameInfo.weapon.level * 5 - 20;
+		}
+		break;
+	}
+	// 법사
+	case 2:
+	{
+		if ((int)m_ingameInfo.weapon.type == 0) {		// 주먹
+			m_normalAttack = (70 + m_ingameInfo.weapon.level * 5 - 50) / 5;
+			m_normalAttack = (120 + m_ingameInfo.weapon.level * 5 - 50) / 10;
+		}
+		else if ((int)m_ingameInfo.weapon.type == 2) {	// 지팡이
+			m_normalAttack = (70 + m_ingameInfo.weapon.level * 5) / 5;
+			m_normalAttack = (120 + m_ingameInfo.weapon.level * 5) / 10;
+		}
+		else {											// 그 외
+			m_normalAttack = (70 + m_ingameInfo.weapon.level * 5 - 20) / 5;
+			m_normalAttack = (120 + m_ingameInfo.weapon.level * 5 - 20) / 10;
+		}
+		break;
+	}
+	// 힐탱커
+	case 3:						
+	{
+		m_normalAttack = 0;
+		m_normalAttack = 0;
+		break;
+	}
+	}
+}
+
 void ClientInfo::LeverUpPlayer(int classtype)
 {
 	switch (classtype) {
@@ -188,7 +266,20 @@ void ClientInfo::MinusHP(int damage, int gamemode)
 	if (m_ingameInfo.hp > 0)
 		m_ingameInfo.hp -= damage;
 	if (m_ingameInfo.hp <= 0) { // 피0이 되면
-		m_ingameInfo.hp = 100;
+		switch ((int)GetJobType()) {
+		case 0:
+			m_ingameInfo.hp = 100;
+			break;
+		case 1:
+			m_ingameInfo.hp = 300;
+			break;
+		case 2:
+			m_ingameInfo.hp = 200;
+			break;
+		case 3:
+			m_ingameInfo.hp = 1000;
+			break;
+		}
 		g_network.SendPlayerHP(GetID());
 
 		if (gamemode == 1) {

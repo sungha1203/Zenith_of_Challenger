@@ -15,56 +15,56 @@ void Monster::Reset()
 	m_id = -1;
 }
 
-void Monster::SetMonster(int id, NormalMonsterType type, float x, float y, float z)
+void Monster::SetMonster(int id, NormalMonsterType type, float x, float y, float z, int version)
 {
 	m_id = id;
 	m_type = type;
 	m_x = x;
 	m_y = y;
 	m_z = z;
+	m_attackspeed = 1;
+	m_version = version;
 
 	switch (type) {
 	case NormalMonsterType::Mushroom:
-		m_hp = 100;
-		m_attack = 5;
+		if(m_version == 0) m_hp = 60;
+		else			   m_hp = 150;
+		m_attack = 20;
 		m_speed = 3;
-		m_attackspeed = 1;
 		break;
 	case NormalMonsterType::FightFly:
-		m_hp = 100;
-		m_attack = 3;
+		if (m_version == 0) m_hp = 60;
+		else			    m_hp = 150;
+		m_attack = 10;
 		m_speed = 8;
-		m_attackspeed = 2;
 		break;
 	case NormalMonsterType::PlantDionaea:
-		m_hp = 50;
-		m_attack = 3;
+		if (m_version == 0) m_hp = 90;
+		else			    m_hp = 200;
+		m_attack = 25;
 		m_speed = 2;
-		m_attackspeed = 2;
 		break;
 	case NormalMonsterType::PlantVenus:
-		m_hp = 80;
-		m_attack = 4;
+		if (m_version == 0) m_hp = 90;
+		else			    m_hp = 250;
+		m_attack = 30;
 		m_speed = 1;
-		m_attackspeed = 1;
 		break;
 	case NormalMonsterType::FlowerFairy:
-		m_hp = 50;
-		m_attack = 5;
+		if (m_version == 0) m_hp = 30;
+		else			    m_hp = 100;
+		m_attack = 60;
 		m_speed = 6;
-		m_attackspeed = 1;
 		break;
 	case NormalMonsterType::BossMonster:
-		m_hp = 100;
-		m_attack = 50;
+		m_hp = 3000;
+		m_attack = 140;
 		m_speed = 5;
-		m_attackspeed = 1;
 		break;
 	default:
 		m_hp = 10;
 		m_attack = 1;
 		m_speed = 1;
-		m_attackspeed = 1;
 		break;
 	}
 }

@@ -76,13 +76,13 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)\assimp-master\build\include;$(ProjectDir)\assimp-master\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\assimp-master\build\include;$(ProjectDir)\assimp-master\include;$(ProjectDir)FMOD\core\inc;$(ProjectDir)FMOD\core\lib</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(ProjectDir)\assimp-master\build\lib\Debug</AdditionalLibraryDirectories>
-      <AdditionalDependencies>assimp-vc143-mtd.lib;User32.lib;Gdi32.lib;Kernel32.lib;Advapi32.lib;Comdlg32.lib;Ole32.lib;OleAut32.lib;Shell32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)\assimp-master\build\lib\Debug;$(ProjectDir)FMOD\core\lib\x64</AdditionalLibraryDirectories>
+      <AdditionalDependencies>assimp-vc143-mtd.lib;User32.lib;Gdi32.lib;Kernel32.lib;Advapi32.lib;Comdlg32.lib;Ole32.lib;OleAut32.lib;Shell32.lib;fmod_vc.lib;</AdditionalDependencies>
     </Link>
     <FxCompile>
       <ShaderModel>5.1</ShaderModel>
@@ -96,7 +96,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)\assimp-master\build\include;$(ProjectDir)\assimp-master\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\assimp-master\build\include;$(ProjectDir)\assimp-master\include;$(ProjectDir)FMOD\core\inc;$(ProjectDir)FMOD\core\lib</AdditionalIncludeDirectories>
       <Optimization>Disabled</Optimization>
       <WholeProgramOptimization>false</WholeProgramOptimization>
     </ClCompile>
@@ -105,8 +105,8 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(ProjectDir)\assimp-master\build\lib\Debug</AdditionalLibraryDirectories>
-      <AdditionalDependencies>assimp-vc143-mtd.lib;User32.lib;Gdi32.lib;Kernel32.lib;Advapi32.lib;Comdlg32.lib;Ole32.lib;OleAut32.lib;Shell32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)\assimp-master\build\lib\Debug;$(ProjectDir)FMOD\core\lib\x64</AdditionalLibraryDirectories>
+      <AdditionalDependencies>assimp-vc143-mtd.lib;User32.lib;Gdi32.lib;Kernel32.lib;Advapi32.lib;Comdlg32.lib;Ole32.lib;OleAut32.lib;Shell32.lib;fmod_vc.lib;</AdditionalDependencies>
     </Link>
     <FxCompile>
       <ShaderModel>5.1</ShaderModel>
@@ -119,13 +119,13 @@
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)\assimp-master\build\include;$(ProjectDir)\assimp-master\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\assimp-master\build\include;$(ProjectDir)\assimp-master\include;$(ProjectDir)FMOD\core\inc;$(ProjectDir)FMOD\core\lib</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>assimp-vc143-mtd.lib;User32.lib;Gdi32.lib;Kernel32.lib;Advapi32.lib;Comdlg32.lib;Ole32.lib;OleAut32.lib;Shell32.lib;WinPixEventRuntime.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(ProjectDir)\assimp-master\build\lib\Debug</AdditionalLibraryDirectories>
+      <AdditionalDependencies>assimp-vc143-mtd.lib;User32.lib;Gdi32.lib;Kernel32.lib;Advapi32.lib;Comdlg32.lib;Ole32.lib;OleAut32.lib;Shell32.lib;fmod_vc.lib;WinPixEventRuntime.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)\assimp-master\build\lib\Debug;$(ProjectDir)FMOD\core\lib\x64</AdditionalLibraryDirectories>
     </Link>
     <FxCompile>
       <ShaderModel>5.1</ShaderModel>
@@ -140,7 +140,7 @@
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)\assimp-master\build\include;$(ProjectDir)\assimp-master\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\assimp-master\build\include;$(ProjectDir)\assimp-master\include;$(ProjectDir)FMOD\core\inc;$(ProjectDir)FMOD\core\lib</AdditionalIncludeDirectories>
       <Optimization>Disabled</Optimization>
       <WholeProgramOptimization>false</WholeProgramOptimization>
     </ClCompile>
@@ -149,8 +149,8 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(ProjectDir)\assimp-master\build\lib\Debug</AdditionalLibraryDirectories>
-      <AdditionalDependencies>assimp-vc143-mtd.lib;User32.lib;Gdi32.lib;Kernel32.lib;Advapi32.lib;Comdlg32.lib;Ole32.lib;OleAut32.lib;Shell32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)\assimp-master\build\lib\Debug;$(ProjectDir)FMOD\core\lib\x64</AdditionalLibraryDirectories>
+      <AdditionalDependencies>assimp-vc143-mtd.lib;User32.lib;Gdi32.lib;Kernel32.lib;Advapi32.lib;Comdlg32.lib;Ole32.lib;OleAut32.lib;Shell32.lib;fmod_vc.lib;</AdditionalDependencies>
     </Link>
     <FxCompile>
       <ShaderModel>5.1</ShaderModel>
@@ -192,6 +192,7 @@
     <ClInclude Include="SceneManager.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="Shield.h" />
+    <ClInclude Include="SoundManager.h" />
     <ClInclude Include="Staff.h" />
     <ClInclude Include="StartScene.h" />
     <ClInclude Include="stdafx.h" />
@@ -241,6 +242,7 @@
     <ClCompile Include="SceneManager.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Shield.cpp" />
+    <ClCompile Include="SoundManager.cpp" />
     <ClCompile Include="Staff.cpp" />
     <ClCompile Include="StartScene.cpp" />
     <ClCompile Include="stdafx.cpp" />

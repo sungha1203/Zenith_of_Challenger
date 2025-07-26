@@ -394,7 +394,8 @@ struct SC_Packet_PlayerAttack
 {
 	char	type;
 	int		size;
-	int		attack;
+	int		normalAttack;
+	int		skillAttack;
 };
 
 struct SC_Packet_DebugItem

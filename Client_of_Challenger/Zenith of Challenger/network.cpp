@@ -816,7 +816,8 @@ void ClientNetwork::ProcessAnimation(char* buffer)
 void ClientNetwork::ProcessPlayerAttack(char* buffer)
 {
 	SC_Packet_PlayerAttack* pkt = reinterpret_cast<SC_Packet_PlayerAttack*>(buffer);
-	pkt->attack;
+	pkt->normalAttack;
+	pkt->skillAttack;
 }
 
 // [개발중] 전사, 마법사 기본 공격 및 스킬 공격 이펙트 부분
