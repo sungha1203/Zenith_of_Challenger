@@ -92,6 +92,9 @@ public:
     void ActivateSwordAuraSkill(int num); //전사 스킬
     void UpdateSwordAuraSkill(float timeElapsed);
 
+    //평타, 스킬 데미지 최신화
+    void SetskillAttack(int n) { m_skillAttack = n; };
+    void SetnormalAttack(int n) { m_normalAttack = n; };
 
     //타 클라 직업 판정
     int m_otherPlayerJobs[2] = { 0, 0 }; // 1: 전사, 2: 마법사, 3: 힐탱커
@@ -270,6 +273,10 @@ private:
     XMFLOAT3 m_colonTargetPos;
     vector<shared_ptr<GameObject>> m_uiEndingBanner;
     vector<shared_ptr<GameObject>> m_uiPressOn;
+
+    //플레이어 스킬 평타 데미지 저장
+    int m_skillAttack = 0;
+    int m_normalAttack = 0;
 
 
     public:

@@ -669,6 +669,8 @@ void ClientNetwork::ProcessAnimation(char* buffer)
 			auto gameScene = dynamic_cast<GameScene*>(gGameFramework->GetSceneManager()->GetCurrentScene().get());
 			gameScene->ActivateSwordAuraSkill(0);
 			gameScene->m_player->SetCurrentAnimation("Goong"); 
+			g_Sound.PlaySoundEffect("Sounds/Sword Magic Sound Effect.wav");
+
 		}
 		else if (pkt->client_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[0])
 		{
@@ -677,6 +679,8 @@ void ClientNetwork::ProcessAnimation(char* buffer)
 			auto gameScene = dynamic_cast<GameScene*>(gGameFramework->GetSceneManager()->GetCurrentScene().get());
 			gameScene->ActivateSwordAuraSkill(1);
 			gameScene->m_Otherplayer[0]->SetCurrentAnimation("Goong");
+			g_Sound.PlaySoundEffect("Sounds/Sword Magic Sound Effect.wav");
+			g_Sound.SetSFXVolume(0.2f);
 		}
 		else if (pkt->client_id == gGameFramework->GetSceneManager()->GetCurrentScene()->otherid[1])
 		{
@@ -685,6 +689,8 @@ void ClientNetwork::ProcessAnimation(char* buffer)
 			auto gameScene = dynamic_cast<GameScene*>(gGameFramework->GetSceneManager()->GetCurrentScene().get());
 			gameScene->ActivateSwordAuraSkill(2);
 			gameScene->m_Otherplayer[1]->SetCurrentAnimation("Goong");
+			g_Sound.PlaySoundEffect("Sounds/Sword Magic Sound Effect.wav");
+			g_Sound.SetSFXVolume(0.2f);
 		}
 		break;
 	case 5: // 법사
@@ -698,6 +704,7 @@ void ClientNetwork::ProcessAnimation(char* buffer)
 		{
 			gameScene->FireUltimateBulletRain(); //플레이어 기준 발사
 			gameScene->m_player->SetCurrentAnimation("Goong");
+			g_Sound.PlaySoundEffect("Sounds/Wizzad_Skill.wav");
 		}
 		// 플레이어 0
 		if (pkt->client_id == currentScene->otherid[0])
@@ -706,6 +713,8 @@ void ClientNetwork::ProcessAnimation(char* buffer)
 			gameScene->FireUltimateBulletRainOther1(); //타 클라 1번 플레이어 기준 발사
 			gameScene->m_Otherplayer[0]->SetCurrentAnimation("Goong");
 			gameScene->m_Otherplayer[0]->isAttacking=true;
+			g_Sound.PlaySoundEffect("Sounds/Wizzad_Skill.wav");
+			g_Sound.SetSFXVolume(0.2f);
 		}
 		// 플레이어 1
 		else if (pkt->client_id == currentScene->otherid[1])
@@ -714,6 +723,8 @@ void ClientNetwork::ProcessAnimation(char* buffer)
 			gameScene->FireUltimateBulletRainOther2(); //타 클라 1번 플레이어 기준 발사
 			gameScene->m_Otherplayer[1]->SetCurrentAnimation("Goong");
 			gameScene->m_Otherplayer[1]->isAttacking = true;
+			g_Sound.PlaySoundEffect("Sounds/Wizzad_Skill.wav");
+			g_Sound.SetSFXVolume(0.2f);
 		}
 	}
 		break;
@@ -818,6 +829,13 @@ void ClientNetwork::ProcessPlayerAttack(char* buffer)
 	SC_Packet_PlayerAttack* pkt = reinterpret_cast<SC_Packet_PlayerAttack*>(buffer);
 	pkt->normalAttack;
 	pkt->skillAttack;
+
+	shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
+	GameScene* gameScene = dynamic_cast<GameScene*>(currentScene.get());
+
+	gameScene->SetskillAttack(pkt->skillAttack);
+	gameScene->SetnormalAttack(pkt->normalAttack);
+
 }
 
 // [개발중] 전사, 마법사 기본 공격 및 스킬 공격 이펙트 부분

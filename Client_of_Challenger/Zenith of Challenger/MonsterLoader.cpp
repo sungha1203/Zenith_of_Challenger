@@ -35,7 +35,7 @@ void LoadAllMonsters(
         frightfly->m_scale = XMFLOAT3{ 0.05, 0.05, 0.05 };
         frightfly->SetScale(frightfly->m_scale);
         frightfly->m_monNum = 0;
-        frightfly->SetInitHP(100, 100);
+        frightfly->SetInitHP(60, 60);
 
         // [2] 애니메이션 설정
         vector<AnimationClip> clips;
@@ -84,7 +84,7 @@ void LoadAllMonsters(
         monster->m_scale = XMFLOAT3{ 0.1, 0.1, 0.1 };
         monster->SetScale(monster->m_scale);
         monster->m_monNum = 1;
-        monster->SetInitHP(50, 50);
+        monster->SetInitHP(30, 30);
         // [2] 애니메이션 설정
         vector<AnimationClip> clips;
         for (const auto& [name, clip] : animClipLibrary.at("Flower_Fairy"))
@@ -129,7 +129,7 @@ void LoadAllMonsters(
         monster->SetScale(monster->m_scale);
         monster->SetHealthBarShader(shaders.at("HealthBarShader"));
         monster->m_monNum = 2; 
-        monster->SetInitHP(100, 100);
+        monster->SetInitHP(60, 60);
 
         // [2] 애니메이션 설정
         vector<AnimationClip> clips;
@@ -175,7 +175,7 @@ void LoadAllMonsters(
         monster->m_scale = XMFLOAT3{ 0.1, 0.1, 0.1 };
         monster->SetScale(monster->m_scale);
         monster->m_monNum = 3;
-        monster->SetInitHP(80, 80);
+        monster->SetInitHP(90, 90);
 
         // [2] 애니메이션 설정
         vector<AnimationClip> clips;
@@ -221,7 +221,7 @@ void LoadAllMonsters(
         monster->m_scale = XMFLOAT3{ 0.1, 0.1, 0.1 };
         monster->SetScale(monster->m_scale);
         monster->m_monNum = 4;
-        monster->SetInitHP(50, 50);
+        monster->SetInitHP(90, 90);
 
         // [2] 애니메이션 설정
         vector<AnimationClip> clips;
@@ -269,6 +269,8 @@ void LoadAllMonsters(
         monster->SetScale(monster->m_scale);
         monster->m_monNum = 5;
         monster->GetHealthBar()->SetIsBoss(true);
+        monster->SetInitHP(3000, 3000);
+
         // [2] 애니메이션 설정
         vector<AnimationClip> clips;
         for (const auto& [name, clip] : animClipLibrary.at("Metalon"))

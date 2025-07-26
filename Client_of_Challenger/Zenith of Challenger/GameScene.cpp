@@ -14,6 +14,8 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device,
 	m_objects.clear();
 	m_fbxMeshes.clear(); // FBX 메쉬 초기화
 
+	g_Sound.PlayBGM("Sounds/ChallengeBGM.mp3");
+	g_Sound.SetBGMVolume(0.2f);
 	BuildShaders(device, commandList, rootSignature);
 	BuildMeshes(device, commandList);
 	BuildTextures(device, commandList);
@@ -79,13 +81,15 @@ void GameScene::MouseEvent(HWND hWnd, FLOAT timeElapsed)
 
 		if (isFull)
 		{
-			if (pt.x >= 166 && pt.x <= 466 && pt.y >= 563 && pt.y <= 629)
+			if (pt.x >= 166 && pt.x <= 466 && pt.y >= 563 && pt.y <= 629) {
 				isEnhanceClicked = true;
+			}
 		}
 		else
 		{
-			if (pt.x >= 126 && pt.x <= 395 && pt.y >= 347 && pt.y <= 438)
+			if (pt.x >= 126 && pt.x <= 395 && pt.y >= 347 && pt.y <= 438) {
 				isEnhanceClicked = true;
+			}
 		}
 
 		if (isEnhanceClicked)
@@ -105,6 +109,7 @@ void GameScene::MouseEvent(HWND hWnd, FLOAT timeElapsed)
 			if (m_job == 1) // 전사
 			{
 				m_player->SetCurrentAnimation("Slash"); // 또는 다른 힐탱커용 평타 애니메이션
+				g_Sound.PlaySoundEffect("Sounds/Slash.mp3");
 				{
 					// 네트워크 패킷 전송
 					CS_Packet_Animaition pkt;
@@ -466,6 +471,30 @@ void GameScene::Update(FLOAT timeElapsed)
 	if (gGameFramework->IsSuccess2 == true && m_gameStartTime == 0) {
 		m_ZenithStartGame = true;
 		m_gameStartTime = gGameFramework->GetTotalTime();
+		g_Sound.PlayBGM("Sounds/ZenithBGM.mp3");
+		g_Sound.SetBGMVolume(0.2f);
+		//정점 몬스터 체력 세팅
+		for (auto& [type, group] : m_BossStageMonsters)
+		{
+			int maxHP = 100; // 기본값
+
+			if (type == "Mushroom_Dark")        maxHP = 150;
+			else if (type == "FrightFly")       maxHP = 150;
+			else if (type == "Plant_Dionaea")   maxHP = 200;
+			else if (type == "Venus_Blue")      maxHP = 250;
+			else if (type == "Flower_Fairy")    maxHP = 100;
+			else if (type == "Metalon")         maxHP = 3000;
+
+			for (auto& monster : group)
+			{
+				if (monster)
+				{
+					monster->SetInitHP(maxHP, maxHP); 
+				}
+			}
+		}
+
+
 	}
 
 
@@ -1064,7 +1093,7 @@ void GameScene::Update(FLOAT timeElapsed)
 						CS_Packet_ZMonsterHP pkt;
 						pkt.type = CS_PACKET_ZMONSTERHP;
 						pkt.monsterID = idxStart + static_cast<int>(i); // ← 타입별 오프셋 + 인덱스
-						pkt.damage = 10;
+						pkt.damage = m_normalAttack;
 						pkt.size = sizeof(pkt);
 
 						gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
@@ -1235,7 +1264,7 @@ void GameScene::Update(FLOAT timeElapsed)
 						CS_Packet_ZMonsterHP pkt;
 						pkt.type = CS_PACKET_ZMONSTERHP;
 						pkt.monsterID = idxStart + static_cast<int>(i); // ← 타입별 오프셋 + 인덱스
-						pkt.damage = 10;
+						pkt.damage = m_skillAttack; //m_skillAttack
 						pkt.size = sizeof(pkt);
 
 						gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
@@ -3281,6 +3310,8 @@ void GameScene::HandleMouseClick(int mouseX, int mouseY)
 		{
 			if (m_inventoryCounts[i] > 0)
 			{
+				g_Sound.PlaySoundEffect("Sounds/Button_Click.mp3");
+
 				CS_Packet_Inventory pkt;
 				pkt.type = CS_PACKET_INVENTORY;
 				pkt.item = i + 1;

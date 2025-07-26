@@ -184,7 +184,7 @@ void ClientInfo::SetAttack()
 	case 0:						
 	{
 		m_normalAttack = 30 + m_ingameInfo.weapon.level * 5;
-		m_normalAttack = 30 + m_ingameInfo.weapon.level * 5;
+		m_skillAttack = 30 + m_ingameInfo.weapon.level * 5;
 		break;
 	}
 	// Àü»ç
@@ -192,15 +192,15 @@ void ClientInfo::SetAttack()
 	{
 		if ((int)m_ingameInfo.weapon.type == 0) {		// ÁÖ¸Ô
 			m_normalAttack = 100 + m_ingameInfo.weapon.level * 5 - 50;
-			m_normalAttack = 150 + m_ingameInfo.weapon.level * 5 - 50;
+			m_skillAttack = 150 + m_ingameInfo.weapon.level * 5 - 50;
 		}
 		else if ((int)m_ingameInfo.weapon.type == 1) {	// Ä®
 			m_normalAttack = 100 + m_ingameInfo.weapon.level * 5;
-			m_normalAttack = 150 + m_ingameInfo.weapon.level * 5;
+			m_skillAttack = 150 + m_ingameInfo.weapon.level * 5;
 		}
 		else {											// ±× ¿Ü
 			m_normalAttack = 100 + m_ingameInfo.weapon.level * 5 - 20;
-			m_normalAttack = 150 + m_ingameInfo.weapon.level * 5 - 20;
+			m_skillAttack = 150 + m_ingameInfo.weapon.level * 5 - 20;
 		}
 		break;
 	}
@@ -209,15 +209,15 @@ void ClientInfo::SetAttack()
 	{
 		if ((int)m_ingameInfo.weapon.type == 0) {		// ÁÖ¸Ô
 			m_normalAttack = (70 + m_ingameInfo.weapon.level * 5 - 50) / 5;
-			m_normalAttack = (120 + m_ingameInfo.weapon.level * 5 - 50) / 10;
+			m_skillAttack = (120 + m_ingameInfo.weapon.level * 5 - 50) / 10;
 		}
 		else if ((int)m_ingameInfo.weapon.type == 2) {	// ÁöÆÎÀÌ
 			m_normalAttack = (70 + m_ingameInfo.weapon.level * 5) / 5;
-			m_normalAttack = (120 + m_ingameInfo.weapon.level * 5) / 10;
+			m_skillAttack = (120 + m_ingameInfo.weapon.level * 5) / 10;
 		}
 		else {											// ±× ¿Ü
 			m_normalAttack = (70 + m_ingameInfo.weapon.level * 5 - 20) / 5;
-			m_normalAttack = (120 + m_ingameInfo.weapon.level * 5 - 20) / 10;
+			m_skillAttack = (120 + m_ingameInfo.weapon.level * 5 - 20) / 10;
 		}
 		break;
 	}
@@ -225,7 +225,7 @@ void ClientInfo::SetAttack()
 	case 3:						
 	{
 		m_normalAttack = 0;
-		m_normalAttack = 0;
+		m_skillAttack = 0;
 		break;
 	}
 	}
