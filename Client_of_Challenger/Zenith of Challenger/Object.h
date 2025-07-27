@@ -122,6 +122,9 @@ public:
 	void SetUseTexture(bool use);                        // 추가
 	const XMFLOAT4& GetBaseColor() const { return m_baseColor; }
 
+	void SetIsZenith(bool IsZenith) { m_IsZenith = IsZenith; }
+
+	bool m_IsZenith = false;
 
 	void SetTextureIndex(int index) { m_textureIndex = index; }
 
@@ -208,7 +211,6 @@ protected:
 	D3D12_GPU_DESCRIPTOR_HANDLE m_srvHandle{};  // 텍스처 SRV 핸들
 	bool m_isHovered = false; //버튼 이벤트 불빛
 	bool m_isVisible = true; //참가 버튼을 누른 후 나오는 스타트 버튼 용
-
 
 	//충돌체크 용
 	BoundingBox m_boundingBox;

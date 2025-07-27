@@ -675,9 +675,77 @@ void GameScene::Update(FLOAT timeElapsed)
 		{
 			m_particleManager->Update(timeElapsed);
 		}
+
+		//맵 충돌 
+		auto playerBox3 = m_player->GetBoundingBox();
+		for (auto& obj : m_objects)
+		{
+			const BoundingBox& objBox = obj->GetBoundingBox();
+			const XMFLOAT3& objCenter = objBox.Center;
+
+			XMFLOAT3 objPos = obj->GetPosition();
+			XMFLOAT3 objCenterWorld = {
+			   objPos.x + objCenter.x,
+			   objPos.y + objCenter.y,
+			   objPos.z + objCenter.z
+			};
+
+			XMFLOAT3 playerPos = m_player->GetPosition();
+			XMFLOAT3 playerCenterWorld = {
+			   playerPos.x,
+			   playerPos.y + 5.0f,
+			   playerPos.z
+			};
+
+			const XMFLOAT3& objExtent = objBox.Extents;
+
+			bool intersectX = abs(playerCenterWorld.x - objCenterWorld.x) <= (playerBox3.Extents.x + objExtent.x);
+			bool intersectY = abs(playerCenterWorld.y - objCenterWorld.y) <= (playerBox3.Extents.y + objExtent.y);
+			bool intersectZ = abs(playerCenterWorld.z - objCenterWorld.z) <= (playerBox3.Extents.z + objExtent.z);
+
+			if (intersectX && intersectY && intersectZ && !obj->m_IsZenith)
+			{
+				m_player->SetPosition(m_player->m_prevPosition);
+			}
+		}
+
 	}
 	else //정점 스테이지
 	{
+		//맵 충돌 
+		auto playerBox1 = m_player->GetBoundingBox();
+		for (auto& obj : m_objects)
+		{
+			const BoundingBox& objBox = obj->GetBoundingBox();
+			const XMFLOAT3& objCenter = objBox.Center;
+
+			XMFLOAT3 objPos = obj->GetPosition();
+			XMFLOAT3 objCenterWorld = {
+			   objPos.x + objCenter.x,
+			   objPos.y + objCenter.y,
+			   objPos.z + objCenter.z
+			};
+
+			XMFLOAT3 playerPos = m_player->GetPosition();
+			XMFLOAT3 playerCenterWorld = {
+			   playerPos.x,
+			   playerPos.y + 5.0f,
+			   playerPos.z
+			};
+
+			const XMFLOAT3& objExtent = objBox.Extents;
+
+			bool intersectX = abs(playerCenterWorld.x - objCenterWorld.x) <= (playerBox1.Extents.x + objExtent.x);
+			bool intersectY = abs(playerCenterWorld.y - objCenterWorld.y) <= (playerBox1.Extents.y + objExtent.y);
+			bool intersectZ = abs(playerCenterWorld.z - objCenterWorld.z) <= (playerBox1.Extents.z + objExtent.z);
+
+			if (intersectX && intersectY && intersectZ && obj->m_IsZenith)
+			{
+				m_player->SetPosition(m_player->m_prevPosition);
+			}
+		}
+
+
 		for (auto& [type, group] : m_BossStageMonsters)
 		{
 			int idxStart = 0;
@@ -1039,39 +1107,6 @@ void GameScene::Update(FLOAT timeElapsed)
 
 
 		UpdateFailCamera(timeElapsed);
-	}
-
-	//맵 충돌 
-	auto playerBox = m_player->GetBoundingBox();
-	for (auto& obj : m_objects)
-	{
-		const BoundingBox& objBox = obj->GetBoundingBox();
-		const XMFLOAT3& objCenter = objBox.Center;
-
-		XMFLOAT3 objPos = obj->GetPosition();
-		XMFLOAT3 objCenterWorld = {
-		   objPos.x + objCenter.x,
-		   objPos.y + objCenter.y,
-		   objPos.z + objCenter.z
-		};
-
-		XMFLOAT3 playerPos = m_player->GetPosition();
-		XMFLOAT3 playerCenterWorld = {
-		   playerPos.x,
-		   playerPos.y + 5.0f,
-		   playerPos.z
-		};
-
-		const XMFLOAT3& objExtent = objBox.Extents;
-
-		bool intersectX = abs(playerCenterWorld.x - objCenterWorld.x) <= (playerBox.Extents.x + objExtent.x);
-		bool intersectY = abs(playerCenterWorld.y - objCenterWorld.y) <= (playerBox.Extents.y + objExtent.y);
-		bool intersectZ = abs(playerCenterWorld.z - objCenterWorld.z) <= (playerBox.Extents.z + objExtent.z);
-
-		if (intersectX && intersectY && intersectZ)
-		{
-			m_player->SetPosition(m_player->m_prevPosition);
-		}
 	}
 
 	if (!m_bossDied && m_ZenithStartGame) UpdateGameTimeDigits(); //보스 스테이지에 진입하고 보스가 죽지 않을때 업데이트
@@ -1650,6 +1685,14 @@ void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) con
 				monster->Render(commandList);
 			}
 		}
+		// 충돌체크용 일반 오브젝트 렌더링
+		if (!m_objects.empty() && m_debugDrawEnabled == true)
+		{
+			for (const auto& object : m_objects)
+			{
+				if (!object->m_IsZenith) object->Render(commandList);
+			}
+		}
 	}
 	else { //정점 몬스터
 		for (const auto& object : m_ZenithObjects) //정점 맵 렌더링
@@ -1707,6 +1750,14 @@ void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) con
 			if (Press->IsVisible()) Press->Render(commandList);
 		}
 
+		// 충돌체크용 일반 오브젝트 렌더링
+		if (!m_objects.empty() && m_debugDrawEnabled == true)
+		{
+			for (const auto& object : m_objects)
+			{
+				if (object->m_IsZenith) object->Render(commandList);
+			}
+		}
 	}
 
 	if (m_isSwordSkillActive)
@@ -1757,15 +1808,6 @@ void GameScene::Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) con
 				if (m_uiObjects[i])
 					m_uiObjects[i]->Render(commandList);
 			}
-		}
-	}
-
-	// 충돌체크용 일반 오브젝트 렌더링
-	if (!m_objects.empty() && m_debugDrawEnabled == true)
-	{
-		for (const auto& object : m_objects)
-		{
-			object->Render(commandList);
 		}
 	}
 
@@ -2804,11 +2846,11 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 	AddCubeCollider({ 12, 10, 190 }, { 22, 25, 15 });
 
 	//정점 맵 오브젝트
-	AddCubeCollider({ 440.8, 71.2, 33.2 }, { 60, 30, 20 });// 400.8 / 51.2 / 47.2
-	AddCubeCollider({ 440.8, 71.2, -33.2 }, { 60, 30, 20 });// 400.8 / 51.2 / 47.2
-	AddCubeCollider({ 235, 57.5, 116.4 }, { 42, 30, 30 });// 400.8 / 51.2 / 47.2
-	AddCubeCollider({ -0.5, 63.5, 143.4 }, { 60, 60, 60 });// 400.8 / 51.2 / 47.2
-	AddCubeCollider({ 119.3, 68.8, -216.4 }, { 70, 30, 30 }, -35.f);// 400.8 / 51.2 / 47.2
+	AddCubeCollider({ 440.8, 71.2, 33.2 }, { 60, 30, 20 } ,0.0f, true);// 400.8 / 51.2 / 47.2
+	AddCubeCollider({ 440.8, 71.2, -33.2 }, { 60, 30, 20 }, 0.0f, true);// 400.8 / 51.2 / 47.2
+	AddCubeCollider({ 235, 57.5, 116.4 }, { 42, 30, 30 }, 0.0f, true);// 400.8 / 51.2 / 47.2
+	AddCubeCollider({ -0.5, 63.5, 143.4 }, { 60, 60, 60 }, 0.0f, true);// 400.8 / 51.2 / 47.2
+	AddCubeCollider({ 119.3, 68.8, -216.4 }, { 70, 30, 30 }, -35.f, true);// 400.8 / 51.2 / 47.2
 
 
 	//몬스터 로드
@@ -3288,7 +3330,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 
 
 }
-void GameScene::AddCubeCollider(const XMFLOAT3& position, const XMFLOAT3& extents, const FLOAT& rotate)
+void GameScene::AddCubeCollider(const XMFLOAT3& position, const XMFLOAT3& extents, const FLOAT& rotate, bool IsZenith)
 {
 	auto cube = make_shared<GameObject>(gGameFramework->GetDevice());
 
@@ -3299,6 +3341,7 @@ void GameScene::AddCubeCollider(const XMFLOAT3& position, const XMFLOAT3& extent
 	cube->SetScale(XMFLOAT3{ 1.f, 1.f, 1.f }); // extents는 반지름이라 *2 필요
 	cube->SetRotationY(rotate);
 	cube->SetPosition(position);
+	cube->SetIsZenith(IsZenith);
 
 	// 바운딩 박스 설정
 	BoundingBox box;

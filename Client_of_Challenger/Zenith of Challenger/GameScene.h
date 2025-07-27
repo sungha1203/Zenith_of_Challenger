@@ -52,7 +52,7 @@ public:
     virtual void BuildObjects(const ComPtr<ID3D12Device>& device);
     void ClearSceneResources() override;
 
-    void AddCubeCollider(const XMFLOAT3& position, const XMFLOAT3& extents, const FLOAT& rotate = 0.f);
+    void AddCubeCollider(const XMFLOAT3& position, const XMFLOAT3& extents, const FLOAT& rotate = 0.f, bool IsZenith = false);
 
     void RenderShadowPass(const ComPtr<ID3D12GraphicsCommandList>& commandList);
 
