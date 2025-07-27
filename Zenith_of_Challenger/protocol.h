@@ -27,6 +27,7 @@ constexpr int NAME_SIZE = 20;				// 이름 글자 수
 #define CS_PACKET_ANIMATION			 17			// 애니메이션
 #define CS_PACKET_ATTACKEFFECT		 18			// 스킬, 기본 공격 이펙트(전사, 마법사)
 #define CS_PACKET_DAMAGED			 19			// 몬스터데미지
+#define CS_PACKET_HEALPACK			 20	
 
 #define CS_PACKET_LOGOUT			 100		// 로그아웃
 

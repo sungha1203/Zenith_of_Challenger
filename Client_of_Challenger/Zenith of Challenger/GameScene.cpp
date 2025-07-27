@@ -3824,7 +3824,14 @@ void GameScene::CheckHealingCollision()
 				++it;
 				continue;
 			}
-
+			{
+				// 패킷 전송
+				CS_Packet_HealPack pkt;
+				pkt.type = CS_PACKET_HEALPACK;
+				pkt.size = sizeof(pkt);
+				pkt.eat = true;
+				gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
+			}
 			SpawnHealingEffect(m_player->GetPosition());
 			it = m_healingObjects.erase(it);
 		}
