@@ -112,30 +112,23 @@ void GameScene::MouseEvent(HWND hWnd, FLOAT timeElapsed)
 			{
 				m_player->SetCurrentAnimation("Slash"); // 또는 다른 힐탱커용 평타 애니메이션
 				g_Sound.PlaySoundEffect("Sounds/Slash.mp3");
-				{
-					// 네트워크 패킷 전송
-					CS_Packet_Animaition pkt;
-					pkt.type = CS_PACKET_ANIMATION;
-					pkt.animation = 5;
-					pkt.size = sizeof(pkt);
-					gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
-				}
 			}
 			else if (m_job == 2) // 마법사
 			{
 				if (!m_magicAttack) {
-				m_player->SetCurrentAnimation("Slash");
+					m_player->SetCurrentAnimation("Slash");
 					m_magicAttack = true;
-					{
-						// 네트워크 패킷 전송
-						CS_Packet_Animaition pkt;
-						pkt.type = CS_PACKET_ANIMATION;
-						pkt.animation = 5;
-						pkt.size = sizeof(pkt);
-						gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
-					}
 				}
 			}
+			{
+				// 네트워크 패킷 전송
+				CS_Packet_Animaition pkt;
+				pkt.type = CS_PACKET_ANIMATION;
+				pkt.animation = 5;
+				pkt.size = sizeof(pkt);
+				gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
+			}
+
 			m_player->isPunching = true;
 		}
 
@@ -526,7 +519,8 @@ void GameScene::Update(FLOAT timeElapsed)
 
 	m_player->Update(timeElapsed);
 	m_sun->Update(timeElapsed);
-
+	if(m_player->m_isDying)
+	SetDieOffset(m_job);
 	for (auto& object : m_objects)
 		object->Update(timeElapsed);
 
@@ -673,7 +667,7 @@ void GameScene::Update(FLOAT timeElapsed)
 					}
 
 				}
-				else if (monster->isAttacking && !monster->AttackRange.Intersects(m_player->GetBoundingBox())&& monster->m_currentAnim != "Die")
+				else if (monster->isAttacking && !monster->AttackRange.Intersects(m_player->GetBoundingBox()) && monster->m_currentAnim != "Die")
 				{
 
 					monster->PlayAnimationWithBlend("Idle", 0.2f);
@@ -748,16 +742,16 @@ void GameScene::Update(FLOAT timeElapsed)
 						gGameFramework->ZmonstersCoord[idx].y,
 						gGameFramework->ZmonstersCoord[idx].z);
 					monster->SetPosition(pos);
-					monster->AttackRange.Center = pos; 
+					monster->AttackRange.Center = pos;
 					monster->SetRotationY(gGameFramework->ZmonstersToward[idx]);
 					//정점 충돌 test
 					//auto& monster = group[i];
 
-					auto playerBox = m_player->GetBoundingBox(); 
+					auto playerBox = m_player->GetBoundingBox();
 					auto monsterBox = monster->GetBoundingBox();
 					auto monsterCenter = monsterBox.Center;
 
-					XMFLOAT3 playerWorldPos = m_player->GetPosition(); 
+					XMFLOAT3 playerWorldPos = m_player->GetPosition();
 					XMFLOAT3 monsterWorldPos = monster->GetPosition();
 
 					XMFLOAT3 playerCenterWorld = {
@@ -783,8 +777,8 @@ void GameScene::Update(FLOAT timeElapsed)
 					bool intersectY = dy <= (playerExtent.y + monsterExtent.y);
 					bool intersectZ = dz <= (playerExtent.z + monsterExtent.z);
 
-					if (monster->AttackRange.Intersects(m_player->GetBoundingBox())&&monster->m_currentAnim=="Attack")
-					{						
+					if (monster->AttackRange.Intersects(m_player->GetBoundingBox()) && monster->m_currentAnim == "Attack")
+					{
 						float time = monster->m_animTime;
 						float duration = monster->m_animationClips.at(monster->m_currentAnim).duration;
 
@@ -813,7 +807,7 @@ void GameScene::Update(FLOAT timeElapsed)
 					}
 
 					if (intersectX && intersectY && intersectZ)
-					{						
+					{
 						monster->SetBaseColor(XMFLOAT4(1.f, 0.f, 0.f, 1.f)); // 충돌 시 빨강
 						monster->isAttacking = true;
 						if (getAttackCollision())
@@ -827,9 +821,9 @@ void GameScene::Update(FLOAT timeElapsed)
 							m_AttackCollision = false;
 						}
 
-					}					
+					}
 					//정점 충돌 test
-					
+
 					if (monster->m_playMove)
 					{
 						monster->PlayAnimationWithBlend("Move", 0.2f);
@@ -874,7 +868,7 @@ void GameScene::Update(FLOAT timeElapsed)
 		if (m_WhatGrab > 0)
 		{
 			// 칼의 원래 로컬 행렬 (즉, 생성 시 초기 위치 → 플레이어 중심에 있어야 함)
-			XMMATRIX weoponTranslation = XMMatrixIdentity(); 
+			XMMATRIX weoponTranslation = XMMatrixIdentity();
 			if (m_WhatGrab == 1)
 			{
 				weoponTranslation = XMMatrixTranslation(-3000.0f, 0.0f, -1000.0f); // 칼이 손에서 약간 오른쪽에 있는 형태로 수정 가능  
@@ -938,7 +932,7 @@ void GameScene::Update(FLOAT timeElapsed)
 				weoponTranslation = XMMatrixTranslation(-2700.0f, 1500.0f, -1500.0f); // 칼이 손에서 약간 오른쪽에 있는 형태로 수정 가능 
 				otherjobisValid = true;
 			}
-			else if(m_WhatOtherGrab[i] == 3)
+			else if (m_WhatOtherGrab[i] == 3)
 			{
 				// 방패의 원래 로컬 행렬 (즉, 생성 시 초기 위치 → 플레이어 중심에 있어야 함)
 				weoponTranslation = XMMatrixTranslation(6000.0f, 1500.0f, 5500.0f); // 힐탱커 행렬  
@@ -947,7 +941,7 @@ void GameScene::Update(FLOAT timeElapsed)
 			if (!otherjobisValid)
 				continue;
 
-			
+
 			// 현재 애니메이션 클립 기준 본 행렬 계산
 			const auto& clip = m_Otherplayer[i]->m_animationClips.at(m_Otherplayer[i]->m_currentAnim);
 			float time = fmod(m_Otherplayer[i]->m_animTime, clip.duration);
@@ -991,12 +985,13 @@ void GameScene::Update(FLOAT timeElapsed)
 			}
 		}
 
+
 		if (m_Wizardnormal == 1) {
-			FireMagicBall(); 
+			FireMagicBall();
 			m_Wizardnormal = 0;
 		}
 		else if (m_Wizardnormal == 2) {
-			FireOther1MagicBall(); 
+			FireOther1MagicBall();
 			m_Wizardnormal = 0;
 		}
 		else if (m_Wizardnormal == 3) {
@@ -1005,15 +1000,15 @@ void GameScene::Update(FLOAT timeElapsed)
 		}
 
 		if (m_WizardSkill == 1) {
-			FireUltimateBulletRain(); 
+			FireUltimateBulletRain();
 			m_WizardSkill = 0;
 		}
 		else if (m_WizardSkill == 2) {
-			FireUltimateBulletRainOther1(); 
+			FireUltimateBulletRainOther1();
 			m_WizardSkill = 0;
 		}
 		else if (m_WizardSkill == 3) {
-			FireUltimateBulletRainOther2(); 
+			FireUltimateBulletRainOther2();
 			m_WizardSkill = 0;
 		}
 
@@ -2560,15 +2555,15 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 			player->SetNodeNameToGlobalTransform(loader->GetNodeNameToGlobalTransform());
 
 			// m_player 생성 이후 위치
-			BoundingBox playerBox; 
-			playerBox.Center = XMFLOAT3{ 0.f, 4.5f, 0.f }; 
+			BoundingBox playerBox;
+			playerBox.Center = XMFLOAT3{ 0.f, 4.5f, 0.f };
 			playerBox.Extents = { 1.0f, 4.2f, 1.0f }; // 스케일링된 값 
-			player->SetPlayerBoundingBox(playerBox); 
+			player->SetPlayerBoundingBox(playerBox);
 
-			BoundingBox playerAttBox; 
-			playerAttBox.Center = XMFLOAT3{ 0.f, 0.0f, 0.f }; 
-			playerAttBox.Extents = { 2.0f, 4.0f, 2.0f }; 
-			player->SetAttBoundingBox(playerAttBox); 
+			BoundingBox playerAttBox;
+			playerAttBox.Center = XMFLOAT3{ 0.f, 0.0f, 0.f };
+			playerAttBox.Extents = { 2.0f, 4.0f, 2.0f };
+			player->SetAttBoundingBox(playerAttBox);
 
 			player->SetTexture(m_textures["CHARACTER"]);
 			player->SetTextureIndex(m_textures["CHARACTER"]->GetTextureIndex());
@@ -3556,7 +3551,7 @@ void GameScene::FireMagicBall()
 
 	playerPos = m_player->GetPosition();
 	forward = Vector3::Normalize(m_player->GetForward());
-	
+
 
 	playerPos.y += 8.0f; // 발사 높이
 
@@ -4158,7 +4153,7 @@ void GameScene::EndingSceneUpdate(float timeElapsed)
 {
 	if (m_bossDied && !m_showEndingSequence)
 	{
-		if(!m_showEndingSequence) g_Sound.PlayBGM("Sounds/Ending.mp3");
+		if (!m_showEndingSequence) g_Sound.PlayBGM("Sounds/Ending.mp3");
 
 		m_showEndingSequence = true;
 		m_endingTimer = 0.f;
@@ -4170,9 +4165,9 @@ void GameScene::EndingSceneUpdate(float timeElapsed)
 			m_skillIcons[i]->SetVisible(false);
 		}
 		// 플레이어 위치 → 도착 목표
-		if(m_job == 1) m_player->SetPosition({ 567.f, 43.6f, -15.3f }); 
-		if(m_job == 2) m_player->SetPosition({ 567.f, 44.0f, -15.3f }); 
-		if(m_job == 3) m_player->SetPosition({ 567.f, 43.6f, -15.3f }); 
+		if (m_job == 1) m_player->SetPosition({ 567.f, 43.6f, -15.3f });
+		if (m_job == 2) m_player->SetPosition({ 567.f, 44.0f, -15.3f });
+		if (m_job == 3) m_player->SetPosition({ 567.f, 43.6f, -15.3f });
 
 		// 시간 UI 이동 시작
 		m_moveTimeUI = true;
@@ -4230,7 +4225,7 @@ void GameScene::EndingSceneUpdate(float timeElapsed)
 		// 승리 연출용 카메라 고정
 		m_camera->SetPosition(camPos);
 		m_camera->SetLookAt(lookAt);
-		
+
 		if (m_OnceDance) {
 			m_player->SetCurrentAnimation("Dance");
 			m_OnceDance = false;
@@ -4276,6 +4271,27 @@ void GameScene::EndingSceneUpdate(float timeElapsed)
 		if (t >= 1.0f) m_moveTimeUI = false;
 	}
 
+
+
+}
+void GameScene::SetDieOffset(int job)
+{
+	if (job==2)
+	{
+		if (m_player->m_isDying && m_player->m_animTime < 40.f && m_player->m_animTime > 18.f /*&& !m_player->m_dieOffset*/)
+		{			
+			m_player->SetPosition(XMFLOAT3(m_player->GetPosition().x, m_player->GetPosition().y-0.3f, m_player->GetPosition().z));
+			//m_player->m_dieOffset = true;
+		}
+	}
+	else if (job == 1 || job == 3)
+	{
+		if (m_player->m_isDying && (m_player->m_animTime < 58.f && m_player->m_animTime > 33.f)|| (m_player->m_animTime < 102.f && m_player->m_animTime > 83.f))
+		{
+			m_player->SetPosition(XMFLOAT3(m_player->GetPosition().x, m_player->GetPosition().y - 0.12f, m_player->GetPosition().z));
+			//m_player->m_dieOffset = true;
+		}
+	}
 
 
 }
@@ -4334,7 +4350,7 @@ void GameScene::ChangeJob(int index)//0,1,2,3,4,5
 	//if (index == 1) m_OtherJobNum[1] = 99;
 	//if (index == 2) m_OtherJobNum[0] = 99;
 	//if (index == 3) m_OtherJobNum[1] = 99;
-	m_OtherJobNum[index%2] = 99;
+	m_OtherJobNum[index % 2] = 99;
 }
 void GameScene::ClearSceneResources()
 {

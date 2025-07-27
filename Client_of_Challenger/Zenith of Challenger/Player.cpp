@@ -194,7 +194,7 @@ void Player::Update(FLOAT timeElapsed)
         if (m_animationClips.contains(m_currentAnim))
         {
             const auto& clip = m_animationClips.at(m_currentAnim);
-            m_animTime += timeElapsed * clip.ticksPerSecond * 2.0f;
+            m_animTime += timeElapsed * clip.ticksPerSecond * 2.0f;           
             if (m_animTime > clip.duration)
             {
             	//m_animTime = fmod(m_animTime, clip.duration);
