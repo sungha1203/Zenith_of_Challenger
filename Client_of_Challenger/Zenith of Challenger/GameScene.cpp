@@ -501,6 +501,7 @@ void GameScene::Update(FLOAT timeElapsed)
 					monster->SetInitHP(maxHP, maxHP);
 					monster->SetVisible(true);
 					monster->SetDead(false);
+					monster->StopDie = false;
 				}
 				else
 				{
@@ -814,6 +815,54 @@ void GameScene::Update(FLOAT timeElapsed)
 				boss->Update(timeElapsed);
 				boss->SetPosition(XMFLOAT3(gGameFramework->BossCoord.x, gGameFramework->BossCoord.y, gGameFramework->BossCoord.z));
 				boss->SetRotationY(gGameFramework->BossToward);
+				
+
+				auto playerBox = m_player->GetBoundingBox(); 
+				auto monsterBox = boss->GetBoundingBox();
+				auto monsterCenter = monsterBox.Center;
+
+				XMFLOAT3 playerWorldPos = m_player->GetPosition();
+				XMFLOAT3 monsterWorldPos = boss->GetPosition();
+
+				XMFLOAT3 playerCenterWorld = {
+				   playerWorldPos.x,
+				   playerWorldPos.y + 5.0f,
+				   playerWorldPos.z
+				};
+
+				XMFLOAT3 monsterCenterWorld = {
+				   monsterWorldPos.x + monsterCenter.x,
+				   monsterWorldPos.y + monsterCenter.y,
+				   monsterWorldPos.z + monsterCenter.z
+				};
+
+				float dx = abs(playerCenterWorld.x - monsterCenterWorld.x);
+				float dy = abs(playerCenterWorld.y - monsterCenterWorld.y);
+				float dz = abs(playerCenterWorld.z - monsterCenterWorld.z);
+
+				const XMFLOAT3& playerExtent = playerBox.Extents;
+				const XMFLOAT3& monsterExtent = monsterBox.Extents;
+
+				bool intersectX = dx <= (playerExtent.x + monsterExtent.x);
+				bool intersectY = dy <= (playerExtent.y + monsterExtent.y);
+				bool intersectZ = dz <= (playerExtent.z + monsterExtent.z);
+
+				if (intersectX && intersectY && intersectZ)
+				{
+					boss->SetBaseColor(XMFLOAT4(1.f, 0.f, 0.f, 1.f)); // 충돌 시 빨강
+					boss->isAttacking = true;
+					if (getAttackCollision())
+					{
+						CS_Packet_ZMonsterHP pkt;
+						pkt.type = CS_PACKET_ZMONSTERHP;
+						pkt.monsterID = 25;
+						pkt.damage = m_skillAttack;
+						pkt.size = sizeof(pkt);
+						gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
+						m_AttackCollision = false;
+					}
+
+				}
 			}
 		}
 
