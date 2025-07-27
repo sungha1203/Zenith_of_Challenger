@@ -1116,11 +1116,13 @@ void ClientNetwork::ProcessEndGame(char* buffer)
 
 	shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
 	GameScene* gameScene = dynamic_cast<GameScene*>(currentScene.get());
+	if (pkt->time != 300) {
+		gameScene->m_bossMonsters[0]->SetCurrentAnimation("Die");
+		gameScene->SetEnding();
+		g_Sound.PlaySoundEffect("Sounds/BossDie.wav");
+	}
 
-	gameScene->m_bossMonsters[0]->SetCurrentAnimation("Die");
-	gameScene->SetEnding();
-	if(pkt->time == 300) gameScene->m_FailTime = true;
-	g_Sound.PlaySoundEffect("Sounds/BossDie.wav");
+	if(pkt->time == 300) gameScene->EndingFail();
 
 }
 
