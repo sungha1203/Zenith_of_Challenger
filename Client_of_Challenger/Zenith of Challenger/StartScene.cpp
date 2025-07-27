@@ -334,12 +334,12 @@ void StartScene::BuildTextures(const ComPtr<ID3D12Device>& device, const ComPtr<
     m_textures.insert({ "FONT", fontTexture });
 
     auto tex = make_shared<Texture>(device);
-    tex->LoadTexture(device, commandList, TEXT("Image/StartScene/ID.dds"), RootParameter::Texture);
+    tex->LoadTexture(device, commandList, TEXT("Image/StartScene/ID2.dds"), RootParameter::Texture);
     tex->CreateShaderVariable(device);
     m_textures.insert({ "ID_LABEL", tex });
 
     tex = make_shared<Texture>(device);
-    tex->LoadTexture(device, commandList, TEXT("Image/StartScene/PASSWORD.dds"), RootParameter::Texture);
+    tex->LoadTexture(device, commandList, TEXT("Image/StartScene/PASSWORD2.dds"), RootParameter::Texture);
     tex->CreateShaderVariable(device);
     m_textures.insert({ "PW_LABEL", tex });
 
@@ -352,6 +352,16 @@ void StartScene::BuildTextures(const ComPtr<ID3D12Device>& device, const ComPtr<
     tex->LoadTexture(device, commandList, TEXT("Image/StartScene/STAR.dds"), RootParameter::Texture);
     tex->CreateShaderVariable(device);
     m_textures.insert({ "STAR", tex });
+
+    tex = make_shared<Texture>(device);
+    tex->LoadTexture(device, commandList, TEXT("Image/StartScene/WORDBAR.dds"), RootParameter::Texture);
+    tex->CreateShaderVariable(device);
+    m_textures.insert({ "WORDBAR", tex });
+
+    tex = make_shared<Texture>(device);
+    tex->LoadTexture(device, commandList, TEXT("Image/StartScene/WORD2.dds"), RootParameter::Texture);
+    tex->CreateShaderVariable(device);
+    m_textures.insert({ "WORD2", tex });
 
     auto JoinTexture = make_shared<Texture>(device);
     JoinTexture->LoadTexture(device, commandList, TEXT("Image/Select_Server/Join_converted.dds"), RootParameter::Texture);
@@ -452,10 +462,10 @@ void StartScene::BuildObjects(const ComPtr<ID3D12Device>& device)
     m_startBar.push_back(StartBar);
 
     auto idLabel = make_shared<GameObject>(device);
-    idLabel->SetMesh(CreateScreenQuad(device, gGameFramework->GetCommandList(), 0.5f, 0.2f, 0.98f));
+    idLabel->SetMesh(CreateScreenQuad(device, gGameFramework->GetCommandList(), 0.15f, 0.2f, 0.98f));
     idLabel->SetTexture(m_textures["ID_LABEL"]);
     idLabel->SetUseTexture(true);
-    idLabel->SetScale(XMFLOAT3(1.1f, 1.2f, 1.1f));
+    idLabel->SetScale(XMFLOAT3(1.1f, 1.1f, 1.1f));
     idLabel->SetPosition(XMFLOAT3(-0.205f, -0.38f, 0.98f));
     m_StartSceneObjects.push_back(idLabel);
 
@@ -464,8 +474,26 @@ void StartScene::BuildObjects(const ComPtr<ID3D12Device>& device)
     pwLabel->SetTexture(m_textures["PW_LABEL"]);
     pwLabel->SetUseTexture(true);
     pwLabel->SetScale(XMFLOAT3(0.7f, 0.8f, 0.7f));
-    pwLabel->SetPosition(XMFLOAT3(-0.2f, -0.46f, 0.98f));
+    pwLabel->SetPosition(XMFLOAT3(-0.3f, -0.46f, 0.98f));
     m_StartSceneObjects.push_back(pwLabel);
+
+
+    auto WORDBAR = make_shared<GameObject>(device);
+    WORDBAR->SetMesh(CreateScreenQuad(device, gGameFramework->GetCommandList(), 0.5f, 0.15f, 0.98f));
+    WORDBAR->SetTexture(m_textures["WORDBAR"]);
+    WORDBAR->SetUseTexture(true);
+    WORDBAR->SetScale(XMFLOAT3(1.0f, 1.0f, 1.0f));
+    WORDBAR->SetPosition(XMFLOAT3(0.15f, -0.36f, 0.98f));
+    m_StartSceneObjects.push_back(WORDBAR);
+
+
+    auto WORDBAR2 = make_shared<GameObject>(device);
+    WORDBAR2->SetMesh(CreateScreenQuad(device, gGameFramework->GetCommandList(), 0.5f, 0.15f, 0.98f));
+    WORDBAR2->SetTexture(m_textures["WORDBAR"]);
+    WORDBAR2->SetUseTexture(true);
+    WORDBAR2->SetScale(XMFLOAT3(1.0f, 1.0f, 1.0f));
+    WORDBAR2->SetPosition(XMFLOAT3(0.15f, -0.54f, 0.98f));
+    m_StartSceneObjects.push_back(WORDBAR2);
 
 
     for (int i = 0; i < 3; ++i)
@@ -523,62 +551,82 @@ void StartScene::UpdateLoginObjects()
     m_idObjects.clear();
     m_pwObjects.clear();
 
-    float IDStart = -0.03f;
-    float PAStart = -0.03f;
+    float IDStart = -0.02f;
+    float PAStart = -0.05f;
     float charWidth = 0.5f;
     float charHeight = 0.25f;
 
-    //// ===== 아이디 처리 =====
-    //for (size_t i = 0; i < username.size(); ++i)
-    //{
-    //    char ch = static_cast<char>(toupper(username[i]));
-    //    if (ch < 'A' || ch > 'Z') continue; // 알파벳만 처리
-
-    //    int index = ch - 'A';              // 0~25
-    //    float u = index / 26.0f;
-    //    float uStep = 1.0f / 26.0f;
-
-    //    XMFLOAT3 normal = { 0.0f, 0.0f, -1.0f };
-
-    //    vector<TextureVertex> vertices = {
-    //        { { -0.5f, +0.5f, 0.f }, normal, { u, 0.f } },
-    //        { { +0.5f, +0.5f, 0.f }, normal, { u + uStep, 0.f } },
-    //        { { -0.5f, -0.5f, 0.f }, normal, { u, 1.f } },
-    //        { { +0.5f, -0.5f, 0.f }, normal, { u + uStep, 1.f } },
-    //    };
-
-    //    auto mesh = make_shared<Mesh<TextureVertex>>(gGameFramework->GetDevice(), gGameFramework->GetCommandList(), vertices);
-    //    auto obj = make_shared<GameObject>(gGameFramework->GetDevice());
-    //    obj->SetMesh(mesh);
-    //    obj->SetTexture(m_textures["WORD"]);
-    //    obj->SetUseTexture(true);
-    //    obj->SetScale(XMFLOAT3(0.1f, 0.1f, 0.1f));
-    //    obj->SetBaseColor({ 1.f, 1.f, 1.f, 1.f });
-    //    obj->SetPosition(XMFLOAT3(IDStart + i * (0.05f), -0.18f, 0.98f));
-
-    //    m_idObjects.push_back(obj);
-    //}
-
+    // ===== 아이디 처리 (WORD 텍스처 사용, UV 보정 포함) =====
     for (size_t i = 0; i < username.size(); ++i)
     {
-        auto obj = make_shared<GameObject>(gGameFramework->GetDevice());
-        obj->SetMesh(CreateScreenQuad(gGameFramework->GetDevice(), gGameFramework->GetCommandList(), charWidth, charHeight, 0.98f));
-        obj->SetTexture(m_textures["STAR"]);
+        char ch = static_cast<char>(toupper(username[i]));
+        int index = -1;
+
+        if (ch >= 'A' && ch <= 'Z')        index = ch - 'A';           // 0 ~ 25
+        else if (ch >= '0' && ch <= '9')   index = ch - '0' + 26;      // 26 ~ 35
+        else if (ch == '$')                index = 36;
+        else if (ch == ':')                index = 37;
+        else if (ch == '?')                index = 38;
+        else if (ch == '!')                index = 39;
+
+        if (index == -1) continue;
+
+        // UV 계산 (8열 x 5행 기준)
+        int row = index / 8;
+        int col = index % 8;
+
+        float uStep = 1.0f / 8.0f;
+        float vStep = 1.0f / 5.0f;
+        float padU = 0.005f; // 경계 보정용 오프셋
+        float padV = 0.005f;
+
+        float u0 = col * uStep + padU;
+        float u1 = (col + 1) * uStep - padU;
+        float v0 = row * vStep + padV;
+        float v1 = (row + 1) * vStep - padV;
+
+        XMFLOAT3 normal = { 0.f, 0.f, -1.f };
+
+        std::vector<TextureVertex> vertices = {
+            {{ -0.5f, +0.5f, 0.f }, normal, { u0, v0 }},
+            {{ +0.5f, +0.5f, 0.f }, normal, { u1, v0 }},
+            {{ -0.5f, -0.5f, 0.f }, normal, { u0, v1 }},
+
+            {{ -0.5f, -0.5f, 0.f }, normal, { u0, v1 }},
+            {{ +0.5f, +0.5f, 0.f }, normal, { u1, v0 }},
+            {{ +0.5f, -0.5f, 0.f }, normal, { u1, v1 }},
+        };
+
+        auto mesh = std::make_shared<Mesh<TextureVertex>>(
+            gGameFramework->GetDevice(),
+            gGameFramework->GetCommandList(),
+            vertices
+        );
+
+        auto obj = std::make_shared<GameObject>(gGameFramework->GetDevice());
+        obj->SetMesh(mesh);
+        obj->SetTexture(m_textures["WORD2"]);
         obj->SetUseTexture(true);
-        obj->SetPosition(XMFLOAT3(IDStart + i * (0.05f), -0.37f, 0.98f));
+        obj->SetScale({ 0.1f, 0.1f, 0.1f });
+        obj->SetBaseColor({ 1.f, 1.f, 1.f, 1.f });
+        obj->SetPosition({ IDStart + i * 0.04f, -0.18f, 0.98f });
+
         m_idObjects.push_back(obj);
     }
 
+    // ===== 비밀번호 처리 (별 텍스처 고정) =====
     for (size_t i = 0; i < password.size(); ++i)
     {
-        auto obj = make_shared<GameObject>(gGameFramework->GetDevice());
+        auto obj = std::make_shared<GameObject>(gGameFramework->GetDevice());
         obj->SetMesh(CreateScreenQuad(gGameFramework->GetDevice(), gGameFramework->GetCommandList(), charWidth, charHeight, 0.98f));
         obj->SetTexture(m_textures["STAR"]);
         obj->SetUseTexture(true);
-        obj->SetPosition(XMFLOAT3(PAStart + i * (0.05f), -0.54f, 0.98f));
+        obj->SetPosition({ PAStart + i * 0.05f, -0.55f, 0.99f });
         m_pwObjects.push_back(obj);
     }
 }
+
+
 
 void StartScene::ClearSceneResources()
 {

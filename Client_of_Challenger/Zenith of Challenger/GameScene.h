@@ -113,10 +113,12 @@ public:
 	void SetDanceMotion(bool Dan) { m_OnceDance = Dan; m_OnceDanceAlways = Dan; };
 	bool GetDanceMontion() { return m_OnceDanceAlways; };
     void SetDieOffset(int job);
+    void EndingFail();
+
 	//3인칭 카메라 모드 토글
     void SetCameraToggle();
     void SetZenithStart(int StartGame) { m_ZenithStartGame = StartGame; };
-
+    void UpdateFailCamera(float timeElapsed);
     vector<shared_ptr<Monsters>> m_bossMonsters; //보스 몬스터 
 
     void ChangeJob(int index);
@@ -127,7 +129,8 @@ public:
     int  m_job = 0;
     int m_WhatGrab = 0;
     int m_WhatOtherGrab[2] = { 0 };
-    bool m_FailTime = false;
+
+    bool m_Fail = false;
 private:
     int m_OtherJobNum[2] = {99,99};
 
@@ -146,6 +149,9 @@ private:
     //정점맵 토글키
     bool m_ZenithEnabled = false;
 
+    //엔딩 카메라 회전용
+    float m_failCameraAngle = 0.0f;
+    float m_failCameraRadius = 20.0f;
 
     ////////////////몬스터 관련////////////////
     unordered_map<string, vector<shared_ptr<Monsters>>> m_monsterGroups;

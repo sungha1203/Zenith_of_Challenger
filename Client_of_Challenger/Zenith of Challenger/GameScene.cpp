@@ -66,7 +66,7 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device,
 
 void GameScene::MouseEvent(HWND hWnd, FLOAT timeElapsed)
 {
-	if (GetAsyncKeyState(VK_LBUTTON) & 0x0001 && !m_OnceDanceAlways)
+	if (GetAsyncKeyState(VK_LBUTTON) & 0x0001 && !m_OnceDanceAlways && !m_Fail)
 	{
 		POINT pt;
 		GetCursorPos(&pt);
@@ -266,7 +266,7 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
 
 	if (GetAsyncKeyState('L') & 0x0001) // F7 키 눌렀을 때 한 번만
 	{
-		m_FailTime = true;
+		EndingFail();
 	}
 
 	if (GetAsyncKeyState(VK_OEM_PLUS) & 0x0001) // = 키
@@ -1038,6 +1038,8 @@ void GameScene::Update(FLOAT timeElapsed)
 			}
 		}
 
+
+		UpdateFailCamera(timeElapsed);
 	}
 
 	//맵 충돌 
@@ -4228,9 +4230,9 @@ void GameScene::EndingSceneUpdate(float timeElapsed)
 			m_skillIcons[i]->SetVisible(false);
 		}
 		// 플레이어 위치 → 도착 목표
-		if (m_job == 1) m_player->SetPosition({ 567.f, 43.6f, -15.3f });
-		if (m_job == 2) m_player->SetPosition({ 567.f, 44.0f, -15.3f });
-		if (m_job == 3) m_player->SetPosition({ 567.f, 43.6f, -15.3f });
+		if (m_job == 1) m_player->SetPosition({ 563.4f, 43.6f, -0.9f });
+		if (m_job == 2) m_player->SetPosition({ 563.4f, 44.0f, -0.9f });
+		if (m_job == 3) m_player->SetPosition({ 563.4f, 43.6f, -0.9f });
 
 		// 시간 UI 이동 시작
 		m_moveTimeUI = true;
@@ -4290,8 +4292,7 @@ void GameScene::EndingSceneUpdate(float timeElapsed)
 		m_camera->SetLookAt(lookAt);
 
 		if (m_OnceDance) {
-			if(!m_FailTime) m_player->SetCurrentAnimation("Dance");
-			if(m_FailTime) m_player->SetCurrentAnimation("Die");
+			m_player->SetCurrentAnimation("Dance");
 			m_OnceDance = false;
 			m_OnceDanceAlways = true;
 		}
@@ -4299,13 +4300,11 @@ void GameScene::EndingSceneUpdate(float timeElapsed)
 		// UI 띄우기
 		if (m_endingTimer >= MAX_ENDING_TIME)
 		{
-			if(!m_FailTime) m_uiEndingBanner[0]->SetVisible(true); // 승리 UI 표시
-			if(m_FailTime) m_uiEndingBanner[1]->SetVisible(true); // 패배 UI 표시
+			m_uiEndingBanner[0]->SetVisible(true); // 승리 UI 표시
 			m_uiPressOn[0]->SetVisible(true);
 			ShowCursor(TRUE);
 		}
 	}
-
 	if (m_moveTimeUI)
 	{
 		m_timeUIMoveTimer += timeElapsed;
@@ -4334,9 +4333,6 @@ void GameScene::EndingSceneUpdate(float timeElapsed)
 
 		if (t >= 1.0f) m_moveTimeUI = false;
 	}
-
-
-
 }
 void GameScene::SetDieOffset(int job)
 {
@@ -4358,6 +4354,55 @@ void GameScene::SetDieOffset(int job)
 	}
 
 
+}
+void GameScene::EndingFail()
+{
+	m_Fail = true;
+	// UI 숨기기
+	m_uiObjects[0]->SetVisible(false);
+	m_uiObjects[1]->SetVisible(false);
+	g_Sound.PlayBGM("Sounds/EndingFail.mp3");
+
+	for (int i = 0; i < 3; ++i) {
+		m_skillIcons[i]->SetVisible(false);
+	}
+
+	//시간 끄기
+	m_ColonDigit[0]->SetVisible(false);
+	m_timeDigits[0]->SetVisible(false);
+	m_timeDigits[1]->SetVisible(false);
+	m_timeDigits[2]->SetVisible(false);
+	m_timeDigits[3]->SetVisible(false);
+
+	// 플레이어 위치 고정
+	if (m_job == 1) m_player->SetPosition({ 563.4f, 43.6f, -0.9f });
+	if (m_job == 2) m_player->SetPosition({ 563.4f, 43.6f, -0.9f });
+	if (m_job == 3) m_player->SetPosition({ 563.4f, 43.6f, -0.9f });
+
+	m_player->SetCurrentAnimation("Idle");
+
+	m_uiEndingBanner[1]->SetVisible(true); // 패배
+	m_uiPressOn[0]->SetVisible(true);
+
+	XMFLOAT3 playerPos = m_player->GetPosition();
+	m_player->SetRotationY(-20.f);
+	XMFLOAT3 forward = m_player->GetForward();
+
+	XMFLOAT3 camPos = {
+		playerPos.x + forward.x * 20.f,
+		playerPos.y + 12.f,
+		playerPos.z + forward.z * 20.f
+	};
+
+	XMFLOAT3 lookAt = {
+		playerPos.x,
+		playerPos.y + 5.f,
+		playerPos.z
+	};
+
+	// 승리 연출용 카메라 고정
+	m_camera->SetPosition(camPos);
+	m_camera->SetLookAt(lookAt);
 }
 void GameScene::SetCameraToggle()
 {
@@ -4398,6 +4443,25 @@ void GameScene::SetCameraToggle()
 
 	m_camera->SetLens(0.25f * XM_PI, gGameFramework->GetAspectRatio(), 0.1f, 1000.f);
 	m_player->SetCamera(m_camera); // 카메라 바뀐 후 플레이어에도 재등록
+}
+void GameScene::UpdateFailCamera(float timeElapsed)
+{
+	if (!m_Fail) return;
+
+	m_failCameraAngle += XM_PI * 0.1f * timeElapsed; // 회전 속도 조절 (0.1f는 느림)
+	if (m_failCameraAngle >= XM_2PI) m_failCameraAngle -= XM_2PI;
+
+	XMFLOAT3 playerPos = m_player->GetPosition();
+
+	float x = playerPos.x + cosf(m_failCameraAngle) * m_failCameraRadius;
+	float z = playerPos.z + sinf(m_failCameraAngle) * m_failCameraRadius;
+	float y = playerPos.y + 12.0f; // 고정된 높이
+
+	XMFLOAT3 camPos = { x, y, z };
+	XMFLOAT3 lookAt = { playerPos.x, playerPos.y + 5.0f, playerPos.z };
+
+	m_camera->SetPosition(camPos);
+	m_camera->SetLookAt(lookAt);
 }
 void GameScene::ChangeJob(int index)//0,1,2,3,4,5
 {

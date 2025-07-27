@@ -75,7 +75,7 @@ void Player::KeyboardEvent(FLOAT timeElapsed)
 {
     auto gameScene = dynamic_cast<GameScene*>(gGameFramework->GetSceneManager()->GetCurrentScene().get());
 
-    if (!gameScene->GetEndingSceneBool()) {
+    if (!gameScene->GetEndingSceneBool() && !gameScene->m_Fail) {
 
         if (!m_camera) return;
 
@@ -213,7 +213,7 @@ void Player::Update(FLOAT timeElapsed)
     shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
     GameScene* gameScene = dynamic_cast<GameScene*>(currentScene.get());
 
-    if (!gameScene->GetDanceMontion()) { //마지막은 춤추는 모션
+    if (!gameScene->GetDanceMontion() && !gameScene->m_Fail) {
         if (isMoving && !isPunching &&!m_isDying)
         {
             if (GetAsyncKeyState(VK_SHIFT) && m_animationClips.contains("Running"))
