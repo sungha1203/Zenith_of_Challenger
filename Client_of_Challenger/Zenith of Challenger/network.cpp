@@ -996,7 +996,6 @@ void ClientNetwork::ProcessRespone(char* buffer)
 	Diepkt.animation = 9;
 	Diepkt.size = sizeof(Diepkt);
 	gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&Diepkt), Diepkt.size);
-
 	pkt->clientID;
 	pkt->x;
 	pkt->y;
@@ -1004,6 +1003,7 @@ void ClientNetwork::ProcessRespone(char* buffer)
 	XMFLOAT3 pos = { pkt->x, pkt->y, pkt->z };
 	if (pkt->clientID == m_clientID)
 	{
+		//gameScene->m_player->SetPosition(XMFLOAT3(gameScene->m_player->GetPosition().x,40.9f, gameScene->m_player->GetPosition().z));
 		gameScene->m_player->SetCurrentAnimation("Die");
 		gameScene->m_player->m_isDying = true;
 		gameScene->m_player->responePos = pos;
@@ -1087,8 +1087,17 @@ void ClientNetwork::ProcessPlayerHP(char* buffer)
 
 void ClientNetwork::ProcessBossAttackMotion(char* buffer)
 {
-	SC_Packet_BossAttackMotion* pkt;
-
+	shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
+	GameScene* gameScene = dynamic_cast<GameScene*>(currentScene.get());
+	SC_Packet_BossAttackMotion* pkt = reinterpret_cast<SC_Packet_BossAttackMotion*>(buffer);
+	if (pkt->BossSkill == 2)									//점프
+	{
+		gameScene->m_bossMonsters[0]->PlayAnimationWithBlend("Jump", 0.2f);
+	}
+	else if (pkt->BossSkill == 1)								//돌진
+	{
+		gameScene->m_bossMonsters[0]->PlayAnimationWithBlend("Dash", 0.2f);
+	}
 }
 
 // [개발중] 보스 잡고 난 후 게임 종료

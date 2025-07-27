@@ -379,7 +379,7 @@ void Monster::BossMove()
 			}
 			else if (m_bossSkillType == 2) {					// 스킬2(점프)
 				float t = ratio;
-				float jumpY = m_skillJumpHeight * 4 * t * (1 - t);
+				float jumpY = m_skillJumpHeight * 4 * t * (0.985 - t);
 				m_y = m_baseY + jumpY;
 				m_x = m_skillTargetX;
 				m_z = m_skillTargetZ;
@@ -392,6 +392,8 @@ void Monster::BossMove()
 				m_playerDamaged = true;
 				m_damageThisFrame = true;
 			}
+
+			m_y = 45.f;
 
 			if (elapsed >= 2.5f) {
 				std::cout << "[INFO] 보스몬스터 스킬" << m_bossSkillType << " 끝" << std::endl;
@@ -472,7 +474,7 @@ bool Monster::AttackAnimation()
 	return false;
 }
 
-// 
+// 보스 몬스터 공격 모션 시작
 bool Monster::AttackMotion()
 {
 	if (m_attackMotionStart) {
