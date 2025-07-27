@@ -137,6 +137,9 @@ void ClientNetwork::Receive() {
 			case SC_PACKET_ZENITHSTAGE:
 				ProcessZenithStage(currentBuffer);
 				break;
+			case SC_PACKET_CMONSTERATTACK:
+				ProcessCMonsterAttack(currentBuffer);
+				break;
 			case SC_PACKET_ZENITHSTATE:
 				ProcessZenithState(currentBuffer);
 				break;
@@ -977,6 +980,12 @@ void ClientNetwork::ProcessZenithStage(char* buffer)
 
 		gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
 	}
+}
+
+void ClientNetwork::ProcessCMonsterAttack(char* buffer)
+{
+	SC_Packet_CMonsterAttack* pkt = reinterpret_cast<SC_Packet_CMonsterAttack*>(buffer);
+	pkt->monsterID;
 }
 
 // [개발중] 도전스테이지에서 누구 쳐다보고있어?

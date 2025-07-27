@@ -333,7 +333,10 @@ void Network::HandlePacket(int client_id, char* buffer, int length) {
 		break;
 	case CS_PACKET_HEALPACK:
 		ProcessEatHealPack(client_id, buffer, length);
-			break;
+		break;
+	case CS_PACKET_CMONSTERATTACK:
+		ProcessCMonsterAttack(client_id, buffer, length);
+		break;
 	default:
 		std::cout << "[ERROR] 알 수 없는 패킷 수신함. 클라이언트 [" << client_id << "]" << std::endl;
 		break;
@@ -769,6 +772,26 @@ void Network::ProcessDamaged(int client_id, char* buffer, int length)
 	}
 	else if (room.GetMode() == 3) {	// 정점 스테이지
 		g_client[client_id].MinusHP(room.GetZMonsters(pkt->monsterID).GetAttack(), 3);
+	}
+}
+
+// 도전 몬스터 공격 시작
+void Network::ProcessCMonsterAttack(int client_id, char* buffer, int length)
+{
+	CS_Packet_CMonsterAttack* pkt = reinterpret_cast<CS_Packet_CMonsterAttack*>(buffer);
+
+	int room_id = g_room_manager.GetRoomID(client_id);
+	Room& room = g_room_manager.GetRoom(room_id);
+	const auto& client = room.GetClients();
+
+	SC_Packet_CMonsterAttack pkt2;
+	pkt2.type = SC_PACKET_CMONSTERATTACK;
+	pkt2.monsterID = pkt->monsterID;
+	pkt2.size = sizeof(pkt2);
+
+	for (int other_id : client) {
+		if (other_id == client_id) continue;
+		g_network.clients[other_id].do_send(pkt2);
 	}
 }
 
