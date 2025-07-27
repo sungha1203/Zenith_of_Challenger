@@ -616,8 +616,8 @@ void GameScene::Update(FLOAT timeElapsed)
 						m_AttackCollision = false;
 						if (type == "Mushroom_Dark") g_Sound.PlaySoundEffect("Sounds/MushroomAtt.mp3");
 						if (type == "FrightFly") g_Sound.PlaySoundEffect("Sounds/FrightFlyAtt.mp3");
-						//if (type == "Plant_Dionaea") g_Sound.PlaySoundEffect("Sounds/ReinforceButton.mp3");
-						//if (type == "Venus_Blue") g_Sound.PlaySoundEffect("Sounds/ReinforceButton.mp3");
+						if (type == "Plant_Dionaea") g_Sound.PlaySoundEffect("Sounds/Dionaea.wav");
+						if (type == "Venus_Blue") g_Sound.PlaySoundEffect("Sounds/venusBlue.wav");
 						if (type == "Flower_Fairy") g_Sound.PlaySoundEffect("Sounds/FairyAtt.mp3");
 						g_Sound.SetSFXVolume(0.1f);
 					}
@@ -915,7 +915,7 @@ void GameScene::Update(FLOAT timeElapsed)
 				{
 					boss->SetBaseColor(XMFLOAT4(1.f, 0.f, 0.f, 1.f)); // 충돌 시 빨강
 					boss->isAttacking = true;
-					if (m_player->isPunching)
+					if (m_player->isPunching&& !m_player->damageOnce)
 					{
 						CS_Packet_ZMonsterHP pkt;
 						pkt.type = CS_PACKET_ZMONSTERHP;
@@ -924,6 +924,7 @@ void GameScene::Update(FLOAT timeElapsed)
 						pkt.size = sizeof(pkt);
 						gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
 						m_AttackCollision = false;
+						m_player->damageOnce = true;
 					}
 
 				}

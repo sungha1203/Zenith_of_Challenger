@@ -21,7 +21,7 @@ public:
 	bool isRunning = false;
 	void SetCamera(const shared_ptr<Camera>& camera);
 	shared_ptr<Camera> GetCamera() const { return m_camera; }  // Ãß°¡
-
+	bool damageOnce = false;
 	void SetScale(XMFLOAT3 scale);
 	XMFLOAT3 GetScale() const;
 	XMFLOAT3 responePos;

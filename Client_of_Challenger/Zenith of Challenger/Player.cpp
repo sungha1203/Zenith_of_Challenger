@@ -254,6 +254,7 @@ void Player::Update(FLOAT timeElapsed)
             {
                 isPunching = false;
                 isMoving = false;
+                damageOnce = false;
                 //SetCurrentAnimation("Idle");
                 m_currentAnim = "Idle";
                 if(m_canPunch)
