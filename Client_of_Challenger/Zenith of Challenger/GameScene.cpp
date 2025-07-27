@@ -273,8 +273,7 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
 
 	if (GetAsyncKeyState('L') & 0x0001) // F7 키 눌렀을 때 한 번만
 	{
-		ActivateSwordAuraSkill(0);
-
+		m_FailTime = true;
 	}
 
 	if (GetAsyncKeyState(VK_OEM_PLUS) & 0x0001) // = 키
@@ -447,17 +446,18 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
 
 	if (GetAsyncKeyState('R') & 0x0001 && m_bossDied)
 	{
-		// 씬 매니저 접근 후 씬 전환
-		gGameFramework->GetSceneManager()->ChangeScene("StartScene", m_device, m_commandList, m_rootSignature);
+		//// 씬 매니저 접근 후 씬 전환
+		//gGameFramework->GetSceneManager()->ChangeScene("StartScene", m_device, m_commandList, m_rootSignature);
 
-		auto scene = gGameFramework->GetSceneManager()->GetCurrentScene();
-		scene->BuildObjects(m_device, m_commandList, m_rootSignature);  //반드시 다시 호출
+		//auto scene = gGameFramework->GetSceneManager()->GetCurrentScene();
+		//scene->BuildObjects(m_device, m_commandList, m_rootSignature);  //반드시 다시 호출
 
-		// StartScene에 방 선택 UI를 바로 보여주기 위해 변수 설정
-		scene->m_isRoomSelectionActive = true;
-		scene->m_isMouseOnStartBtn = false;
-		gGameFramework->IsSuccess = false;
-		ShowCursor(TRUE);
+		//// StartScene에 방 선택 UI를 바로 보여주기 위해 변수 설정
+		//scene->m_isRoomSelectionActive = true;
+		//scene->m_isMouseOnStartBtn = false;
+		//gGameFramework->IsSuccess = false;
+		//ShowCursor(TRUE);
+		if(m_showEndingSequence) exit(1);
 	}
 
 }
@@ -4239,7 +4239,8 @@ void GameScene::EndingSceneUpdate(float timeElapsed)
 		m_camera->SetLookAt(lookAt);
 		
 		if (m_OnceDance) {
-			m_player->SetCurrentAnimation("Dance");
+			if(!m_FailTime) m_player->SetCurrentAnimation("Dance");
+			if(m_FailTime) m_player->SetCurrentAnimation("Die");
 			m_OnceDance = false;
 			m_OnceDanceAlways = true;
 		}
@@ -4247,10 +4248,10 @@ void GameScene::EndingSceneUpdate(float timeElapsed)
 		// UI 띄우기
 		if (m_endingTimer >= MAX_ENDING_TIME)
 		{
-			m_uiEndingBanner[0]->SetVisible(true); // 승리 UI 표시
+			if(!m_FailTime) m_uiEndingBanner[0]->SetVisible(true); // 승리 UI 표시
+			if(m_FailTime) m_uiEndingBanner[1]->SetVisible(true); // 패배 UI 표시
 			m_uiPressOn[0]->SetVisible(true);
 			ShowCursor(TRUE);
-			//m_uiEndingBanner[1]->SetVisible(true); // 패배 UI 표시
 		}
 	}
 

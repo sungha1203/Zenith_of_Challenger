@@ -127,7 +127,7 @@ public:
     int  m_job = 0;
     int m_WhatGrab = 0;
     int m_WhatOtherGrab[2] = { 0 };
-
+    bool m_FailTime = false;
 private:
     int m_OtherJobNum[2] = {99,99};
 

@@ -1105,6 +1105,7 @@ void ClientNetwork::ProcessEndGame(char* buffer)
 
 	gameScene->m_bossMonsters[0]->SetCurrentAnimation("Die");
 	gameScene->SetEnding();
+	if(pkt->time == 300) gameScene->m_FailTime = true;
 	g_Sound.PlaySoundEffect("Sounds/BossDie.wav");
 
 }
