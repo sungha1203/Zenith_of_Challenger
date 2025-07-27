@@ -466,12 +466,14 @@ void GameScene::Update(FLOAT timeElapsed)
 					monster->SetInitHP(maxHP, maxHP);
 					monster->SetVisible(true);
 					monster->SetDead(false);
+					monster->StopDie = false;
 				}
 				else
 				{
 					// 비활성화 몬스터
 					monster->SetVisible(false);
 					monster->SetDead(true);
+					monster->StopDie = false;
 				}
 			}
 		}
@@ -571,13 +573,25 @@ void GameScene::Update(FLOAT timeElapsed)
 				bool intersectY = dy <= (playerExtent.y + monsterExtent.y);
 				bool intersectZ = dz <= (playerExtent.z + monsterExtent.z);
 
-				if (monster->AttackRange.Intersects(m_player->GetBoundingBox()))
+				if (monster->AttackRange.Intersects(m_player->GetBoundingBox()))// 몬스터의 공격범위에 플레이어가 들어오면 
 				{
-					if (!monster->isAttacking)
+					if (!monster->isAttacking&& monster->m_currentAnim=="Idle")
 					{
 						monster->isAttacking = true;
-						monster->PlayAnimationWithBlend("Attack", 0.2f);
+						monster->PlayAnimationWithBlend("Attack", 0.02f);
+					{
+						CS_Packet_CMonsterAttack pkt;
+						pkt.type = CS_PACKET_CMONSTERATTACK;
+						pkt.monsterID = offset + static_cast<int>(i);
+						pkt.size = sizeof(pkt);
+						gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size); 
 					}
+					}
+
+
+
+
+
 					float time = monster->m_animTime;
 					float duration = monster->m_animationClips.at(monster->m_currentAnim).duration;
 
@@ -589,7 +603,7 @@ void GameScene::Update(FLOAT timeElapsed)
 					const auto& clip = monster->m_animationClips.at(monster->m_currentAnim);
 
 
-					if (monster->m_animTime > clip.duration / 3 && !monster->m_didDamageThisAnim && monster->m_currentAnim != "Die")// 도전 일반몬스터한테 맞을때
+					if (monster->m_animTime > clip.duration / 3 && !monster->m_didDamageThisAnim && monster->m_currentAnim == "Attack")// 도전 일반몬스터한테 맞을때
 					{
 						//m_uiObjects[1]->m_fillAmount -= 0.01;
 						monster->m_didDamageThisAnim = true;
@@ -641,11 +655,18 @@ void GameScene::Update(FLOAT timeElapsed)
 				}
 				else if (monster->isAttacking && !monster->AttackRange.Intersects(m_player->GetBoundingBox()) && monster->m_currentAnim != "Die")
 				{
-
+				
 					monster->PlayAnimationWithBlend("Idle", 0.2f);
-
+				
 					monster->SetBaseColor(XMFLOAT4(1.f, 1.f, 1.f, 1.f)); // 기본 흰색
 					monster->isAttacking = false;
+					{
+						CS_Packet_CMonsterAttack pkt; 
+						pkt.type = CS_PACKET_CMONSTERATTACK; 
+						pkt.monsterID = offset + static_cast<int>(i); 
+						pkt.size = sizeof(pkt); 
+						gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size); 
+					}
 				}
 			}
 		}
@@ -790,6 +811,54 @@ void GameScene::Update(FLOAT timeElapsed)
 				boss->Update(timeElapsed);
 				boss->SetPosition(XMFLOAT3(gGameFramework->BossCoord.x, gGameFramework->BossCoord.y, gGameFramework->BossCoord.z));
 				boss->SetRotationY(gGameFramework->BossToward);
+				
+
+				auto playerBox = m_player->GetBoundingBox(); 
+				auto monsterBox = boss->GetBoundingBox();
+				auto monsterCenter = monsterBox.Center;
+
+				XMFLOAT3 playerWorldPos = m_player->GetPosition();
+				XMFLOAT3 monsterWorldPos = boss->GetPosition();
+
+				XMFLOAT3 playerCenterWorld = {
+				   playerWorldPos.x,
+				   playerWorldPos.y + 5.0f,
+				   playerWorldPos.z
+				};
+
+				XMFLOAT3 monsterCenterWorld = {
+				   monsterWorldPos.x + monsterCenter.x,
+				   monsterWorldPos.y + monsterCenter.y,
+				   monsterWorldPos.z + monsterCenter.z
+				};
+
+				float dx = abs(playerCenterWorld.x - monsterCenterWorld.x);
+				float dy = abs(playerCenterWorld.y - monsterCenterWorld.y);
+				float dz = abs(playerCenterWorld.z - monsterCenterWorld.z);
+
+				const XMFLOAT3& playerExtent = XMFLOAT3(playerBox.Extents.x+ 10.f, playerBox.Extents.y+10.f, playerBox.Extents.z+ 10.f);
+				const XMFLOAT3& monsterExtent = monsterBox.Extents;
+
+				bool intersectX = dx <= (playerExtent.x + monsterExtent.x);
+				bool intersectY = dy <= (playerExtent.y + monsterExtent.y);
+				bool intersectZ = dz <= (playerExtent.z + monsterExtent.z);
+
+				if (intersectX && intersectY && intersectZ)
+				{
+					boss->SetBaseColor(XMFLOAT4(1.f, 0.f, 0.f, 1.f)); // 충돌 시 빨강
+					boss->isAttacking = true;
+					if (m_player->isPunching)
+					{
+						CS_Packet_ZMonsterHP pkt;
+						pkt.type = CS_PACKET_ZMONSTERHP;
+						pkt.monsterID = 25;
+						pkt.damage = m_skillAttack;
+						pkt.size = sizeof(pkt);
+						gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
+						m_AttackCollision = false;
+					}
+
+				}
 			}
 		}
 

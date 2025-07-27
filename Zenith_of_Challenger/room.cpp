@@ -589,6 +589,7 @@ void Room::BroadcastMonsterPosition(int idx)
 				pkt.targetZ = g_client[m_Zmonsters[idx].GetAggroPlayer()].GetZ();
 				break;
 			}
+			pkt.state = -1;
 		}
 		else {			// 정점 보스 몬스터
 			switch (m_Zmonsters[idx].GetState()) {
@@ -615,6 +616,10 @@ void Room::BroadcastMonsterPosition(int idx)
 				}
 				break;
 			}
+			if ((int)m_Zmonsters[idx].GetState() == 0 || (int)m_Zmonsters[idx].GetState() == 1)
+				pkt.state = m_Zmonsters[idx].GetState();
+			else
+				pkt.state = -1;
 		}
 
 		pkt.targetY = m_Zmonsters[idx].GetY();

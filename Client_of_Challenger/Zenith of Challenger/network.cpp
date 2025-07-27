@@ -137,6 +137,9 @@ void ClientNetwork::Receive() {
 			case SC_PACKET_ZENITHSTAGE:
 				ProcessZenithStage(currentBuffer);
 				break;
+			case SC_PACKET_CMONSTERATTACK:
+				ProcessCMonsterAttack(currentBuffer);
+				break;
 			case SC_PACKET_ZENITHSTATE:
 				ProcessZenithState(currentBuffer);
 				break;
@@ -403,7 +406,7 @@ void ClientNetwork::ProcessMonsterHP(char* buffer)
 		{
 			monster->PlayAnimationWithBlend("Die", 0.2f);
 			monster->MarkParticleSpawned(); // 한 번만 실행되게 설정
-
+			monster->isAttacking = false; 
 			// 파티클 스폰
 			for (int i = 0; i < 100; ++i)
 			{
@@ -979,12 +982,82 @@ void ClientNetwork::ProcessZenithStage(char* buffer)
 	}
 }
 
+void ClientNetwork::ProcessCMonsterAttack(char* buffer)
+{
+	SC_Packet_CMonsterAttack* pkt = reinterpret_cast<SC_Packet_CMonsterAttack*>(buffer);
+	pkt->monsterID;
+	shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
+	GameScene* gameScene = dynamic_cast<GameScene*>(currentScene.get());
+
+	string type; 
+	switch (pkt->monsterID/10)
+	{
+	case 0:
+		type= "Mushroom_Dark";
+		break;
+	case 1:
+		type= "FrightFly";
+		break;
+	case 2:
+		type= "Plant_Dionaea";
+		break;
+	case 3:
+		type= "Venus_Blue";
+		break;
+	case 4:
+		type= "Flower_Fairy";
+		break;
+	default:
+		break;
+	}
+
+	if (gameScene->GetMonsterGroups()[type][pkt->monsterID % 10]->m_currentAnim == "Attack")
+		gameScene->GetMonsterGroups()[type][pkt->monsterID % 10]->m_currentAnim = "Idle";
+	else if (gameScene->GetMonsterGroups()[type][pkt->monsterID % 10]->m_currentAnim == "Idle")
+		gameScene->GetMonsterGroups()[type][pkt->monsterID % 10]->m_currentAnim = "Attack";
+}
+
 // [개발중] 도전스테이지에서 누구 쳐다보고있어?
 void ClientNetwork::ProcessCMonsterTarget(char* buffer)
 {
 	SC_Packet_CMonsterTarget* pkt = reinterpret_cast<SC_Packet_CMonsterTarget*>(buffer);
-	pkt->monsterID;
+	shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene(); 
+	GameScene* gameScene = dynamic_cast<GameScene*>(currentScene.get()); 
+	string type;
 	pkt->targetID;
+	switch (pkt->monsterID / 10)
+	{
+	case 0:
+		type = "Mushroom_Dark";
+		break;
+	case 1:
+		type = "FrightFly";
+		break;
+	case 2:
+		type = "Plant_Dionaea";
+		break;
+	case 3:
+		type = "Venus_Blue";
+		break;
+	case 4:
+		type = "Flower_Fairy";
+		break;
+	default:
+		break;
+	}
+	auto monster = gameScene->GetMonsterGroups()[type][pkt->monsterID % 10];
+	if (pkt->targetID == m_clientID)
+	{
+		monster->targetpos = gameScene->m_player->GetPosition();
+	}
+	else if (pkt->targetID == gameScene->otherid[0])
+	{		
+		monster->targetpos = gameScene->m_Otherplayer[0]->GetPosition();
+	}
+	else if (pkt->targetID == gameScene->otherid[1])
+	{
+		monster->targetpos = gameScene->m_Otherplayer[1]->GetPosition();
+	}
 }
 
 // [개발중] 도전, 정점에서 피가 0이 되면 다시 태어나는 곳 지정해주기
@@ -1012,6 +1085,7 @@ void ClientNetwork::ProcessRespone(char* buffer)
 		gameScene->m_player->SetCurrentAnimation("Die");
 		gameScene->m_player->m_isDying = true;
 		gameScene->m_player->responePos = pos;
+		gameScene->m_player->isPunching = false;
 	}
 	//else if (pkt->clientID == gameScene->otherid[0])
 	//{
@@ -1042,6 +1116,20 @@ void ClientNetwork::ProcessZMonsterMove(char* buffer)
 		float angle = atan2f(toWard.x, toWard.z); // x/z
 		float degrees = XMConvertToDegrees(angle);
 		gGameFramework->BossToward = degrees + 180;
+
+		pkt->state == 0;   // idle
+		pkt->state == 1;   // aggro
+		// 현재 씬 가져오기 (GameScene으로 캐스팅 필요)
+		shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene(); 
+		GameScene* gameScene = dynamic_cast<GameScene*>(currentScene.get()); 
+		if (pkt->state==0&& gameScene->m_bossMonsters[0]->m_currentAnim != "Idle")
+		{
+			gameScene->m_bossMonsters[0]->m_currentAnim = "Idle";
+		}
+		else if(pkt->state == 1&& gameScene->m_bossMonsters[0]->m_currentAnim != "Move")
+		{
+			gameScene->m_bossMonsters[0]->m_currentAnim = "Move";
+		}
 	}
 	else
 	{

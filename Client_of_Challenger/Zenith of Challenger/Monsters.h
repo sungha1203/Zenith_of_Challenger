@@ -104,6 +104,7 @@ public:
 	string m_returnAnimation="none";
 	bool m_playMove = false;
 	bool m_ImBoss = false;
+	XMFLOAT3 targetpos{ 0.f ,0.f,0.f};
 private:
 
 	std::unordered_map<std::string, int> m_boneNameToIndex;

@@ -47,6 +47,7 @@ public:
 	void		ProcessAttackEffect(char* buffer);
 	void		ProcessZenithState(char* buffer);
 	void		ProcessZenithStage(char* buffer);
+	void		ProcessCMonsterAttack(char* buffer);
 	void		ProcessCMonsterTarget(char* buffer);
 	void		ProcessRespone(char* buffer);
 	void		ProcessZMonsterMove(char* buffer);
