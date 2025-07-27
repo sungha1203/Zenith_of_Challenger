@@ -840,7 +840,7 @@ void GameScene::Update(FLOAT timeElapsed)
 				float dy = abs(playerCenterWorld.y - monsterCenterWorld.y);
 				float dz = abs(playerCenterWorld.z - monsterCenterWorld.z);
 
-				const XMFLOAT3& playerExtent = playerBox.Extents;
+				const XMFLOAT3& playerExtent = XMFLOAT3(playerBox.Extents.x+ 10.f, playerBox.Extents.y+10.f, playerBox.Extents.z+ 10.f);
 				const XMFLOAT3& monsterExtent = monsterBox.Extents;
 
 				bool intersectX = dx <= (playerExtent.x + monsterExtent.x);
@@ -851,7 +851,7 @@ void GameScene::Update(FLOAT timeElapsed)
 				{
 					boss->SetBaseColor(XMFLOAT4(1.f, 0.f, 0.f, 1.f)); // 충돌 시 빨강
 					boss->isAttacking = true;
-					if (getAttackCollision())
+					if (m_player->isPunching)
 					{
 						CS_Packet_ZMonsterHP pkt;
 						pkt.type = CS_PACKET_ZMONSTERHP;

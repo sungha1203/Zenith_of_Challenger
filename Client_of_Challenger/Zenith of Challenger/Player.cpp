@@ -247,7 +247,7 @@ void Player::Update(FLOAT timeElapsed)
             //m_currentAnim = "Walking";
             if(m_canPunch)
             {
-                XMFLOAT3 AttBoundingExtents = { 15.0f,4.0f,15.0f };
+                XMFLOAT3 AttBoundingExtents = { 5.0f,4.0f,5.0f };
                 m_boundingBox.Extents = AttBoundingExtents;
             }
             if (m_animTime > m_animationClips.at(m_currentAnim).duration - 5.0)

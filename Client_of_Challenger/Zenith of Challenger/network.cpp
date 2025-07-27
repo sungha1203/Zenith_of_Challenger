@@ -1007,6 +1007,7 @@ void ClientNetwork::ProcessRespone(char* buffer)
 		gameScene->m_player->SetCurrentAnimation("Die");
 		gameScene->m_player->m_isDying = true;
 		gameScene->m_player->responePos = pos;
+		gameScene->m_player->isPunching = false;
 	}
 	//else if (pkt->clientID == gameScene->otherid[0])
 	//{
