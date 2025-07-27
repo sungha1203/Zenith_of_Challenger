@@ -756,6 +756,7 @@ void ClientNetwork::ProcessAnimation(char* buffer)
 			if (gameScene) {
 				gameScene->SpawnHealingObject(2);
 				gameScene->m_player->SetCurrentAnimation("Goong");
+				g_Sound.PlaySoundEffect("Sounds/HealSkill.mp3");
 			}
 		}
 
@@ -769,6 +770,8 @@ void ClientNetwork::ProcessAnimation(char* buffer)
 			if (gameScene) {
 				gameScene->SpawnHealingObject(0);
 				gameScene->m_Otherplayer[0]->SetCurrentAnimation("Goong");
+				g_Sound.PlaySoundEffect("Sounds/HealSkill.mp3");
+				g_Sound.SetSFXVolume(0.1f);
 			}
 		}
 
@@ -782,6 +785,8 @@ void ClientNetwork::ProcessAnimation(char* buffer)
 			if (gameScene) {
 				gameScene->SpawnHealingObject(1);
 				gameScene->m_Otherplayer[1]->SetCurrentAnimation("Goong");
+				g_Sound.PlaySoundEffect("Sounds/HealSkill.mp3");
+				g_Sound.SetSFXVolume(0.1f);
 			}
 		}
 		break;

@@ -402,41 +402,6 @@ void GameScene::KeyboardEvent(FLOAT timeElapsed)
 		//OutputDebugStringA(m_showReinforcedWindow ? "[UI] Reinforced ON\n" : "[UI] Reinforced OFF\n");
 	}
 
-
-	if (GetAsyncKeyState('H') & 0x0001)     // 정점 스테이지 직업별 스킬 공격
-	{
-		m_skillCooldowns = m_skillMaxCooldowns;
-		{
-			CS_Packet_Animaition pkt;
-			pkt.type = CS_PACKET_ANIMATION;
-			pkt.animation = 4;
-			pkt.size = sizeof(pkt);
-
-			gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
-		}
-	}
-
-	if (GetAsyncKeyState('C') & 0x0001)
-	{
-		if (!m_magicAttack) {
-			m_magicAttack = true;
-			{
-				// 네트워크 패킷 전송
-				CS_Packet_Animaition pkt;
-				pkt.type = CS_PACKET_ANIMATION;
-				pkt.animation = 5;
-				pkt.size = sizeof(pkt);
-				gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
-			}
-		}
-	}
-
-	if (GetAsyncKeyState('P') & 0x8000)
-	{
-		XMFLOAT3 playerPos = m_player->GetPosition();
-		SpawnHealingEffect(playerPos);
-	}
-
 	if (GetAsyncKeyState('R') & 0x0001 && m_bossDied)
 	{
 		//// 씬 매니저 접근 후 씬 전환
@@ -624,7 +589,7 @@ void GameScene::Update(FLOAT timeElapsed)
 					const auto& clip = monster->m_animationClips.at(monster->m_currentAnim);
 
 
-					if (monster->m_animTime > clip.duration / 3 && !monster->m_didDamageThisAnim)// 도전 일반몬스터한테 맞을때
+					if (monster->m_animTime > clip.duration / 3 && !monster->m_didDamageThisAnim && monster->m_currentAnim != "Die")// 도전 일반몬스터한테 맞을때
 					{
 						//m_uiObjects[1]->m_fillAmount -= 0.01;
 						monster->m_didDamageThisAnim = true;
@@ -635,6 +600,12 @@ void GameScene::Update(FLOAT timeElapsed)
 
 						gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
 						m_AttackCollision = false;
+						if (type == "Mushroom_Dark") g_Sound.PlaySoundEffect("Sounds/MushroomAtt.mp3");
+						if (type == "FrightFly") g_Sound.PlaySoundEffect("Sounds/FrightFlyAtt.mp3");
+						//if (type == "Plant_Dionaea") g_Sound.PlaySoundEffect("Sounds/ReinforceButton.mp3");
+						//if (type == "Venus_Blue") g_Sound.PlaySoundEffect("Sounds/ReinforceButton.mp3");
+						if (type == "Flower_Fairy") g_Sound.PlaySoundEffect("Sounds/FairyAtt.mp3");
+						g_Sound.SetSFXVolume(0.1f);
 					}
 
 					monster->m_prevAnimTime = time;
@@ -785,7 +756,12 @@ void GameScene::Update(FLOAT timeElapsed)
 							CS_Packet_ZMonsterHP pkt;
 							pkt.type = CS_PACKET_ZMONSTERHP;
 							pkt.monsterID = idx;
-							pkt.damage = m_skillAttack;
+							if (m_SwordNum == 0) {
+								pkt.damage = m_skillAttack;
+							}
+							else{
+								pkt.damage = m_normalAttack;
+							}
 							pkt.size = sizeof(pkt);
 							gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
 							m_AttackCollision = false;
@@ -3810,7 +3786,8 @@ void GameScene::CheckHealingCollision()
 					++it;
 					goto next_heal;
 				}
-
+				g_Sound.PlaySoundEffect("Sounds/Heal.mp3");
+				g_Sound.SetSFXVolume(0.1f);
 				// 그 외 유저가 힐팩을 먹은 경우 → 힐팩 제거 + 이펙트 표시
 				SpawnHealingEffect(otherPos);
 				it = m_healingObjects.erase(it);
@@ -3835,6 +3812,8 @@ void GameScene::CheckHealingCollision()
 				gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
 			}
 			SpawnHealingEffect(m_player->GetPosition());
+			g_Sound.PlaySoundEffect("Sounds/Heal.mp3");
+
 			it = m_healingObjects.erase(it);
 		}
 		else
