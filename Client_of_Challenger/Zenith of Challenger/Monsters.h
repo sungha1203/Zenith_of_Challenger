@@ -77,7 +77,8 @@ public:
 	shared_ptr<Camera> m_camera;
 
 	FLOAT m_speed;
-
+	bool rejump=false;
+	int rejumpNum=0;
 	// 애니메이션 상태 관리
 	std::unordered_map<std::string, AnimationClip> m_animationClips;
 	std::string m_currentAnim = "Idle";

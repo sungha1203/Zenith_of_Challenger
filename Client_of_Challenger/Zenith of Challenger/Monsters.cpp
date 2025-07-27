@@ -93,17 +93,27 @@ void Monsters::Update(FLOAT timeElapsed)
 				}
 				else if (m_AnimOnce)
 				{
-					m_animTime -= clip.duration;
-					//PlayAnimationWithBlend(m_returnAnimation, 2.0f);
+					m_animTime -= clip.duration;					
 					m_playMove = true; 
-					m_AnimOnce = false;
-					//m_returnAnimation = "none";
+					m_AnimOnce = false;					
 				}
 				else
 				{
 					if (m_currentAnim == "Jump")
 					{
-						m_currentAnim = "Move";
+						rejumpNum++;
+						
+						if(rejumpNum==2)
+						{
+							//m_currentAnim = "Move";
+							PlayAnimationWithBlend("Move", 0.2);
+							rejumpNum = 0;
+						}
+						else if(rejumpNum==1)
+						{
+							m_animTime += 20.f;
+						}
+
 					}
 						m_animTime -= clip.duration;
 				}
