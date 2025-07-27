@@ -106,6 +106,7 @@ void Monsters::Update(FLOAT timeElapsed)
 						if(rejumpNum==2)
 						{
 							//m_currentAnim = "Move";
+							//g_Sound.PlaySoundEffect("Sounds/destruction1.mp3");
 							PlayAnimationWithBlend("Move", 0.2);
 							rejumpNum = 0;
 						}
