@@ -270,6 +270,21 @@ void ClientInfo::MinusHP(int damage, int gamemode)
 	if (m_ingameInfo.hp > 0)
 		m_ingameInfo.hp -= damage;
 	if (m_ingameInfo.hp <= 0) { // 피0이 되면
+		if (gamemode == 1) {
+			// 클라에서 죽는 애니메이션 나온 뒤 3초뒤에 부활
+			m_ingameInfo.x = -172.79f;
+			m_ingameInfo.y = 0.1f;
+			m_ingameInfo.z = 77.81f;
+			g_network.SendPlayerRespone(GetID());
+		}
+		else if (gamemode == 3) {
+			// 클라에서 죽는 애니메이션 나온 뒤 3초뒤에 부활
+			m_ingameInfo.x = 557.f;
+			m_ingameInfo.y = 44.f;
+			m_ingameInfo.z = -11.f;
+			g_network.SendPlayerRespone(GetID());
+		}
+
 		switch ((int)GetJobType()) {
 		case 0:
 			m_ingameInfo.hp = 100;
@@ -286,20 +301,6 @@ void ClientInfo::MinusHP(int damage, int gamemode)
 		}
 		g_network.SendPlayerHP(GetID());
 
-		if (gamemode == 1) {
-			// 클라에서 죽는 애니메이션 나온 뒤 3초뒤에 부활
-			m_ingameInfo.x = -172.79f;
-			m_ingameInfo.y = 0.1f;
-			m_ingameInfo.z = 77.81f;
-			g_network.SendPlayerRespone(GetID());
-		}
-		else if (gamemode == 3) {
-			// 클라에서 죽는 애니메이션 나온 뒤 3초뒤에 부활
-			m_ingameInfo.x = 557.f;
-			m_ingameInfo.y = 44.f;
-			m_ingameInfo.z = -11.f;
-			g_network.SendPlayerRespone(GetID());
-		}
 	}
 
 	g_network.SendPlayerHP(GetID());

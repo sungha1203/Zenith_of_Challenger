@@ -79,7 +79,7 @@ private:
 
 	std::vector<PlayerInfo> m_PlayerCoord;			// 각 플레이어의 현재 좌표
 	std::chrono::steady_clock::time_point m_UpdatelastAggro;
-	const float AGGRO_N_TARGET_UPDATE_TIME = 0.1f;	// 3초마다 어그로, 바라보는 방향 리스트 갱신
+	const float AGGRO_N_TARGET_UPDATE_TIME = 3.0f;	// 3초마다 어그로, 바라보는 방향 리스트 갱신
 
 public:
 	Room() : m_room_id(-1), m_IsGaming(false), m_RoomState(Stage::LOBBY) {}
