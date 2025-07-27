@@ -79,6 +79,7 @@ protected:
 
 
     vector<shared_ptr<GameObject>> m_objects;
+    vector<shared_ptr<GameObject>> m_StartGround;
     shared_ptr<GameObject> m_skybox;
     shared_ptr<Terrain> m_terrain;
 

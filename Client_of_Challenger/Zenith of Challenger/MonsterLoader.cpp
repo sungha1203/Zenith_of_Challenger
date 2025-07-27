@@ -291,7 +291,7 @@ void LoadAllMonsters(
         // [3] 바운딩 박스
         BoundingBox box;
         box.Center = XMFLOAT3{ 0.f, 10.5f, 0.f };
-        box.Extents = XMFLOAT3{ 15.0f, 10.0f, 10.0f };
+        box.Extents = XMFLOAT3{ 15.0f, 10.0f, 20.0f };
         monster->SetMonstersBoundingBox(box);
 
         // [4] 본 버퍼 SRV 생성

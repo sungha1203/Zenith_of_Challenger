@@ -524,6 +524,7 @@ void GameScene::Update(FLOAT timeElapsed)
 	for (auto& object : m_objects)
 		object->Update(timeElapsed);
 
+
 	// 플레이어 위치 가져오기
 	if (gGameFramework->GetPlayer())
 	{
@@ -675,37 +676,6 @@ void GameScene::Update(FLOAT timeElapsed)
 					monster->SetBaseColor(XMFLOAT4(1.f, 1.f, 1.f, 1.f)); // 기본 흰색
 					monster->isAttacking = false;
 				}
-			}
-		}
-
-		for (auto& obj : m_objects)
-		{
-			const BoundingBox& objBox = obj->GetBoundingBox();
-			const XMFLOAT3& objCenter = objBox.Center;
-
-			XMFLOAT3 objPos = obj->GetPosition();
-			XMFLOAT3 objCenterWorld = {
-			   objPos.x + objCenter.x,
-			   objPos.y + objCenter.y,
-			   objPos.z + objCenter.z
-			};
-
-			XMFLOAT3 playerPos = m_player->GetPosition();
-			XMFLOAT3 playerCenterWorld = {
-			   playerPos.x,
-			   playerPos.y + 5.0f,
-			   playerPos.z
-			};
-
-			const XMFLOAT3& objExtent = objBox.Extents;
-
-			bool intersectX = abs(playerCenterWorld.x - objCenterWorld.x) <= (playerBox.Extents.x + objExtent.x);
-			bool intersectY = abs(playerCenterWorld.y - objCenterWorld.y) <= (playerBox.Extents.y + objExtent.y);
-			bool intersectZ = abs(playerCenterWorld.z - objCenterWorld.z) <= (playerBox.Extents.z + objExtent.z);
-
-			if (intersectX && intersectY && intersectZ)
-			{
-				m_player->SetPosition(m_player->m_prevPosition);
 			}
 		}
 
@@ -1024,6 +994,38 @@ void GameScene::Update(FLOAT timeElapsed)
 
 	}
 
+	//맵 충돌 
+	auto playerBox = m_player->GetBoundingBox();
+	for (auto& obj : m_objects)
+	{
+		const BoundingBox& objBox = obj->GetBoundingBox();
+		const XMFLOAT3& objCenter = objBox.Center;
+
+		XMFLOAT3 objPos = obj->GetPosition();
+		XMFLOAT3 objCenterWorld = {
+		   objPos.x + objCenter.x,
+		   objPos.y + objCenter.y,
+		   objPos.z + objCenter.z
+		};
+
+		XMFLOAT3 playerPos = m_player->GetPosition();
+		XMFLOAT3 playerCenterWorld = {
+		   playerPos.x,
+		   playerPos.y + 5.0f,
+		   playerPos.z
+		};
+
+		const XMFLOAT3& objExtent = objBox.Extents;
+
+		bool intersectX = abs(playerCenterWorld.x - objCenterWorld.x) <= (playerBox.Extents.x + objExtent.x);
+		bool intersectY = abs(playerCenterWorld.y - objCenterWorld.y) <= (playerBox.Extents.y + objExtent.y);
+		bool intersectZ = abs(playerCenterWorld.z - objCenterWorld.z) <= (playerBox.Extents.z + objExtent.z);
+
+		if (intersectX && intersectY && intersectZ)
+		{
+			m_player->SetPosition(m_player->m_prevPosition);
+		}
+	}
 
 	if (!m_bossDied && m_ZenithStartGame) UpdateGameTimeDigits(); //보스 스테이지에 진입하고 보스가 죽지 않을때 업데이트
 
@@ -1055,11 +1057,10 @@ void GameScene::Update(FLOAT timeElapsed)
 		m_inventoryDigits[i]->SetCustomUV(u0, 0.0f, u1, 1.0f);
 	}
 
-
 	m_skybox->SetPosition(m_camera->GetEye());
 
 	//힐탱커 스킬 업데이트
-	for (const auto& healing : m_healingObjects)
+	for (const auto& healing : m_healingObjects) // 400.8 / 51.2 / 47.2
 	{
 		healing->Update(timeElapsed);
 	}
@@ -2755,6 +2756,12 @@ void GameScene::BuildObjects(const ComPtr<ID3D12Device>& device)
 	AddCubeCollider({ 46, 10, 135 }, { 12, 15, 14 });
 	AddCubeCollider({ 12, 10, 190 }, { 22, 25, 15 });
 
+	//정점 맵 오브젝트
+	AddCubeCollider({ 440.8, 71.2, 33.2 }, { 60, 30, 20 });// 400.8 / 51.2 / 47.2
+	AddCubeCollider({ 440.8, 71.2, -33.2 }, { 60, 30, 20 });// 400.8 / 51.2 / 47.2
+	AddCubeCollider({ 235, 57.5, 116.4 }, { 42, 30, 30 });// 400.8 / 51.2 / 47.2
+	AddCubeCollider({ -0.5, 63.5, 143.4 }, { 60, 60, 60 });// 400.8 / 51.2 / 47.2
+	AddCubeCollider({ 119.3, 68.8, -216.4 }, { 70, 30, 30 }, -35.f);// 400.8 / 51.2 / 47.2
 
 
 	//몬스터 로드

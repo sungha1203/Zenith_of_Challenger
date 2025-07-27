@@ -593,8 +593,8 @@ void Room::BroadcastMonsterPosition(int idx)
 		else {			// 정점 보스 몬스터
 			switch (m_Zmonsters[idx].GetState()) {
 			case 0:		// 보스 몬스터 처음 위치
-				pkt.targetX = -172.79f;
-				pkt.targetZ = 77.81f;
+				pkt.targetX = 557.f;
+				pkt.targetZ = -11.f;
 				break;
 			case 1:		// 플레이어 어그로
 				pkt.targetX = g_client[m_Zmonsters[idx].GetAggroPlayer()].GetX();
