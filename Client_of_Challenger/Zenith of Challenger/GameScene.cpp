@@ -473,6 +473,7 @@ void GameScene::Update(FLOAT timeElapsed)
 					// 비활성화 몬스터
 					monster->SetVisible(false);
 					monster->SetDead(true);
+					monster->StopDie = false;
 				}
 			}
 		}
@@ -572,13 +573,25 @@ void GameScene::Update(FLOAT timeElapsed)
 				bool intersectY = dy <= (playerExtent.y + monsterExtent.y);
 				bool intersectZ = dz <= (playerExtent.z + monsterExtent.z);
 
-				if (monster->AttackRange.Intersects(m_player->GetBoundingBox()))
+				if (monster->AttackRange.Intersects(m_player->GetBoundingBox()))// 몬스터의 공격범위에 플레이어가 들어오면 
 				{
-					if (!monster->isAttacking)
+					if (!monster->isAttacking&& monster->m_currentAnim=="Idle")
 					{
 						monster->isAttacking = true;
-						monster->PlayAnimationWithBlend("Attack", 0.2f);
+						monster->PlayAnimationWithBlend("Attack", 0.02f);
+					{
+						CS_Packet_CMonsterAttack pkt;
+						pkt.type = CS_PACKET_CMONSTERATTACK;
+						pkt.monsterID = offset + static_cast<int>(i);
+						pkt.size = sizeof(pkt);
+						gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size); 
 					}
+					}
+
+
+
+
+
 					float time = monster->m_animTime;
 					float duration = monster->m_animationClips.at(monster->m_currentAnim).duration;
 
@@ -590,7 +603,7 @@ void GameScene::Update(FLOAT timeElapsed)
 					const auto& clip = monster->m_animationClips.at(monster->m_currentAnim);
 
 
-					if (monster->m_animTime > clip.duration / 3 && !monster->m_didDamageThisAnim && monster->m_currentAnim != "Die")// 도전 일반몬스터한테 맞을때
+					if (monster->m_animTime > clip.duration / 3 && !monster->m_didDamageThisAnim && monster->m_currentAnim == "Attack")// 도전 일반몬스터한테 맞을때
 					{
 						//m_uiObjects[1]->m_fillAmount -= 0.01;
 						monster->m_didDamageThisAnim = true;
@@ -642,11 +655,18 @@ void GameScene::Update(FLOAT timeElapsed)
 				}
 				else if (monster->isAttacking && !monster->AttackRange.Intersects(m_player->GetBoundingBox()) && monster->m_currentAnim != "Die")
 				{
-
+				
 					monster->PlayAnimationWithBlend("Idle", 0.2f);
-
+				
 					monster->SetBaseColor(XMFLOAT4(1.f, 1.f, 1.f, 1.f)); // 기본 흰색
 					monster->isAttacking = false;
+					{
+						CS_Packet_CMonsterAttack pkt; 
+						pkt.type = CS_PACKET_CMONSTERATTACK; 
+						pkt.monsterID = offset + static_cast<int>(i); 
+						pkt.size = sizeof(pkt); 
+						gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size); 
+					}
 				}
 			}
 		}

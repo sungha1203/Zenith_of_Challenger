@@ -114,7 +114,7 @@ void Monsters::Update(FLOAT timeElapsed)
 							m_animTime += 20.f;
 						}
 
-					}
+					}					
 						m_animTime -= clip.duration;
 				}
 			}
@@ -125,14 +125,16 @@ void Monsters::Update(FLOAT timeElapsed)
 	// [1] 플레이어 위치 받아오기
 	if (!gGameFramework->GetPlayer()) return;
 
-	XMFLOAT3 targetPos = gGameFramework->GetPlayer()->GetPosition();
+	//if()
+	//XMFLOAT3 targetPos = gGameFramework->GetPlayer()->GetPosition();
+	//XMFLOAT3 targetPos = gGameFramework->g_pos;
 	XMFLOAT3 myPos = GetPosition();
 
 	// [2] 방향 벡터 계산
 	XMFLOAT3 toPlayer = {
-		targetPos.x - myPos.x,
+		targetpos.x - myPos.x,
 		0.f, // Y축 회전이므로 높이 무시
-		targetPos.z - myPos.z
+		targetpos.z - myPos.z
 	};
 
 	if (!Vector3::IsZero(toPlayer))
