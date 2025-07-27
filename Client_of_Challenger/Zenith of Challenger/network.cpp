@@ -1052,6 +1052,10 @@ void ClientNetwork::ProcessZMonsterMove(char* buffer)
 		float angle = atan2f(toWard.x, toWard.z); // x/z
 		float degrees = XMConvertToDegrees(angle);
 		gGameFramework->BossToward = degrees + 180;
+
+		pkt->state == 0;   // idle
+		pkt->state == 1;   // aggro
+
 	}
 	else
 	{
