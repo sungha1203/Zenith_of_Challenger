@@ -36,6 +36,7 @@ public:
 	static void		ProcessAttackEffect(int client_id, char* buffer, int length);		// 스킬, 기본 공격 이펙트(전사, 마법사)
 	static void		ProcessEatHealPack(int client_id, char* buffer, int length);		// 힐팩먹기
 	static void		ProcessDamaged(int client_id, char* buffer, int length);			// 몬스터한테 피해 입었을 때
+	static void		ProcessCMonsterAttack(int client_id, char* buffer, int length);		// 도전 몬스터 공격 시작시
 
 	// ---------패킷 뿌려주기---------
 	static void		SendLoginResponse(int client_id, bool success);

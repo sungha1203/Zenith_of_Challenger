@@ -137,6 +137,9 @@ void ClientNetwork::Receive() {
 			case SC_PACKET_ZENITHSTAGE:
 				ProcessZenithStage(currentBuffer);
 				break;
+			case SC_PACKET_CMONSTERATTACK:
+				ProcessCMonsterAttack(currentBuffer);
+				break;
 			case SC_PACKET_ZENITHSTATE:
 				ProcessZenithState(currentBuffer);
 				break;
@@ -756,6 +759,7 @@ void ClientNetwork::ProcessAnimation(char* buffer)
 			if (gameScene) {
 				gameScene->SpawnHealingObject(2);
 				gameScene->m_player->SetCurrentAnimation("Goong");
+				g_Sound.PlaySoundEffect("Sounds/HealSkill.mp3");
 			}
 		}
 
@@ -769,6 +773,8 @@ void ClientNetwork::ProcessAnimation(char* buffer)
 			if (gameScene) {
 				gameScene->SpawnHealingObject(0);
 				gameScene->m_Otherplayer[0]->SetCurrentAnimation("Goong");
+				g_Sound.PlaySoundEffect("Sounds/HealSkill.mp3");
+				g_Sound.SetSFXVolume(0.1f);
 			}
 		}
 
@@ -782,6 +788,8 @@ void ClientNetwork::ProcessAnimation(char* buffer)
 			if (gameScene) {
 				gameScene->SpawnHealingObject(1);
 				gameScene->m_Otherplayer[1]->SetCurrentAnimation("Goong");
+				g_Sound.PlaySoundEffect("Sounds/HealSkill.mp3");
+				g_Sound.SetSFXVolume(0.1f);
 			}
 		}
 		break;
@@ -972,6 +980,12 @@ void ClientNetwork::ProcessZenithStage(char* buffer)
 
 		gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
 	}
+}
+
+void ClientNetwork::ProcessCMonsterAttack(char* buffer)
+{
+	SC_Packet_CMonsterAttack* pkt = reinterpret_cast<SC_Packet_CMonsterAttack*>(buffer);
+	pkt->monsterID;
 }
 
 // [개발중] 도전스테이지에서 누구 쳐다보고있어?

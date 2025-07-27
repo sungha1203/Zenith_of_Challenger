@@ -116,7 +116,7 @@ void Camera::UpdateBasis()
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ThirdPersonCamera::ThirdPersonCamera(const ComPtr<ID3D12Device>& device) : Camera(device),
-m_radius{ 25.0f },
+m_radius{ 40.0f },
 m_phi{ XMConvertToRadians(45.0f) }, m_theta{ Settings::DefaultCameraYaw }
 {
 

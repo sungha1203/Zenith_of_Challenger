@@ -257,7 +257,7 @@ private:
     vector<shared_ptr<GameObject>> m_timeDigits;
     vector<shared_ptr<GameObject>> m_skillIcons;
     vector<float> m_skillCooldowns = { 0.f, 0.f, 0.f }; // 남은 쿨타임
-    vector<float> m_skillMaxCooldowns = { 4.f, 4.f, 4.f }; // 최대 쿨타임
+    vector<float> m_skillMaxCooldowns = { 4.f, 4.f, 3.f }; // 최대 쿨타임
 
     vector<shared_ptr<SwordAuraObject>> m_swordAuraObjects;
     bool m_isSwordSkillActive = false;
