@@ -112,7 +112,7 @@ public:
 	bool GetEndingSceneBool() { return m_showEndingSequence; };
 	void SetDanceMotion(bool Dan) { m_OnceDance = Dan; m_OnceDanceAlways = Dan; };
 	bool GetDanceMontion() { return m_OnceDanceAlways; };
-
+    void SetDieOffset(int job);
 	//3인칭 카메라 모드 토글
     void SetCameraToggle();
     void SetZenithStart(int StartGame) { m_ZenithStartGame = StartGame; };
@@ -127,7 +127,7 @@ public:
     int  m_job = 0;
     int m_WhatGrab = 0;
     int m_WhatOtherGrab[2] = { 0 };
-
+    bool m_FailTime = false;
 private:
     int m_OtherJobNum[2] = {99,99};
 

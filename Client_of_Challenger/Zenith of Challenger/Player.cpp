@@ -151,13 +151,13 @@ void Player::KeyboardEvent(FLOAT timeElapsed)
 
         // 최종 이동
         XMFLOAT3 movement = Vector3::Mul(velocity, timeElapsed);
-        if (!Vector3::IsZero(movement))
+        if (!Vector3::IsZero(movement)&&!m_isDying)
         {
             Transform(movement);
         }
 
         // 쿼터뷰 회전 적용
-        if (/*isQuarter &&*/ !Vector3::IsZero(faceDirection))
+        if (/*isQuarter &&*/ !Vector3::IsZero(faceDirection) && !m_isDying)
         {
             faceDirection = Vector3::Normalize(faceDirection);
             float angle = atan2f(faceDirection.x, faceDirection.z);
@@ -194,7 +194,7 @@ void Player::Update(FLOAT timeElapsed)
         if (m_animationClips.contains(m_currentAnim))
         {
             const auto& clip = m_animationClips.at(m_currentAnim);
-            m_animTime += timeElapsed * clip.ticksPerSecond * 2.0f;
+            m_animTime += timeElapsed * clip.ticksPerSecond * 2.0f;           
             if (m_animTime > clip.duration)
             {
             	//m_animTime = fmod(m_animTime, clip.duration);
@@ -208,7 +208,7 @@ void Player::Update(FLOAT timeElapsed)
         }
     }
 
-    bool isMoving = keyStates['W'] || keyStates['A'] || keyStates['S'] || keyStates['D'];
+    bool isMoving = (keyStates['W'] || keyStates['A'] || keyStates['S'] || keyStates['D']);
 
     shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene();
     GameScene* gameScene = dynamic_cast<GameScene*>(currentScene.get());

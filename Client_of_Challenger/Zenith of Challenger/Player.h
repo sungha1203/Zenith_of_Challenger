@@ -16,7 +16,7 @@ public:
 
 	virtual void Update(FLOAT timeElapsed) override;
 	virtual void Render(const ComPtr<ID3D12GraphicsCommandList>& commandList) override; // 추가
-
+	bool m_dieOffset = false;// 죽을때 y값 조절
 	void Move(XMFLOAT3 direction, FLOAT speed);  // 이동 로직 추가
 	bool isRunning = false;
 	void SetCamera(const shared_ptr<Camera>& camera);
