@@ -1122,11 +1122,11 @@ void ClientNetwork::ProcessZMonsterMove(char* buffer)
 		// 현재 씬 가져오기 (GameScene으로 캐스팅 필요)
 		shared_ptr<Scene> currentScene = gGameFramework->GetSceneManager()->GetCurrentScene(); 
 		GameScene* gameScene = dynamic_cast<GameScene*>(currentScene.get()); 
-		if (pkt->state==0&& gameScene->m_bossMonsters[0]->m_currentAnim != "Idle")
+		if (pkt->state==0&& gameScene->m_bossMonsters[0]->m_currentAnim != "Idle"&& gameScene->m_bossMonsters[0]->m_currentAnim != "Die")
 		{
 			gameScene->m_bossMonsters[0]->m_currentAnim = "Idle";
 		}
-		else if(pkt->state == 1&& gameScene->m_bossMonsters[0]->m_currentAnim != "Move")
+		else if(pkt->state == 1&& gameScene->m_bossMonsters[0]->m_currentAnim != "Move"&& gameScene->m_bossMonsters[0]->m_currentAnim != "Die")
 		{
 			gameScene->m_bossMonsters[0]->m_currentAnim = "Move";
 		}
