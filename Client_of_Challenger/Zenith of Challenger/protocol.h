@@ -81,8 +81,8 @@ struct CS_Packet_Login
 struct CS_Packet_Room
 {
 	char	type;
-	int	size;
-	UCHAR	room_id;
+	int		size;
+	int		room_id;
 };
 
 struct CS_Packet_Customize

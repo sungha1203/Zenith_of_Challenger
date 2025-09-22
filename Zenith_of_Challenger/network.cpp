@@ -347,7 +347,7 @@ void Network::HandlePacket(int client_id, char* buffer, int length) {
 
 // 방 입장 성공 여부
 void Network::ProcessRoomJoin(int client_id, char* buffer, int length) {
-	int room_id = buffer[2];  // 클라이언트가 입력한 방 번호
+	int room_id = buffer[5];  // 클라이언트가 입력한 방 번호
 
 	if (g_room_manager.JoinRoom(client_id, room_id)) {
 		SendRoomJoinResponse(client_id, true, room_id);

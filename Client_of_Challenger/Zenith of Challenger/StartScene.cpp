@@ -238,13 +238,12 @@ void StartScene::MouseEvent(UINT message, LPARAM lParam)
         g_Sound.PlaySoundEffect("Sounds/Button_Click.mp3");
 
         // 서버: Room 선택 패킷
-        CS_Packet_Room pkt{};
+        CS_Packet_Room pkt;
         pkt.room_id = room;                  // 0,1,2 정확히 전달
         pkt.type = CS_PACKET_ROOM;
         pkt.size = sizeof(pkt);
 
-        gGameFramework->GetClientNetwork()->SendPacket(
-            reinterpret_cast<const char*>(&pkt), pkt.size);
+        gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
 
         // JOIN 버튼 숨기고 START 버튼 표시
         for (int j = 0; j < 3; ++j)
