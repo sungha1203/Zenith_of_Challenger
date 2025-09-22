@@ -45,7 +45,7 @@ public:
 
     void OnCreate(HINSTANCE hInstance, HWND hMainWnd);
     void OnDestroy();
-
+    bool IsFullScreen() const { return m_isFullScreen; }
     void FrameAdvance();
 
     void MouseEvent(HWND hWnd, FLOAT timeElapsed);

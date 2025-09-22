@@ -20,6 +20,22 @@ CGameFramework::~CGameFramework()
 	OnDestroy();
 }
 
+static bool IsAcceptableIp(const std::string& ip)
+{
+	in_addr a{};
+	if (inet_pton(AF_INET, ip.c_str(), &a) != 1) return false;   // 형식 오류
+	uint32_t u = ntohl(a.s_addr);
+
+	// 0.0.0.0, 255.255.255.255 거부
+	if (u == 0 || u == 0xFFFFFFFFu) return false;
+
+	// 127/8 은 127.0.0.1만 허용
+	if ((u & 0xFF000000u) == 0x7F000000u && u != 0x7F000001u) return false;
+
+	return true;
+}
+
+
 void CGameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd)
 {
 	m_hInstance = hInstance;
@@ -31,7 +47,31 @@ void CGameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd)
 	//-----------[서버]-----------
 	m_clientNetwork = std::make_unique<ClientNetwork>();
 	m_clientstate = std::make_unique<ClientState>();
-	m_clientNetwork->Connect();		// 서버 연결
+
+
+	// --- IP 입력 루프 ---
+	AllocConsole();
+	FILE* inFp, * outFp;
+	freopen_s(&inFp, "CONIN$", "r", stdin);
+	freopen_s(&outFp, "CONOUT$", "w", stdout);
+
+	std::string ip;
+	bool connected = false;
+	while (!connected)
+	{
+		std::cout << "서버 IP 입력 (예: 127.0.0.1 또는 172.30.1.53): ";//175.210.144.175
+		std::getline(std::cin, ip);
+		if (ip.empty()) ip = "127.0.0.1";
+
+		if (!IsAcceptableIp(ip)) {
+			std::cout << "[경고] 허용되지 않는 루프백/잘못된 IP입니다. 다시 입력하세요.\n";
+			continue;
+		}
+
+		connected = m_clientNetwork->Connect(ip.c_str(), PORT_NUM);
+		if (!connected) std::cout << "[실패] 서버 연결 불가. 다시 입력하세요.\n";
+	}
+	FreeConsole();
 	//-----------[서버]-----------
 	//PIXSetMarker(0, "PIX 캡처 진입");
 	//std::this_thread::sleep_for(std::chrono::seconds(1)); // 1초 대기

@@ -6,31 +6,36 @@ ClientNetwork::~ClientNetwork()
 {
 }
 
-void ClientNetwork::Connect()
+bool ClientNetwork::Connect(const char* ip, int port)
 {
 	WSADATA wsaData;
-	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)   return;
+	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) return false;
 
 	m_clientsocket = WSASocket(AF_INET, SOCK_STREAM, 0, NULL, 0, WSA_FLAG_OVERLAPPED);
 	if (m_clientsocket == INVALID_SOCKET) {
 		WSACleanup();
-		return;
+		return false;
 	}
 
-	sockaddr_in serverAddr;
+	sockaddr_in serverAddr{};
 	serverAddr.sin_family = AF_INET;
-	serverAddr.sin_port = htons(PORT_NUM);
-	inet_pton(AF_INET, SERVER_IP, &serverAddr.sin_addr);
+	serverAddr.sin_port = htons(port);
+
+	if (inet_pton(AF_INET, ip, &serverAddr.sin_addr) != 1) {
+		closesocket(m_clientsocket);
+		WSACleanup();
+		return false;  // 잘못된 IP 형식
+	}
 
 	if (connect(m_clientsocket, (sockaddr*)&serverAddr, sizeof(serverAddr)) == SOCKET_ERROR) {
 		closesocket(m_clientsocket);
 		WSACleanup();
-		MessageBoxA(nullptr, "서버에 연결할 수 없습니다.", "연결 실패", MB_OK | MB_ICONERROR);
-		exit(1);
+		return false;  // 서버 연결 실패
 	}
 
 	m_running = true;
 	m_recvThread = std::thread(&ClientNetwork::Receive, this);
+	return true;  // 성공
 }
 
 void ClientNetwork::Disconnect()

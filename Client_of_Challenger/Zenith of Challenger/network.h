@@ -10,7 +10,7 @@
 #pragma comment (lib, "ws2_32.lib")
 
 constexpr int PORT_NUM = 4000;
-constexpr const char* SERVER_IP = "10.30.1.17";//"172.30.1.53"; //121.139.87.88 / 127.0.0.1 / 10.40.13.101 / 10.30.1.17
+//constexpr const char* SERVER_IP = "127.0.0.1";//172.30.1.53 //127.0.0.1 //175.210.144.175
 
 class ClientNetwork
 {
@@ -18,7 +18,7 @@ public:
 	ClientNetwork();
 	~ClientNetwork();
 
-	void		Connect();
+	bool Connect(const char* ip, int port = PORT_NUM);
 	void		Disconnect();
 	__declspec(noinline)
 	bool		SendPacket(const char* data, int length);

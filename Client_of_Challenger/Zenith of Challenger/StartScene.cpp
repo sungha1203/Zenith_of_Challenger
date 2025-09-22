@@ -1,5 +1,41 @@
 #include "StartScene.h"
 
+struct RectI { int l, t, r, b; }; // left, top, right, bottom
+
+// 창 모드(전체화면 전)
+static const RectI kRoomRectsWindowed[3] = {
+    {585, 100, 743, 177}, // room 0
+    {585, 325, 743, 400}, // room 1
+    {585, 550, 743, 628}, // room 2
+};
+
+// 전체화면
+static const RectI kRoomRectsFullscreen[3] = {
+    {790, 125, 1004, 241}, // room 0
+    {790, 457, 1004, 574}, // room 1
+    {790, 794, 1004, 907}, // room 2
+};
+
+// 필요하면 마진(픽셀)
+static constexpr int kMargin = 0;
+
+// isFullscreen == true 면 전체화면 세트, 아니면 창모드 세트 사용
+int HitTestRoomManual(int mouseX, int mouseY, bool isFullscreen)
+{
+    const RectI* rects = isFullscreen ? kRoomRectsFullscreen : kRoomRectsWindowed;
+
+    for (int i = 0; i < 3; ++i)
+    {
+        const RectI& rc = rects[i];
+        if (mouseX >= rc.l + kMargin && mouseX <= rc.r - kMargin &&
+            mouseY >= rc.t + kMargin && mouseY <= rc.b - kMargin)
+        {
+            return i; // 0,1,2 방 인덱스
+        }
+    }
+    return -1; // 어떤 방도 아님
+}
+
 std::shared_ptr<Mesh<TextureVertex>> CreateScreenQuad(const ComPtr<ID3D12Device>& device, const ComPtr<ID3D12GraphicsCommandList>& commandList, float width, float height, float z)
 {
     std::vector<TextureVertex> vertices =
@@ -182,36 +218,39 @@ void StartScene::MouseEvent(UINT message, LPARAM lParam)
     }
 
     // ------------------------------------------------------------------
-    // JOIN 버튼 Hover 초기화
+    // 우선 전부 Hover 해제
     for (int i = 0; i < 3; ++i)
-        m_joinButtons[i]->SetHovered(false);
+        if (m_joinButtons[i]) m_joinButtons[i]->SetHovered(false);
 
-    // JOIN 버튼 Hover 감지 및 클릭 처리
-    for (int i = 0; i < 3; ++i)
+    // 현재 전체화면 여부
+    const bool isFS = gGameFramework->IsFullScreen();
+
+    // 수동 좌표 히트테스트로 방 인덱스 결정 (-1 = 없음)
+    const int room = HitTestRoomManual(mouseX, mouseY, isFS);
+
+    // Hover 반영
+    if (room != -1 && m_joinButtons[room])
+        m_joinButtons[room]->SetHovered(true);
+
+    // 클릭이면 패킷 전송 & UI 갱신
+    if (room != -1 && message == WM_LBUTTONDOWN)
     {
-        if (m_joinButtons[i]->IsPointInside(mouseX, mouseY))
-        {
-            m_joinButtons[i]->SetHovered(true);
+        g_Sound.PlaySoundEffect("Sounds/Button_Click.mp3");
 
-            if (message == WM_LBUTTONDOWN)
-            {
-                g_Sound.PlaySoundEffect("Sounds/Button_Click.mp3");
+        // 서버: Room 선택 패킷
+        CS_Packet_Room pkt{};
+        pkt.room_id = room;                  // 0,1,2 정확히 전달
+        pkt.type = CS_PACKET_ROOM;
+        pkt.size = sizeof(pkt);
 
-                // 서버 개발: Room 선택 패킷 전송
-                CS_Packet_Room pkt;
-                pkt.room_id = i;
-                pkt.type = CS_PACKET_ROOM;
-                pkt.size = sizeof(pkt);
-                gGameFramework->GetClientNetwork()->SendPacket(reinterpret_cast<const char*>(&pkt), pkt.size);
+        gGameFramework->GetClientNetwork()->SendPacket(
+            reinterpret_cast<const char*>(&pkt), pkt.size);
 
-                for (int j = 0; j < 3; ++j)
-                    m_joinButtons[j]->SetVisible(false);
+        // JOIN 버튼 숨기고 START 버튼 표시
+        for (int j = 0; j < 3; ++j)
+            if (m_joinButtons[j]) m_joinButtons[j]->SetVisible(false);
 
-                m_startBtn->SetVisible(true); // START 버튼 표시
-            }
-
-            break; // 하나만 처리하고 탈출
-        }
+        if (m_startBtn) m_startBtn->SetVisible(true);
     }
 }
 
